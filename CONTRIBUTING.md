@@ -16,7 +16,7 @@ But first, read this page (including the small print at the end).
 
 ## Legal
 
-All original contributions to Apicurio projects are licensed under the
+All original contributions to Apitomy projects are licensed under the
 [ASL - Apache License](https://www.apache.org/licenses/LICENSE-2.0),
 version 2.0 or later, or, if another license is specified as governing the file or directory being
 modified, such other license.
@@ -48,20 +48,20 @@ We may use this information to acknowledge your contributions!
 
 ### Code reviews
 
-All submissions, including submissions by project members, need to be reviewed by at least one Apicurio committer before being merged.
+All submissions, including submissions by project members, need to be reviewed by at least one Apitomy committer before being merged.
 
 [GitHub Pull Request Review Process](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews) is followed for every pull request.
 
 ### Coding Guidelines
 
  * We primarily use the Git history to track authorship. GitHub also has [this nice page with your contributions](https://github.com/quarkusio/quarkus/graphs/contributors).
- * Please take care to write code that fits with existing code styles.  For your convenience we have Formatters and/or Code Templates for both [Eclipse](https://github.com/Apicurio/apicurio-configs/tree/main/eclipse) and [IntelliJ](https://github.com/Apicurio/apicurio-configs/tree/main/intellij).
+ * Please take care to write code that fits with existing code styles.  For your convenience we have Formatters and/or Code Templates for both [Eclipse](https://github.com/Apitomy/apitomy-configs/tree/main/eclipse) and [IntelliJ](https://github.com/Apitomy/apitomy-configs/tree/main/intellij).
  * Commits should be atomic and semantic. Please properly squash your pull requests before submitting them. Fixup commits can be used temporarily during the review process but things should be squashed at the end to have meaningful commits.
  * We typically squash and merge pull requests when they are approved.  This tends to keep the commit history a little bit more tidy without placing undue burden on the developers.
 
 ### Continuous Integration
 
-Because we are all humans, and to ensure Apicurio Registry is stable for everyone, all changes must pass continuous integration before being merged. Apicurio CI is based on GitHub Actions, which means that pull requests will receive automatic feedback.  Please watch out for the results of these workflows to see if your PR passes all tests.
+Because we are all humans, and to ensure Apitomy Registry is stable for everyone, all changes must pass continuous integration before being merged. Apitomy CI is based on GitHub Actions, which means that pull requests will receive automatic feedback.  Please watch out for the results of these workflows to see if your PR passes all tests.
 
 ## The small print
 

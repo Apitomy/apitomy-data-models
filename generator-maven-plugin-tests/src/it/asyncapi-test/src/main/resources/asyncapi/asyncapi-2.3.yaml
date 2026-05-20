@@ -4,9 +4,9 @@ versions:
   - version: 2.3.0
     url: https://www.asyncapi.com/docs/reference/specification/v2.3.0
 prefix: AsyncApi23
-namespace: io.apicurio.datamodels.models.asyncapi.v2x.v23
+namespace: io.apitomy.datamodels.models.asyncapi.v2x.v23
 majorVersionPrefix: AsyncApi2x
-majorVersionNamespace: io.apicurio.datamodels.models.asyncapi.v2x
+majorVersionNamespace: io.apitomy.datamodels.models.asyncapi.v2x
 
 traits:
   - name: Extensible

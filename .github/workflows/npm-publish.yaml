@@ -27,7 +27,7 @@ permissions:
 jobs:
   npm-publish:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'Apicurio'
+    if: github.repository_owner == 'Apitomy'
     steps:
 
       - uses: actions/setup-java@v4
@@ -70,16 +70,16 @@ jobs:
 
       - name: Log Metadata
         run: |
-          echo "Publishing Apicurio Data Models version ${{ inputs.release-version }} to NPM"
+          echo "Publishing Apitomy Data Models version ${{ inputs.release-version }} to NPM"
           echo "Publishing from branch/tag: ${{ inputs.branch }}"
 
 
       - name: Code Checkout
         run: |
           git init
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
-          git remote add origin "https://apicurio-ci:${{ secrets.ACCESS_TOKEN }}@github.com/$GITHUB_REPOSITORY.git"
+          git config --global user.name "apitomy-ci"
+          git config --global user.email "apitomy.ci@gmail.com"
+          git remote add origin "https://apitomy-ci:${{ secrets.ACCESS_TOKEN }}@github.com/$GITHUB_REPOSITORY.git"
           git fetch
           git checkout ${{ inputs.branch }}
           echo "#### Listing files after checkout ####"

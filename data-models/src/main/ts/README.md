@@ -1,8 +1,8 @@
-# Apicurio Datamodels
+# Apitomy Datamodels
 
 A Typescript library for reading, manipulating, and writing OpenAPI and AsyncAPI documents.
 
-Install with `npm install @apicurio/data-models`.
+Install with `npm install @apitomy/data-models`.
 
 ## Overview
 
@@ -19,9 +19,9 @@ necessary to fully leverage the capabilities of the library.
 ## See It In Action!
 
 If you want to quickly see what this library can do, you can check out 
-[this simple demo](https://apicurio-data-models-demo.stackblitz.io), or go all out and
-[give Apicurio a try](https://www.apicur.io/) (this library is used by the 
-Apicurio editor when editing an OpenAPI or AsyncAPI definition).
+[this simple demo](https://apitomy-data-models-demo.stackblitz.io), or go all out and
+[give Apitomy a try](https://www.apicur.io/) (this library is used by the 
+Apitomy editor when editing an OpenAPI or AsyncAPI definition).
 
 ## Quickstart
 
@@ -54,14 +54,14 @@ _Browser (UMD):_
 ```JavaScript
 var openApiData = ...; // Get your OpenAPI data somehow (can be string or JS object)
 
-var openApiDoc = ApicurioDM.Library.readDocumentFromJSONString(openApiData);
+var openApiDoc = ApitomyDM.Library.readDocumentFromJSONString(openApiData);
 
 openApiDoc.getInfo().setVersion("1.1");
 openApiDoc.getInfo().setDescription("Made some changes to the OpenAPI document!");
 
-var problems = ApicurioDM.Library.validate(openApiDoc, null);
+var problems = ApitomyDM.Library.validate(openApiDoc, null);
 
-var modifiedOpenApiData = ApicurioDM.Library.writeDocumentToJSONString(openApiDoc);
+var modifiedOpenApiData = ApitomyDM.Library.writeDocumentToJSONString(openApiDoc);
 ```
 
 ## API

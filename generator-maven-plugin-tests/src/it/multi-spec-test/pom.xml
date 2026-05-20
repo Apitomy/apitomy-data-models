@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>multi-spec-test</artifactId>
-    <groupId>io.apicurio</groupId>
+    <groupId>io.apitomy</groupId>
     <version>0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -35,8 +35,8 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>io.apicurio</groupId>
-                <artifactId>apicurio-unified-model-generator-maven-plugin</artifactId>
+                <groupId>io.apitomy</groupId>
+                <artifactId>apitomy-unified-model-generator-maven-plugin</artifactId>
                 <version>@project.version@</version>
                 <executions>
                     <execution>

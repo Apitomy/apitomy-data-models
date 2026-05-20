@@ -1,8 +1,8 @@
-import {Library} from "../src/io/apicurio/datamodels/Library";
+import {Library} from "../src/io/apitomy/datamodels/Library";
 import {readJSON} from "./util/tutils";
-import {Document} from "../src/io/apicurio/datamodels/models/Document";
-import {ICommand} from "../src/io/apicurio/datamodels/cmd/ICommand";
-import {CommandFactory} from "../src/io/apicurio/datamodels/cmd/CommandFactory";
+import {Document} from "../src/io/apitomy/datamodels/models/Document";
+import {ICommand} from "../src/io/apitomy/datamodels/cmd/ICommand";
+import {CommandFactory} from "../src/io/apitomy/datamodels/cmd/CommandFactory";
 
 
 interface TestSpec {

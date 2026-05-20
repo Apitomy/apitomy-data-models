@@ -1,10 +1,10 @@
 import {readJSON} from "./util/tutils";
-import {AllNodeVisitor} from "../src/io/apicurio/datamodels/models/visitors/AllNodeVisitor";
-import {Node} from "../src/io/apicurio/datamodels/models/Node";
-import {Library} from "../src/io/apicurio/datamodels/Library";
-import {Document} from "../src/io/apicurio/datamodels/models/Document";
-import {TraverserDirection} from "../src/io/apicurio/datamodels/TraverserDirection";
-import {NodePath} from "../src/io/apicurio/datamodels/paths/NodePath";
+import {AllNodeVisitor} from "../src/io/apitomy/datamodels/models/visitors/AllNodeVisitor";
+import {Node} from "../src/io/apitomy/datamodels/models/Node";
+import {Library} from "../src/io/apitomy/datamodels/Library";
+import {Document} from "../src/io/apitomy/datamodels/models/Document";
+import {TraverserDirection} from "../src/io/apitomy/datamodels/TraverserDirection";
+import {NodePath} from "../src/io/apitomy/datamodels/paths/NodePath";
 
 
 class ExtraPropertyDetectionVisitor extends AllNodeVisitor {

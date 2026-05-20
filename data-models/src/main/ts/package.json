@@ -1,11 +1,11 @@
 {
-  "name": "@apicurio/data-models",
+  "name": "@apitomy/data-models",
   "version": "${project.version}",
   "description": "A library to read, write, and manipulate OpenAPI and AsyncAPI content.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Apicurio/apicurio-data-models"
+    "url": "https://github.com/Apitomy/apitomy-data-models"
   },
   "type": "module",
   "main": "./dist/index.cjs",

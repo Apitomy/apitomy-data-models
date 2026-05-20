@@ -4,15 +4,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.apicurio</groupId>
-        <artifactId>apicurio-data-models-parent</artifactId>
+        <groupId>io.apitomy</groupId>
+        <artifactId>apitomy-data-models-parent</artifactId>
         <version>3.0.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>apicurio-data-models</artifactId>
+    <artifactId>apitomy-data-models</artifactId>
     <packaging>bundle</packaging>
-    <name>apicurio-data-models</name>
+    <name>apitomy-data-models</name>
 
     <url>https://www.apicur.io/</url>
     <description>Open Source API Design Studio</description>
@@ -122,8 +122,8 @@
         </pluginManagement>
         <plugins>
             <plugin>
-                <groupId>io.apicurio</groupId>
-                <artifactId>apicurio-unified-model-generator-maven-plugin</artifactId>
+                <groupId>io.apitomy</groupId>
+                <artifactId>apitomy-unified-model-generator-maven-plugin</artifactId>
                 <version>${project.version}</version>
                 <executions>
                     <execution>
@@ -139,7 +139,7 @@
                                 <specification>${project.basedir}/src/main/resources/specs/json-schema.yaml</specification>
                             </specifications>
                             <testSubDir>fixtures</testSubDir>
-                            <rootNamespace>io.apicurio.datamodels.models</rootNamespace>
+                            <rootNamespace>io.apitomy.datamodels.models</rootNamespace>
                         </configuration>
                     </execution>
                 </executions>
@@ -158,7 +158,7 @@
                         </goals>
                         <configuration>
                             <versions>
-                                <apicurio.osgi.version.clean>${project.version}</apicurio.osgi.version.clean>
+                                <apitomy.osgi.version.clean>${project.version}</apitomy.osgi.version.clean>
                             </versions>
                         </configuration>
                     </execution>
@@ -170,7 +170,7 @@
                             com.fasterxml.jackson*;resolution:=optional;version="[2.9,3)"
                         </Import-Package>
                         <Export-Package>
-                            io.apicurio.datamodels*
+                            io.apitomy.datamodels*
                         </Export-Package>
                     </instructions>
                     <niceManifest>true</niceManifest>
@@ -307,7 +307,7 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <mainClass>io.apicurio.datamodels._build.GenerateCoreTs</mainClass>
+                            <mainClass>io.apitomy.datamodels._build.GenerateCoreTs</mainClass>
                             <arguments>
                                 <argument>${basedir}/target/ts/src</argument>
                             </arguments>

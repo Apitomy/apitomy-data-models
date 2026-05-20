@@ -1,5 +1,5 @@
 {
   "adapters": [
-    "io.apicurio.JacksonAdapter"
+    "io.apitomy.JacksonAdapter"
   ]
 }

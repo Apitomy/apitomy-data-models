@@ -1,7 +1,7 @@
 # AsyncAPI Validation Rules
 
 This document contains a comprehensive list of validation rules extracted from AsyncAPI specification files
-(versions 2.0 through 3.0). These rules should be implemented in the `io.apicurio.datamodels.validation`
+(versions 2.0 through 3.0). These rules should be implemented in the `io.apitomy.datamodels.validation`
 package to provide complete validation coverage for AsyncAPI documents.
 
 ## Overview

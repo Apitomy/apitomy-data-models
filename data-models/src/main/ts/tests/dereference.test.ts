@@ -1,9 +1,9 @@
-import {Library} from "../src/io/apicurio/datamodels/Library";
+import {Library} from "../src/io/apitomy/datamodels/Library";
 import {readJSON} from "./util/tutils";
-import {IReferenceResolver} from "../src/io/apicurio/datamodels/refs/IReferenceResolver";
-import {ResolvedReference} from "../src/io/apicurio/datamodels/refs/ResolvedReference";
-import {Node} from "../src/io/apicurio/datamodels/models/Node";
-import {Document} from "../src/io/apicurio/datamodels/models/Document";
+import {IReferenceResolver} from "../src/io/apitomy/datamodels/refs/IReferenceResolver";
+import {ResolvedReference} from "../src/io/apitomy/datamodels/refs/ResolvedReference";
+import {Node} from "../src/io/apitomy/datamodels/models/Node";
+import {Document} from "../src/io/apitomy/datamodels/models/Document";
 
 
 interface TestSpec {

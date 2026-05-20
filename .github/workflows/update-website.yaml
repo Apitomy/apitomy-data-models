@@ -6,18 +6,18 @@ on:
 
 jobs:
   update-website:
-    if: github.repository_owner == 'Apicurio' && (github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, '2.'))
+    if: github.repository_owner == 'Apitomy' && (github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, '2.'))
     runs-on: ubuntu-latest
     steps:
 
-      - name: Apicurio Website Code Checkout
+      - name: Apitomy Website Code Checkout
         run: |
           mkdir website
           cd website
           git init
-          git config --global user.name "apicurio-ci"
-          git config --global user.email "apicurio.ci@gmail.com"
-          git remote add origin "https://apicurio-ci:${{ secrets.ACCESS_TOKEN }}@github.com/Apicurio/apicurio.github.io.git"
+          git config --global user.name "apitomy-ci"
+          git config --global user.email "apitomy.ci@gmail.com"
+          git remote add origin "https://apitomy-ci:${{ secrets.ACCESS_TOKEN }}@github.com/Apitomy/apitomy.github.io.git"
           git fetch
           git checkout main
           git branch --set-upstream-to=origin/main
@@ -25,7 +25,7 @@ jobs:
 
       - name: Fetch required Details
         run: |
-          RELEASE_VERSION=$(curl -sf https://api.github.com/repos/apicurio/apicurio-data-models/releases/latest | jq -r '.name')
+          RELEASE_VERSION=$(curl -sf https://api.github.com/repos/apitomy/apitomy-data-models/releases/latest | jq -r '.name')
           if [ -z "$RELEASE_VERSION" ] || [ "$RELEASE_VERSION" = "null" ]; then
             echo "ERROR: Failed to fetch latest release version"
             exit 1
@@ -38,7 +38,7 @@ jobs:
           echo "********** Replacing Existing Latest Release JSON File **********"
           cd _data/datamodels
           rm latestRelease.json
-          curl -sf https://api.github.com/repos/apicurio/apicurio-data-models/releases/latest > latestRelease.json
+          curl -sf https://api.github.com/repos/apitomy/apitomy-data-models/releases/latest > latestRelease.json
           if [ ! -s latestRelease.json ]; then
             echo "ERROR: Failed to fetch latest release data"
             exit 1
@@ -53,7 +53,7 @@ jobs:
         run: |
           cd website
           git add .
-          git commit -m "Automated Update For Apicurio Data Models Release Version: ${{ env.RELEASE_VERSION }}"
+          git commit -m "Automated Update For Apitomy Data Models Release Version: ${{ env.RELEASE_VERSION }}"
           git push
 
       - name: Slack Notification (Always)

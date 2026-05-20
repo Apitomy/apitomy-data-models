@@ -7371,10 +7371,10 @@
                 }
             },
             "Alert": {
-                "$ref": "apicurio:39013#/components/schemas/Alert"
+                "$ref": "apitomy:39013#/components/schemas/Alert"
             },
             "CalendarEvent": {
-                "$ref": "apicurio:39013#/components/schemas/CalendarEvent"
+                "$ref": "apitomy:39013#/components/schemas/CalendarEvent"
             }
         },
         "responses": {

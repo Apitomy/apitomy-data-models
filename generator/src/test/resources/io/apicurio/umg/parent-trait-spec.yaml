@@ -1,6 +1,0 @@
-name: Parent Trait Testing Model
-prefix: Pt
-namespace: io.apicurio.umg.test
-versions:
-  - $ref: ./parent-trait-spec-v1.yaml
-  - $ref: ./parent-trait-spec-v2.yaml

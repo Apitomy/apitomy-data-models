@@ -1,12 +1,12 @@
-import {Library} from "../src/io/apicurio/datamodels/Library";
+import {Library} from "../src/io/apitomy/datamodels/Library";
 import {readJSON} from "./util/tutils";
-import {Document} from "../src/io/apicurio/datamodels/models/Document";
-import {ModelType} from "../src/io/apicurio/datamodels/models/ModelType";
-import {ModelTypeUtil} from "../src/io/apicurio/datamodels/util/ModelTypeUtil";
+import {Document} from "../src/io/apitomy/datamodels/models/Document";
+import {ModelType} from "../src/io/apitomy/datamodels/models/ModelType";
+import {ModelTypeUtil} from "../src/io/apitomy/datamodels/util/ModelTypeUtil";
 import {
     OpenApi20to30TransformationVisitor
-} from "../src/io/apicurio/datamodels/transform/OpenApi20to30TransformationVisitor";
-import {TraverserDirection} from "../src/io/apicurio/datamodels/TraverserDirection";
+} from "../src/io/apitomy/datamodels/transform/OpenApi20to30TransformationVisitor";
+import {TraverserDirection} from "../src/io/apitomy/datamodels/TraverserDirection";
 
 
 interface TestSpec {

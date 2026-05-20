@@ -1,7 +1,7 @@
-[![Verify Build Workflow](https://github.com/Apicurio/apicurio-data-models/actions/workflows/verify.yaml/badge.svg)](https://github.com/Apicurio/apicurio-data-models/actions/workflows/verify.yaml?query=branch%3Amain)
+[![Verify Build Workflow](https://github.com/Apitomy/apitomy-data-models/actions/workflows/verify.yaml/badge.svg)](https://github.com/Apitomy/apitomy-data-models/actions/workflows/verify.yaml?query=branch%3Amain)
 [![Automated Release Notes by gren](https://img.shields.io/badge/%F0%9F%A4%96-release%20notes-00B2EE.svg)](https://github-tools.github.io/github-release-notes/)
 
-# Apicurio Data Models (Java & Typescript)
+# Apitomy Data Models (Java & Typescript)
 
 ## What is it?
 This project is a library (Java and JavaScript compatible) to implement data models for OpenAPI and
@@ -29,11 +29,11 @@ This is a multi-module Maven project containing the following modules:
 For details on how to use the library, see the documentation included with the library on
 npmjs.com:
 
-  [https://www.npmjs.com/package/@apicurio/data-models](https://www.npmjs.com/package/@apicurio/data-models)
+  [https://www.npmjs.com/package/@apitomy/data-models](https://www.npmjs.com/package/@apitomy/data-models)
 
 This documentation can also be found in this repository here:
 
-  [./data-models/src/main/ts/README.md](https://github.com/Apicurio/apicurio-data-models/blob/main/data-models/src/main/ts/README.md)
+  [./data-models/src/main/ts/README.md](https://github.com/Apitomy/apitomy-data-models/blob/main/data-models/src/main/ts/README.md)
 
 ## Project Goals
 
@@ -115,8 +115,8 @@ and then compiled and bundled using typescript and webpack.  All of this is done
 maven build process:
 
 ```bash
-git clone https://github.com/Apicurio/apicurio-data-models.git
-cd apicurio-data-models
+git clone https://github.com/Apitomy/apitomy-data-models.git
+cd apitomy-data-models
 mvn clean package -Ptranspilation
 ```
 
@@ -136,9 +136,9 @@ The easiest way to get started with the code is to [create your own fork](http:/
 of this repository, and then clone your fork:
 
 ```bash
-$ git clone git@github.com:<you>/apicurio-data-models.git
-$ cd apicurio-data-models
-$ git remote add upstream git://github.com/Apicurio/apicurio-data-models.git
+$ git clone git@github.com:<you>/apitomy-data-models.git
+$ cd apitomy-data-models
+$ git remote add upstream git://github.com/Apitomy/apitomy-data-models.git
 ```
 
 At any time, you can pull changes from the upstream and merge them onto your master:
@@ -153,12 +153,12 @@ The general idea is to keep your 'master' branch in-sync with the 'upstream/mast
 
 ### Track Your Change
 If you want to fix a bug or make any changes, please log an issue in the github 
-[Issue Tracker](https://github.com/Apicurio/apicurio-data-models/issues) describing the bug or new 
+[Issue Tracker](https://github.com/Apitomy/apitomy-data-models/issues) describing the bug or new 
 feature. Then we highly recommend making the changes on a topic branch named with the issue 
 number. For example, this command creates a branch for issue #7:
 
 ```bash
-$ git checkout -b apicurio-data-models-7
+$ git checkout -b apitomy-data-models-7
 ```
 
 After you're happy with your changes and all unit tests run successfully, commit your changes 
@@ -168,7 +168,7 @@ the official repository since you created your branch:
 ```bash
 $ git checkout master         # switches to the 'master' branch
 $ git pull upstream master    # fetches all 'upstream' changes and merges 'upstream/master' onto your 'master' branch
-$ git checkout apicurio-data-models-7  # switches to your topic branch
+$ git checkout apitomy-data-models-7  # switches to your topic branch
 $ git rebase master           # reapplies your changes on top of the latest in master
                               # (i.e., the latest from master will be the new base for your changes)
 ```
@@ -178,6 +178,6 @@ still good.  You should then push your changes to your fork, and then
 [generate a pull-request](http://help.github.com/pull-requests/) to submit your contribution:
 
 ```bash
-$ git push origin apicurio-data-models-7         # pushes your topic branch into your public fork
+$ git push origin apitomy-data-models-7         # pushes your topic branch into your public fork
 ```
 

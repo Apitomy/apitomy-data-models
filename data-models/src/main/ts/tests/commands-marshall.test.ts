@@ -1,6 +1,6 @@
-import {CommandUtil} from "../src/io/apicurio/datamodels/util/CommandUtil";
+import {CommandUtil} from "../src/io/apitomy/datamodels/util/CommandUtil";
 import {readJSON} from "./util/tutils";
-import {ICommand} from "../src/io/apicurio/datamodels/cmd/ICommand";
+import {ICommand} from "../src/io/apitomy/datamodels/cmd/ICommand";
 
 
 interface TestSpec {

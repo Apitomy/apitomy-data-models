@@ -1,5 +1,5 @@
 import {readJSON} from "./util/tutils";
-import {NodePath} from "../src/io/apicurio/datamodels/paths/NodePath";
+import {NodePath} from "../src/io/apitomy/datamodels/paths/NodePath";
 
 
 interface TestSpec {

@@ -1,0 +1,6 @@
+name: Parent Trait Testing Model
+prefix: Pt
+namespace: io.apitomy.umg.test
+versions:
+  - $ref: ./parent-trait-spec-v1.yaml
+  - $ref: ./parent-trait-spec-v2.yaml

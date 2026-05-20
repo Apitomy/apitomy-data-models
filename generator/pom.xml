@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.apicurio</groupId>
-        <artifactId>apicurio-data-models-parent</artifactId>
+        <groupId>io.apitomy</groupId>
+        <artifactId>apitomy-data-models-parent</artifactId>
         <version>3.0.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>apicurio-unified-model-generator</artifactId>
-    <name>apicurio-unified-model-generator</name>
+    <artifactId>apitomy-unified-model-generator</artifactId>
+    <name>apitomy-unified-model-generator</name>
 
     <dependencies>
         <!-- Third Party Deps -->
@@ -122,7 +122,7 @@
                         </goals>
                         <configuration>
                             <projectSettings>
-                                <javaPackage>io.apicurio.umg</javaPackage>
+                                <javaPackage>io.apitomy.umg</javaPackage>
                             </projectSettings>
                             <inputSpec>src/main/resources/openapi.json</inputSpec>
                             <outputDir>${project.build.directory}/generated-sources</outputDir>

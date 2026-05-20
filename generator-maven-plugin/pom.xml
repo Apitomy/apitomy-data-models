@@ -3,14 +3,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.apicurio</groupId>
-        <artifactId>apicurio-data-models-parent</artifactId>
+        <groupId>io.apitomy</groupId>
+        <artifactId>apitomy-data-models-parent</artifactId>
         <version>3.0.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>apicurio-unified-model-generator-maven-plugin</artifactId>
-    <name>apicurio-unified-model-generator-maven-plugin</name>
+    <artifactId>apitomy-unified-model-generator-maven-plugin</artifactId>
+    <name>apitomy-unified-model-generator-maven-plugin</name>
     <packaging>maven-plugin</packaging>
 
     <properties>
@@ -19,10 +19,10 @@
     </properties>
 
     <dependencies>
-        <!-- Apicurio Unified Model Generator -->
+        <!-- Apitomy Unified Model Generator -->
         <dependency>
-            <groupId>io.apicurio</groupId>
-            <artifactId>apicurio-unified-model-generator</artifactId>
+            <groupId>io.apitomy</groupId>
+            <artifactId>apitomy-unified-model-generator</artifactId>
             <version>${project.version}</version>
         </dependency>
 

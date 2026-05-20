@@ -2,13 +2,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.apicurio</groupId>
-        <artifactId>apicurio-data-models-parent</artifactId>
+        <groupId>io.apitomy</groupId>
+        <artifactId>apitomy-data-models-parent</artifactId>
         <version>3.0.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>apicurio-unified-model-generator-maven-plugin-tests</artifactId>
+    <artifactId>apitomy-unified-model-generator-maven-plugin-tests</artifactId>
     <packaging>pom</packaging>
 
     <build>

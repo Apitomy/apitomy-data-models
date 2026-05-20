@@ -364,7 +364,7 @@
             }
         }
     },
-    "apicurio:39013#/components/schemas/Alert": {
+    "apitomy:39013#/components/schemas/Alert": {
         "type": "object",
         "properties": {
             "foo": {
@@ -381,7 +381,7 @@
             "bar"
         ]
     },
-    "apicurio:39013#/components/schemas/CalendarEvent": {
+    "apitomy:39013#/components/schemas/CalendarEvent": {
         "type": "object",
         "properties": {
             "flerg": {
@@ -389,7 +389,7 @@
             }
         }
     },
-    "apicurio:41205#/components/schemas/CalendarEvent": {
+    "apitomy:41205#/components/schemas/CalendarEvent": {
         "type": "object",
         "allOf": [
             {
@@ -397,10 +397,10 @@
             }
         ]
     },
-    "apicurio:41205#/components/schemas/JSCalendar": {
+    "apitomy:41205#/components/schemas/JSCalendar": {
         "type": "object"
     },
-    "apicurio:41205#/components/schemas/JSEvent": {
+    "apitomy:41205#/components/schemas/JSEvent": {
         "type": "object",
         "allOf": [
             {

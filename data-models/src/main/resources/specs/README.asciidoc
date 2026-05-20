@@ -1,4 +1,4 @@
-Keep this folder synchronized with Apicurio Data Models repository (which is the canonical location for the specifications).
+Keep this folder synchronized with Apitomy Data Models repository (which is the canonical location for the specifications).
 
 Feature TODOs:
 

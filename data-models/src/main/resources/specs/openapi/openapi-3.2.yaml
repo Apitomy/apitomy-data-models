@@ -4,9 +4,9 @@ versions:
   - version: 3.2.0
     url: https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.2.0.md
 prefix: OpenApi32
-namespace: io.apicurio.datamodels.models.openapi.v3x.v32
+namespace: io.apitomy.datamodels.models.openapi.v3x.v32
 majorVersionPrefix: OpenApi3x
-majorVersionNamespace: io.apicurio.datamodels.models.openapi.v3x
+majorVersionNamespace: io.apitomy.datamodels.models.openapi.v3x
 
 traits:
   - name: Extensible

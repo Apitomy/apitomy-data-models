@@ -1,0 +1,7 @@
+name: OpenAPI
+url: https://www.openapis.org/
+description: The OpenAPI Specification allows the description of a remote API accessible through HTTP or HTTP-like protocols.
+prefix: OpenApi
+namespace: io.apitomy.umg.test
+versions:
+  - $ref: ./openapi-3.0.yaml

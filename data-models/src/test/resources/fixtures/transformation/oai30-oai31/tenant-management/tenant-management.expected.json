@@ -1,9 +1,9 @@
 {
     "openapi": "3.1.0",
     "info": {
-        "title": "Apicurio - Tenant Management API",
+        "title": "Apitomy - Tenant Management API",
         "version": "1.0.0",
-        "description": "The REST API to the Apicurio Tenant Manager.  The Tenant Manager is responsible for creating and deleting tenants from a multi-tenant aware system.",
+        "description": "The REST API to the Apitomy Tenant Manager.  The Tenant Manager is responsible for creating and deleting tenants from a multi-tenant aware system.",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -45,7 +45,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApicurioTenant"
+                                    "$ref": "#/components/schemas/ApitomyTenant"
                                 }
                             }
                         },
@@ -67,7 +67,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/UpdateApicurioTenantRequest"
+                                "$ref": "#/components/schemas/UpdateApitomyTenantRequest"
                             }
                         }
                     },
@@ -176,11 +176,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApicurioTenantList"
+                                    "$ref": "#/components/schemas/ApitomyTenantList"
                                 }
                             }
                         },
-                        "description": "Successful response - returns an object containing a slice of `ApicurioTenant` entities."
+                        "description": "Successful response - returns an object containing a slice of `ApitomyTenant` entities."
                     },
                     "500": {
                         "$ref": "#/components/responses/ServerError"
@@ -188,7 +188,7 @@
                 },
                 "operationId": "getTenants",
                 "summary": "List Tenants",
-                "description": "Gets a list of `ApicurioTenant` entities according to the query parameters set."
+                "description": "Gets a list of `ApitomyTenant` entities according to the query parameters set."
             },
             "post": {
                 "requestBody": {
@@ -196,7 +196,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/NewApicurioTenantRequest"
+                                "$ref": "#/components/schemas/NewApitomyTenantRequest"
                             }
                         }
                     },
@@ -207,7 +207,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApicurioTenant"
+                                    "$ref": "#/components/schemas/ApitomyTenant"
                                 },
                                 "x-codegen-returnType": "javax.ws.rs.core.Response"
                             }
@@ -257,9 +257,9 @@
                     "error_code": 500,
                     "message": "An error occurred somewhere."
                 },
-                "x-codegen-package": "io.apicurio.tenantmanager.api.datamodel"
+                "x-codegen-package": "io.apitomy.tenantmanager.api.datamodel"
             },
-            "NewApicurioTenantRequest": {
+            "NewApitomyTenantRequest": {
                 "title": "Root Type for NewTenant",
                 "description": "The information required when creating a new tenant.",
                 "required": [
@@ -308,9 +308,9 @@
                     ],
                     "createdBy": "foo-user"
                 },
-                "x-codegen-package": "io.apicurio.tenantmanager.api.datamodel"
+                "x-codegen-package": "io.apitomy.tenantmanager.api.datamodel"
             },
-            "ApicurioTenant": {
+            "ApitomyTenant": {
                 "title": "Root Type for Tenant",
                 "description": "Models a single tenant.",
                 "required": [
@@ -373,7 +373,7 @@
                     ],
                     "status": "READY"
                 },
-                "x-codegen-package": "io.apicurio.tenantmanager.api.datamodel"
+                "x-codegen-package": "io.apitomy.tenantmanager.api.datamodel"
             },
             "SystemInfo": {
                 "title": "Root Type for SystemInfo",
@@ -395,12 +395,12 @@
                     }
                 },
                 "example": {
-                    "name": "Apicurio Tenant Manager",
-                    "description": "The Apicurio Tenant Manager application.",
+                    "name": "Apitomy Tenant Manager",
+                    "description": "The Apitomy Tenant Manager application.",
                     "version": "1.0.0.Final",
                     "builtOn": "2021-03-19T12:55:00Z"
                 },
-                "x-codegen-package": "io.apicurio.tenantmanager.api.datamodel"
+                "x-codegen-package": "io.apitomy.tenantmanager.api.datamodel"
             },
             "TenantResource": {
                 "title": "Root Type for TenantResource",
@@ -425,9 +425,9 @@
                     "type": "MAX_TOTAL_SCHEMAS",
                     "limit": 1000
                 },
-                "x-codegen-package": "io.apicurio.tenantmanager.api.datamodel"
+                "x-codegen-package": "io.apitomy.tenantmanager.api.datamodel"
             },
-            "UpdateApicurioTenantRequest": {
+            "UpdateApitomyTenantRequest": {
                 "title": "Root Type for NewTenant",
                 "description": "The information required when creating a new tenant.",
                 "required": [
@@ -465,7 +465,7 @@
                     ],
                     "status": "TO_BE_DELETED"
                 },
-                "x-codegen-package": "io.apicurio.tenantmanager.api.datamodel"
+                "x-codegen-package": "io.apitomy.tenantmanager.api.datamodel"
             },
             "TenantStatusValue": {
                 "description": "\"READY\": Tenant status when ready for use.\n\n\"TO_BE_DELETED\": Tenant status when marked to be deleted with all it's data.\n\n\"DELETED\": Tenant status after data deletion is finished.\n",
@@ -475,9 +475,9 @@
                     "DELETED"
                 ],
                 "type": "string",
-                "x-codegen-package": "io.apicurio.tenantmanager.api.datamodel"
+                "x-codegen-package": "io.apitomy.tenantmanager.api.datamodel"
             },
-            "ApicurioTenantList": {
+            "ApitomyTenantList": {
                 "description": "Describes the response received when searching for tenants.",
                 "required": [
                     "count",
@@ -486,10 +486,10 @@
                 "type": "object",
                 "properties": {
                     "items": {
-                        "description": "The ApicurioTenants returned in the result set.",
+                        "description": "The ApitomyTenants returned in the result set.",
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ApicurioTenant"
+                            "$ref": "#/components/schemas/ApitomyTenant"
                         }
                     },
                     "count": {
@@ -497,7 +497,7 @@
                         "type": "integer"
                     }
                 },
-                "x-codegen-package": "io.apicurio.tenantmanager.api.datamodel"
+                "x-codegen-package": "io.apitomy.tenantmanager.api.datamodel"
             },
             "SortOrder": {
                 "description": "The order in which the list entries will be sorted",
@@ -506,7 +506,7 @@
                     "desc"
                 ],
                 "type": "string",
-                "x-codegen-package": "io.apicurio.tenantmanager.api.datamodel"
+                "x-codegen-package": "io.apitomy.tenantmanager.api.datamodel"
             },
             "SortBy": {
                 "description": "The name of the field that will be used for sorting",
@@ -516,7 +516,7 @@
                     "tenantId"
                 ],
                 "type": "string",
-                "x-codegen-package": "io.apicurio.tenantmanager.api.datamodel"
+                "x-codegen-package": "io.apitomy.tenantmanager.api.datamodel"
             }
         },
         "responses": {

@@ -10,7 +10,7 @@
   "components": {
     "schemas": {
       "CalendarEvent": {
-        "$ref": "apicurio:41205#/components/schemas/CalendarEvent"
+        "$ref": "apitomy:41205#/components/schemas/CalendarEvent"
       }
     }
   }

@@ -1,8 +1,0 @@
-name: OpenRPC
-url: https://open-rpc.org/
-description: The OpenRPC Specification defines a standard, programming language-agnostic interface description for JSON-RPC 2.0 APIs
-prefix: OpenRpc
-namespace: io.apicurio.datamodels.models.openrpc
-versions:
-  - $ref: ./openrpc/openrpc-1.3.yaml
-  - $ref: ./openrpc/openrpc-1.4.yaml

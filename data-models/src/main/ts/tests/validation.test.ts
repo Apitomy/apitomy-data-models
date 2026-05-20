@@ -1,17 +1,17 @@
 
-import {Library} from "../src/io/apicurio/datamodels/Library";
+import {Library} from "../src/io/apitomy/datamodels/Library";
 import {readJSON} from "./util/tutils";
 import {readTXT} from "./util/tutils";
 import {formatProblems} from "./util/tutils";
 import {readSeverity} from "./util/tutils";
-import {IValidationSeverityRegistry} from "../src/io/apicurio/datamodels/validation/IValidationSeverityRegistry";
-import {ValidationProblemSeverity} from "../src/io/apicurio/datamodels/validation/ValidationProblemSeverity";
-import {IReferenceResolver} from "../src/io/apicurio/datamodels/refs/IReferenceResolver";
-import {ResolvedReference} from "../src/io/apicurio/datamodels/refs/ResolvedReference";
-import {ReferenceUtil} from "../src/io/apicurio/datamodels/refs/ReferenceUtil";
-import {Node} from "../src/io/apicurio/datamodels/models/Node";
-import {Document} from "../src/io/apicurio/datamodels/models/Document";
-import {ValidationProblem} from "../src/io/apicurio/datamodels/validation/ValidationProblem";
+import {IValidationSeverityRegistry} from "../src/io/apitomy/datamodels/validation/IValidationSeverityRegistry";
+import {ValidationProblemSeverity} from "../src/io/apitomy/datamodels/validation/ValidationProblemSeverity";
+import {IReferenceResolver} from "../src/io/apitomy/datamodels/refs/IReferenceResolver";
+import {ResolvedReference} from "../src/io/apitomy/datamodels/refs/ResolvedReference";
+import {ReferenceUtil} from "../src/io/apitomy/datamodels/refs/ReferenceUtil";
+import {Node} from "../src/io/apitomy/datamodels/models/Node";
+import {Document} from "../src/io/apitomy/datamodels/models/Document";
+import {ValidationProblem} from "../src/io/apitomy/datamodels/validation/ValidationProblem";
 
 
 interface TestSpec {

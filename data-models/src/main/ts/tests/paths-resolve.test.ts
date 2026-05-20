@@ -1,8 +1,8 @@
-import {Library} from "../src/io/apicurio/datamodels/Library";
+import {Library} from "../src/io/apitomy/datamodels/Library";
 import {readJSON} from "./util/tutils";
-import {Document} from "../src/io/apicurio/datamodels/models/Document";
-import {NodePath} from "../src/io/apicurio/datamodels/paths/NodePath";
-import {Node} from "../src/io/apicurio/datamodels/models/Node";
+import {Document} from "../src/io/apitomy/datamodels/models/Document";
+import {NodePath} from "../src/io/apitomy/datamodels/paths/NodePath";
+import {Node} from "../src/io/apitomy/datamodels/models/Node";
 
 
 interface TestSpec {

@@ -1,5 +1,5 @@
-import {ValidationProblemSeverity} from "../../src/io/apicurio/datamodels/validation/ValidationProblemSeverity";
-import {ValidationProblem} from "../../src/io/apicurio/datamodels/validation/ValidationProblem";
+import {ValidationProblemSeverity} from "../../src/io/apitomy/datamodels/validation/ValidationProblemSeverity";
+import {ValidationProblem} from "../../src/io/apitomy/datamodels/validation/ValidationProblem";
 
 const fs = require("fs");
 

@@ -3,14 +3,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.apicurio</groupId>
-    <artifactId>apicurio-data-models-parent</artifactId>
+    <groupId>io.apitomy</groupId>
+    <artifactId>apitomy-data-models-parent</artifactId>
     <version>3.0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>apicurio-data-models-parent</name>
+    <name>apitomy-data-models-parent</name>
 
     <url>https://www.apicur.io/</url>
-    <description>Apicurio Data Models - Parent</description>
+    <description>Apitomy Data Models - Parent</description>
 
     <organization>
         <name>Red Hat</name>
@@ -27,13 +27,13 @@
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/apicurio/apicurio-data-models/issues</url>
+        <url>https://github.com/apitomy/apitomy-data-models/issues</url>
     </issueManagement>
 
     <scm>
-        <connection>scm:git:git@github.com:apicurio/apicurio-data-models.git</connection>
-        <developerConnection>scm:git:git@github.com:apicurio/apicurio-data-models.git</developerConnection>
-        <url>scm:git:git@github.com:apicurio/apicurio-data-models.git</url>
+        <connection>scm:git:git@github.com:apitomy/apitomy-data-models.git</connection>
+        <developerConnection>scm:git:git@github.com:apitomy/apitomy-data-models.git</developerConnection>
+        <url>scm:git:git@github.com:apitomy/apitomy-data-models.git</url>
     </scm>
 
     <developers>

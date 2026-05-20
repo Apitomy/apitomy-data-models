@@ -1,7 +1,7 @@
-# Step-by-Step Guide: Merging apicurio-unified-model-generator into apicurio-data-models
+# Step-by-Step Guide: Merging apitomy-unified-model-generator into apitomy-data-models
 
-This guide walks through merging the `apicurio-unified-model-generator` repository into
-`apicurio-data-models` as a multi-module Maven project. After the merge, the combined repo
+This guide walks through merging the `apitomy-unified-model-generator` repository into
+`apitomy-data-models` as a multi-module Maven project. After the merge, the combined repo
 will contain four modules: `generator`, `generator-maven-plugin`, `generator-maven-plugin-tests`,
 and `data-models`.
 
@@ -20,12 +20,12 @@ and `data-models`.
 
 **Goal:** Create a clean baseline so both repos have no unreleased changes.
 
-### Step 1: Release apicurio-unified-model-generator (if needed)
+### Step 1: Release apitomy-unified-model-generator (if needed)
 
 If there are unreleased changes in the generator repo, do a final release (e.g. `2.0.1`) using the
 existing release workflow. This is the last release from the standalone repo.
 
-### Step 2: Release apicurio-data-models (if needed)
+### Step 2: Release apitomy-data-models (if needed)
 
 If there are unreleased changes in data-models, release them using the existing workflow.
 
@@ -52,7 +52,7 @@ This rewrites the generator's history so all files appear under `_umg_import/`:
 
 ```bash
 cd /tmp
-git clone https://github.com/apicurio/apicurio-unified-model-generator.git umg-for-merge
+git clone https://github.com/apitomy/apitomy-unified-model-generator.git umg-for-merge
 cd umg-for-merge
 git filter-repo --to-subdirectory-filter _umg_import
 ```
@@ -60,18 +60,18 @@ git filter-repo --to-subdirectory-filter _umg_import
 ### Step 6: Add the filtered clone as a remote in data-models and merge
 
 ```bash
-cd /home/ewittman/git/apicurio/apicurio-data-models
+cd /home/ewittman/git/apitomy/apitomy-data-models
 git checkout main
 git remote add umg-import /tmp/umg-for-merge
 git fetch umg-import
-git merge umg-import/main --allow-unrelated-histories -m "Import apicurio-unified-model-generator history"
+git merge umg-import/main --allow-unrelated-histories -m "Import apitomy-unified-model-generator history"
 git remote remove umg-import
 ```
 
 ### Step 7: Verify history was preserved
 
 ```bash
-git log --follow -- _umg_import/generator/src/main/java/io/apicurio/umg/UnifiedModelGenerator.java
+git log --follow -- _umg_import/generator/src/main/java/io/apitomy/umg/UnifiedModelGenerator.java
 ```
 
 You should see the full commit history for that file from the generator repo.
@@ -86,7 +86,7 @@ directories.
 ### Step 8: Move generator modules to their final locations
 
 ```bash
-cd /home/ewittman/git/apicurio/apicurio-data-models
+cd /home/ewittman/git/apitomy/apitomy-data-models
 
 # Move the three generator modules
 mv _umg_import/generator generator
@@ -160,14 +160,14 @@ Create a new file `pom.xml` at the repo root with this content:
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.apicurio</groupId>
-    <artifactId>apicurio-data-models-parent</artifactId>
+    <groupId>io.apitomy</groupId>
+    <artifactId>apitomy-data-models-parent</artifactId>
     <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>apicurio-data-models-parent</name>
+    <name>apitomy-data-models-parent</name>
 
     <url>https://www.apicur.io/</url>
-    <description>Apicurio Data Models - Parent</description>
+    <description>Apitomy Data Models - Parent</description>
 
     <organization>
         <name>Red Hat</name>
@@ -184,13 +184,13 @@ Create a new file `pom.xml` at the repo root with this content:
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/apicurio/apicurio-data-models/issues</url>
+        <url>https://github.com/apitomy/apitomy-data-models/issues</url>
     </issueManagement>
 
     <scm>
-        <connection>scm:git:git@github.com:apicurio/apicurio-data-models.git</connection>
-        <developerConnection>scm:git:git@github.com:apicurio/apicurio-data-models.git</developerConnection>
-        <url>scm:git:git@github.com:apicurio/apicurio-data-models.git</url>
+        <connection>scm:git:git@github.com:apitomy/apitomy-data-models.git</connection>
+        <developerConnection>scm:git:git@github.com:apitomy/apitomy-data-models.git</developerConnection>
+        <url>scm:git:git@github.com:apitomy/apitomy-data-models.git</url>
     </scm>
 
     <developers>
@@ -367,8 +367,8 @@ Replace the `<parent>` section to point to the new parent:
 
 ```xml
 <parent>
-    <groupId>io.apicurio</groupId>
-    <artifactId>apicurio-data-models-parent</artifactId>
+    <groupId>io.apitomy</groupId>
+    <artifactId>apitomy-data-models-parent</artifactId>
     <version>3.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
 </parent>
@@ -396,15 +396,15 @@ This is the most involved change. Edit `data-models/pom.xml` (the former root PO
 1. **Add a `<parent>` section** (it didn't have one before):
    ```xml
    <parent>
-       <groupId>io.apicurio</groupId>
-       <artifactId>apicurio-data-models-parent</artifactId>
+       <groupId>io.apitomy</groupId>
+       <artifactId>apitomy-data-models-parent</artifactId>
        <version>3.0.0-SNAPSHOT</version>
        <relativePath>../pom.xml</relativePath>
    </parent>
    ```
 
 2. **Remove the `<groupId>` element** (inherited from parent). Keep `<artifactId>` as
-   `apicurio-data-models` and `<version>` only if you want to override (usually remove it to
+   `apitomy-data-models` and `<version>` only if you want to override (usually remove it to
    inherit).
 
 3. **Remove properties now in parent** -- delete all the shared properties
@@ -417,8 +417,8 @@ This is the most involved change. Edit `data-models/pom.xml` (the former root PO
 5. **Change the UMG plugin version** from a hardcoded `2.0.0` to `${project.version}`:
    ```xml
    <plugin>
-       <groupId>io.apicurio</groupId>
-       <artifactId>apicurio-unified-model-generator-maven-plugin</artifactId>
+       <groupId>io.apitomy</groupId>
+       <artifactId>apitomy-unified-model-generator-maven-plugin</artifactId>
        <version>${project.version}</version>
        ...
    </plugin>
@@ -530,15 +530,15 @@ git commit -m "Update documentation for multi-module structure"
 ### Step 27: Build without transpilation
 
 ```bash
-cd /home/ewittman/git/apicurio/apicurio-data-models
+cd /home/ewittman/git/apitomy/apitomy-data-models
 mvn clean install
 ```
 
 Expected build order:
-1. `apicurio-data-models-parent` (pom)
-2. `apicurio-unified-model-generator` (jar)
-3. `apicurio-unified-model-generator-maven-plugin` (maven-plugin)
-4. `apicurio-data-models` (bundle)
+1. `apitomy-data-models-parent` (pom)
+2. `apitomy-unified-model-generator` (jar)
+3. `apitomy-unified-model-generator-maven-plugin` (maven-plugin)
+4. `apitomy-data-models` (bundle)
 
 All four should build successfully.
 
@@ -574,7 +574,7 @@ mvn versions:set -DnewVersion=3.0.0-SNAPSHOT -DgenerateBackupPoms=false -Dproces
 ### Step 31: Verify git history preservation
 
 ```bash
-git log --follow -- generator/src/main/java/io/apicurio/umg/UnifiedModelGenerator.java
+git log --follow -- generator/src/main/java/io/apitomy/umg/UnifiedModelGenerator.java
 ```
 
 You should see commits from the original generator repo.
@@ -598,16 +598,16 @@ Once CI passes and you've reviewed, merge the PR to `main`.
 
 ### Step 34: Archive the generator repo
 
-1. Go to https://github.com/apicurio/apicurio-unified-model-generator/settings
+1. Go to https://github.com/apitomy/apitomy-unified-model-generator/settings
 2. Update the README to say:
    > **This repository has been archived.** The code generator has been merged into
-   > [apicurio-data-models](https://github.com/apicurio/apicurio-data-models).
+   > [apitomy-data-models](https://github.com/apitomy/apitomy-data-models).
 3. Archive the repository (Settings > Danger Zone > Archive this repository)
 
 ### Step 35: Update external references
 
 - Update any wiki pages or documentation that link to the generator repo
-- Update the Apicurio website if it references the generator repo separately
+- Update the Apitomy website if it references the generator repo separately
 - Close the tracking issues created in Step 3
 
 ---
@@ -615,20 +615,20 @@ Once CI passes and you've reviewed, merge the PR to `main`.
 ## Quick Reference: Final Directory Layout
 
 ```
-apicurio-data-models/
-├── pom.xml                              (parent: apicurio-data-models-parent)
+apitomy-data-models/
+├── pom.xml                              (parent: apitomy-data-models-parent)
 ├── generator/
-│   ├── pom.xml                          (artifactId: apicurio-unified-model-generator)
-│   └── src/main/java/io/apicurio/umg/
+│   ├── pom.xml                          (artifactId: apitomy-unified-model-generator)
+│   └── src/main/java/io/apitomy/umg/
 ├── generator-maven-plugin/
-│   ├── pom.xml                          (artifactId: apicurio-unified-model-generator-maven-plugin)
-│   └── src/main/java/io/apicurio/umg/maven/
+│   ├── pom.xml                          (artifactId: apitomy-unified-model-generator-maven-plugin)
+│   └── src/main/java/io/apitomy/umg/maven/
 ├── generator-maven-plugin-tests/
 │   ├── pom.xml                          (artifactId: ...-maven-plugin-tests)
 │   └── src/
 ├── data-models/
-│   ├── pom.xml                          (artifactId: apicurio-data-models)
-│   ├── src/main/java/io/apicurio/datamodels/
+│   ├── pom.xml                          (artifactId: apitomy-data-models)
+│   ├── src/main/java/io/apitomy/datamodels/
 │   ├── src/main/resources/specs/
 │   ├── src/main/ts/
 │   ├── src/test/
@@ -650,11 +650,11 @@ apicurio-data-models/
 
 | Artifact | Coordinates | Registry |
 |---|---|---|
-| Generator library | `io.apicurio:apicurio-unified-model-generator` | Maven Central |
-| Generator plugin | `io.apicurio:apicurio-unified-model-generator-maven-plugin` | Maven Central |
-| Data models | `io.apicurio:apicurio-data-models` | Maven Central |
-| Data models (TS) | `@apicurio/data-models` | npm |
-| Parent POM (new) | `io.apicurio:apicurio-data-models-parent` | Maven Central |
+| Generator library | `io.apitomy:apitomy-unified-model-generator` | Maven Central |
+| Generator plugin | `io.apitomy:apitomy-unified-model-generator-maven-plugin` | Maven Central |
+| Data models | `io.apitomy:apitomy-data-models` | Maven Central |
+| Data models (TS) | `@apitomy/data-models` | npm |
+| Parent POM (new) | `io.apitomy:apitomy-data-models-parent` | Maven Central |
 
 ## Troubleshooting
 

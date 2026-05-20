@@ -2,7 +2,7 @@ name: AsyncAPI
 url: https://www.asyncapi.com/
 description: Building the future of Event-Driven Architectures (EDA)
 prefix: AsyncApi
-namespace: io.apicurio.datamodels.models.asyncapi
+namespace: io.apitomy.datamodels.models.asyncapi
 versions:
   - $ref: ./asyncapi/asyncapi-2.0.yaml
   - $ref: ./asyncapi/asyncapi-2.1.yaml

@@ -1,0 +1,73 @@
+name: Parent Trait Test API 2.0
+version: 2.0
+versions:
+  - version: 2.0
+    url: https://example.com/ParentTrait/versions/2.0.md
+prefix: Pt20
+namespace: io.apitomy.umg.test.v2x.v20
+majorVersionPrefix: Pt2x
+majorVersionNamespace: io.apitomy.umg.test.v2x
+
+traits:
+  - name: FooParent
+    properties:
+      - name: foo
+        type: Foo
+
+entities:
+  - name: Document
+    root: true
+    traits:
+      - FooParent
+    properties:
+      - name: id
+        type: string
+      - name: foo
+        type: Foo
+      - name: bar
+        type: Bar
+      - name: definitions
+        type: Definitions
+    propertyOrder:
+      - $this
+
+  - name: Foo
+    properties:
+      - name: name
+        type: string
+      - name: description
+        type: string
+    propertyOrder:
+      - $this
+
+  - name: Bar
+    properties:
+      - name: type
+        type: string
+      - name: color
+        type: string
+    propertyOrder:
+      - $this
+
+  - name: Baz
+    traits:
+      - FooParent
+    properties:
+      - name: length
+        type: number
+      - name: foo
+        type: Foo
+    propertyOrder:
+      - $this
+
+  - name: Definitions
+    traits:
+      - FooParent
+    properties:
+      - name: foo
+        type: Foo
+      - name: baz
+        type: Baz
+    propertyOrder:
+      - $this
+        

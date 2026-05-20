@@ -3,7 +3,7 @@
     "info": {
         "title": "Unified Model API",
         "version": "1.0.0",
-        "description": "Data models for the Apicurio Unified Model Generator.",
+        "description": "Data models for the Apitomy Unified Model Generator.",
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
@@ -208,7 +208,7 @@
                         }
                     ],
                     "name": "OpenAPI 2.0.x",
-                    "namespace": "io.apicurio.datamodels.openapi",
+                    "namespace": "io.apitomy.datamodels.openapi",
                     "prefix": "Oai20x",
                     "traits": [],
                     "entities": []
