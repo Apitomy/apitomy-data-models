@@ -86,10 +86,10 @@ jobs:
           find .
 
 
-      - name: Create '.npmrc' File
-        uses: filipstefansson/set-npm-token-action@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
+      - name: Configure npm for OIDC Trusted Publishing
+        run: |
+          echo "//registry.npmjs.org/:_authToken=" > ~/.npmrc
+          npm config set registry https://registry.npmjs.org/
 
 
       - name: Build TypeScript Package
@@ -99,7 +99,7 @@ jobs:
 
 
       - name: Publish to NPM
-        run: npm publish ./data-models/target/ts/
+        run: npm publish --provenance --access public ./data-models/target/ts/
 
 
       - name: Slack Notification (Always)
