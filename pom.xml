@@ -5,7 +5,7 @@
 
     <groupId>io.apitomy</groupId>
     <artifactId>apitomy-data-models-parent</artifactId>
-    <version>3.1.0</version>
+    <version>3.1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>apitomy-data-models-parent</name>
 
