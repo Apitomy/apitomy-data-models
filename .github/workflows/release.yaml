@@ -2,25 +2,22 @@ name: Release Workflow
 on:
   workflow_dispatch:
     inputs:
-      release-version:
-        description: 'Version being released'
-        required: true
-      snapshot-version:
-        description: 'Next snapshot version'
-        required: true
       branch:
         description: 'Branch to release from'
-        required: true
+        required: false
         default: 'main'
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'Apitomy'
+    outputs:
+      release-version: ${{ steps.versions.outputs.release-version }}
+      snapshot-version: ${{ steps.versions.outputs.snapshot-version }}
     steps:
 
       - uses: actions/setup-java@v5
@@ -36,12 +33,6 @@ jobs:
           node-version: 22
 
 
-      - name: Log Metadata
-        run: |
-          echo "Releasing Apitomy Data Models version ${{ inputs.release-version }} from branch ${{ inputs.branch }}"
-          echo "Next Snapshot version will be ${{ inputs.snapshot-version }}"
-
-
       - name: Set up settings.xml
         run: |
           echo "<settings><servers><server><id>central</id><username>${{ secrets.CENTRAL_USERNAME }}</username><password>${{ secrets.CENTRAL_TOKEN }}</password></server></servers><profiles><profile><id>central</id><activation><activeByDefault>true</activeByDefault></activation><properties><gpg.executable>gpg</gpg.executable></properties></profile></profiles></settings>" > /home/runner/.m2/settings.xml
@@ -51,7 +42,7 @@ jobs:
       - name: Cache Dependencies
         uses: actions/cache@v5
         with:
-          path: ~/.m2/repository                               
+          path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
@@ -64,15 +55,31 @@ jobs:
           git config --global user.email "apitomy.ci@gmail.com"
           git remote add origin "https://apitomy-ci:${{ secrets.ACCESS_TOKEN }}@github.com/$GITHUB_REPOSITORY.git"
           git fetch
-          git checkout ${{ inputs.branch}}
-          git branch --set-upstream-to=origin/${{ inputs.branch}}
+          git checkout ${{ inputs.branch }}
+          git branch --set-upstream-to=origin/${{ inputs.branch }}
           git pull
           echo "#### Listing files after clone ####"
           find .
 
 
-      - name: Update Release Version ${{ inputs.release-version}}
-        run: mvn versions:set -DnewVersion=${{ inputs.release-version}} -DgenerateBackupPoms=false -DprocessAllModules=true
+      - name: Compute Release and Snapshot Versions
+        id: versions
+        run: |
+          CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          RELEASE_VERSION="${CURRENT_VERSION%-SNAPSHOT}"
+          MAJOR=$(echo "$RELEASE_VERSION" | cut -d. -f1)
+          MINOR=$(echo "$RELEASE_VERSION" | cut -d. -f2)
+          PATCH=$(echo "$RELEASE_VERSION" | cut -d. -f3)
+          NEXT_PATCH=$((PATCH + 1))
+          SNAPSHOT_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}-SNAPSHOT"
+          echo "release-version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "snapshot-version=$SNAPSHOT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Release version: $RELEASE_VERSION"
+          echo "Next snapshot version: $SNAPSHOT_VERSION"
+
+
+      - name: Update Release Version ${{ steps.versions.outputs.release-version }}
+        run: mvn versions:set -DnewVersion=${{ steps.versions.outputs.release-version }} -DgenerateBackupPoms=false -DprocessAllModules=true
 
 
       - name: Verify Build
@@ -84,19 +91,21 @@ jobs:
       - name: Commit Release Version Change
         run: |
           git add .
-          git commit -m "Automated version update: ${{ inputs.release-version}}"
+          git commit -m "Automated version update: ${{ steps.versions.outputs.release-version }}"
           git push
 
 
       - name: Create GitHub Release
-        run: ./.github/scripts/create-github-release.sh ${{ inputs.release-version}} ${{ inputs.branch}} $GITHUB_REPOSITORY ${{ secrets.ACCESS_TOKEN }}
+        run: ./.github/scripts/create-github-release.sh ${{ steps.versions.outputs.release-version }} ${{ inputs.branch }}
+        env:
+          GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
 
   maven-publish:
     needs: release
     uses: ./.github/workflows/maven-publish.yaml
     with:
-      release-version: ${{ inputs.release-version }}
+      release-version: ${{ needs.release.outputs.release-version }}
       branch: ${{ inputs.branch }}
     secrets: inherit
 
@@ -105,7 +114,7 @@ jobs:
     needs: release
     uses: ./.github/workflows/npm-publish.yaml
     with:
-      release-version: ${{ inputs.release-version }}
+      release-version: ${{ needs.release.outputs.release-version }}
       branch: ${{ inputs.branch }}
     secrets: inherit
 
@@ -130,19 +139,19 @@ jobs:
           git config --global user.email "apitomy.ci@gmail.com"
           git remote add origin "https://apitomy-ci:${{ secrets.ACCESS_TOKEN }}@github.com/$GITHUB_REPOSITORY.git"
           git fetch
-          git checkout ${{ inputs.branch}}
-          git branch --set-upstream-to=origin/${{ inputs.branch}}
+          git checkout ${{ inputs.branch }}
+          git branch --set-upstream-to=origin/${{ inputs.branch }}
           git pull
 
 
-      - name: Update Snapshot version ${{ inputs.snapshot-version}}
-        run: mvn versions:set -DnewVersion=${{ inputs.snapshot-version}} -DgenerateBackupPoms=false -DprocessAllModules=true
+      - name: Update Snapshot version ${{ needs.release.outputs.snapshot-version }}
+        run: mvn versions:set -DnewVersion=${{ needs.release.outputs.snapshot-version }} -DgenerateBackupPoms=false -DprocessAllModules=true
 
 
       - name: Commit Snapshot Version Change
         run: |
           git add .
-          git commit -m"Automated version update: ${{ inputs.snapshot-version}}"
+          git commit -m "Automated version update: ${{ needs.release.outputs.snapshot-version }}"
           git push
 
 
@@ -164,9 +173,9 @@ jobs:
           MAVEN_STATUS="${{ needs.maven-publish.result }}"
           NPM_STATUS="${{ needs.npm-publish.result }}"
           if [[ "$MAVEN_STATUS" != "success" ]] || [[ "$NPM_STATUS" != "success" ]]; then
-            MESSAGE="Release ${{ inputs.release-version }} completed with warnings. Maven: $MAVEN_STATUS, NPM: $NPM_STATUS. Manual retry may be needed."
+            MESSAGE="Release ${{ needs.release.outputs.release-version }} completed with warnings. Maven: $MAVEN_STATUS, NPM: $NPM_STATUS. Manual retry may be needed."
           else
-            MESSAGE="Release ${{ inputs.release-version }} completed successfully"
+            MESSAGE="Release ${{ needs.release.outputs.release-version }} completed successfully"
           fi
           REPO="${{ github.repository }}"
           LINK="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
@@ -176,7 +185,7 @@ jobs:
       - name: Slack Notification (Publishing Failures)
         if: needs.maven-publish.result != 'success' || needs.npm-publish.result != 'success'
         run: |
-          MESSAGE="Release ${{ inputs.release-version }}: Publishing failures detected. Maven: ${{ needs.maven-publish.result }}, NPM: ${{ needs.npm-publish.result }}. Retry at https://github.com/${{ github.repository }}/actions"
+          MESSAGE="Release ${{ needs.release.outputs.release-version }}: Publishing failures detected. Maven: ${{ needs.maven-publish.result }}, NPM: ${{ needs.npm-publish.result }}. Retry at https://github.com/${{ github.repository }}/actions"
           REPO="${{ github.repository }}"
           LINK="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
           PAYLOAD="{\"workflow\": \"${{ github.workflow }}\", \"status\": \"warning\", \"message\": \"$MESSAGE\", \"link\": \"$LINK\", \"repository\": \"$REPO\"}"
