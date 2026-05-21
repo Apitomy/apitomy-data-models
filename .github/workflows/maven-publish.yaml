@@ -79,7 +79,7 @@ jobs:
       - name: Maven Deploy
         uses: nick-fields/retry@v4
         with:
-          timeout_minutes: 20
+          timeout_minutes: 45
           max_attempts: 5
           retry_wait_seconds: 120
           command: mvn deploy -Prelease --batch-mode --settings /home/runner/.m2/settings.xml -DskipTests
