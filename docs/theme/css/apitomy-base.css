@@ -1,0 +1,284 @@
+/**
+ * Apitomy Custom Theme for MkDocs
+ * Matches the apitomy.io website branding
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap');
+
+:root {
+    --apitomy-bg-dark: #0F172A;
+    --apitomy-accent: #C2410C;
+    --apitomy-accent-dark: #9A3412;
+    --apitomy-primary: #4338CA;
+    --apitomy-primary-light: #6366F1;
+    --apitomy-text: #1E293B;
+    --apitomy-text-light: #64748B;
+    --apitomy-border: #E2E8F0;
+    --apitomy-bg-light: #F8FAFC;
+
+    --md-primary-fg-color: var(--apitomy-bg-dark);
+    --md-primary-fg-color--light: #1E293B;
+    --md-primary-fg-color--dark: #020617;
+    --md-accent-fg-color: var(--project-color);
+    --md-accent-fg-color--transparent: color-mix(in srgb, var(--project-color) 10%, transparent);
+
+    --md-text-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                     "Helvetica Neue", Arial, sans-serif;
+    --md-code-font: "SFMono-Regular", Menlo, Monaco, Consolas,
+                     "Liberation Mono", monospace;
+}
+
+/* ============================================================================
+   Apitomy Masthead - matches apitomy.io site header
+   ============================================================================ */
+
+.md-banner {
+    all: unset;
+    display: block;
+    box-sizing: border-box;
+    font: inherit;
+    color: inherit;
+    line-height: normal;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    text-decoration: none;
+}
+
+.md-banner,
+.md-banner > div,
+.md-banner .md-banner__inner {
+    width: 100%;
+    height: 64px;
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+}
+
+.md-banner__inner.md-grid.md-typeset {
+    max-width: 100%;
+    padding: 0;
+    font-size: inherit;
+}
+
+.apitomy-masthead {
+    width: 100%;
+    background-color: var(--apitomy-bg-dark);
+    height: 64px;
+    display: flex;
+    justify-content: center;
+}
+
+.apitomy-masthead-inner {
+    width: 100%;
+    max-width: 1140px;
+    height: 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.apitomy-masthead-logo {
+    color: var(--apitomy-accent) !important;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 22.4px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-decoration: none !important;
+}
+
+.apitomy-masthead-logo:hover {
+    color: var(--apitomy-accent) !important;
+    text-decoration: none !important;
+}
+
+.apitomy-masthead-nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.apitomy-masthead-nav a {
+    color: #CBD5E1 !important;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 15.2px;
+    font-weight: 500;
+    text-decoration: none !important;
+    transition: color 0.2s;
+    text-transform: none;
+}
+
+.apitomy-masthead-nav a:hover {
+    color: #FFFFFF !important;
+    text-decoration: none !important;
+}
+
+.apitomy-masthead-github {
+    display: flex;
+    align-items: center;
+}
+
+/* ============================================================================
+   MkDocs Material Theme Overrides
+   ============================================================================ */
+
+.md-header {
+    background-color: var(--apitomy-bg-dark);
+}
+
+.md-header__title {
+    font-weight: 500;
+}
+
+.md-tabs {
+    background-color: var(--apitomy-bg-dark);
+}
+
+.md-tabs__link--active {
+    color: var(--project-color-light);
+}
+
+.md-nav--primary .md-nav__title {
+    background-color: var(--apitomy-bg-dark);
+}
+
+/* Links */
+.md-typeset a {
+    color: var(--project-color);
+}
+
+.md-typeset a:hover {
+    color: var(--apitomy-accent);
+}
+
+/* Code blocks */
+.md-typeset code {
+    background-color: color-mix(in srgb, var(--project-color) 8%, transparent);
+    border-radius: 4px;
+}
+
+.md-typeset pre code {
+    color: #E2E8F0;
+}
+
+.md-typeset pre > code {
+    background-color: var(--apitomy-bg-dark);
+}
+
+/* Admonitions */
+.md-typeset .admonition,
+.md-typeset details {
+    border-left: 4px solid var(--project-color);
+}
+
+.md-typeset .admonition-title,
+.md-typeset summary {
+    background-color: color-mix(in srgb, var(--project-color) 8%, transparent);
+}
+
+/* Tables */
+.md-typeset table:not([class]) th {
+    background-color: var(--apitomy-bg-dark);
+    color: white;
+}
+
+.md-typeset table:not([class]) tr:hover {
+    background-color: color-mix(in srgb, var(--project-color) 4%, transparent);
+}
+
+/* Buttons */
+.md-button {
+    color: var(--project-color);
+    border-color: var(--project-color);
+}
+
+.md-button--primary {
+    background-color: var(--project-color);
+    border-color: var(--project-color);
+    color: white;
+}
+
+.md-button--primary:hover {
+    background-color: var(--project-color-light);
+}
+
+/* Search */
+.md-search__input {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.md-search__input:hover {
+    background-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Footer */
+.md-footer {
+    background-color: var(--apitomy-bg-dark);
+}
+
+.md-footer-meta {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Sidebar navigation */
+.md-nav__link--active {
+    color: var(--project-color);
+    font-weight: 500;
+}
+
+.md-nav__link:hover {
+    color: var(--project-color);
+}
+
+/* Headings */
+.md-typeset h1 {
+    color: var(--apitomy-text);
+    font-weight: 700;
+}
+
+.md-typeset h2 {
+    color: var(--apitomy-text);
+    border-bottom: 2px solid var(--project-color);
+    padding-bottom: 0.3em;
+}
+
+/* Code highlighting */
+.highlight .hll { background-color: color-mix(in srgb, var(--project-color) 15%, transparent); }
+.highlight .c { color: var(--apitomy-text-light); }
+.highlight .s { color: #F59E0B; }
+.highlight .p { color: #CBD5E1; }
+.highlight .o { color: #CBD5E1; }
+.highlight .na { color: var(--project-color-light); }
+.highlight .n { color: #38BDF8; }
+.highlight .kc { color: #34D399; }
+.highlight .k { color: #34D399; }
+.highlight .c1 { color: #64748B; }
+
+/* Tabs */
+.md-typeset .tabbed-set > input:checked + label {
+    border-color: var(--project-color);
+    color: var(--project-color);
+}
+
+/* Scrollbar */
+.md-sidebar__scrollwrap::-webkit-scrollbar-thumb {
+    background-color: var(--project-color);
+}
+
+/* Nav icons */
+.md-nav__icon {
+    color: var(--project-color);
+}
+
+/* Back to top */
+.md-top {
+    background-color: var(--project-color);
+}
+
+.md-top:hover {
+    background-color: var(--apitomy-accent);
+}

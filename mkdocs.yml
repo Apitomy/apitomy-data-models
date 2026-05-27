@@ -1,0 +1,61 @@
+site_name: Apitomy Data Models
+site_description: A library for reading, writing, and manipulating OpenAPI and AsyncAPI documents
+site_author: Apitomy
+site_url: https://www.apitomy.io/projects/data-models/docs/
+
+repo_name: Apitomy/apitomy-data-models
+repo_url: https://github.com/Apitomy/apitomy-data-models
+use_directory_urls: false
+
+theme:
+  name: material
+  custom_dir: docs/theme
+  palette:
+    - scheme: default
+      primary: custom
+      accent: custom
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.share
+    - search.suggest
+    - content.code.copy
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - User Guide:
+    - user-guide/index.md
+
+docs_dir: ./docs
+site_dir: ./site
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Apitomy/apitomy-data-models
+
+extra_css:
+  - theme/css/project-colors.css
+  - theme/css/apitomy-base.css

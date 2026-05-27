@@ -1,0 +1,58 @@
+name: Publish Documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+  workflow_dispatch:
+
+jobs:
+  publish-docs:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'Apitomy'
+
+    steps:
+      - name: Checkout apitomy-data-models
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install MkDocs and dependencies
+        run: |
+          pip install mkdocs>=1.5.0
+          pip install mkdocs-material>=9.0.0
+          pip install pymdown-extensions
+
+      - name: Build documentation
+        run: mkdocs build --strict
+
+      - name: Checkout website repository
+        uses: actions/checkout@v6
+        with:
+          repository: Apitomy/apitomy.github.io
+          token: ${{ secrets.ACCESS_TOKEN }}
+          path: website
+
+      - name: Copy generated docs to website
+        run: |
+          rm -rf website/projects/data-models/docs
+          mkdir -p website/projects/data-models
+          cp -r site website/projects/data-models/docs
+
+      - name: Commit and push to website
+        run: |
+          cd website
+          git config user.name "apitomy-ci"
+          git config user.email "apitomy.ci@gmail.com"
+          git add projects/data-models/docs
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update Data Models documentation (automated)"
+            git push
+          fi
