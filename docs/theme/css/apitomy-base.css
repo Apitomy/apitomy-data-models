@@ -127,7 +127,7 @@
    ============================================================================ */
 
 .md-header {
-    background-color: var(--apitomy-bg-dark);
+    background: linear-gradient(135deg, var(--project-color) 0%, #0F172A 100%);
 }
 
 .md-header__title {
