@@ -36,7 +36,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          maven-version: '3.8.5'
 
 
       - name: Log Metadata
