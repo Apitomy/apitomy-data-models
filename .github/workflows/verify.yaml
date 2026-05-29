@@ -20,9 +20,12 @@ on:
 
 jobs:
   build-verify:
-    name: Verify Build
+    name: Verify Build (${{ matrix.java-version }})
     runs-on: ubuntu-latest
     if: github.repository_owner == 'Apitomy'
+    strategy:
+      matrix:
+        java-version: ['17', '21']
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
@@ -30,7 +33,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: ${{ matrix.java-version }}
 
       - name: Build Project
         run: mvn clean install -Ptranspilation
