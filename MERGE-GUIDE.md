@@ -233,7 +233,7 @@ Create a new file `pom.xml` at the repo root with this content:
         <version.modeshape-common>5.4.1.Final</version.modeshape-common>
         <version.lombok>1.18.44</version.lombok>
         <version.rgxgen>3.1</version.rgxgen>
-        <version.apicurio-codegen-maven-plugin>1.2.11.Final</version.apicurio-codegen-maven-plugin>
+        <version.apitomy-codegen-maven-plugin>1.3.0</version.apitomy-codegen-maven-plugin>
 
         <!-- Dependency Versions (data-models-specific) -->
         <version.org.jsweet-core>6.3.0</version.org.jsweet-core>

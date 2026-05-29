@@ -220,7 +220,7 @@
                 <plugins>
                     <!-- Generate TS from Java using JSweet -->
                     <plugin>
-                        <groupId>io.apicurio</groupId>
+                        <groupId>io.apitomy</groupId>
                         <artifactId>jsweet-maven-plugin</artifactId>
                         <version>${version.jsweet-maven-plugin}</version>
                         <configuration>
