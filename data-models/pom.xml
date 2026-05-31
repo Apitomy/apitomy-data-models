@@ -204,6 +204,8 @@
                             </allowedDependencyScopes>
                             <excludes>
                                 <exclude>**/_*/**</exclude>
+                                <exclude>**/jsonschema/compat/**</exclude>
+                                <exclude>**/jsonschema/ref/**</exclude>
                             </excludes>
                         </configuration>
                         <executions>
