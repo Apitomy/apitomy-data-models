@@ -3,6 +3,7 @@ package io.apitomy.datamodels;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.apitomy.datamodels.models.ModelType;
+
 import io.apitomy.datamodels.models.util.JsonUtil;
 
 public class ModelTypeDetector {
@@ -97,6 +98,10 @@ public class ModelTypeDetector {
             }
         }
 
-        throw new RuntimeException("Unknown/unsupported data model type or version.");
+        // TODO: Implement smarter JSON Schema detection and version inference.
+        //  Should check for schema keywords (type, properties, allOf, etc.) and
+        //  version-specific keywords ($defs → 2019-09+, prefixItems → 2020-12, etc.)
+        //  before falling back. Currently defaults to Draft 7 for any unrecognized document.
+        return ModelType.JSDRAFT7;
     }
 }

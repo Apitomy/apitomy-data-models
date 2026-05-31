@@ -135,6 +135,10 @@ entities:
     traits:
       - Referenceable
     properties:
+      - name: '$id'
+        type: string
+      - name: '$schema'
+        type: string
       - name: '$anchor'
         type: string
       - name: '$dynamicRef'
