@@ -16,3 +16,5 @@ jsweet_extension/io/apicurio/JacksonAdapter.class
 .serena/
 # Working data
 /schema-samples/
+.projects/
+.tmp/

@@ -91,6 +91,10 @@ entities:
     traits:
       - Referenceable
     properties:
+      - name: id
+        type: string
+      - name: '$schema'
+        type: string
       - name: title
         type: string
       - name: description
