@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
     <name>apitomy-data-models</name>
 
-    <url>https://www.apicur.io/</url>
+    <url>https://www.apitomy.io/</url>
     <description>Open Source API Design Studio</description>
 
     <repositories>
