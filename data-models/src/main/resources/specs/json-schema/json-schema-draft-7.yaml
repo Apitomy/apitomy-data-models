@@ -115,6 +115,10 @@ entities:
     traits:
       - Referenceable
     properties:
+      - name: '$id'
+        type: string
+      - name: '$schema'
+        type: string
       - name: '$comment'
         type: string
       - name: title

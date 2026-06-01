@@ -97,6 +97,8 @@ public class ModelTypeDetector {
             }
         }
 
-        throw new RuntimeException("Unknown/unsupported data model type or version.");
+        // TODO: Best-effort JSON Schema version detection based on properties present in the document,
+        //  e.g. $defs → 2019-09+, prefixItems → 2020-12, $recursiveRef → 2019-09, etc.
+        return ModelType.JSDRAFT7;
     }
 }
