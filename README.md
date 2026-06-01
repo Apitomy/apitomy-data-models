@@ -181,3 +181,11 @@ still good.  You should then push your changes to your fork, and then
 $ git push origin apitomy-data-models-7         # pushes your topic branch into your public fork
 ```
 
+
+## Links
+
+- [Documentation](https://www.apitomy.io/projects/data-models/docs/)
+- [Maven Central](https://central.sonatype.com/artifact/io.apitomy/apitomy-data-models)
+- [npm Package](https://www.npmjs.com/package/@apitomy/data-models)
+- [GitHub Repository](https://github.com/Apitomy/apitomy-data-models)
+- [Apitomy Website](https://www.apitomy.io)
