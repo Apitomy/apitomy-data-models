@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
     <name>apitomy-data-models-parent</name>
 
-    <url>https://www.apicur.io/</url>
+    <url>https://www.apitomy.io/</url>
     <description>Apitomy Data Models - Parent</description>
 
     <organization>
@@ -85,7 +85,6 @@
 
         <!-- Plugin Versions -->
         <version.org.eclipse.m2e.lifecycle-mapping>1.0.0</version.org.eclipse.m2e.lifecycle-mapping>
-        <version.org.apache.felix.maven-bundle-plugin>6.0.2</version.org.apache.felix.maven-bundle-plugin>
         <version.maven-compiler-plugin>3.15.0</version.maven-compiler-plugin>
         <version.maven-source-plugin>3.4.0</version.maven-source-plugin>
         <version.maven-javadoc-plugin>3.12.0</version.maven-javadoc-plugin>

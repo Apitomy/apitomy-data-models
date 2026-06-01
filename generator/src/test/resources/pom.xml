@@ -8,7 +8,7 @@
     <version>2.0.0-SNAPSHOT</version>
     <name>apitomy-data-models</name>
 
-    <url>https://www.apicur.io/</url>
+    <url>https://www.apitomy.io/</url>
     <description>Open Source data model library supporting OpenAPI and AsyncAPI</description>
 
     <organization>
