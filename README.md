@@ -1,5 +1,4 @@
 [![Verify Build Workflow](https://github.com/Apitomy/apitomy-data-models/actions/workflows/verify.yaml/badge.svg)](https://github.com/Apitomy/apitomy-data-models/actions/workflows/verify.yaml?query=branch%3Amain)
-[![Automated Release Notes by gren](https://img.shields.io/badge/%F0%9F%A4%96-release%20notes-00B2EE.svg)](https://github-tools.github.io/github-release-notes/)
 
 # Apitomy Data Models (Java & Typescript)
 
@@ -181,3 +180,11 @@ still good.  You should then push your changes to your fork, and then
 $ git push origin apitomy-data-models-7         # pushes your topic branch into your public fork
 ```
 
+
+## Links
+
+- [Documentation](https://www.apitomy.io/projects/data-models/docs/)
+- [Maven Central](https://central.sonatype.com/artifact/io.apitomy/apitomy-data-models)
+- [npm Package](https://www.npmjs.com/package/@apitomy/data-models)
+- [GitHub Repository](https://github.com/Apitomy/apitomy-data-models)
+- [Apitomy Website](https://www.apitomy.io)

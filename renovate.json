@@ -1,71 +1,56 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
-  "enabledManagers": [
-    "maven", "npm"
-  ],
-  "dependencyDashboard": true,
-  "rangeStrategy": "bump",
-  "ignorePaths": [
-    "data-models/jsweet_extension/**",
-    "data-models/dependencies/**"
-  ],
-  "prConcurrentLimit": 5,
-  "prHourlyLimit": 5,
-  "packageRules": [
-    {
-      "groupName": "Dependencies: All (patch)",
-      "matchFileNames": [
-        "**/pom.xml"
-      ],
-      "enabled": true,
-      "matchUpdateTypes": [
-        "patch"
-      ]
-    },
-    {
-      "groupName": "Dependencies: All (minor)",
-      "matchFileNames": [
-        "**/pom.xml"
-      ],
-      "enabled": true,
-      "matchUpdateTypes": [
-        "minor"
-      ]
-    },
-    {
-      "groupName": "Dependencies: All (major)",
-      "matchFileNames": [
-        "**/pom.xml"
-      ],
-      "enabled": true,
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "schedule": [ "* 0 1 * *" ]
-    },
-    {
-      "groupName": "Dependencies: Typescript",
-      "matchFileNames": [
-        "data-models/src/main/ts/**"
-      ],
-      "enabled": true,
-      "matchUpdateTypes": [
-        "patch", "minor"
-      ]
-    },
-    {
-      "groupName": "Dependencies: Typescript (Major)",
-      "matchFileNames": [
-        "data-models/src/main/ts/**"
-      ],
-      "enabled": true,
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "schedule": [ "* 0 1 * *" ]
-    }
-  ]
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended",
+        "group:monorepos",
+        "group:recommended"
+    ],
+    "enabledManagers": [
+        "maven",
+        "npm"
+    ],
+    "dependencyDashboard": true,
+    "rangeStrategy": "bump",
+    "ignorePaths": [
+        "data-models/jsweet_extension/**",
+        "data-models/dependencies/**"
+    ],
+    "prConcurrentLimit": 10,
+    "prHourlyLimit": 5,
+    "packageRules": [
+        {
+            "description": "Group all major updates into a single monthly PR",
+            "matchUpdateTypes": [
+                "major"
+            ],
+            "groupName": "all major dependencies",
+            "schedule": [
+                "on the first day of the month"
+            ],
+            "labels": [
+                "area/dependencies",
+                "update/major"
+            ]
+        },
+        {
+            "description": "Label minor dependency updates",
+            "matchUpdateTypes": [
+                "minor"
+            ],
+            "labels": [
+                "area/dependencies",
+                "update/minor"
+            ]
+        },
+        {
+            "description": "Label patch dependency updates",
+            "matchUpdateTypes": [
+                "patch"
+            ],
+            "labels": [
+                "area/dependencies",
+                "update/patch"
+            ]
+        }
+    ]
 }
