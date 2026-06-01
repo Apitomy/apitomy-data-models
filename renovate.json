@@ -6,7 +6,8 @@
         "group:recommended"
     ],
     "enabledManagers": [
-        "maven", "npm"
+        "maven",
+        "npm"
     ],
     "dependencyDashboard": true,
     "rangeStrategy": "bump",
@@ -19,9 +20,37 @@
     "packageRules": [
         {
             "description": "Group all major updates into a single monthly PR",
-            "matchUpdateTypes": ["major"],
+            "matchUpdateTypes": [
+                "major"
+            ],
             "groupName": "all major dependencies",
-            "schedule": ["on the first day of the month"]
+            "schedule": [
+                "on the first day of the month"
+            ],
+            "labels": [
+                "area/dependencies",
+                "update/major"
+            ]
+        },
+        {
+            "description": "Label minor dependency updates",
+            "matchUpdateTypes": [
+                "minor"
+            ],
+            "labels": [
+                "area/dependencies",
+                "update/minor"
+            ]
+        },
+        {
+            "description": "Label patch dependency updates",
+            "matchUpdateTypes": [
+                "patch"
+            ],
+            "labels": [
+                "area/dependencies",
+                "update/patch"
+            ]
         }
     ]
 }
