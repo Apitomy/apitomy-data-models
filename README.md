@@ -53,9 +53,9 @@ Some example usage scenarios for this library include:
 * Auto-generate API clients.
 
 ### Dependencies
-An important design decision is that this project does not have any runtime dependencies.  This means that 
-you can use the library directly without including any other libraries. It also means you can use the 
-project as a dependency in your projects without worrying about conflicts or dependency bloat.
+An important design decision is that the JavaScript/TypeScript version of this library does not have any
+runtime dependencies.  This means that you can use the npm package directly without including any other
+libraries.  The Java version of the library depends on Jackson and commons-lang3.
 
 ## Project Status
 Currently, the data model fully supports the following formats:
@@ -140,15 +140,15 @@ $ cd apitomy-data-models
 $ git remote add upstream git://github.com/Apitomy/apitomy-data-models.git
 ```
 
-At any time, you can pull changes from the upstream and merge them onto your master:
+At any time, you can pull changes from the upstream and merge them onto your main:
 
 ```bash
-$ git checkout master       # switches to the 'master' branch
-$ git pull upstream master  # fetches all 'upstream' changes and merges 'upstream/master' onto your 'master' branch
+$ git checkout main       # switches to the 'main' branch
+$ git pull upstream main  # fetches all 'upstream' changes and merges 'upstream/main' onto your 'main' branch
 $ git push origin           # pushes all the updates to your fork, which should be in-sync with 'upstream'
 ```
 
-The general idea is to keep your 'master' branch in-sync with the 'upstream/master'.
+The general idea is to keep your 'main' branch in-sync with the 'upstream/main'.
 
 ### Track Your Change
 If you want to fix a bug or make any changes, please log an issue in the github 
@@ -165,11 +165,11 @@ on your topic branch. Then it's time to check for and pull any recent changes th
 the official repository since you created your branch:
 
 ```bash
-$ git checkout master         # switches to the 'master' branch
-$ git pull upstream master    # fetches all 'upstream' changes and merges 'upstream/master' onto your 'master' branch
+$ git checkout main         # switches to the 'main' branch
+$ git pull upstream main    # fetches all 'upstream' changes and merges 'upstream/main' onto your 'main' branch
 $ git checkout apitomy-data-models-7  # switches to your topic branch
-$ git rebase master           # reapplies your changes on top of the latest in master
-                              # (i.e., the latest from master will be the new base for your changes)
+$ git rebase main           # reapplies your changes on top of the latest in main
+                              # (i.e., the latest from main will be the new base for your changes)
 ```
 
 If the pull grabbed a lot of changes, you should rerun the tests to make sure your changes are 
