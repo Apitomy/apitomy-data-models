@@ -1,139 +1,57 @@
 # User Guide
 
 This guide covers the core concepts and patterns for working with the Apitomy Data Models
-library.
+library. Each section focuses on a single feature area with practical examples in both Java
+and TypeScript.
 
-!!! note "Under Development"
-    This user guide is under active development. New sections will be added over time.
+## Topics
 
-## Table of Contents
+### [Reading & Writing](reading-and-writing.md)
 
-- [Visitor Pattern](#visitor-pattern)
-- [Validation](#validation)
-- [Commands](#commands)
-- [Supported Specifications](#supported-specifications)
+Parse documents from JSON strings, create new documents programmatically using factory methods,
+serialize documents back to JSON, and clone documents.
 
----
+### [Visitor Pattern](visitor-pattern.md)
 
-## Visitor Pattern
+Traverse and query document trees using the visitor pattern. Covers `CombinedVisitorAdapter`
+for typed visits, `AllNodeVisitor` for uniform handling, traversal directions (top-down and
+bottom-up), and common patterns like finders and collectors.
 
-The visitor pattern is the primary mechanism for querying, analyzing, and transforming document
-models. It replaces direct `instanceof` checks and manual tree walking.
+### [Validation](validation.md)
 
-### Base Classes
+Validate documents against their specification rules. Covers the validation engine, problem
+severity levels, error codes, and custom severity registries.
 
-- **`CombinedVisitorAdapter`** — no-op implementations for all 67+ visit methods. Extend and
-  override only the methods you need.
-- **`AllNodeVisitor`** — funnels every `visitXxx()` call into a single abstract `visitNode()`.
-  Use when you need uniform handling of all node types.
+### [Commands](commands.md)
 
-### Traversal
+Mutate documents using the command pattern with built-in undo/redo support. Covers creating
+commands, executing and undoing them, marshalling commands to/from JSON, and combining
+multiple commands into a single undoable operation.
 
-```java
-// Traverse a subtree depth-first (top-down)
-Library.visitTree(node, visitor, TraverserDirection.down);
+### [Node Paths](node-paths.md)
 
-// Dispatch to a single node (no traversal)
-node.accept(visitor);
+Navigate documents using XPath-like node paths. Covers path syntax, creating paths from nodes,
+parsing paths from strings, and resolving paths back to nodes.
 
-// Resolve a NodePath string to a Node
-Node node = Library.resolveNodePath(document, nodePath);
-```
+### [Dereferencing](dereferencing.md)
 
-### Common Patterns
+Inline external `$ref` references by resolving them. Covers the built-in dereferencer,
+strict mode, and implementing custom reference resolvers for external content.
 
-**Finder** — query by criteria:
+### [Document Transformation](document-transformation.md)
 
-```java
-Library.visitTree(doc, new CombinedVisitorAdapter() {
-    @Override
-    public void visitOperation(Operation node) {
-        if ("getUserById".equals(node.getOperationId())) {
-            // Found it
-        }
-    }
-}, TraverserDirection.down);
-```
-
-**Collector** — aggregate data across the tree:
-
-```java
-List<String> paths = new ArrayList<>();
-Library.visitTree(doc, new CombinedVisitorAdapter() {
-    @Override
-    public void visitPathItem(OpenApiPathItem node) {
-        paths.add(node.mapPropertyName());
-    }
-}, TraverserDirection.down);
-```
-
----
-
-## Validation
-
-The library includes a built-in validation engine with hundreds of rules for detecting problems
-in API specifications.
-
-### Basic Usage
-
-```java
-List<ValidationProblem> problems = Library.validate(doc, null);
-```
-
-Each `ValidationProblem` includes:
-
-- **`severity`** — Error, Warning, Information, or Hint
-- **`message`** — Human-readable description of the problem
-- **`nodePath`** — Path to the node where the problem was found
-- **`errorCode`** — Machine-readable error code
-
-### Severity Levels
-
-| Severity | Description |
-|----------|-------------|
-| Error | Violations of the specification that must be fixed |
-| Warning | Potential issues that should be reviewed |
-| Information | Suggestions for improvement |
-| Hint | Minor style or convention notes |
-
----
-
-## Commands
-
-The library provides a command pattern for document mutations that supports undo/redo
-operations.
-
-### Using Commands
-
-```java
-import io.apitomy.datamodels.cmd.commands.CommandFactory;
-
-// Create a command
-ICommand command = CommandFactory.createChangePropertyCommand(
-    node, "description", "New description"
-);
-
-// Execute it
-command.execute(document);
-
-// Undo it
-command.undo(document);
-```
-
-### Available Command Categories
-
-- **Add** — add paths, schemas, operations, parameters, responses, etc.
-- **Delete** — remove any document element
-- **Change** — modify properties, rename elements
-- **Aggregate** — combine multiple commands into a single undoable operation
+Transform documents between specification versions, such as upgrading from OpenAPI 2.0 to 3.0
+or from OpenAPI 3.0 to 3.1.
 
 ---
 
 ## Supported Specifications
 
+The library auto-detects the specification type and version when parsing a document.
+
 | Specification | Versions |
 |--------------|----------|
 | OpenAPI | 2.0, 3.0.x, 3.1.x, 3.2.x |
-| AsyncAPI | 2.0–2.6, 3.0, 3.1 |
-
-The library auto-detects the specification type and version when parsing a document.
+| AsyncAPI | 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 3.0, 3.1 |
+| OpenRPC | 1.3, 1.4 |
+| JSON Schema | Draft 4, Draft 6, Draft 7, 2019-09, 2020-12 |

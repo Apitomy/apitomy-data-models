@@ -15,8 +15,9 @@ documents using a rich, typed object model.
 
 ## Quick Links
 
-- [Getting Started](getting-started.md) — Installation and basic usage
-- [User Guide](user-guide/index.md) — Visitor patterns, validation, commands
+- [Getting Started](getting-started.md) — Installation, Java and TypeScript quickstarts
+- [User Guide](user-guide/index.md) — Reading & writing, visitors, validation, commands, and more
+- [Examples](examples/index.md) — End-to-end use cases in Java and TypeScript
 - [GitHub Repository](https://github.com/Apitomy/apitomy-data-models) — Source code and issues
 - [Maven Central](https://central.sonatype.com/artifact/io.apitomy/apitomy-data-models) — Java
   releases
