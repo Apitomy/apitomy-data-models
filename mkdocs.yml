@@ -44,6 +44,14 @@ nav:
   - Getting Started: getting-started.md
   - User Guide:
     - user-guide/index.md
+    - Reading & Writing: user-guide/reading-and-writing.md
+    - Visitor Pattern: user-guide/visitor-pattern.md
+    - Validation: user-guide/validation.md
+    - Commands: user-guide/commands.md
+    - Node Paths: user-guide/node-paths.md
+    - Dereferencing: user-guide/dereferencing.md
+    - Document Transformation: user-guide/document-transformation.md
+  - Examples: examples/index.md
 
 docs_dir: ./docs
 site_dir: ./site
