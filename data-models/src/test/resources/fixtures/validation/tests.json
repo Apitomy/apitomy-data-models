@@ -139,6 +139,8 @@
     { "name": "[Issues] Issue 953 - RFC 3986 special characters", "test": "openapi/issues/953/rfc3986-special-chars.json" },
     { "name": "[Issues] Issue 953 - Invalid paths still rejected", "test": "openapi/issues/953/invalid-paths.json" },
     { "name": "[Issues] Issue 682 - Single example without examples (no NPE)", "test": "openapi/issues/682/single-example-no-npe.json" },
+    { "name": "[Issues] Issue 7 - Security requirement with no schemes (3.0)", "test": "openapi/issues/7/security-req-no-schemes-3.0.json" },
+    { "name": "[Issues] Issue 7 - Security requirement with no schemes (3.1)", "test": "openapi/issues/7/security-req-no-schemes-3.1.json" },
 
     { "name": "[OpenRPC 1.3] Required Property [Root]", "test": "openrpc/1.3/required-property-root.json" },
     { "name": "[OpenRPC 1.3] Required Property", "test": "openrpc/1.3/required-property.json" },

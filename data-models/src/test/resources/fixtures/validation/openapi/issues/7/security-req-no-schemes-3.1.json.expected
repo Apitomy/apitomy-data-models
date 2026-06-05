@@ -1,0 +1,1 @@
+[SREQ-001] |medium| {/paths[/test]/get/security[0]->null} :: Security Requirement 'BearerAuth' must refer to a valid Security Scheme.
