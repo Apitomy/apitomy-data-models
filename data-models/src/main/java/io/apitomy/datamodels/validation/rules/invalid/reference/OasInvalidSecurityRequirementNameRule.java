@@ -55,11 +55,13 @@ public class OasInvalidSecurityRequirementNameRule extends ValidationRule {
             OpenApi30Document doc30 = (OpenApi30Document) doc;
             return hasValue(doc30.getComponents()) &&
                     isDefined(doc30.getComponents()) &&
+                    hasValue(doc30.getComponents().getSecuritySchemes()) &&
                     isDefined(doc30.getComponents().getSecuritySchemes().get(securityReqName));
         } else if (dt == ModelType.OPENAPI31) {
             OpenApi31Document doc31 = (OpenApi31Document) doc;
             return hasValue(doc31.getComponents()) &&
                     isDefined(doc31.getComponents()) &&
+                    hasValue(doc31.getComponents().getSecuritySchemes()) &&
                     isDefined(doc31.getComponents().getSecuritySchemes().get(securityReqName));
         } else if (dt == ModelType.ASYNCAPI20 || dt == ModelType.ASYNCAPI21 || dt == ModelType.ASYNCAPI22 || dt == ModelType.ASYNCAPI23 || dt == ModelType.ASYNCAPI24 || dt == ModelType.ASYNCAPI25 || dt == ModelType.ASYNCAPI26) {
             // TODO implement this
