@@ -40,6 +40,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+
+
+      - name: Update npm
+        run: npm install -g npm@latest
 
 
       - name: Log Metadata
@@ -58,12 +63,6 @@ jobs:
           git checkout ${{ inputs.branch }}
           echo "#### Listing files after checkout ####"
           find .
-
-
-      - name: Configure npm for OIDC Trusted Publishing
-        run: |
-          echo "//registry.npmjs.org/:_authToken=" > ~/.npmrc
-          npm config set registry https://registry.npmjs.org/
 
 
       - name: Build TypeScript Package
