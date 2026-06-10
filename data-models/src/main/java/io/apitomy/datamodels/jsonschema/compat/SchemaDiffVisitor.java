@@ -59,7 +59,7 @@ public class SchemaDiffVisitor {
 
         var resolved = traversal.resolveRef(ref, schema.node());
         if (resolved.isPresent()) {
-            return SchemaAccessor.wrap(resolved.get().node());
+            return SchemaAccessor.wrap(resolved.get());
         }
 
         ctx.addUnsupported("Unresolvable $ref: " + ref);
@@ -432,10 +432,10 @@ public class SchemaDiffVisitor {
 
         // Resolve both $ref values to their target schemas
         var origResolved = origRef != null && traversal != null
-                ? traversal.resolveRef(origRef, original.node()).map(r -> SchemaAccessor.wrap(r.node())).orElse(null)
+                ? traversal.resolveRef(origRef, original.node()).map(SchemaAccessor::wrap).orElse(null)
                 : null;
         var updResolved = updRef != null && traversal != null
-                ? traversal.resolveRef(updRef, updated.node()).map(r -> SchemaAccessor.wrap(r.node())).orElse(null)
+                ? traversal.resolveRef(updRef, updated.node()).map(SchemaAccessor::wrap).orElse(null)
                 : null;
 
         if (origRef != null && origResolved == null) {
