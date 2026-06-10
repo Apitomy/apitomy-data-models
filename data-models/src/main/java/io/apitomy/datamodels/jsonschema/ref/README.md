@@ -75,14 +75,15 @@ The `evaluate(Node root)` method walks the document tree following the pointer s
 
 ```
 JsonSchemaRefTraversal          — caching + cycle detection
-    └── JsonSchemaRefResolverChain  — tries resolvers in order
-            ├── LocalPointerRefResolver — #/definitions/... (JSON Pointer)
-            ├── AnchorRefResolver       — #anchorName ($anchor, $id fragments)
-            └── (future resolvers: URL, Registry, etc.)
+    └── JsonSchemaRefResolverChain  — two-phase resolution
+            ├── Fragment resolvers: PointerFragmentResolver, AnchorFragmentResolver
+
+            └── Resource resolvers: (Registry, URL, etc.)
 ```
 
-Each resolver receives a parsed `JsonRef` and a `RefResolutionContext` (source node + base URI).
-Returns `Optional<ResolvedRef>` — empty if it can't handle the reference.
+The chain uses two types of resolvers:
+- **`FragmentResolver`**: receives a `JsonRef`, target document `Node`, and `RefResolutionContext`. Finds a node within the document.
+- **`ResourceResolver`**: receives a resource identifier (string) and `RefResolutionContext`. Fetches an external document.
 
-`ResolvedRef` contains the resolved `Node` and whether it's `attached` (part of the document tree)
-or `detached` (parsed separately, e.g., from an external source).
+Both return `Optional<Node>` — empty if they can't handle the reference.
+Resolved nodes from the same document have `isAttached() == true`; externally parsed nodes have `isAttached() == false`.

@@ -1,6 +1,8 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
 import io.apitomy.datamodels.Library;
+import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefResolver;
+import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefResolverChain;
 import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefTraversal;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.jsonschema.JsonSchemaDocument;
@@ -9,6 +11,8 @@ import java.util.Set;
 
 /**
  * Entry point for JSON Schema backward compatibility checking.
+ * <p>
+ * <b>Note:</b> This API is experimental and subject to change in future versions.
  * <p>
  * Usage:
  * <pre>
@@ -33,10 +37,22 @@ public final class JsonSchemaCompatibilityChecker {
      * @return the diff context with all found differences
      */
     public static DiffContext checkBackwardCompatibility(String originalSchemaJson, String updatedSchemaJson) {
+        return checkBackwardCompatibility(originalSchemaJson, updatedSchemaJson,
+                JsonSchemaRefResolverChain.withDefaults());
+    }
+
+    /**
+     * Check backward compatibility using a custom reference resolver.
+     * Use this when external references need to be resolved from a specific source
+     * (e.g., a schema registry).
+     */
+    public static DiffContext checkBackwardCompatibility(String originalSchemaJson, String updatedSchemaJson,
+                                                         JsonSchemaRefResolver resolver) {
+        java.util.Objects.requireNonNull(resolver, "resolver must not be null");
         var originalDoc = parseSchema(originalSchemaJson);
         var updatedDoc = parseSchema(updatedSchemaJson);
 
-        var refTraversal = JsonSchemaRefTraversal.withDefaults();
+        var refTraversal = new JsonSchemaRefTraversal(resolver);
         var ctx = DiffContext.createRootContext("", null, refTraversal);
 
         flagModernVersions(ctx, originalDoc);

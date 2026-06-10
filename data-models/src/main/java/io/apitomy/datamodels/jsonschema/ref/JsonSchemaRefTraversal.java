@@ -24,7 +24,7 @@ import java.util.Set;
 public class JsonSchemaRefTraversal {
 
     private final JsonSchemaRefResolver resolver;
-    private final Map<String, ResolvedRef> cache = new HashMap<>();
+    private final Map<String, Node> cache = new HashMap<>();
     private final Set<String> visiting = new HashSet<>();
 
     public JsonSchemaRefTraversal(JsonSchemaRefResolver resolver) {
@@ -42,14 +42,14 @@ public class JsonSchemaRefTraversal {
      * @param from the node containing the $ref
      * @return the resolved node, or empty if unresolvable or a cycle was detected
      */
-    public Optional<ResolvedRef> resolveRef(String ref, Node from) {
+    public Optional<Node> resolveRef(String ref, Node from) {
         if (ref == null) {
             return Optional.empty();
         }
         return resolveRef(JsonRef.parse(ref), from);
     }
 
-    public Optional<ResolvedRef> resolveRef(JsonRef ref, Node from) {
+    public Optional<Node> resolveRef(JsonRef ref, Node from) {
         // TODO: Compute baseUri by walking up from 'from' to find $id values.
         //  For now, internal refs don't need base URI resolution.
 

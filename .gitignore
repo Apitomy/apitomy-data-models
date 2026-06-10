@@ -1,20 +1,18 @@
-bin/
-target/
+*.iml
+.classpath
+.claude
 .generated
-.ts
+.idea
 .js
 .jsweet
 .project
+.projects
+.serena
 .settings
-.classpath
-website
-# Intellij project files
-/.idea/
-*.iml
+.tmp
+.ts
+bin
 jsweet_extension/io/apicurio/JacksonAdapter.class
-# Serena MCP
-.serena/
-# Working data
-/schema-samples/
-.projects/
-.tmp/
+schema-samples
+target
+website

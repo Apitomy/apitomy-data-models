@@ -2,8 +2,6 @@ package io.apitomy.datamodels.jsonschema.ref;
 
 import io.apitomy.datamodels.jsonschema.compat.SchemaAccessor;
 import io.apitomy.datamodels.models.Node;
-import io.apitomy.datamodels.models.jsonschema.JsonSchemaDocument;
-import io.apitomy.datamodels.models.jsonschema.JsonSchemaJSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.JSDraftDocument;
 import io.apitomy.datamodels.models.jsonschema.draft.JSDraftJSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft4.JSDraft4Document;
@@ -23,20 +21,21 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Resolves anchor-based references ({@code #anchorName}).
+ * Resolves anchor-based fragments ({@code #anchorName}).
+ * Scans the document tree for {@code $anchor} (2019-09+) or {@code $id}/{@code id} with
+ * a fragment value (draft-4 through draft-7).
+ * <p>
  * Manually walks the schema tree since the generated traverser
  * does not visit sub-schemas inside map/list properties like definitions.
  */
-public class AnchorRefResolver implements JsonSchemaRefResolver {
+public class AnchorFragmentResolver implements FragmentResolver {
 
     @Override
-    public Optional<ResolvedRef> resolve(JsonRef ref, RefResolutionContext context) {
-        if (!ref.isInternal() || !ref.isAnchor()) {
+    public Optional<Node> resolveFragment(JsonRef ref, Node targetDocument, RefResolutionContext context) {
+        if (!ref.isAnchor()) {
             return Optional.empty();
         }
-        var root = context.from().root();
-        var result = findAnchor(root, ref.anchor(), new HashSet<>());
-        return Optional.ofNullable(result).map(ResolvedRef::attached);
+        return Optional.ofNullable(findAnchor(targetDocument, ref.anchor(), new HashSet<>()));
     }
 
     private static Node findAnchor(Node node, String anchorName, Set<Integer> visited) {
@@ -48,10 +47,8 @@ public class AnchorRefResolver implements JsonSchemaRefResolver {
             return node;
         }
 
-        // Walk into sub-schemas via the accessor
         var accessor = SchemaAccessor.wrap(node);
 
-        // Map properties: definitions, properties, patternProperties
         var result = searchMapProperty(getDefinitions(node), anchorName, visited);
         if (result != null) return result;
 
@@ -61,14 +58,12 @@ public class AnchorRefResolver implements JsonSchemaRefResolver {
         result = searchMapProperty(accessor.getPatternProperties(), anchorName, visited);
         if (result != null) return result;
 
-        // Union properties
         result = searchUnionProperty(accessor.getAdditionalProperties(), anchorName, visited);
         if (result != null) return result;
 
         result = searchUnionProperty(accessor.getNot(), anchorName, visited);
         if (result != null) return result;
 
-        // List properties: allOf, anyOf, oneOf
         result = searchListProperty(accessor.getAllOf(), anchorName, visited);
         if (result != null) return result;
 

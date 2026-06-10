@@ -29,8 +29,8 @@ public class RefResolutionTest {
         var result = traversal.resolveRef("#/definitions/Addr", doc);
 
         Assert.assertTrue(result.isPresent());
-        Assert.assertTrue(result.get().attached());
-        Assert.assertTrue(result.get().node() instanceof JsonSchemaJSchema);
+        Assert.assertTrue(result.get().isAttached());
+        Assert.assertTrue(result.get() instanceof JsonSchemaJSchema);
     }
 
     @Test
@@ -45,7 +45,7 @@ public class RefResolutionTest {
         var result = traversal.resolveRef("#Addr", doc);
 
         Assert.assertTrue(result.isPresent());
-        Assert.assertTrue(result.get().attached());
+        Assert.assertTrue(result.get().isAttached());
     }
 
     @Test
@@ -81,7 +81,7 @@ public class RefResolutionTest {
         // Second resolution should use cache (same result)
         var cached = traversal.resolveRef("#/definitions/Person", doc);
         Assert.assertTrue(cached.isPresent());
-        Assert.assertSame(result.get().node(), cached.get().node());
+        Assert.assertSame(result.get(), cached.get());
     }
 
     @Test
@@ -100,7 +100,7 @@ public class RefResolutionTest {
         Assert.assertTrue(byPointer.isPresent());
         Assert.assertTrue(byAnchor.isPresent());
         Assert.assertSame("Both should resolve to the same node",
-                byPointer.get().node(), byAnchor.get().node());
+                byPointer.get(), byAnchor.get());
     }
 
     @Test
@@ -121,11 +121,11 @@ public class RefResolutionTest {
         var externalDoc = parse("{%s, \"type\": \"string\", \"minLength\": 5}".formatted(D7));
 
         var chain = JsonSchemaRefResolverChain.builder()
-                .addResolver(new LocalPointerRefResolver())
-                .addResolver(new AnchorRefResolver())
-                .addResolver((ref, ctx) -> {
-                    if (ref.isExternal() && "external.json".equals(ref.resource())) {
-                        return java.util.Optional.of(ResolvedRef.detached(externalDoc));
+                .addFragmentResolver(new PointerFragmentResolver())
+                .addFragmentResolver(new AnchorFragmentResolver())
+                .addResourceResolver((resource, ctx) -> {
+                    if ("external.json".equals(resource)) {
+                        return java.util.Optional.of(externalDoc);
                     }
                     return java.util.Optional.empty();
                 })
@@ -135,7 +135,7 @@ public class RefResolutionTest {
         var result = traversal.resolveRef("external.json", doc);
 
         Assert.assertTrue(result.isPresent());
-        Assert.assertFalse("External ref should be detached", result.get().attached());
+        Assert.assertFalse("External ref should be detached", result.get().isAttached());
     }
 
     @Test
