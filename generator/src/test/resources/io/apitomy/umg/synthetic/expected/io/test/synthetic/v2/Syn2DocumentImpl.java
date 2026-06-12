@@ -8,6 +8,7 @@ import io.test.synthetic.ParentPropertyType;
 import io.test.synthetic.RootNodeImpl;
 import io.test.synthetic.SynInfo;
 import io.test.synthetic.SynItem;
+import io.test.synthetic.union.SchemaOrBoolean;
 import io.test.synthetic.util.DataModelUtil;
 import io.test.synthetic.v2.visitors.Syn2Visitor;
 import io.test.synthetic.visitors.Visitor;
@@ -24,6 +25,7 @@ public class Syn2DocumentImpl extends RootNodeImpl implements Syn2Document {
 	private List<String> tags;
 	private Map<String, String> metadata;
 	private Map<String, Syn2PathItem> webhooks;
+	private SchemaOrBoolean additionalSchema;
 	private Map<String, JsonNode> extensions;
 
 	public Syn2DocumentImpl() {
@@ -184,6 +186,20 @@ public class Syn2DocumentImpl extends RootNodeImpl implements Syn2Document {
 			((NodeImpl) value)._setParentPropertyName("webhooks");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
 			((NodeImpl) value)._setMapPropertyName(name);
+		}
+	}
+
+	@Override
+	public SchemaOrBoolean getAdditionalSchema() {
+		return additionalSchema;
+	}
+
+	@Override
+	public void setAdditionalSchema(SchemaOrBoolean value) {
+		this.additionalSchema = value;
+		if (value != null) {
+			((NodeImpl) value)._setParentPropertyName("additionalSchema");
+			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}
 	}
 

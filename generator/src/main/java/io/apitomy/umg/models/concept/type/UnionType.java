@@ -33,6 +33,8 @@ public class UnionType extends AbstractType {
     @lombok.Builder.Default
     private List<UnionRule> unionRules = new ArrayList<>();
 
+    private String aliasName;
+
     @Override
     public UnionType copy() {
         return UnionType.builder()
@@ -41,6 +43,7 @@ public class UnionType extends AbstractType {
                 .rawType(rawType)
                 .types(new ArrayList<>(types))
                 .unionRules(new ArrayList<>(unionRules))
+                .aliasName(aliasName)
                 .parent(parent)
                 .leaf(leaf)
                 .root(root)

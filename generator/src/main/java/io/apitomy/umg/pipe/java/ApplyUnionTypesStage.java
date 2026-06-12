@@ -4,6 +4,13 @@ import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.PropertyType;
+import io.apitomy.umg.models.concept.type.CollectionType;
+import io.apitomy.umg.models.concept.type.EntityType;
+import io.apitomy.umg.models.concept.type.PrimitiveType;
+import io.apitomy.umg.models.concept.type.PrimitiveUnionVariantType;
+import io.apitomy.umg.models.concept.type.Type;
+import io.apitomy.umg.models.concept.type.UnionType;
+import io.apitomy.umg.models.java.type.JavaTypeFactory;
 
 /**
  * A union type has already been created (as an interface like StringWidgetUnion) and now must be
@@ -26,6 +33,16 @@ public class ApplyUnionTypesStage extends AbstractUnionTypeJavaStage {
      * @param property
      */
     private void applyUnionType(PropertyModelWithOrigin property) {
+        // Check if this is a type alias (resolvedType is union but PropertyType is not)
+        Type resolved = property.getProperty().getResolvedType();
+        if (resolved instanceof CollectionType ct) {
+            resolved = ct.getValueType();
+        }
+        if (resolved instanceof UnionType resolvedUnion && resolvedUnion.getAliasName() != null) {
+            applyUnionTypeFromResolved(resolvedUnion, property);
+            return;
+        }
+
         // Extract the actual union type: for simple unions it's the property type itself,
         // for union maps/lists it's the nested type
         PropertyType actualUnionType = property.getProperty().getType();
@@ -52,6 +69,31 @@ public class ApplyUnionTypesStage extends AbstractUnionTypeJavaStage {
             }
             if (unionValueSource == null) {
                 throw new RuntimeException("[ApplyUnionTypesStage] Union type value NOT supported: " + nestedType);
+            }
+
+            unionValueSource.addImport(unionTypeSource);
+            unionValueSource.addInterface(unionTypeSource);
+        });
+    }
+
+    private void applyUnionTypeFromResolved(UnionType unionType, PropertyModelWithOrigin property) {
+        String unionTypeFQN = getUnionTypeFQN(unionType.getAliasName());
+        JavaInterfaceSource unionTypeSource = getState().getJavaIndex().lookupInterface(unionTypeFQN);
+        if (unionTypeSource == null) {
+            throw new RuntimeException("[ApplyUnionTypesStage] Union type interface not found: " + unionTypeFQN);
+        }
+
+        unionType.getTypes().forEach(variantType -> {
+            JavaInterfaceSource unionValueSource = null;
+            if (variantType instanceof PrimitiveType || variantType instanceof PrimitiveUnionVariantType) {
+                String typeName = JavaTypeFactory.getUnionComponentName(variantType);
+                String unionValueFQN = getUnionTypeFQN(typeName + "UnionValue");
+                unionValueSource = getState().getJavaIndex().lookupInterface(unionValueFQN);
+            } else if (variantType instanceof EntityType entityType) {
+                unionValueSource = resolveJavaEntity(property.getOrigin().getNamespace().fullName(), entityType.getName());
+            }
+            if (unionValueSource == null) {
+                throw new RuntimeException("[ApplyUnionTypesStage] Union type value NOT supported: " + variantType);
             }
 
             unionValueSource.addImport(unionTypeSource);

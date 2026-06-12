@@ -196,6 +196,12 @@
                     "majorVersionNamespace": {
                         "description": "",
                         "type": "string"
+                    },
+                    "typeAliases": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TypeAlias"
+                        }
                     }
                 },
                 "example": {
@@ -335,6 +341,40 @@
                     "ruleType": "propertyValue",
                     "propertyName": "type",
                     "propertyValue": "widget"
+                }
+            },
+            "TypeAlias": {
+                "title": "Root Type for TypeAlias",
+                "description": "A named, reusable type definition (typically a union) with optional discrimination rules.",
+                "required": [
+                    "name",
+                    "type"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "unionRules": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/UnionRule"
+                        }
+                    }
+                },
+                "example": {
+                    "name": "SchemaOrBoolean",
+                    "type": "boolean|Schema",
+                    "unionRules": [
+                        {
+                            "unionType": "Schema",
+                            "ruleType": "propertyExists",
+                            "propertyName": "type"
+                        }
+                    ]
                 }
             }
         }

@@ -1,9 +1,14 @@
 package io.test.synthetic;
 
+import io.test.synthetic.union.SchemaOrBoolean;
 import java.util.List;
 import java.util.Map;
 
 public interface SynDocument extends Node {
+
+	public SchemaOrBoolean getAdditionalSchema();
+
+	public void setAdditionalSchema(SchemaOrBoolean value);
 
 	public SynInfo getInfo();
 
