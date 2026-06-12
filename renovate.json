@@ -3,11 +3,13 @@
     "extends": [
         "config:recommended",
         "group:monorepos",
-        "group:recommended"
+        "group:recommended",
+        "helpers:pinGitHubActionDigests"
     ],
     "enabledManagers": [
         "maven",
-        "npm"
+        "npm",
+        "github-actions"
     ],
     "dependencyDashboard": true,
     "rangeStrategy": "bump",
