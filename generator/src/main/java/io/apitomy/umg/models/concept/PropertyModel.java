@@ -3,6 +3,7 @@ package io.apitomy.umg.models.concept;
 import java.util.List;
 
 import io.apitomy.umg.beans.UnionRule;
+import io.apitomy.umg.models.concept.type.Type;
 import lombok.Builder;
 import lombok.Data;
 
@@ -23,7 +24,17 @@ public class PropertyModel {
 
     private List<UnionRule> unionRules;
 
+    /**
+     * @deprecated Use {@link #resolvedType} instead. Will be removed once all stages are migrated.
+     */
+    @Deprecated
     private PropertyType type;
+
+    /**
+     * The resolved type — references actual EntityModel objects, carries union rules,
+     * and supports the visitor pattern. Set by CreatePropertyAndTypeModelsStage.
+     */
+    private Type resolvedType;
 
     private boolean shaded;
 

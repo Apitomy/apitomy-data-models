@@ -67,7 +67,12 @@ public class CreateImplFieldsStage extends AbstractJavaStage {
             return;
         }
 
-        if (isUnion(property)) {
+        if (property.getResolvedType() != null) {
+            var jt = getJavaTypeFactory().createJavaType(
+                    property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
+            jt.addImportsTo(javaEntityImpl);
+            fieldType = jt.toJavaTypeString();
+        } else if (isUnion(property)) {
             UnionPropertyType upt = new UnionPropertyType(property.getType());
             upt.addImportsTo(javaEntityImpl);
             fieldType = upt.getName();

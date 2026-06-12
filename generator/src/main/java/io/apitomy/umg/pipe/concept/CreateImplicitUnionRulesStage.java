@@ -11,7 +11,8 @@ import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.NamespaceModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
-import io.apitomy.umg.models.concept.PropertyType;
+import io.apitomy.umg.models.concept.type.Type;
+import io.apitomy.umg.models.concept.type.UnionType;
 import io.apitomy.umg.pipe.AbstractStage;
 
 /**
@@ -36,7 +37,7 @@ public class CreateImplicitUnionRulesStage extends AbstractStage {
         getState().getConceptIndex().findEntities("").forEach(entity -> {
             entity.getProperties().values().stream()
             // Only care about properties with union types.
-            .filter(property -> property.getType().isUnion())
+            .filter(property -> property.getResolvedType() instanceof UnionType)
             // Only if the property doesn't already have union rules defined.
             .filter(property -> property.getUnionRules() == null || property.getUnionRules().isEmpty())
             // Only if the union type has ambiguity
@@ -48,13 +49,14 @@ public class CreateImplicitUnionRulesStage extends AbstractStage {
     }
 
     private boolean isUnionAmbiguous(PropertyModel property) {
+        var unionType = (UnionType) property.getResolvedType();
         int entityCount = 0;
         int arrayCount = 0;
         int mapCount = 0;
-        for (PropertyType nestedType : property.getType().getNested()) {
-            if (nestedType.isMap()) {
+        for (var nestedType : unionType.getTypes()) {
+            if (nestedType.isMapType()) {
                 mapCount++;
-            } else if (nestedType.isList()) {
+            } else if (nestedType.isListType()) {
                 arrayCount++;
             } else if (nestedType.isEntityType()) {
                 entityCount++;
@@ -76,10 +78,11 @@ public class CreateImplicitUnionRulesStage extends AbstractStage {
      * @param property
      */
     private void createImplicitUnionRules(EntityModel entity, PropertyModel property) {
-        final int minimumRulesRequired = property.getType().getNested().size() - 1;
+        var unionType = (UnionType) property.getResolvedType();
+        final int minimumRulesRequired = unionType.getTypes().size() - 1;
         int rulesCreated = 0;
-        for (PropertyType nestedType : property.getType().getNested()) {
-            UnionRule rule = createImplicitRuleForEntity(entity.getNamespace(), nestedType.getSimpleType());
+        for (var nestedType : unionType.getTypes()) {
+            UnionRule rule = createImplicitRuleForEntity(entity.getNamespace(), nestedType.getName());
             if (rule != null) {
                 List<UnionRule> unionRules = property.getUnionRules();
                 if (unionRules == null) {

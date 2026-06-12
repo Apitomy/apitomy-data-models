@@ -20,9 +20,23 @@ import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.PropertyType;
 import io.apitomy.umg.models.concept.TraitModel;
 import io.apitomy.umg.models.concept.VisitorModel;
+import io.apitomy.umg.models.java.type.JavaTypeFactory;
 import io.apitomy.umg.pipe.AbstractStage;
 
 public abstract class AbstractJavaStage extends AbstractStage {
+
+    private JavaTypeFactory javaTypeFactory;
+
+    protected JavaTypeFactory getJavaTypeFactory() {
+        if (javaTypeFactory == null) {
+            javaTypeFactory = new JavaTypeFactory(
+                    getState().getConceptIndex(),
+                    getState().getSpecIndex(),
+                    getState().getJavaIndex(),
+                    getUnionTypesPackageName());
+        }
+        return javaTypeFactory;
+    }
 
     protected String getReaderClassName(SpecificationVersion specVersion) {
         return specVersion.getPrefix() + "ModelReader";
