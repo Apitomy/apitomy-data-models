@@ -94,12 +94,16 @@ public class JavaTypeFactory {
                 .map(t -> createJavaType(t, namespaceContext, useCommonResolution))
                 .collect(Collectors.toList());
 
-        var sortedTypes = new ArrayList<>(unionType.getTypes());
-        sortedTypes.sort(Comparator.comparing(t -> getUnionComponentName(t).toLowerCase()));
-
-        var unionName = sortedTypes.stream()
-                .map(JavaTypeFactory::getUnionComponentName)
-                .collect(Collectors.joining()) + "Union";
+        String unionName;
+        if (unionType.getAliasName() != null) {
+            unionName = unionType.getAliasName();
+        } else {
+            var sortedTypes = new ArrayList<>(unionType.getTypes());
+            sortedTypes.sort(Comparator.comparing(t -> getUnionComponentName(t).toLowerCase()));
+            unionName = sortedTypes.stream()
+                    .map(JavaTypeFactory::getUnionComponentName)
+                    .collect(Collectors.joining()) + "Union";
+        }
         var unionFQN = unionTypesPackage + "." + unionName;
 
         return new UnionJavaType(unionType, unionName, unionFQN, variantJavaTypes);

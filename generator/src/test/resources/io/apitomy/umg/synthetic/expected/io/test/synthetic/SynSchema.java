@@ -3,10 +3,11 @@ package io.test.synthetic;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.test.synthetic.union.BooleanSchemaSchemaListUnion;
 import io.test.synthetic.union.BooleanSchemaUnion;
+import io.test.synthetic.union.SchemaOrBoolean;
 import java.util.List;
 import java.util.Map;
 
-public interface SynSchema extends Node, BooleanSchemaUnion, BooleanSchemaSchemaListUnion {
+public interface SynSchema extends Node, SchemaOrBoolean, BooleanSchemaUnion, BooleanSchemaSchemaListUnion {
 
 	public SynSchema createSchema();
 

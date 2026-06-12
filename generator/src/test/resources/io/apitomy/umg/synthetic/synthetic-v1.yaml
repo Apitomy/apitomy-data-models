@@ -35,6 +35,15 @@ traits:
       - name: description
         type: string
 
+# Feature 21: Type aliases (named, reusable union types)
+typeAliases:
+  - name: SchemaOrBoolean
+    type: boolean|Schema
+    unionRules:
+      - unionType: Schema
+        ruleType: propertyExists
+        propertyName: type
+
 entities:
   # Feature 8: Root entity
   - name: Document
@@ -58,6 +67,9 @@ entities:
       - name: metadata
         # Feature 4: Map of primitives
         type: '{string}'
+      - name: additionalSchema
+        # Feature 21: Property using a type alias
+        type: SchemaOrBoolean
     # Feature 12: Property ordering
     propertyOrder:
       - $this

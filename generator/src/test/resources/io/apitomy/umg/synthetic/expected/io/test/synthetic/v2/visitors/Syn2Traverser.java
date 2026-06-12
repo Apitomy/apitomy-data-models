@@ -69,6 +69,7 @@ public class Syn2Traverser extends AbstractTraverser implements Syn2Visitor {
 		this.traverseNode("info", model.getInfo());
 		this.traverseList("items", model.getItems());
 		this.traverseMap("webhooks", model.getWebhooks());
+		this.traverseNode("additionalSchema", model.getAdditionalSchema());
 	}
 
 	@Override

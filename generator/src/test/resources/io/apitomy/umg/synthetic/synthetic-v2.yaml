@@ -32,6 +32,14 @@ traits:
       - name: description
         type: string
 
+typeAliases:
+  - name: SchemaOrBoolean
+    type: boolean|Schema
+    unionRules:
+      - unionType: Schema
+        ruleType: propertyExists
+        propertyName: type
+
 entities:
   - name: Document
     root: true
@@ -51,6 +59,8 @@ entities:
       # Feature 13: v2 adds a new property (normalization test)
       - name: webhooks
         type: '{PathItem}'
+      - name: additionalSchema
+        type: SchemaOrBoolean
     propertyOrder:
       - $this
       - $Extensible
