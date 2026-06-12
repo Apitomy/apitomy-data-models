@@ -40,6 +40,23 @@ public class CreatePropertyAndTypeModelsStage extends AbstractStage {
         getState().getSpecIndex().getAllSpecificationVersions().forEach(specVersion -> {
             var namespace = specVersion.getNamespace();
 
+            // Process type aliases FIRST so they're available for property type resolution
+            if (specVersion.getTypeAliases() != null) {
+                specVersion.getTypeAliases().forEach(alias -> {
+                    var rawType = RawType.parse(alias.getType());
+                    var resolvedType = resolveType(rawType, namespace);
+                    if (resolvedType instanceof UnionType unionType) {
+                        unionType.setAliasName(alias.getName());
+                        if (alias.getUnionRules() != null && !alias.getUnionRules().isEmpty()) {
+                            unionType.setUnionRules(alias.getUnionRules());
+                        }
+                    }
+                    var fqName = namespace + "." + alias.getName();
+                    getState().getConceptIndex().indexType(fqName, resolvedType);
+                    debug("Indexed type alias: %s -> %s", fqName, resolvedType);
+                });
+            }
+
             // Process trait properties
             specVersion.getTraits().forEach(trait -> {
                 var fqTraitName = namespace + "." + trait.getName();

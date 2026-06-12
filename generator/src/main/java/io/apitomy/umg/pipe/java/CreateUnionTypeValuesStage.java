@@ -27,6 +27,9 @@ public class CreateUnionTypeValuesStage extends AbstractUnionTypeJavaStage {
      * @param property
      */
     private void createMissingUnionValues(PropertyModelWithOrigin property) {
+        if (!property.getProperty().getType().isUnion()) {
+            return;
+        }
         UnionPropertyType unionType = new UnionPropertyType(property.getProperty().getType());
         unionType.getNestedTypes().forEach(nestedType -> {
             JavaType nestedJT = new JavaType(nestedType, property.getOrigin().getNamespace());

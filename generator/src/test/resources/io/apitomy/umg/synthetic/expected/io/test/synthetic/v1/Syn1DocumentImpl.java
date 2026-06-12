@@ -8,6 +8,7 @@ import io.test.synthetic.ParentPropertyType;
 import io.test.synthetic.RootNodeImpl;
 import io.test.synthetic.SynInfo;
 import io.test.synthetic.SynItem;
+import io.test.synthetic.union.SchemaOrBoolean;
 import io.test.synthetic.util.DataModelUtil;
 import io.test.synthetic.v1.visitors.Syn1Visitor;
 import io.test.synthetic.visitors.Visitor;
@@ -23,6 +24,7 @@ public class Syn1DocumentImpl extends RootNodeImpl implements Syn1Document {
 	private List<SynItem> items;
 	private List<String> tags;
 	private Map<String, String> metadata;
+	private SchemaOrBoolean additionalSchema;
 	private Map<String, JsonNode> extensions;
 
 	public Syn1DocumentImpl() {
@@ -130,6 +132,20 @@ public class Syn1DocumentImpl extends RootNodeImpl implements Syn1Document {
 	@Override
 	public void setMetadata(Map<String, String> value) {
 		this.metadata = value;
+	}
+
+	@Override
+	public SchemaOrBoolean getAdditionalSchema() {
+		return additionalSchema;
+	}
+
+	@Override
+	public void setAdditionalSchema(SchemaOrBoolean value) {
+		this.additionalSchema = value;
+		if (value != null) {
+			((NodeImpl) value)._setParentPropertyName("additionalSchema");
+			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
+		}
 	}
 
 	@Override
