@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,14 +44,9 @@ public class SyntheticSnapshotTest {
         try {
             generate(outputDir, testOutputDir);
 
-            // Use classpath to find expected dir location, then resolve in source tree
-            var expectedUrl = SyntheticSnapshotTest.class.getResource(EXPECTED_RESOURCE);
-            File expectedDir;
-            if (expectedUrl != null) {
-                expectedDir = new File(expectedUrl.toURI());
-            } else {
-                expectedDir = findSourceDir();
-                // First run — save generated output as expected
+            // Use source directory directly (not classpath) to avoid stale target/test-classes copies
+            var expectedDir = findSourceDir();
+            if (!expectedDir.exists()) {
                 FileUtils.copyDirectory(outputDir, expectedDir);
                 System.out.println("[Synthetic] Expected output created at " + expectedDir.getAbsolutePath());
                 System.out.println("[Synthetic] Review and commit the expected files.");
@@ -111,17 +105,14 @@ public class SyntheticSnapshotTest {
                     var actualContent = Files.readString(actualFile, StandardCharsets.UTF_8);
                     if (!expectedContent.equals(actualContent)) {
                         failures.add("CHANGED: " + relative);
-                        if (failures.size() == 1) {
-                            // Print first diff for debugging
-                            var expectedLines = expectedContent.lines().toList();
-                            var actualLines = actualContent.lines().toList();
-                            for (int i = 0; i < Math.min(expectedLines.size(), actualLines.size()); i++) {
-                                if (!expectedLines.get(i).equals(actualLines.get(i))) {
-                                    failures.add("  First diff at line " + (i + 1) + ":");
-                                    failures.add("  Expected: " + expectedLines.get(i));
-                                    failures.add("  Actual:   " + actualLines.get(i));
-                                    break;
-                                }
+                        var expectedLines = expectedContent.lines().toList();
+                        var actualLines = actualContent.lines().toList();
+                        for (int i = 0; i < Math.min(expectedLines.size(), actualLines.size()); i++) {
+                            if (!expectedLines.get(i).equals(actualLines.get(i))) {
+                                failures.add("  First diff at line " + (i + 1) + ":");
+                                failures.add("    Expected: " + expectedLines.get(i));
+                                failures.add("    Actual:   " + actualLines.get(i));
+                                break;
                             }
                         }
                     }
