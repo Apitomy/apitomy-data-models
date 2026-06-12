@@ -1,0 +1,211 @@
+# Synthetic spec version 1 — exercises all generator features.
+# Version 2 adds properties/entities for normalization testing.
+
+name: Synthetic v1
+version: "1"
+versions:
+  - version: "1.0"
+    url: https://example.com/synthetic/1.0
+prefix: Syn1
+namespace: io.test.synthetic.v1
+majorVersionPrefix: Syn1x
+majorVersionNamespace: io.test.synthetic.v1x
+
+traits:
+  # Feature 9: Basic trait with properties
+  - name: Extensible
+    properties:
+      # Feature 7: Regex property with collection
+      - name: '/^x-.+$/'
+        type: any
+        collection: extensions
+
+  # Feature 9: Trait with entity property
+  - name: Referenceable
+    properties:
+      - name: '$ref'
+        type: string
+
+  # Feature 10: Transparent trait (inlined into entity, no interface generated)
+  - name: CommonMetadata
+    transparent: true
+    properties:
+      - name: title
+        type: string
+      - name: description
+        type: string
+
+entities:
+  # Feature 8: Root entity
+  - name: Document
+    root: true
+    # Feature 11: Entity with traits
+    traits:
+      - Extensible
+    properties:
+      # Feature 1: Primitive property types
+      - name: version
+        type: string
+      - name: info
+        # Feature 2: Entity property type
+        type: Info
+      - name: items
+        # Feature 3: List of entities
+        type: '[Item]'
+      - name: tags
+        # Feature 3: List of primitives
+        type: '[string]'
+      - name: metadata
+        # Feature 4: Map of primitives
+        type: '{string}'
+    # Feature 12: Property ordering
+    propertyOrder:
+      - $this
+      - $Extensible
+
+  - name: Info
+    traits:
+      - Extensible
+    properties:
+      - name: name
+        type: string
+      - name: contact
+        type: Contact
+      - name: version
+        type: string
+    propertyOrder:
+      - $this
+      - $Extensible
+
+  - name: Contact
+    properties:
+      - name: name
+        type: string
+      - name: email
+        type: string
+      - name: url
+        type: string
+    propertyOrder:
+      - $this
+
+  - name: Item
+    traits:
+      - Extensible
+      - Referenceable
+      # Feature 10: Transparent trait on entity
+      - CommonMetadata
+    properties:
+      # Feature 1: Various primitive types
+      - name: required
+        type: boolean
+      - name: order
+        type: integer
+      - name: weight
+        type: number
+      - name: extra
+        type: any
+      - name: raw
+        type: object
+      # Feature 2: Entity type
+      - name: schema
+        type: Schema
+      # Feature 3: List of entities
+      - name: examples
+        type: '[any]'
+      # Feature 5: Union of entity and primitive
+      - name: defaultValue
+        type: 'boolean|Schema'
+        # Feature 14: Union rules
+        unionRules:
+          - unionType: Schema
+            ruleType: propertyExists
+            propertyName: type
+      # Feature 16: Shaded property (also defined in CommonMetadata trait)
+      - name: title
+        type: string
+    propertyOrder:
+      - $Referenceable
+      - $CommonMetadata
+      - $this
+      - $Extensible
+
+  - name: Schema
+    traits:
+      - Extensible
+      - Referenceable
+    properties:
+      - name: type
+        type: string
+      # Feature 5: Union of primitives and entity
+      - name: items
+        type: 'boolean|Schema|[Schema]'
+        # Feature 18: Complex multi-way union with list
+        unionRules:
+          - unionType: Schema
+            ruleType: propertyExists
+            propertyName: type
+      # Feature 4: Map of entities
+      - name: properties
+        type: '{boolean|Schema}'
+      # Feature 20: List of unions
+      - name: allOf
+        type: '[boolean|Schema]'
+      # Feature 19: Map of unions
+      - name: definitions
+        type: '{boolean|Schema}'
+      - name: minLength
+        type: integer
+      - name: maxLength
+        type: integer
+      - name: enum
+        type: '[any]'
+    propertyOrder:
+      - $Referenceable
+      - $this
+      - $Extensible
+
+  # Feature 6: Star property (MappedNode)
+  - name: Paths
+    traits:
+      - Extensible
+    properties:
+      - name: '*'
+        type: PathItem
+        collection: items
+    propertyOrder:
+      - $this
+      - $Extensible
+
+  - name: PathItem
+    traits:
+      - Extensible
+      - Referenceable
+    properties:
+      - name: summary
+        type: string
+      - name: get
+        type: Operation
+      - name: put
+        type: Operation
+      - name: post
+        type: Operation
+    propertyOrder:
+      - $Referenceable
+      - $this
+      - $Extensible
+
+  - name: Operation
+    traits:
+      - Extensible
+    properties:
+      - name: operationId
+        type: string
+      - name: summary
+        type: string
+      - name: tags
+        type: '[string]'
+      - name: parameters
+        type: '[Item]'
+    propertyOrder:
+      - $this
+      - $Extensible
