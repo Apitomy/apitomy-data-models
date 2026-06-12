@@ -10,28 +10,6 @@ public interface SynSchema extends Node, BooleanSchemaUnion, BooleanSchemaSchema
 
 	public SynSchema createSchema();
 
-	public Map<String, BooleanSchemaUnion> getProperties();
-
-	public void addProperty(String name, BooleanSchemaUnion value);
-
-	public void clearProperties();
-
-	public void removeProperty(String name);
-
-	public void insertProperty(String name, BooleanSchemaUnion value, int atIndex);
-
-	public List<JsonNode> getEnum();
-
-	public void setEnum(List<JsonNode> value);
-
-	public BooleanSchemaSchemaListUnion getItems();
-
-	public void setItems(BooleanSchemaSchemaListUnion value);
-
-	public Integer getMinLength();
-
-	public void setMinLength(Integer value);
-
 	public List<BooleanSchemaUnion> getAllOf();
 
 	public void addAllOf(BooleanSchemaUnion value);
@@ -41,10 +19,6 @@ public interface SynSchema extends Node, BooleanSchemaUnion, BooleanSchemaSchema
 	public void removeAllOf(BooleanSchemaUnion value);
 
 	public void insertAllOf(BooleanSchemaUnion value, int atIndex);
-
-	public String getType();
-
-	public void setType(String value);
 
 	public Map<String, BooleanSchemaUnion> getDefinitions();
 
@@ -56,7 +30,33 @@ public interface SynSchema extends Node, BooleanSchemaUnion, BooleanSchemaSchema
 
 	public void insertDefinition(String name, BooleanSchemaUnion value, int atIndex);
 
+	public List<JsonNode> getEnum();
+
+	public void setEnum(List<JsonNode> value);
+
+	public BooleanSchemaSchemaListUnion getItems();
+
+	public void setItems(BooleanSchemaSchemaListUnion value);
+
 	public Integer getMaxLength();
 
 	public void setMaxLength(Integer value);
+
+	public Integer getMinLength();
+
+	public void setMinLength(Integer value);
+
+	public Map<String, BooleanSchemaUnion> getProperties();
+
+	public void addProperty(String name, BooleanSchemaUnion value);
+
+	public void clearProperties();
+
+	public void removeProperty(String name);
+
+	public void insertProperty(String name, BooleanSchemaUnion value, int atIndex);
+
+	public String getType();
+
+	public void setType(String value);
 }

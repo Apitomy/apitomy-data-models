@@ -7,19 +7,15 @@ import java.util.List;
 
 public interface SynItem extends Node {
 
-	public Number getWeight();
+	public BooleanSchemaUnion getDefaultValue();
 
-	public void setWeight(Number value);
-
-	public Boolean isRequired();
-
-	public void setRequired(Boolean value);
-
-	public SynSchema getSchema();
-
-	public void setSchema(SynSchema value);
+	public void setDefaultValue(BooleanSchemaUnion value);
 
 	public SynSchema createSchema();
+
+	public String getDescription();
+
+	public void setDescription(String value);
 
 	public List<JsonNode> getExamples();
 
@@ -29,23 +25,27 @@ public interface SynItem extends Node {
 
 	public void setExtra(JsonNode value);
 
+	public Integer getOrder();
+
+	public void setOrder(Integer value);
+
 	public ObjectNode getRaw();
 
 	public void setRaw(ObjectNode value);
+
+	public Boolean isRequired();
+
+	public void setRequired(Boolean value);
+
+	public SynSchema getSchema();
+
+	public void setSchema(SynSchema value);
 
 	public String getTitle();
 
 	public void setTitle(String value);
 
-	public BooleanSchemaUnion getDefaultValue();
+	public Number getWeight();
 
-	public void setDefaultValue(BooleanSchemaUnion value);
-
-	public Integer getOrder();
-
-	public void setOrder(Integer value);
-
-	public String getDescription();
-
-	public void setDescription(String value);
+	public void setWeight(Number value);
 }

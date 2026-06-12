@@ -2,7 +2,7 @@ package io.apitomy.umg.models.concept;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -144,7 +144,7 @@ public class PropertyType {
     }
 
     @Builder.Default
-    private final Set<PropertyType> nested = new HashSet<>();
+    private final Set<PropertyType> nested = new LinkedHashSet<>();
 
     @Builder.Default
     private String simpleType = "";
