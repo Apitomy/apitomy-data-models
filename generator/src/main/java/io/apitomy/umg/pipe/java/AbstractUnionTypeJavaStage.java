@@ -1,7 +1,7 @@
 package io.apitomy.umg.pipe.java;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -11,12 +11,12 @@ public abstract class AbstractUnionTypeJavaStage extends AbstractJavaStage {
 
     @Override
     protected void doProcess() {
-        Set<PropertyModelWithOrigin> unionProperties = new HashSet<>();
+        Set<PropertyModelWithOrigin> unionProperties = new LinkedHashSet<>();
         getState().getConceptIndex().findEntities("").stream().filter(entity -> entity.isLeaf()).forEach(entity -> {
             Collection<PropertyModelWithOrigin> allProperties = getState().getConceptIndex().getAllEntityProperties(entity);
             unionProperties.addAll(allProperties.stream().filter(property ->
                 isUnion(property.getProperty()) || isUnionList(property.getProperty()) || isUnionMap(property.getProperty())
-            ).collect(Collectors.toSet()));
+            ).collect(Collectors.toCollection(LinkedHashSet::new)));
         });
 
         unionProperties.forEach(property -> {

@@ -12,6 +12,10 @@ import io.apitomy.umg.models.concept.NamespaceModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.PropertyType;
+import io.apitomy.umg.models.concept.type.CollectionType;
+import io.apitomy.umg.models.concept.type.Type;
+import io.apitomy.umg.models.concept.type.UnionType;
+import io.apitomy.umg.models.java.type.JavaTypeFactory;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 
 /**
@@ -54,6 +58,9 @@ public class CreateUnionValueMethodsStage extends AbstractJavaStage {
         }
         UnionPropertyType unionType = new UnionPropertyType(actualUnionType);
 
+        // Also extract the resolved union type if available
+        final UnionType resolvedUnionType = extractResolvedUnionType(property);
+
         debug("Creating union value methods for property '" + property.getName() + "' of type '"
                 + property.getRawType() +"' on entity: " + origin.fullyQualifiedName());
 
@@ -71,7 +78,7 @@ public class CreateUnionValueMethodsStage extends AbstractJavaStage {
                 if (unionValueImplSource == null) {
                     throw new RuntimeException("[CreateUnionValueMethodsStage] Union type value not supported: " + nestedType);
                 }
-                createUnionImplMethods(unionType, unionValueImplSource, unionValueTypeName, false, origin.getNamespace());
+                createUnionImplMethods(unionType, resolvedUnionType, unionValueImplSource, unionValueTypeName, false, origin.getNamespace());
             } else if (nestedJT.isEntity()) {
                 // The union interface may have been applied to a common parent entity interface
                 // (via ApplyUnionTypesStage after property normalization), which means ALL leaf
@@ -87,7 +94,7 @@ public class CreateUnionValueMethodsStage extends AbstractJavaStage {
                 for (EntityModel leafEntity : leafEntities) {
                     JavaClassSource implSource = resolveJavaEntityImpl(leafEntity);
                     if (implSource != null) {
-                        createUnionImplMethods(unionType, implSource, entityName, true, leafEntity.getNamespace());
+                        createUnionImplMethods(unionType, resolvedUnionType, implSource, entityName, true, leafEntity.getNamespace());
                     }
                 }
             } else if (nestedJT.isEntityList()) {
@@ -97,15 +104,73 @@ public class CreateUnionValueMethodsStage extends AbstractJavaStage {
                 if (unionValueImplSource == null) {
                     throw new RuntimeException("[CreateUnionValueMethodsStage] Union type value not supported: " + nestedType);
                 }
-                createUnionImplMethods(unionType, unionValueImplSource, unionValueTypeName, false, origin.getNamespace());
+                createUnionImplMethods(unionType, resolvedUnionType, unionValueImplSource, unionValueTypeName, false, origin.getNamespace());
             } else {
                 throw new RuntimeException("[CreateUnionValueMethodsStage] Union type value not supported: " + nestedType);
             }
         });
     }
 
-    private void createUnionImplMethods(UnionPropertyType unionType, JavaClassSource unionValueClass,
+    private void createUnionImplMethods(UnionPropertyType unionType, UnionType resolvedUnionType,
+            JavaClassSource unionValueClass,
             String unionValueTypeName, boolean unionValueIsEntity, NamespaceModel nsContext) {
+
+        if (resolvedUnionType != null) {
+            var sortedTypes = new java.util.ArrayList<>(resolvedUnionType.getTypes());
+            sortedTypes.sort(java.util.Comparator.comparing(t -> JavaTypeFactory.getUnionComponentName(t).toLowerCase()));
+            sortedTypes.forEach(variantType -> {
+                String typeName = JavaTypeFactory.getUnionComponentName(variantType);
+                String isMethodName = "is" + typeName;
+                String asMethodName = "as" + typeName;
+
+                var jt = getJavaTypeFactory().createJavaType(variantType, nsContext, true);
+                String asMethodReturnType = jt.toJavaTypeString();
+
+                if (!unionValueClass.hasMethodSignature(isMethodName)) {
+                    MethodSource<JavaClassSource> isMethod = unionValueClass.addMethod().setName(isMethodName).setReturnType(boolean.class).setPublic();
+                    isMethod.addAnnotation(Override.class);
+                    BodyBuilder isMethodBody = new BodyBuilder();
+
+                    MethodSource<JavaClassSource> asMethod = unionValueClass.addMethod().setName(asMethodName).setReturnType(asMethodReturnType).setPublic();
+                    asMethod.addAnnotation(Override.class);
+                    BodyBuilder asMethodBody = new BodyBuilder();
+
+                    if (typeName.equals(unionValueTypeName)) {
+                        isMethodBody.append("return true;");
+                        isMethod.setBody(isMethodBody.toString());
+                        if (variantType instanceof io.apitomy.umg.models.concept.type.EntityType) {
+                            asMethodBody.append("return this;");
+                        } else {
+                            asMethodBody.append("return getValue();");
+                        }
+                        asMethod.setBody(asMethodBody.toString());
+                    } else {
+                        isMethodBody.append("return false;");
+                        isMethod.setBody(isMethodBody.toString());
+                        asMethodBody.append("throw new ClassCastException();");
+                        asMethod.setBody(asMethodBody.toString());
+                    }
+
+                    jt.addImportsTo(unionValueClass);
+                }
+            });
+        } else {
+            createUnionImplMethodsLegacy(unionType, unionValueClass, unionValueTypeName, nsContext);
+        }
+
+        // If this is an entity, add the "unionValue" method.
+        if (unionValueIsEntity && !unionValueClass.hasMethodSignature("unionValue")) {
+            MethodSource<JavaClassSource> unionValueMethod = unionValueClass.addMethod().setName("unionValue").setReturnType("Object").setPublic();
+            unionValueMethod.addAnnotation(Override.class);
+            BodyBuilder unionValueMethodBody = new BodyBuilder();
+            unionValueMethodBody.append("return this;");
+            unionValueMethod.setBody(unionValueMethodBody.toString());
+        }
+
+    }
+
+    private void createUnionImplMethodsLegacy(UnionPropertyType unionType, JavaClassSource unionValueClass,
+            String unionValueTypeName, NamespaceModel nsContext) {
 
         unionType.getNestedTypes().forEach(nestedType -> {
             String typeName = getTypeName(nestedType);
@@ -146,15 +211,16 @@ public class CreateUnionValueMethodsStage extends AbstractJavaStage {
                 jt.addImportsTo(unionValueClass);
             }
         });
+    }
 
-        // If this is an entity, add the "unionValue" method.
-        if (unionValueIsEntity && !unionValueClass.hasMethodSignature("unionValue")) {
-            MethodSource<JavaClassSource> unionValueMethod = unionValueClass.addMethod().setName("unionValue").setReturnType("Object").setPublic();
-            unionValueMethod.addAnnotation(Override.class);
-            BodyBuilder unionValueMethodBody = new BodyBuilder();
-            unionValueMethodBody.append("return this;");
-            unionValueMethod.setBody(unionValueMethodBody.toString());
+    private UnionType extractResolvedUnionType(PropertyModel property) {
+        if (property.getResolvedType() == null) {
+            return null;
         }
-
+        Type resolved = property.getResolvedType();
+        if (resolved instanceof CollectionType collectionType) {
+            resolved = collectionType.getValueType();
+        }
+        return resolved instanceof UnionType ut ? ut : null;
     }
 }

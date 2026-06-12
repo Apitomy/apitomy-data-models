@@ -6,6 +6,9 @@ import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import io.apitomy.umg.models.concept.NamespaceModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.PropertyType;
+import io.apitomy.umg.models.concept.type.CollectionType;
+import io.apitomy.umg.models.concept.type.Type;
+import io.apitomy.umg.models.concept.type.UnionType;
 
 /**
  * Creates the union type interface.  For example, if the union type is "boolean|[string]" then
@@ -52,7 +55,15 @@ public class CreateUnionTypesStage extends AbstractUnionTypeJavaStage {
         unionTypeInterface.addInterface(unionValueSource);
 
         // Now create the union methods.
-        createUnionMethods(unionType, unionTypeInterface, property.getOrigin().getNamespace());
+        Type resolvedType = property.getProperty().getResolvedType();
+        if (resolvedType instanceof CollectionType collectionType) {
+            resolvedType = collectionType.getValueType();
+        }
+        if (resolvedType instanceof UnionType resolvedUnionType) {
+            createUnionMethods(resolvedUnionType, unionTypeInterface, property.getOrigin().getNamespace());
+        } else {
+            createUnionMethods(unionType, unionTypeInterface, property.getOrigin().getNamespace());
+        }
 
         getState().getJavaIndex().index(unionTypeInterface);
     }
@@ -65,6 +76,23 @@ public class CreateUnionTypesStage extends AbstractUnionTypeJavaStage {
 
             JavaType jt = new JavaType(nestedType, nsContext.fullName()).useCommonEntityResolution();
 
+            String asMethodReturnType = jt.toJavaTypeString();
+
+            unionTypeInterface.addMethod().setName(isMethodName).setReturnType(boolean.class).setPublic();
+            unionTypeInterface.addMethod().setName(asMethodName).setReturnType(asMethodReturnType).setPublic();
+            jt.addImportsTo(unionTypeInterface);
+        });
+    }
+
+    private void createUnionMethods(UnionType resolvedUnionType, JavaInterfaceSource unionTypeInterface, NamespaceModel nsContext) {
+        var sortedTypes = new java.util.ArrayList<>(resolvedUnionType.getTypes());
+        sortedTypes.sort(java.util.Comparator.comparing(t -> io.apitomy.umg.models.java.type.JavaTypeFactory.getUnionComponentName(t).toLowerCase()));
+        sortedTypes.forEach(variantType -> {
+            String typeName = io.apitomy.umg.models.java.type.JavaTypeFactory.getUnionComponentName(variantType);
+            String isMethodName = "is" + typeName;
+            String asMethodName = "as" + typeName;
+
+            var jt = getJavaTypeFactory().createJavaType(variantType, nsContext, true);
             String asMethodReturnType = jt.toJavaTypeString();
 
             unionTypeInterface.addMethod().setName(isMethodName).setReturnType(boolean.class).setPublic();

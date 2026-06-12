@@ -99,6 +99,6 @@ public class NormalizePropertiesStage extends AbstractStage {
      */
     private boolean hasProperty(Map<String, PropertyModel> properties, PropertyModel property) {
         PropertyModel otherProperty = properties.get(property.getName());
-        return otherProperty != null && otherProperty.getType().equals(property.getType());
+        return otherProperty != null && otherProperty.getRawType().equals(property.getRawType());
     }
 }

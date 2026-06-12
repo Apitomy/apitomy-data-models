@@ -24,7 +24,7 @@ import io.apitomy.umg.pipe.concept.CreateEntityModelsStage;
 import io.apitomy.umg.pipe.concept.CreateImplicitUnionRulesStage;
 import io.apitomy.umg.pipe.concept.CreateNamespaceModelsStage;
 import io.apitomy.umg.pipe.concept.CreatePropertyComparatorStage;
-import io.apitomy.umg.pipe.concept.CreatePropertyModelsStage;
+import io.apitomy.umg.pipe.concept.CreatePropertyAndTypeModelsStage;
 import io.apitomy.umg.pipe.concept.CreateTraitModelsStage;
 import io.apitomy.umg.pipe.concept.CreateVisitorsStage;
 import io.apitomy.umg.pipe.concept.ExpandPropertyOrderStage;
@@ -114,7 +114,7 @@ public class UnifiedModelGenerator {
         pipe.addStage(new CreateTraitModelsStage());
         pipe.addStage(new CreateEntityModelsStage());
 //        pipe.addStage(new CreateParentTraitsStage());
-        pipe.addStage(new CreatePropertyModelsStage());
+        pipe.addStage(new CreatePropertyAndTypeModelsStage());
         pipe.addStage(new CreateVisitorsStage());
         pipe.addStage(new RemoveShadedPropertyModelsStage());
 
