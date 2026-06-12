@@ -64,7 +64,11 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
         javaEntity.addImport(List.class);
         javaEntity.addImport(ArrayList.class);
 
-        if (isPrimitiveList(property)) {
+        if (property.getResolvedType() != null) {
+            var jt = getJavaTypeFactory().createJavaType(property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
+            jt.addImportsTo(javaEntity);
+            mappedNodeType = jt.toJavaTypeString();
+        } else if (isPrimitiveList(property)) {
             Class<?> listType = primitiveTypeToClass(property.getType().getNested().iterator().next());
             javaEntity.addImport(listType);
             mappedNodeType = "List<" + listType.getSimpleName() + ">";

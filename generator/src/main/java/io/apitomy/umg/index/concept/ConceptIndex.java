@@ -35,6 +35,7 @@ import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.PropertyModelWithOriginComparator;
 import io.apitomy.umg.models.concept.TraitModel;
 import io.apitomy.umg.models.concept.VisitorModel;
+import io.apitomy.umg.models.concept.type.Type;
 
 /**
  * @author eric.wittmann@gmail.com
@@ -46,6 +47,8 @@ public class ConceptIndex {
     private Trie<String, EntityModel> entityIndex = new PatriciaTrie<>();
     private Trie<String, VisitorModel> visitorIndex = new PatriciaTrie<>();
     private Map<String, PropertyModelWithOriginComparator> propertyComparatorIndex = new HashMap<>();
+    // Named types (type aliases) indexed by fully-qualified name (namespace.typeName)
+    private Trie<String, Type> typeIndex = new PatriciaTrie<>();
 
 
     public void remove(TraitModel traitModel) {
@@ -100,6 +103,26 @@ public class ConceptIndex {
 
     public void index(EntityModel model, PropertyModelWithOriginComparator comparator) {
         propertyComparatorIndex.put(model.fullyQualifiedName(), comparator);
+    }
+
+    public void indexType(String fullyQualifiedName, Type type) {
+        typeIndex.put(fullyQualifiedName, type);
+    }
+
+    public Type lookupType(String fullyQualifiedName) {
+        return typeIndex.get(fullyQualifiedName);
+    }
+
+    public Type lookupType(String namespace, String typeName) {
+        return lookupType(namespace + "." + typeName);
+    }
+
+    public Collection<Type> findTypes(String prefix) {
+        return typeIndex.prefixMap(prefix).values();
+    }
+
+    public boolean hasType(String fullyQualifiedName) {
+        return typeIndex.containsKey(fullyQualifiedName);
     }
 
     public NamespaceModel lookupNamespace(String namespace) {

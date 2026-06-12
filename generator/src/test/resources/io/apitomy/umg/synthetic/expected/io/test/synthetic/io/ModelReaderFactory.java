@@ -13,11 +13,11 @@ public class ModelReaderFactory {
 	public static ModelReader createModelReader(ModelType modelType) {
 		ModelReader reader = null;
 		switch (modelType) {
-			case SYN2 :
-				reader = new Syn2ModelReader();
-				break;
 			case SYN1 :
 				reader = new Syn1ModelReader();
+				break;
+			case SYN2 :
+				reader = new Syn2ModelReader();
 				break;
 		}
 		return reader;
@@ -27,11 +27,11 @@ public class ModelReaderFactory {
 		ModelReader reader = ModelReaderFactory.createModelReader(modelType);
 		Visitor visitor = null;
 		switch (modelType) {
-			case SYN2 :
-				visitor = new Syn2ModelReaderDispatcher(json, (Syn2ModelReader) reader);
-				break;
 			case SYN1 :
 				visitor = new Syn1ModelReaderDispatcher(json, (Syn1ModelReader) reader);
+				break;
+			case SYN2 :
+				visitor = new Syn2ModelReaderDispatcher(json, (Syn2ModelReader) reader);
 				break;
 		}
 		return visitor;

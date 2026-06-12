@@ -81,12 +81,11 @@ public class CreateInterfaceMethodsStage extends AbstractCreateMethodsStage {
         javaEntity.addImport(mappedNodeInterface);
         String mappedNodeInterfaceWithType;
 
-        // TODO use the JavaType helper instead of the following if/then/else
-        //        JavaType jt = new JavaType(property.getType(), propertyWithOrigin.getOrigin().getNamespace().fullName());
-        //        jt.addImportsTo(javaEntity);
-        //        mappedNodeInterfaceWithType = jt.toJavaTypeString();
-
-        if (isPrimitiveList(property)) {
+        if (property.getResolvedType() != null) {
+            var jt = getJavaTypeFactory().createJavaType(property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
+            jt.addImportsTo(javaEntity);
+            mappedNodeInterfaceWithType = mappedNodeInterface.getName() + "<" + jt.toJavaTypeString() + ">";
+        } else if (isPrimitiveList(property)) {
             Class<?> listType = primitiveTypeToClass(property.getType().getNested().iterator().next());
             javaEntity.addImport(List.class);
             javaEntity.addImport(listType);

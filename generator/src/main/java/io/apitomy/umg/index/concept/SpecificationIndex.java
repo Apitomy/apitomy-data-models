@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 import io.apitomy.umg.beans.Entity;
@@ -43,7 +44,7 @@ public class SpecificationIndex {
     //  alongside the type system refactoring (G6).
     private Collection<SpecificationModel> specifications = new HashSet<>();
 
-    private Collection<SpecificationVersion> specificationVersions = new HashSet<>();
+    private Collection<SpecificationVersion> specificationVersions = new LinkedHashSet<>();
 
     @Getter
     private Map<SpecificationVersionId, SpecificationModel> specIndex = new HashMap<>();
