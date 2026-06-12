@@ -31,16 +31,32 @@ public class CreateUnionTypesStage extends AbstractUnionTypeJavaStage {
      */
     private void createUnionType(PropertyModelWithOrigin property) {
         debug("Creating union type for: " + property.getProperty().getName());
-        // Extract the actual union type: for simple unions it's the property type itself,
-        // for union maps/lists it's the nested type
-        PropertyType actualUnionType = property.getProperty().getType();
-        if (isUnionList(property.getProperty()) || isUnionMap(property.getProperty())) {
-            actualUnionType = property.getProperty().getType().getNested().iterator().next();
-        }
-        UnionPropertyType unionType = new UnionPropertyType(actualUnionType);
 
-        String name = unionType.getName();
+        // Extract the resolved union type
+        Type resolvedType = property.getProperty().getResolvedType();
+        if (resolvedType instanceof CollectionType collectionType) {
+            resolvedType = collectionType.getValueType();
+        }
+
+        String name;
+        if (resolvedType instanceof UnionType resolvedUnionType && resolvedUnionType.getAliasName() != null) {
+            name = resolvedUnionType.getAliasName();
+        } else {
+            // Extract the actual union type from PropertyType for anonymous unions
+            PropertyType actualUnionType = property.getProperty().getType();
+            if (isUnionList(property.getProperty()) || isUnionMap(property.getProperty())) {
+                actualUnionType = property.getProperty().getType().getNested().iterator().next();
+            }
+            UnionPropertyType ut = new UnionPropertyType(actualUnionType);
+            name = ut.getName();
+        }
+
         String _package = getUnionTypesPackageName();
+
+        // Skip if already created (type aliases may be referenced by multiple properties)
+        if (getState().getJavaIndex().lookupInterface(_package + "." + name) != null) {
+            return;
+        }
 
         // Create the main union type interface
         JavaInterfaceSource unionTypeInterface = Roaster.create(JavaInterfaceSource.class)
@@ -54,15 +70,15 @@ public class CreateUnionTypesStage extends AbstractUnionTypeJavaStage {
         unionTypeInterface.addImport(unionValueSource);
         unionTypeInterface.addInterface(unionValueSource);
 
-        // Now create the union methods.
-        Type resolvedType = property.getProperty().getResolvedType();
-        if (resolvedType instanceof CollectionType collectionType) {
-            resolvedType = collectionType.getValueType();
-        }
+        // Create the union methods
         if (resolvedType instanceof UnionType resolvedUnionType) {
             createUnionMethods(resolvedUnionType, unionTypeInterface, property.getOrigin().getNamespace());
         } else {
-            createUnionMethods(unionType, unionTypeInterface, property.getOrigin().getNamespace());
+            PropertyType actualUnionType = property.getProperty().getType();
+            if (isUnionList(property.getProperty()) || isUnionMap(property.getProperty())) {
+                actualUnionType = property.getProperty().getType().getNested().iterator().next();
+            }
+            createUnionMethods(new UnionPropertyType(actualUnionType), unionTypeInterface, property.getOrigin().getNamespace());
         }
 
         getState().getJavaIndex().index(unionTypeInterface);

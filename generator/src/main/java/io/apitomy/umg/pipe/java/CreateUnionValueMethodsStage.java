@@ -49,20 +49,58 @@ public class CreateUnionValueMethodsStage extends AbstractJavaStage {
      */
     private void createUnionValueMethods(PropertyModel property, EntityModel origin,
             NamespaceModel propertyOriginNamespace) {
-        // Extract the actual union type: for simple unions it's the property type itself,
-        // for union maps/lists it's the nested type
-        PropertyType actualUnionType = property.getType();
-        if ((property.getType().isList() || property.getType().isMap()) &&
-                property.getType().getNested().iterator().next().isUnion()) {
-            actualUnionType = property.getType().getNested().iterator().next();
-        }
-        UnionPropertyType unionType = new UnionPropertyType(actualUnionType);
-
         // Also extract the resolved union type if available
         final UnionType resolvedUnionType = extractResolvedUnionType(property);
 
+        // Extract the actual union type from PropertyType for legacy path
+        final UnionPropertyType unionType;
+        if (property.getType().isUnion() ||
+                ((property.getType().isList() || property.getType().isMap()) &&
+                        property.getType().getNested().iterator().next().isUnion())) {
+            PropertyType actualUnionType = property.getType();
+            if ((property.getType().isList() || property.getType().isMap())) {
+                actualUnionType = property.getType().getNested().iterator().next();
+            }
+            unionType = new UnionPropertyType(actualUnionType);
+        } else {
+            unionType = null;
+        }
+
         debug("Creating union value methods for property '" + property.getName() + "' of type '"
                 + property.getRawType() +"' on entity: " + origin.fullyQualifiedName());
+
+        // For type aliases, use the resolved union type exclusively
+        if (unionType == null && resolvedUnionType != null) {
+            resolvedUnionType.getTypes().forEach(variantType -> {
+                if (variantType instanceof io.apitomy.umg.models.concept.type.PrimitiveType
+                        || variantType instanceof io.apitomy.umg.models.concept.type.PrimitiveUnionVariantType) {
+                    String unionValueTypeName = JavaTypeFactory.getUnionComponentName(variantType);
+                    String unionValueImplFQN = getUnionTypeFQN(unionValueTypeName + "UnionValueImpl");
+                    JavaClassSource unionValueImplSource = getState().getJavaIndex().lookupClass(unionValueImplFQN);
+                    if (unionValueImplSource != null) {
+                        createUnionImplMethods(null, resolvedUnionType, unionValueImplSource, unionValueTypeName, false, origin.getNamespace());
+                    }
+                } else if (variantType instanceof io.apitomy.umg.models.concept.type.EntityType entityType) {
+                    String entityName = entityType.getName();
+                    String scopeNs = propertyOriginNamespace.fullName();
+                    List<EntityModel> leafEntities = getState().getConceptIndex().findEntities("").stream()
+                            .filter(e -> e.isLeaf() && e.getName().equals(entityName)
+                                    && e.getNamespace().fullName().startsWith(scopeNs))
+                            .collect(Collectors.toList());
+                    for (EntityModel leafEntity : leafEntities) {
+                        JavaClassSource implSource = resolveJavaEntityImpl(leafEntity);
+                        if (implSource != null) {
+                            createUnionImplMethods(null, resolvedUnionType, implSource, entityName, true, leafEntity.getNamespace());
+                        }
+                    }
+                }
+            });
+            return;
+        }
+
+        if (unionType == null) {
+            return;
+        }
 
         unionType.getNestedTypes().forEach(nestedType -> {
             JavaType nestedJT = new JavaType(nestedType, origin.getNamespace());
