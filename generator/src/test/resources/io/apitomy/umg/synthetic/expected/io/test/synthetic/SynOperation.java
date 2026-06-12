@@ -8,14 +8,6 @@ public interface SynOperation extends Node {
 
 	public void setOperationId(String value);
 
-	public String getSummary();
-
-	public void setSummary(String value);
-
-	public List<String> getTags();
-
-	public void setTags(List<String> value);
-
 	public SynItem createItem();
 
 	public List<SynItem> getParameters();
@@ -27,4 +19,12 @@ public interface SynOperation extends Node {
 	public void removeParameter(SynItem value);
 
 	public void insertParameter(SynItem value, int atIndex);
+
+	public String getSummary();
+
+	public void setSummary(String value);
+
+	public List<String> getTags();
+
+	public void setTags(List<String> value);
 }
