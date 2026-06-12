@@ -1,6 +1,7 @@
 *.iml
 .classpath
 .claude
+claudedocs
 .generated
 .idea
 .js
