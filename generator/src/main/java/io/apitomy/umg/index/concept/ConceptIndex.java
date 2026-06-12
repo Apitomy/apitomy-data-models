@@ -17,6 +17,7 @@
 package io.apitomy.umg.index.concept;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -175,7 +176,10 @@ public class ConceptIndex {
     public Collection<PropertyModelWithOrigin> getAllEntityProperties(EntityModel entityModel) {
         EntityModel model = entityModel;
         PropertyModelWithOriginComparator propertyComparator = lookupPropertyComparator(entityModel);
-        final Set<PropertyModelWithOrigin> models = propertyComparator == null ? new HashSet<>() : new TreeSet<>(propertyComparator);
+        // Use alphabetical ordering as fallback when no explicit propertyOrder is declared
+        final Set<PropertyModelWithOrigin> models = propertyComparator == null
+                ? new TreeSet<>(Comparator.comparing(p -> p.getProperty().getName()))
+                : new TreeSet<>(propertyComparator);
         while (model != null) {
             final EntityModel _entity = model;
             models.addAll(model.getProperties().values().stream().map(property -> PropertyModelWithOrigin.builder().property(property).origin(_entity).build()).collect(Collectors.toList()));
@@ -203,7 +207,9 @@ public class ConceptIndex {
     public Collection<PropertyModelWithOrigin> getEntityPropertiesFromTraits(EntityModel entityModel) {
         EntityModel model = entityModel;
         PropertyModelWithOriginComparator propertyComparator = lookupPropertyComparator(entityModel);
-        final Set<PropertyModelWithOrigin> models = propertyComparator == null ? new HashSet<>() : new TreeSet<>(propertyComparator);
+        final Set<PropertyModelWithOrigin> models = propertyComparator == null
+                ? new TreeSet<>(Comparator.comparing(p -> p.getProperty().getName()))
+                : new TreeSet<>(propertyComparator);
         while (model != null) {
             // Include properties from all traits.
             model.getTraits().forEach(trait -> {
