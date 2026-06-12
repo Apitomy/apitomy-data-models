@@ -1,0 +1,199 @@
+# Synthetic spec version 2 — adds/removes properties for normalization testing.
+# Some entities are shared with v1 (testing entity/trait/property normalization),
+# some are v2-only.
+
+name: Synthetic v2
+version: "2"
+versions:
+  - version: "2.0"
+    url: https://example.com/synthetic/2.0
+prefix: Syn2
+namespace: io.test.synthetic.v2
+majorVersionPrefix: Syn2x
+majorVersionNamespace: io.test.synthetic.v2x
+
+traits:
+  - name: Extensible
+    properties:
+      - name: '/^x-.+$/'
+        type: any
+        collection: extensions
+
+  - name: Referenceable
+    properties:
+      - name: '$ref'
+        type: string
+
+  - name: CommonMetadata
+    transparent: true
+    properties:
+      - name: title
+        type: string
+      - name: description
+        type: string
+
+entities:
+  - name: Document
+    root: true
+    traits:
+      - Extensible
+    properties:
+      - name: version
+        type: string
+      - name: info
+        type: Info
+      - name: items
+        type: '[Item]'
+      - name: tags
+        type: '[string]'
+      - name: metadata
+        type: '{string}'
+      # Feature 13: v2 adds a new property (normalization test)
+      - name: webhooks
+        type: '{PathItem}'
+    propertyOrder:
+      - $this
+      - $Extensible
+
+  - name: Info
+    traits:
+      - Extensible
+    properties:
+      - name: name
+        type: string
+      - name: contact
+        type: Contact
+      - name: version
+        type: string
+      # Feature 13: v2 adds a new property
+      - name: license
+        type: string
+    propertyOrder:
+      - $this
+      - $Extensible
+
+  - name: Contact
+    properties:
+      - name: name
+        type: string
+      - name: email
+        type: string
+      - name: url
+        type: string
+    propertyOrder:
+      - $this
+
+  - name: Item
+    traits:
+      - Extensible
+      - Referenceable
+      - CommonMetadata
+    properties:
+      - name: required
+        type: boolean
+      - name: order
+        type: integer
+      - name: weight
+        type: number
+      - name: extra
+        type: any
+      - name: raw
+        type: object
+      - name: schema
+        type: Schema
+      - name: examples
+        type: '[any]'
+      - name: defaultValue
+        type: 'boolean|Schema'
+        unionRules:
+          - unionType: Schema
+            ruleType: propertyExists
+            propertyName: type
+      - name: title
+        type: string
+      # Feature 13: v2 adds a new property
+      - name: deprecated
+        type: boolean
+    propertyOrder:
+      - $Referenceable
+      - $CommonMetadata
+      - $this
+      - $Extensible
+
+  - name: Schema
+    traits:
+      - Extensible
+      - Referenceable
+    properties:
+      - name: type
+        type: string
+      - name: items
+        type: 'boolean|Schema|[Schema]'
+        unionRules:
+          - unionType: Schema
+            ruleType: propertyExists
+            propertyName: type
+      - name: properties
+        type: '{boolean|Schema}'
+      - name: allOf
+        type: '[boolean|Schema]'
+      - name: definitions
+        type: '{boolean|Schema}'
+      - name: minLength
+        type: integer
+      - name: maxLength
+        type: integer
+      - name: enum
+        type: '[any]'
+    propertyOrder:
+      - $Referenceable
+      - $this
+      - $Extensible
+
+  - name: Paths
+    traits:
+      - Extensible
+    properties:
+      - name: '*'
+        type: PathItem
+        collection: items
+    propertyOrder:
+      - $this
+      - $Extensible
+
+  - name: PathItem
+    traits:
+      - Extensible
+      - Referenceable
+    properties:
+      - name: summary
+        type: string
+      - name: get
+        type: Operation
+      - name: put
+        type: Operation
+      - name: post
+        type: Operation
+      # Feature 13: v2 adds delete
+      - name: delete
+        type: Operation
+    propertyOrder:
+      - $Referenceable
+      - $this
+      - $Extensible
+
+  - name: Operation
+    traits:
+      - Extensible
+    properties:
+      - name: operationId
+        type: string
+      - name: summary
+        type: string
+      - name: tags
+        type: '[string]'
+      - name: parameters
+        type: '[Item]'
+    propertyOrder:
+      - $this
+      - $Extensible
