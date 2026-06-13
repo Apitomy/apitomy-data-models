@@ -9,12 +9,14 @@ import java.util.stream.Collectors;
 
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.JavaEnumSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.apitomy.umg.pipe.java.Util;
 import io.apitomy.umg.beans.SpecificationVersion;
 import io.apitomy.umg.beans.UnionRule;
 import io.apitomy.umg.beans.UnionRuleType;
@@ -74,15 +76,36 @@ public class CreateReadersStage extends AbstractJavaStage {
                 warn("Entity model not found for entity: " + entity);
             } else {
                 createReadMethodFor(specVersion, readerClassSource, entityModel);
-
-                // There should be a single root entity in the spec.
-                if (entityModel.isRoot()) {
-                    createReadRootMethod(specVersion, readerClassSource, entityModel);
-                }
             }
         });
 
+        // Create readRoot method based on the spec-level root type
+        createReadRootFromSpec(specVersion, readerClassSource);
+
         getState().getJavaIndex().index(readerClassSource);
+    }
+
+    private void createReadRootFromSpec(SpecificationVersion specVersion, JavaClassSource readerClassSource) {
+        if (specVersion.getRoot() == null) return;
+
+        var rootTypeName = specVersion.getRoot().getType();
+        var namespace = specVersion.getNamespace();
+
+        // Try type alias (union root)
+        var rootType = getState().getConceptIndex().lookupType(namespace, rootTypeName);
+        if (rootType instanceof io.apitomy.umg.models.concept.type.UnionType unionType) {
+            createUnionReadRootMethod(specVersion, readerClassSource, unionType);
+            return;
+        }
+
+        // Single entity root
+        var entity = getState().getConceptIndex().lookupEntity(namespace, rootTypeName);
+        if (entity != null) {
+            createReadRootMethod(specVersion, readerClassSource, entity);
+            return;
+        }
+
+        warn("Root type '%s' not found in namespace '%s'", rootTypeName, namespace);
     }
 
     /**
@@ -94,13 +117,14 @@ public class CreateReadersStage extends AbstractJavaStage {
     private void createReadRootMethod(SpecificationVersion specVersion, JavaClassSource readerClassSource, EntityModel entityModel) {
         JavaInterfaceSource rootNodeInterfaceSource = getState().getJavaIndex().lookupInterface(getRootNodeInterfaceFQN());
         readerClassSource.addImport(rootNodeInterfaceSource);
+        readerClassSource.addImport(JsonNode.class);
         readerClassSource.addImport(ObjectNode.class);
 
         MethodSource<JavaClassSource> readRootMethodSource = readerClassSource.addMethod()
                 .setName("readRoot")
                 .setReturnType(rootNodeInterfaceSource.getName())
                 .setPublic();
-        readRootMethodSource.addParameter("ObjectNode", "json");
+        readRootMethodSource.addParameter("JsonNode", "json");
         readRootMethodSource.addAnnotation(Override.class);
 
         String readMethodName = readMethodName(entityModel);
@@ -116,8 +140,104 @@ public class CreateReadersStage extends AbstractJavaStage {
         body.addContext("rootEntityImplType", entityImplSource.getName());
 
         body.append("${rootEntityType} rootModel = new ${rootEntityImplType}();");
-        body.append("this.${readMethodName}(json, rootModel);");
+        body.append("this.${readMethodName}((ObjectNode) json, rootModel);");
         body.append("return rootModel;");
+        readRootMethodSource.setBody(body.toString());
+    }
+
+    private void createUnionReadRootMethod(SpecificationVersion specVersion, JavaClassSource readerClassSource,
+                                              io.apitomy.umg.models.concept.type.UnionType unionType) {
+        JavaInterfaceSource rootCapableSource = getState().getJavaIndex().lookupInterface(getRootNodeInterfaceFQN());
+        readerClassSource.addImport(rootCapableSource);
+        readerClassSource.addImport(JsonNode.class);
+        readerClassSource.addImport(ObjectNode.class);
+
+        JavaEnumSource modelTypeEnum = getState().getJavaIndex().lookupEnum(getModelTypeEnumFQN());
+        readerClassSource.addImport(modelTypeEnum);
+
+        MethodSource<JavaClassSource> readRootMethodSource = readerClassSource.addMethod()
+                .setName("readRoot")
+                .setReturnType(rootCapableSource.getName())
+                .setPublic();
+        readRootMethodSource.addParameter("JsonNode", "json");
+        readRootMethodSource.addAnnotation(Override.class);
+
+        BodyBuilder body = new BodyBuilder();
+        var namespace = specVersion.getNamespace();
+        String prefix = getPrefix(namespace);
+        String modelType = prefixToModelType(prefix);
+        body.addContext("modelType", modelType);
+
+        boolean first = true;
+        for (var variantType : unionType.getTypes()) {
+            if (variantType instanceof io.apitomy.umg.models.concept.type.EntityType entityType) {
+                var entity = entityType.getEntity();
+                if (entity == null) {
+                    entity = getState().getConceptIndex().lookupEntity(namespace, entityType.getName());
+                }
+                if (entity == null) continue;
+
+                JavaInterfaceSource entitySource = lookupJavaEntity(entity);
+                JavaClassSource entityImplSource = lookupJavaEntityImpl(entity);
+                readerClassSource.addImport(entitySource);
+                readerClassSource.addImport(entityImplSource);
+
+                body.addContext("entityType", entitySource.getName());
+                body.addContext("entityImplType", entityImplSource.getName());
+                body.addContext("readMethodName", readMethodName(entity));
+
+                var rule = unionType.getRuleFor(entityType.getName());
+                String condition;
+                if (rule != null && rule.getRuleType() == io.apitomy.umg.beans.UnionRuleType.PROPERTYEXISTS) {
+                    body.addContext("rulePropName", rule.getPropertyName());
+                    condition = "json.isObject() && json.has(\"${rulePropName}\")";
+                } else if (rule != null && rule.getRuleType() == io.apitomy.umg.beans.UnionRuleType.PROPERTYVALUE) {
+                    body.addContext("rulePropName", rule.getPropertyName());
+                    body.addContext("rulePropValue", rule.getPropertyValue());
+                    condition = "JsonUtil.isObjectWithPropertyValue(json, \"${rulePropName}\", \"${rulePropValue}\")";
+                } else {
+                    condition = "json.isObject()";
+                }
+
+                if (!first) {
+                    body.append(" else ");
+                }
+                first = false;
+
+                body.append("if (" + condition + ") {");
+                body.append("    ${entityType} rootModel = new ${entityImplType}();");
+                body.append("    this.${readMethodName}((ObjectNode) json, rootModel);");
+                body.append("    return rootModel;");
+                body.append("}");
+            } else if (variantType instanceof io.apitomy.umg.models.concept.type.PrimitiveUnionVariantType primitiveVariant) {
+                var primitiveType = primitiveVariant.getType();
+                Class<?> javaClass = Util.PRIMITIVE_TYPE_MAP.get(primitiveType.name().toLowerCase());
+                if (javaClass == null) continue;
+
+                String typeName = io.apitomy.umg.models.java.type.JavaTypeFactory.getUnionComponentName(variantType);
+                String unionValueClassFQN = getUnionTypeFQN(typeName + "UnionValueImpl");
+                JavaClassSource unionValueClass = getState().getJavaIndex().lookupClass(unionValueClassFQN);
+                if (unionValueClass == null) continue;
+
+                readerClassSource.addImport(unionValueClass);
+
+                body.addContext("isMethod", "is" + javaClass.getSimpleName());
+                body.addContext("toMethod", "to" + javaClass.getSimpleName());
+                body.addContext("javaType", javaClass.getSimpleName());
+                body.addContext("unionValueClass", unionValueClass.getName());
+
+                if (!first) {
+                    body.append(" else ");
+                }
+                first = false;
+
+                body.append("if (JsonUtil.${isMethod}(json)) {");
+                body.append("    ${javaType} value = JsonUtil.${toMethod}(json);");
+                body.append("    return new ${unionValueClass}(value, ModelType.${modelType});");
+                body.append("}");
+            }
+        }
+        body.append("return null;");
         readRootMethodSource.setBody(body.toString());
     }
 

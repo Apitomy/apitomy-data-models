@@ -1,5 +1,6 @@
 package io.test.synthetic.union;
 
+import io.test.synthetic.ModelType;
 import io.test.synthetic.SynSchema;
 import java.util.List;
 
@@ -7,6 +8,10 @@ public class BooleanUnionValueImpl extends PrimitiveUnionValueImpl<Boolean> impl
 
 	public BooleanUnionValueImpl(Boolean value) {
 		super(value);
+	}
+
+	public BooleanUnionValueImpl(Boolean value, ModelType modelType) {
+		super(value, modelType);
 	}
 
 	@Override

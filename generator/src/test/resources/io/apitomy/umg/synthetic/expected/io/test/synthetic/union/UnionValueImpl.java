@@ -1,5 +1,6 @@
 package io.test.synthetic.union;
 
+import io.test.synthetic.ModelType;
 import io.test.synthetic.visitors.Visitor;
 
 /**
@@ -10,12 +11,26 @@ import io.test.synthetic.visitors.Visitor;
 public abstract class UnionValueImpl<T> implements UnionValue<T>, Union {
 
 	private T value;
+	private ModelType _modelType;
 
 	public UnionValueImpl() {
 	}
 
 	public UnionValueImpl(T value) {
 		this.value = value;
+	}
+
+	public UnionValueImpl(T value, ModelType modelType) {
+		this.value = value;
+		this._modelType = modelType;
+	}
+
+	public boolean isRoot() {
+		return this._modelType != null;
+	}
+
+	public ModelType modelType() {
+		return this._modelType;
 	}
 
 	@Override
@@ -40,6 +55,11 @@ public abstract class UnionValueImpl<T> implements UnionValue<T>, Union {
 
 	@Override
 	public boolean isMap() {
+		return false;
+	}
+
+	@Override
+	public boolean isNode() {
 		return false;
 	}
 
