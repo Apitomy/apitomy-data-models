@@ -1,5 +1,6 @@
 package io.test.synthetic.visitors;
 
+import io.test.synthetic.Any;
 import io.test.synthetic.MappedNode;
 import io.test.synthetic.Node;
 import io.test.synthetic.Visitable;
@@ -60,15 +61,15 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
 	 * @param items
 	 */
 	@SuppressWarnings("unchecked")
-	protected void traverseList(String propertyName, Collection<? extends Node> items) {
+	protected void traverseList(String propertyName, Collection<? extends Any> items) {
 		if (items != null) {
 			int index = 0;
 			traversalContext.pushProperty(propertyName);
-			Collection<? extends Node> clonedItems = (Collection<? extends Node>) JsonUtil.cloneCollection(items);
-			for (Node node : clonedItems) {
-				if (node != null) {
+			Collection<? extends Any> clonedItems = (Collection<? extends Any>) JsonUtil.cloneCollection(items);
+			for (Any item : clonedItems) {
+				if (item != null && item.isNode()) {
 					traversalContext.pushListIndex(index);
-					doTraverseNode(node);
+					doTraverseNode((Visitable) item);
 					traversalContext.pop();
 				}
 				index++;
@@ -84,15 +85,15 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
 	 * @param items
 	 */
 	@SuppressWarnings("unchecked")
-	protected void traverseMap(String propertyName, Map<String, ? extends Node> items) {
+	protected void traverseMap(String propertyName, Map<String, ? extends Any> items) {
 		if (items != null) {
 			traversalContext.pushProperty(propertyName);
 			Collection<String> keys = (Collection<String>) JsonUtil.cloneCollection(items.keySet());
 			keys.forEach(key -> {
-				Node value = items.get(key);
-				if (value != null) {
+				Any value = items.get(key);
+				if (value != null && value.isNode()) {
 					this.traversalContext.pushMapIndex(key);
-					this.doTraverseNode(value);
+					this.doTraverseNode((Visitable) value);
 					this.traversalContext.pop();
 				}
 			});

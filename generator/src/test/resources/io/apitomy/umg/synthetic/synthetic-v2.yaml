@@ -151,6 +151,10 @@ entities:
         type: '[boolean|Schema]'
       - name: definitions
         type: '{boolean|Schema}'
+      - name: nestedSchemas
+        type: '{SchemaOrBoolean}'
+      - name: composedSchemas
+        type: '[SchemaOrBoolean]'
       - name: minLength
         type: integer
       - name: maxLength

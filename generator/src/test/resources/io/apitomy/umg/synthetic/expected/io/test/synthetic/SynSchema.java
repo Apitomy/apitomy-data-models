@@ -21,6 +21,16 @@ public interface SynSchema extends Node, SchemaOrBoolean, BooleanSchemaUnion, Bo
 
 	public void insertAllOf(BooleanSchemaUnion value, int atIndex);
 
+	public List<SchemaOrBoolean> getComposedSchemas();
+
+	public void addComposedSchema(SchemaOrBoolean value);
+
+	public void clearComposedSchemas();
+
+	public void removeComposedSchema(SchemaOrBoolean value);
+
+	public void insertComposedSchema(SchemaOrBoolean value, int atIndex);
+
 	public Map<String, BooleanSchemaUnion> getDefinitions();
 
 	public void addDefinition(String name, BooleanSchemaUnion value);
@@ -46,6 +56,16 @@ public interface SynSchema extends Node, SchemaOrBoolean, BooleanSchemaUnion, Bo
 	public Integer getMinLength();
 
 	public void setMinLength(Integer value);
+
+	public Map<String, SchemaOrBoolean> getNestedSchemas();
+
+	public void addNestedSchema(String name, SchemaOrBoolean value);
+
+	public void clearNestedSchemas();
+
+	public void removeNestedSchema(String name);
+
+	public void insertNestedSchema(String name, SchemaOrBoolean value, int atIndex);
 
 	public Map<String, BooleanSchemaUnion> getProperties();
 
