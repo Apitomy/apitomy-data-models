@@ -7,6 +7,7 @@ import java.util.List;
 import io.apitomy.umg.models.spec.SpecificationModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
@@ -15,6 +16,7 @@ import lombok.experimental.SuperBuilder;
 public class EntityModel extends EntityOrTraitModel {
     private final SpecificationModel specModel;
     private final Collection<TraitModel> traits = new LinkedHashSet<>();
-    private final boolean root;
+    @Setter
+    private boolean root;
     private final List<String> propertyOrder;
 }

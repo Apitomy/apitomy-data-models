@@ -22,7 +22,12 @@ public abstract class NodeImpl implements Node {
 	private Map<String, Object> _attributes;
 
 	@Override
-	public RootNode root() {
+	public boolean isNode() {
+		return true;
+	}
+
+	@Override
+	public RootCapable root() {
 		return this._parent.root();
 	}
 

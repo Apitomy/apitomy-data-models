@@ -64,6 +64,14 @@ public class CreateUnionTypesStage extends AbstractUnionTypeJavaStage {
                 .setName(name)
                 .setPublic();
 
+        // If this union is the root type, it must extend RootCapable
+        if (resolvedType instanceof UnionType ut && ut.isRoot()) {
+            String rootCapableFQN = getRootNodeInterfaceFQN();
+            JavaInterfaceSource rootCapableSource = getState().getJavaIndex().lookupInterface(rootCapableFQN);
+            unionTypeInterface.addImport(rootCapableSource);
+            unionTypeInterface.addInterface(rootCapableSource);
+        }
+
         // It must extend the "Union" interface
         String unionFQN = getUnionInterfaceFQN();
         JavaInterfaceSource unionValueSource = getState().getJavaIndex().lookupInterface(unionFQN);

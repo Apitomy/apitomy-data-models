@@ -43,9 +43,8 @@ public class SpecificationValidationStage extends AbstractStage {
             entities.forEach(entity -> {
                 validateEntityProperties(specVer, entity);
             });
-            long numRootEntities = entities.stream().filter(entity -> entity.getRoot() != null && entity.getRoot()).count();
-            if (numRootEntities != 1) {
-                fail("Specification version '%s' must have one and only one root entity.", specVer.getName());
+            if (specVer.getRoot() == null || specVer.getRoot().getType() == null) {
+                fail("Specification version '%s' must have a root type defined.", specVer.getName());
             }
         });
     }

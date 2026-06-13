@@ -1,10 +1,10 @@
 package io.test.synthetic.io;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.test.synthetic.RootNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.test.synthetic.RootCapable;
 
 public interface ModelReader {
 
-	public RootNode readRoot(ObjectNode json);
+	public RootCapable readRoot(JsonNode json);
 
 }

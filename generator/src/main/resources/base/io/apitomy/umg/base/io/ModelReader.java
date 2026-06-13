@@ -1,10 +1,10 @@
 package io.apitomy.umg.base.io;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.apitomy.umg.base.RootNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.apitomy.umg.base.RootCapable;
 
 public interface ModelReader {
 
-    public RootNode readRoot(ObjectNode json);
+    public RootCapable readRoot(JsonNode json);
 
 }

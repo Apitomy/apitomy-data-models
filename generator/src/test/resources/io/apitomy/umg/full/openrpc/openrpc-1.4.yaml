@@ -23,9 +23,11 @@ traits:
       - name: servers
         type: '[Server]'
 
+root:
+  type: Document
+
 entities:
   - name: Document
-    root: true
     traits:
       - Extensible
     properties:

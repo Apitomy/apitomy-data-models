@@ -14,9 +14,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -63,6 +68,9 @@ public class SyntheticSnapshotTest {
                 sb.append("\nTo update, delete ").append(EXPECTED_SOURCE_DIR).append("/ and re-run.");
                 fail(sb.toString());
             }
+
+            // Verify the generated code compiles
+            assertGeneratedCodeCompiles(outputDir);
 
         } finally {
             FileUtils.deleteDirectory(outputDir);
@@ -134,6 +142,47 @@ public class SyntheticSnapshotTest {
         }
 
         return failures;
+    }
+
+    private void assertGeneratedCodeCompiles(File outputDir) throws IOException {
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        assertNotNull("Java compiler not available (requires JDK, not JRE)", compiler);
+
+        List<Path> javaFiles;
+        try (Stream<Path> walk = Files.walk(outputDir.toPath())) {
+            javaFiles = walk.filter(p -> p.toString().endsWith(".java")).toList();
+        }
+        assertFalse("No .java files to compile", javaFiles.isEmpty());
+
+        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+        try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null,
+                StandardCharsets.UTF_8)) {
+            Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromPaths(javaFiles);
+
+            List<String> options = List.of(
+                    "-d", Files.createTempDirectory("umg-synthetic-compiled").toString(),
+                    "--release", "17"
+            );
+
+            JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, options, null,
+                    compilationUnits);
+            boolean success = task.call();
+
+            if (!success) {
+                StringBuilder errors = new StringBuilder("Generated synthetic code failed to compile:\n");
+                diagnostics.getDiagnostics().forEach(d -> {
+                    errors.append("  ").append(d.getKind()).append(": ")
+                            .append(d.getMessage(null));
+                    if (d.getSource() != null) {
+                        errors.append(" (").append(d.getSource().getName())
+                                .append(":").append(d.getLineNumber()).append(")");
+                    }
+                    errors.append("\n");
+                });
+                fail(errors.toString());
+            }
+        }
+        System.out.println("[Synthetic] All " + javaFiles.size() + " generated files compiled successfully");
     }
 
     private File findSourceDir() {

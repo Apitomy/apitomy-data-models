@@ -1,9 +1,11 @@
 package io.test.synthetic.v1;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.test.synthetic.ModelType;
 import io.test.synthetic.Node;
 import io.test.synthetic.NodeImpl;
 import io.test.synthetic.ParentPropertyType;
+import io.test.synthetic.RootCapableImpl;
 import io.test.synthetic.SynSchema;
 import io.test.synthetic.union.BooleanSchemaSchemaListUnion;
 import io.test.synthetic.union.BooleanSchemaUnion;
@@ -17,7 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Syn1SchemaImpl extends NodeImpl implements Syn1Schema {
+public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 
 	private String $ref;
 	private String type;
@@ -29,6 +31,10 @@ public class Syn1SchemaImpl extends NodeImpl implements Syn1Schema {
 	private Integer maxLength;
 	private List<JsonNode> _enum;
 	private Map<String, JsonNode> extensions;
+
+	public Syn1SchemaImpl() {
+		super(ModelType.SYN1);
+	}
 
 	@Override
 	public String get$ref() {

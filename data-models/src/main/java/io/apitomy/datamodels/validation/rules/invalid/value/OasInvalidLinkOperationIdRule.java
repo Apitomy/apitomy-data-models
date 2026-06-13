@@ -19,6 +19,7 @@ package io.apitomy.datamodels.validation.rules.invalid.value;
 import io.apitomy.datamodels.TraverserDirection;
 import io.apitomy.datamodels.VisitorUtil;
 import io.apitomy.datamodels.models.Link;
+import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.openapi.OpenApiLink;
 import io.apitomy.datamodels.validation.ValidationRuleMetaData;
 import io.apitomy.datamodels.visitors.OperationFinder;
@@ -44,7 +45,7 @@ public class OasInvalidLinkOperationIdRule extends AbstractInvalidPropertyValueR
         OpenApiLink oaiLink = (OpenApiLink) node;
         if (hasValue(oaiLink.getOperationId())) {
             OperationFinder finder = new OperationFinder(oaiLink.getOperationId());
-            VisitorUtil.visitTree(node.root(), finder, TraverserDirection.down);
+            VisitorUtil.visitTree((Node) node.root(), finder, TraverserDirection.down);
             this.reportIfInvalid(finder.isFound(), node, "operationId", map());
         }
     }

@@ -73,10 +73,6 @@
                             "type": "string"
                         }
                     },
-                    "root": {
-                        "description": "",
-                        "type": "boolean"
-                    },
                     "propertyOrder": {
                         "description": "",
                         "type": "array",
@@ -202,6 +198,9 @@
                         "items": {
                             "$ref": "#/components/schemas/TypeAlias"
                         }
+                    },
+                    "root": {
+                        "$ref": "#/components/schemas/Root"
                     }
                 },
                 "example": {
@@ -375,6 +374,22 @@
                             "propertyName": "type"
                         }
                     ]
+                }
+            },
+            "Root": {
+                "title": "Root Type for Root",
+                "description": "Specifies the root type for a specification version. Can reference a type alias (union) or an entity name.",
+                "required": [
+                    "type"
+                ],
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "type": "SchemaOrBoolean"
                 }
             }
         }

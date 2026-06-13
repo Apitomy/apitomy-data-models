@@ -1,11 +1,10 @@
 package io.test.synthetic.v2;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.test.synthetic.RootNode;
 import io.test.synthetic.SynDocument;
 import java.util.Map;
 
-public interface Syn2Document extends RootNode, SynDocument, Syn2Extensible {
+public interface Syn2Document extends SynDocument, Syn2Extensible {
 
 	public Syn2PathItem createPathItem();
 

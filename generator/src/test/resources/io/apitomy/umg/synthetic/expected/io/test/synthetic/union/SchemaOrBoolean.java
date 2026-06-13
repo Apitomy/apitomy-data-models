@@ -1,8 +1,9 @@
 package io.test.synthetic.union;
 
+import io.test.synthetic.RootCapable;
 import io.test.synthetic.SynSchema;
 
-public interface SchemaOrBoolean extends Union {
+public interface SchemaOrBoolean extends RootCapable, Union {
 
 	public boolean isBoolean();
 

@@ -47,9 +47,11 @@ traits:
       - name: headers
         type: '{Header}'
 
+root:
+  type: Document
+
 entities:
   - name: Document
-    root: true
     traits:
       - Extensible
       - ServersParent

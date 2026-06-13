@@ -76,7 +76,35 @@ public class CreatePropertyAndTypeModelsStage extends AbstractStage {
                     entityModel.getProperties().put(property.getName(), propertyModel);
                 });
             });
+
+            // Process root type — mark root-capable entities
+            if (specVersion.getRoot() != null && specVersion.getRoot().getType() != null) {
+                processRootType(specVersion.getRoot().getType(), namespace);
+            }
         });
+    }
+
+    private void processRootType(String rootTypeName, String namespace) {
+        // Try type alias first
+        var rootType = getState().getConceptIndex().lookupType(namespace, rootTypeName);
+        if (rootType instanceof UnionType unionType) {
+            unionType.setRoot(true);
+            for (var variantType : unionType.getTypes()) {
+                if (variantType instanceof EntityType entityType && entityType.getEntity() != null) {
+                    entityType.getEntity().setRoot(true);
+                    debug("Marked entity as root-capable: %s", entityType.getEntity().fullyQualifiedName());
+                }
+            }
+            return;
+        }
+        // Try direct entity name
+        var entity = getState().getConceptIndex().lookupEntity(namespace, rootTypeName);
+        if (entity != null) {
+            entity.setRoot(true);
+            debug("Marked entity as root: %s", entity.fullyQualifiedName());
+            return;
+        }
+        warn("Root type '%s' not found in namespace '%s'", rootTypeName, namespace);
     }
 
     private PropertyModel createPropertyModel(Property property, String namespace,
