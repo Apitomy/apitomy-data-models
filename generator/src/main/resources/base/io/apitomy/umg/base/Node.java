@@ -5,10 +5,10 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public interface Node extends Visitable {
+public interface Node extends Any, Visitable {
 
     public int modelId();
-    public RootNode root();
+    public RootCapable root();
     public Node parent();
     public String parentPropertyName();
     public ParentPropertyType parentPropertyType();

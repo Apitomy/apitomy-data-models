@@ -1,5 +1,6 @@
 package io.apitomy.umg.base.union;
 
+import io.apitomy.umg.base.ModelType;
 import io.apitomy.umg.base.visitors.Visitor;
 
 /**
@@ -9,12 +10,26 @@ import io.apitomy.umg.base.visitors.Visitor;
 public abstract class UnionValueImpl<T> implements UnionValue<T>, Union {
 
     private T value;
+    private ModelType _modelType;
 
     public UnionValueImpl() {
     }
 
     public UnionValueImpl(T value) {
         this.value = value;
+    }
+
+    public UnionValueImpl(T value, ModelType modelType) {
+        this.value = value;
+        this._modelType = modelType;
+    }
+
+    public boolean isRoot() {
+        return this._modelType != null;
+    }
+
+    public ModelType modelType() {
+        return this._modelType;
     }
 
     @Override
@@ -39,6 +54,11 @@ public abstract class UnionValueImpl<T> implements UnionValue<T>, Union {
 
     @Override
     public boolean isMap() {
+        return false;
+    }
+
+    @Override
+    public boolean isNode() {
         return false;
     }
 

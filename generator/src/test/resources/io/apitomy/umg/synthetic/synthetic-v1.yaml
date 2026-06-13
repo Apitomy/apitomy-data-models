@@ -44,10 +44,11 @@ typeAliases:
         ruleType: propertyExists
         propertyName: type
 
+root:
+  type: SchemaOrBoolean
+
 entities:
-  # Feature 8: Root entity
   - name: Document
-    root: true
     # Feature 11: Entity with traits
     traits:
       - Extensible

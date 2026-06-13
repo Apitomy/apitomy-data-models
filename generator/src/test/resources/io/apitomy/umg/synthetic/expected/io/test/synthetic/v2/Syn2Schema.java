@@ -1,10 +1,11 @@
 package io.test.synthetic.v2;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.test.synthetic.RootCapable;
 import io.test.synthetic.SynSchema;
 import java.util.Map;
 
-public interface Syn2Schema extends SynSchema, Syn2Extensible, Syn2Referenceable {
+public interface Syn2Schema extends RootCapable, SynSchema, Syn2Extensible, Syn2Referenceable {
 
 	public String get$ref();
 

@@ -3,7 +3,7 @@ package io.test.synthetic.v2.io;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.test.synthetic.RootNode;
+import io.test.synthetic.RootCapable;
 import io.test.synthetic.SynItem;
 import io.test.synthetic.SynPathItem;
 import io.test.synthetic.SynSchema;
@@ -73,13 +73,6 @@ public class Syn2ModelWriter implements ModelWriter {
 			}
 		}
 		WriterUtil.writeExtraProperties(node, json);
-	}
-
-	@Override
-	public ObjectNode writeRoot(RootNode node) {
-		ObjectNode json = JsonUtil.objectNode();
-		this.writeDocument((Syn2Document) node, json);
-		return json;
 	}
 
 	public void writeInfo(Syn2Info node, ObjectNode json) {
@@ -360,5 +353,14 @@ public class Syn2ModelWriter implements ModelWriter {
 			}
 		}
 		WriterUtil.writeExtraProperties(node, json);
+	}
+
+	@Override
+	public ObjectNode writeRoot(RootCapable node) {
+		ObjectNode json = JsonUtil.objectNode();
+		if (node instanceof Syn2Schema) {
+			this.writeSchema((Syn2Schema) node, json);
+		}
+		return json;
 	}
 }

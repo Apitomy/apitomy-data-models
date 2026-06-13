@@ -2,7 +2,8 @@ package io.test.synthetic.v2.io;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.test.synthetic.RootNode;
+import io.test.synthetic.ModelType;
+import io.test.synthetic.RootCapable;
 import io.test.synthetic.io.ModelReader;
 import io.test.synthetic.union.BooleanSchemaUnion;
 import io.test.synthetic.union.BooleanUnionValue;
@@ -13,13 +14,13 @@ import io.test.synthetic.util.JsonUtil;
 import io.test.synthetic.util.ReaderUtil;
 import io.test.synthetic.v2.Syn2Contact;
 import io.test.synthetic.v2.Syn2Document;
-import io.test.synthetic.v2.Syn2DocumentImpl;
 import io.test.synthetic.v2.Syn2Info;
 import io.test.synthetic.v2.Syn2Item;
 import io.test.synthetic.v2.Syn2Operation;
 import io.test.synthetic.v2.Syn2PathItem;
 import io.test.synthetic.v2.Syn2Paths;
 import io.test.synthetic.v2.Syn2Schema;
+import io.test.synthetic.v2.Syn2SchemaImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -75,13 +76,6 @@ public class Syn2ModelReader implements ModelReader {
 			});
 		}
 		ReaderUtil.readExtraProperties(json, node);
-	}
-
-	@Override
-	public RootNode readRoot(ObjectNode json) {
-		Syn2Document rootModel = new Syn2DocumentImpl();
-		this.readDocument(json, rootModel);
-		return rootModel;
 	}
 
 	public void readInfo(ObjectNode json, Syn2Info node) {
@@ -422,5 +416,18 @@ public class Syn2ModelReader implements ModelReader {
 			});
 		}
 		ReaderUtil.readExtraProperties(json, node);
+	}
+
+	@Override
+	public RootCapable readRoot(JsonNode json) {
+		if (json.isObject() && json.has("type")) {
+			Syn2Schema rootModel = new Syn2SchemaImpl();
+			this.readSchema((ObjectNode) json, rootModel);
+			return rootModel;
+		} else if (JsonUtil.isBoolean(json)) {
+			Boolean value = JsonUtil.toBoolean(json);
+			return new BooleanUnionValueImpl(value, ModelType.SYN2);
+		}
+		return null;
 	}
 }

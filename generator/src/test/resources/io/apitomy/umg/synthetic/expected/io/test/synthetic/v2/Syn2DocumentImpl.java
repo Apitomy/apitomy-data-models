@@ -1,11 +1,9 @@
 package io.test.synthetic.v2;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.test.synthetic.ModelType;
 import io.test.synthetic.Node;
 import io.test.synthetic.NodeImpl;
 import io.test.synthetic.ParentPropertyType;
-import io.test.synthetic.RootNodeImpl;
 import io.test.synthetic.SynInfo;
 import io.test.synthetic.SynItem;
 import io.test.synthetic.union.SchemaOrBoolean;
@@ -17,7 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Syn2DocumentImpl extends RootNodeImpl implements Syn2Document {
+public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 
 	private String version;
 	private SynInfo info;
@@ -27,10 +25,6 @@ public class Syn2DocumentImpl extends RootNodeImpl implements Syn2Document {
 	private Map<String, Syn2PathItem> webhooks;
 	private SchemaOrBoolean additionalSchema;
 	private Map<String, JsonNode> extensions;
-
-	public Syn2DocumentImpl() {
-		super(ModelType.SYN2);
-	}
 
 	@Override
 	public String getVersion() {
