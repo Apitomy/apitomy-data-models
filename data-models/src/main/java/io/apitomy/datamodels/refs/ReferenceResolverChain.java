@@ -16,8 +16,9 @@
 
 package io.apitomy.datamodels.refs;
 
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import io.apitomy.datamodels.models.Node;
 
@@ -33,7 +34,7 @@ public class ReferenceResolverChain implements IReferenceResolver {
         return instance;
     }
 
-    private final List<IReferenceResolver> resolvers = new LinkedList<>();
+    private final List<IReferenceResolver> resolvers = new CopyOnWriteArrayList<>();
 
     /**
      * Constructor.
@@ -43,10 +44,10 @@ public class ReferenceResolverChain implements IReferenceResolver {
     }
 
     /**
-     * @return the resolvers
+     * @return an unmodifiable view of the resolvers
      */
     public List<IReferenceResolver> getResolvers() {
-        return resolvers;
+        return Collections.unmodifiableList(resolvers);
     }
 
     /**
