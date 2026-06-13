@@ -30,6 +30,7 @@ import io.apitomy.datamodels.models.asyncapi.v2x.v24.visitors.AsyncApi24Traverse
 import io.apitomy.datamodels.models.asyncapi.v2x.v25.visitors.AsyncApi25Traverser;
 import io.apitomy.datamodels.models.asyncapi.v2x.v26.visitors.AsyncApi26Traverser;
 import io.apitomy.datamodels.models.asyncapi.v3x.v30.visitors.AsyncApi30Traverser;
+import io.apitomy.datamodels.models.asyncapi.v3x.v31.visitors.AsyncApi31Traverser;
 import io.apitomy.datamodels.models.jsonschema.draft.draft4.visitors.JSDraft4Traverser;
 import io.apitomy.datamodels.models.jsonschema.draft.draft6.visitors.JSDraft6Traverser;
 import io.apitomy.datamodels.models.jsonschema.draft.draft7.visitors.JSDraft7Traverser;
@@ -84,6 +85,9 @@ public class VisitorUtil {
                     break;
                 case ASYNCAPI30:
                     traverser = new AsyncApi30Traverser(visitor);
+                    break;
+                case ASYNCAPI31:
+                    traverser = new AsyncApi31Traverser(visitor);
                     break;
                 case OPENAPI20:
                     traverser = new OpenApi20Traverser(visitor);

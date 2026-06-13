@@ -9,6 +9,8 @@
     { "name": "[AsyncAPI 3] Simple Info With Extra Properties", "test": "asyncapi/3.0/simple/simple-info-extraProperties.json", "extraProperties": 4 },
     { "name": "[AsyncAPI 3] Simple Info With Extensions", "test": "asyncapi/3.0/simple/simple-info-extensions.json" },
 
+    { "name": "[AsyncAPI 3.1] Simplest", "test": "asyncapi/3.1/simple/simplest.json" },
+
     { "name": "[AsyncAPI 2] Complete anyof", "test": "asyncapi/2.0/complete/anyof.json" },
     { "name": "[AsyncAPI 2] Complete application-headers", "test": "asyncapi/2.0/complete/application-headers.json" },
     { "name": "[AsyncAPI 2] Complete Info", "test": "asyncapi/2.0/complete/complete-info.json" },
