@@ -68,14 +68,78 @@ public class CreateWritersStage extends AbstractJavaStage {
             } else {
                 createWriteMethodFor(specVersion, writerClassSource, entityModel);
 
-                // There should be a single root entity in the spec.
-                if (entityModel.isRoot()) {
-                    createWriteRootMethod(specVersion, writerClassSource, entityModel);
-                }
             }
         });
 
+        // Create writeRoot method based on the spec-level root type
+        createWriteRootFromSpec(specVersion, writerClassSource);
+
         getState().getJavaIndex().index(writerClassSource);
+    }
+
+    private void createWriteRootFromSpec(SpecificationVersion specVersion, JavaClassSource writerClassSource) {
+        if (specVersion.getRoot() == null) return;
+
+        var rootTypeName = specVersion.getRoot().getType();
+        var namespace = specVersion.getNamespace();
+
+        var rootType = getState().getConceptIndex().lookupType(namespace, rootTypeName);
+        if (rootType instanceof io.apitomy.umg.models.concept.type.UnionType unionType) {
+            createUnionWriteRootMethod(specVersion, writerClassSource, unionType);
+            return;
+        }
+
+        var entity = getState().getConceptIndex().lookupEntity(namespace, rootTypeName);
+        if (entity != null) {
+            createWriteRootMethod(specVersion, writerClassSource, entity);
+        }
+    }
+
+    private void createUnionWriteRootMethod(SpecificationVersion specVersion, JavaClassSource writerClassSource,
+                                             io.apitomy.umg.models.concept.type.UnionType unionType) {
+        JavaInterfaceSource rootCapableSource = getState().getJavaIndex().lookupInterface(getRootNodeInterfaceFQN());
+        writerClassSource.addImport(rootCapableSource);
+        writerClassSource.addImport(ObjectNode.class);
+
+        MethodSource<JavaClassSource> writeRootMethodSource = writerClassSource.addMethod()
+                .setName("writeRoot")
+                .setReturnType(ObjectNode.class.getName())
+                .setPublic();
+        writeRootMethodSource.addParameter(rootCapableSource.getName(), "node");
+        writeRootMethodSource.addAnnotation(Override.class);
+
+        BodyBuilder body = new BodyBuilder();
+        var namespace = specVersion.getNamespace();
+
+        body.append("ObjectNode json = JsonUtil.objectNode();");
+
+        boolean first = true;
+        for (var variantType : unionType.getTypes()) {
+            if (!(variantType instanceof io.apitomy.umg.models.concept.type.EntityType entityType)) continue;
+
+            var entity = entityType.getEntity();
+            if (entity == null) {
+                entity = getState().getConceptIndex().lookupEntity(namespace, entityType.getName());
+            }
+            if (entity == null) continue;
+
+            JavaInterfaceSource entitySource = lookupJavaEntity(entity);
+            writerClassSource.addImport(entitySource);
+
+            body.addContext("entityType", entitySource.getName());
+            body.addContext("writeMethodName", writeMethodName(entity));
+
+            if (!first) {
+                body.append(" else ");
+            }
+            first = false;
+
+            body.append("if (node instanceof ${entityType}) {");
+            body.append("    this.${writeMethodName}((${entityType}) node, json);");
+            body.append("}");
+        }
+        body.append("return json;");
+        writeRootMethodSource.setBody(body.toString());
     }
 
     /**

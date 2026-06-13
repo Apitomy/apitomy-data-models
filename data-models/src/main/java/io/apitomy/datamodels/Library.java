@@ -21,7 +21,7 @@ import io.apitomy.datamodels.deref.Dereferencer;
 import io.apitomy.datamodels.models.Document;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.Node;
-import io.apitomy.datamodels.models.RootNode;
+import io.apitomy.datamodels.models.RootCapable;
 import io.apitomy.datamodels.models.asyncapi.AsyncApiDocument;
 import io.apitomy.datamodels.models.io.ModelReader;
 import io.apitomy.datamodels.models.io.ModelReaderFactory;
@@ -117,7 +117,7 @@ public class Library {
      */
     public static ObjectNode writeDocument(Document document) {
         ModelWriter writer = ModelWriterFactory.createModelWriter(document.root().modelType());
-        return writer.writeRoot((RootNode) document);
+        return writer.writeRoot((RootCapable) document);
     }
 
     /**
@@ -324,7 +324,7 @@ public class Library {
         }
 
         // Validate the data model.
-        ValidationVisitor validator = ValidationUtil.createValidationVisitorForNode(node.root());
+        ValidationVisitor validator = ValidationUtil.createValidationVisitorForNode((Node) node.root());
         validator.setSeverityRegistry(severityRegistry);
         visitTree(node, validator, TraverserDirection.down);
 

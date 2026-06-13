@@ -29,7 +29,7 @@ public class LoadBaseClassesStage extends AbstractStage {
                     );
             loadBaseClasses(
                     "io.apitomy.umg.base.NodeImpl",
-                    "io.apitomy.umg.base.RootNodeImpl",
+                    "io.apitomy.umg.base.RootCapableImpl",
                     "io.apitomy.umg.base.util.DataModelUtil",
                     "io.apitomy.umg.base.util.JsonUtil",
                     "io.apitomy.umg.base.util.ReaderUtil",
@@ -51,9 +51,10 @@ public class LoadBaseClassesStage extends AbstractStage {
                     "io.apitomy.umg.base.union.UnionValueImpl"
                     );
             loadBaseInterfaces(
+                    "io.apitomy.umg.base.Any",
                     "io.apitomy.umg.base.Node",
                     "io.apitomy.umg.base.MappedNode",
-                    "io.apitomy.umg.base.RootNode",
+                    "io.apitomy.umg.base.RootCapable",
                     "io.apitomy.umg.base.Visitable",
                     "io.apitomy.umg.base.visitors.Traverser",
                     "io.apitomy.umg.base.visitors.TraversalContext",

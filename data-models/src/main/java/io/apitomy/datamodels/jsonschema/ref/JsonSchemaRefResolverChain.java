@@ -50,7 +50,7 @@ public final class JsonSchemaRefResolverChain implements JsonSchemaRefResolver {
         // Step 1: Determine the target document
         Node targetDocument;
         if (ref.isInternal()) {
-            targetDocument = context.from().root();
+            targetDocument = (Node) context.from().root();
         } else {
             var doc = resolveResource(ref.resource(), context);
             if (doc.isEmpty()) {

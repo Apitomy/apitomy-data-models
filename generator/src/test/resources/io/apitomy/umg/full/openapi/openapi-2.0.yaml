@@ -66,9 +66,11 @@ traits:
       - name: multipleOf
         type: number
 
+root:
+  type: Document
+
 entities:
   - name: Document
-    root: true
     traits:
       - Extensible
       - SecurityRequirementsParent

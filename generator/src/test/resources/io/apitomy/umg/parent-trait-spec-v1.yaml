@@ -14,9 +14,11 @@ traits:
       - name: foo
         type: Foo
 
+root:
+  type: Document
+
 entities:
   - name: Document
-    root: true
     traits:
       - FooParent
     properties:

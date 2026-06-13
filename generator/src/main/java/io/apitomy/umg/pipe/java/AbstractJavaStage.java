@@ -176,7 +176,7 @@ public abstract class AbstractJavaStage extends AbstractStage {
     }
 
     protected String getRootNodeInterfaceFQN() {
-        return getState().getConfig().getRootNamespace() + ".RootNode";
+        return getState().getConfig().getRootNamespace() + ".RootCapable";
     }
 
     protected String getMappedNodeInterfaceFQN() {
@@ -188,7 +188,7 @@ public abstract class AbstractJavaStage extends AbstractStage {
     }
 
     protected String getRootNodeEntityClassFQN() {
-        return getState().getConfig().getRootNamespace() + ".RootNodeImpl";
+        return getState().getConfig().getRootNamespace() + ".RootCapableImpl";
     }
 
     protected String getDataModelUtilFQCN() {
