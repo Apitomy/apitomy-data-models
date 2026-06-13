@@ -63,7 +63,7 @@
         <version.node-js>20.18.1</version.node-js>
 
         <!-- Dependency Versions (shared) -->
-        <version.com.fasterxml.jackson>2.21.4</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.22.0</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.dataformat>2.10.0.pr1</version.com.fasterxml.jackson.dataformat>
         <version.commons-lang3>3.20.0</version.commons-lang3>
         <version.commons-io>2.22.0</version.commons-io>
