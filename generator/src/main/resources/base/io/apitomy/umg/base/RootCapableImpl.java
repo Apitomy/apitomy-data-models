@@ -14,11 +14,6 @@ public abstract class RootCapableImpl extends NodeImpl implements RootCapable {
     }
 
     @Override
-    public RootCapable root() {
-        return this;
-    }
-
-    @Override
     public ModelType modelType() {
         return this._modelType;
     }
