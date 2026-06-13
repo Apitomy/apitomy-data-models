@@ -70,7 +70,6 @@
         <version.junit>4.13.2</version.junit>
 
         <!-- Dependency Versions (generator-specific) -->
-        <version.commons-beanutils>1.8.3</version.commons-beanutils>
         <version.commons-collections4>4.5.0</version.commons-collections4>
         <version.roaster>2.31.0.Final</version.roaster>
         <version.modeshape-common>5.4.1.Final</version.modeshape-common>

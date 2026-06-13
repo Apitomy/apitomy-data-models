@@ -19,11 +19,6 @@
             <version>${version.commons-io}</version>
         </dependency>
         <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils-core</artifactId>
-            <version>${version.commons-beanutils}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${version.commons-lang3}</version>
