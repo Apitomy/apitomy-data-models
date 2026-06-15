@@ -165,6 +165,8 @@ io/apitomy/datamodels/models/asyncapi/v2x/v20/AsyncApi20Servers.java
 io/apitomy/datamodels/models/asyncapi/v2x/v20/AsyncApi20ServersImpl.java
 io/apitomy/datamodels/models/asyncapi/v2x/v20/AsyncApi20Tag.java
 io/apitomy/datamodels/models/asyncapi/v2x/v20/AsyncApi20TagImpl.java
+io/apitomy/datamodels/models/asyncapi/v2x/v20/io/AsyncApi20ModelCloner.java
+io/apitomy/datamodels/models/asyncapi/v2x/v20/io/AsyncApi20ModelClonerDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v20/io/AsyncApi20ModelReader.java
 io/apitomy/datamodels/models/asyncapi/v2x/v20/io/AsyncApi20ModelReaderDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v20/io/AsyncApi20ModelWriter.java
@@ -235,6 +237,8 @@ io/apitomy/datamodels/models/asyncapi/v2x/v21/AsyncApi21Servers.java
 io/apitomy/datamodels/models/asyncapi/v2x/v21/AsyncApi21ServersImpl.java
 io/apitomy/datamodels/models/asyncapi/v2x/v21/AsyncApi21Tag.java
 io/apitomy/datamodels/models/asyncapi/v2x/v21/AsyncApi21TagImpl.java
+io/apitomy/datamodels/models/asyncapi/v2x/v21/io/AsyncApi21ModelCloner.java
+io/apitomy/datamodels/models/asyncapi/v2x/v21/io/AsyncApi21ModelClonerDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v21/io/AsyncApi21ModelReader.java
 io/apitomy/datamodels/models/asyncapi/v2x/v21/io/AsyncApi21ModelReaderDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v21/io/AsyncApi21ModelWriter.java
@@ -307,6 +311,8 @@ io/apitomy/datamodels/models/asyncapi/v2x/v22/AsyncApi22Servers.java
 io/apitomy/datamodels/models/asyncapi/v2x/v22/AsyncApi22ServersImpl.java
 io/apitomy/datamodels/models/asyncapi/v2x/v22/AsyncApi22Tag.java
 io/apitomy/datamodels/models/asyncapi/v2x/v22/AsyncApi22TagImpl.java
+io/apitomy/datamodels/models/asyncapi/v2x/v22/io/AsyncApi22ModelCloner.java
+io/apitomy/datamodels/models/asyncapi/v2x/v22/io/AsyncApi22ModelClonerDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v22/io/AsyncApi22ModelReader.java
 io/apitomy/datamodels/models/asyncapi/v2x/v22/io/AsyncApi22ModelReaderDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v22/io/AsyncApi22ModelWriter.java
@@ -379,6 +385,8 @@ io/apitomy/datamodels/models/asyncapi/v2x/v23/AsyncApi23Servers.java
 io/apitomy/datamodels/models/asyncapi/v2x/v23/AsyncApi23ServersImpl.java
 io/apitomy/datamodels/models/asyncapi/v2x/v23/AsyncApi23Tag.java
 io/apitomy/datamodels/models/asyncapi/v2x/v23/AsyncApi23TagImpl.java
+io/apitomy/datamodels/models/asyncapi/v2x/v23/io/AsyncApi23ModelCloner.java
+io/apitomy/datamodels/models/asyncapi/v2x/v23/io/AsyncApi23ModelClonerDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v23/io/AsyncApi23ModelReader.java
 io/apitomy/datamodels/models/asyncapi/v2x/v23/io/AsyncApi23ModelReaderDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v23/io/AsyncApi23ModelWriter.java
@@ -451,6 +459,8 @@ io/apitomy/datamodels/models/asyncapi/v2x/v24/AsyncApi24Servers.java
 io/apitomy/datamodels/models/asyncapi/v2x/v24/AsyncApi24ServersImpl.java
 io/apitomy/datamodels/models/asyncapi/v2x/v24/AsyncApi24Tag.java
 io/apitomy/datamodels/models/asyncapi/v2x/v24/AsyncApi24TagImpl.java
+io/apitomy/datamodels/models/asyncapi/v2x/v24/io/AsyncApi24ModelCloner.java
+io/apitomy/datamodels/models/asyncapi/v2x/v24/io/AsyncApi24ModelClonerDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v24/io/AsyncApi24ModelReader.java
 io/apitomy/datamodels/models/asyncapi/v2x/v24/io/AsyncApi24ModelReaderDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v24/io/AsyncApi24ModelWriter.java
@@ -523,6 +533,8 @@ io/apitomy/datamodels/models/asyncapi/v2x/v25/AsyncApi25Servers.java
 io/apitomy/datamodels/models/asyncapi/v2x/v25/AsyncApi25ServersImpl.java
 io/apitomy/datamodels/models/asyncapi/v2x/v25/AsyncApi25Tag.java
 io/apitomy/datamodels/models/asyncapi/v2x/v25/AsyncApi25TagImpl.java
+io/apitomy/datamodels/models/asyncapi/v2x/v25/io/AsyncApi25ModelCloner.java
+io/apitomy/datamodels/models/asyncapi/v2x/v25/io/AsyncApi25ModelClonerDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v25/io/AsyncApi25ModelReader.java
 io/apitomy/datamodels/models/asyncapi/v2x/v25/io/AsyncApi25ModelReaderDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v25/io/AsyncApi25ModelWriter.java
@@ -595,6 +607,8 @@ io/apitomy/datamodels/models/asyncapi/v2x/v26/AsyncApi26Servers.java
 io/apitomy/datamodels/models/asyncapi/v2x/v26/AsyncApi26ServersImpl.java
 io/apitomy/datamodels/models/asyncapi/v2x/v26/AsyncApi26Tag.java
 io/apitomy/datamodels/models/asyncapi/v2x/v26/AsyncApi26TagImpl.java
+io/apitomy/datamodels/models/asyncapi/v2x/v26/io/AsyncApi26ModelCloner.java
+io/apitomy/datamodels/models/asyncapi/v2x/v26/io/AsyncApi26ModelClonerDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v26/io/AsyncApi26ModelReader.java
 io/apitomy/datamodels/models/asyncapi/v2x/v26/io/AsyncApi26ModelReaderDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v26/io/AsyncApi26ModelWriter.java
@@ -709,6 +723,8 @@ io/apitomy/datamodels/models/asyncapi/v3x/v30/AsyncApi30Servers.java
 io/apitomy/datamodels/models/asyncapi/v3x/v30/AsyncApi30ServersImpl.java
 io/apitomy/datamodels/models/asyncapi/v3x/v30/AsyncApi30Tag.java
 io/apitomy/datamodels/models/asyncapi/v3x/v30/AsyncApi30TagImpl.java
+io/apitomy/datamodels/models/asyncapi/v3x/v30/io/AsyncApi30ModelCloner.java
+io/apitomy/datamodels/models/asyncapi/v3x/v30/io/AsyncApi30ModelClonerDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v3x/v30/io/AsyncApi30ModelReader.java
 io/apitomy/datamodels/models/asyncapi/v3x/v30/io/AsyncApi30ModelReaderDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v3x/v30/io/AsyncApi30ModelWriter.java
@@ -786,6 +802,8 @@ io/apitomy/datamodels/models/asyncapi/v3x/v31/AsyncApi31Servers.java
 io/apitomy/datamodels/models/asyncapi/v3x/v31/AsyncApi31ServersImpl.java
 io/apitomy/datamodels/models/asyncapi/v3x/v31/AsyncApi31Tag.java
 io/apitomy/datamodels/models/asyncapi/v3x/v31/AsyncApi31TagImpl.java
+io/apitomy/datamodels/models/asyncapi/v3x/v31/io/AsyncApi31ModelCloner.java
+io/apitomy/datamodels/models/asyncapi/v3x/v31/io/AsyncApi31ModelClonerDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v3x/v31/io/AsyncApi31ModelReader.java
 io/apitomy/datamodels/models/asyncapi/v3x/v31/io/AsyncApi31ModelReaderDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v3x/v31/io/AsyncApi31ModelWriter.java
@@ -797,6 +815,8 @@ io/apitomy/datamodels/models/asyncapi/v3x/visitors/AsyncApi3xVisitor.java
 io/apitomy/datamodels/models/asyncapi/visitors/AsyncApiVisitor.java
 io/apitomy/datamodels/models/asyncapi/visitors/CombinedAsyncApiVisitor.java
 io/apitomy/datamodels/models/asyncapi/visitors/CombinedAsyncApiVisitorAdapter.java
+io/apitomy/datamodels/models/io/ModelCloner.java
+io/apitomy/datamodels/models/io/ModelClonerFactory.java
 io/apitomy/datamodels/models/io/ModelReader.java
 io/apitomy/datamodels/models/io/ModelReaderFactory.java
 io/apitomy/datamodels/models/io/ModelWriter.java
@@ -812,6 +832,8 @@ io/apitomy/datamodels/models/jsonschema/draft/draft4/JSDraft4DocumentImpl.java
 io/apitomy/datamodels/models/jsonschema/draft/draft4/JSDraft4JSchema.java
 io/apitomy/datamodels/models/jsonschema/draft/draft4/JSDraft4JSchemaImpl.java
 io/apitomy/datamodels/models/jsonschema/draft/draft4/JSDraft4Referenceable.java
+io/apitomy/datamodels/models/jsonschema/draft/draft4/io/JSDraft4ModelCloner.java
+io/apitomy/datamodels/models/jsonschema/draft/draft4/io/JSDraft4ModelClonerDispatcher.java
 io/apitomy/datamodels/models/jsonschema/draft/draft4/io/JSDraft4ModelReader.java
 io/apitomy/datamodels/models/jsonschema/draft/draft4/io/JSDraft4ModelReaderDispatcher.java
 io/apitomy/datamodels/models/jsonschema/draft/draft4/io/JSDraft4ModelWriter.java
@@ -824,6 +846,8 @@ io/apitomy/datamodels/models/jsonschema/draft/draft6/JSDraft6DocumentImpl.java
 io/apitomy/datamodels/models/jsonschema/draft/draft6/JSDraft6JSchema.java
 io/apitomy/datamodels/models/jsonschema/draft/draft6/JSDraft6JSchemaImpl.java
 io/apitomy/datamodels/models/jsonschema/draft/draft6/JSDraft6Referenceable.java
+io/apitomy/datamodels/models/jsonschema/draft/draft6/io/JSDraft6ModelCloner.java
+io/apitomy/datamodels/models/jsonschema/draft/draft6/io/JSDraft6ModelClonerDispatcher.java
 io/apitomy/datamodels/models/jsonschema/draft/draft6/io/JSDraft6ModelReader.java
 io/apitomy/datamodels/models/jsonschema/draft/draft6/io/JSDraft6ModelReaderDispatcher.java
 io/apitomy/datamodels/models/jsonschema/draft/draft6/io/JSDraft6ModelWriter.java
@@ -836,6 +860,8 @@ io/apitomy/datamodels/models/jsonschema/draft/draft7/JSDraft7DocumentImpl.java
 io/apitomy/datamodels/models/jsonschema/draft/draft7/JSDraft7JSchema.java
 io/apitomy/datamodels/models/jsonschema/draft/draft7/JSDraft7JSchemaImpl.java
 io/apitomy/datamodels/models/jsonschema/draft/draft7/JSDraft7Referenceable.java
+io/apitomy/datamodels/models/jsonschema/draft/draft7/io/JSDraft7ModelCloner.java
+io/apitomy/datamodels/models/jsonschema/draft/draft7/io/JSDraft7ModelClonerDispatcher.java
 io/apitomy/datamodels/models/jsonschema/draft/draft7/io/JSDraft7ModelReader.java
 io/apitomy/datamodels/models/jsonschema/draft/draft7/io/JSDraft7ModelReaderDispatcher.java
 io/apitomy/datamodels/models/jsonschema/draft/draft7/io/JSDraft7ModelWriter.java
@@ -852,6 +878,8 @@ io/apitomy/datamodels/models/jsonschema/modern/v201909/JS201909DocumentImpl.java
 io/apitomy/datamodels/models/jsonschema/modern/v201909/JS201909JSchema.java
 io/apitomy/datamodels/models/jsonschema/modern/v201909/JS201909JSchemaImpl.java
 io/apitomy/datamodels/models/jsonschema/modern/v201909/JS201909Referenceable.java
+io/apitomy/datamodels/models/jsonschema/modern/v201909/io/JS201909ModelCloner.java
+io/apitomy/datamodels/models/jsonschema/modern/v201909/io/JS201909ModelClonerDispatcher.java
 io/apitomy/datamodels/models/jsonschema/modern/v201909/io/JS201909ModelReader.java
 io/apitomy/datamodels/models/jsonschema/modern/v201909/io/JS201909ModelReaderDispatcher.java
 io/apitomy/datamodels/models/jsonschema/modern/v201909/io/JS201909ModelWriter.java
@@ -864,6 +892,8 @@ io/apitomy/datamodels/models/jsonschema/modern/v202012/JS202012DocumentImpl.java
 io/apitomy/datamodels/models/jsonschema/modern/v202012/JS202012JSchema.java
 io/apitomy/datamodels/models/jsonschema/modern/v202012/JS202012JSchemaImpl.java
 io/apitomy/datamodels/models/jsonschema/modern/v202012/JS202012Referenceable.java
+io/apitomy/datamodels/models/jsonschema/modern/v202012/io/JS202012ModelCloner.java
+io/apitomy/datamodels/models/jsonschema/modern/v202012/io/JS202012ModelClonerDispatcher.java
 io/apitomy/datamodels/models/jsonschema/modern/v202012/io/JS202012ModelReader.java
 io/apitomy/datamodels/models/jsonschema/modern/v202012/io/JS202012ModelReaderDispatcher.java
 io/apitomy/datamodels/models/jsonschema/modern/v202012/io/JS202012ModelWriter.java
@@ -999,6 +1029,8 @@ io/apitomy/datamodels/models/openapi/v2x/v20/OpenApi20Tag.java
 io/apitomy/datamodels/models/openapi/v2x/v20/OpenApi20TagImpl.java
 io/apitomy/datamodels/models/openapi/v2x/v20/OpenApi20XML.java
 io/apitomy/datamodels/models/openapi/v2x/v20/OpenApi20XMLImpl.java
+io/apitomy/datamodels/models/openapi/v2x/v20/io/OpenApi20ModelCloner.java
+io/apitomy/datamodels/models/openapi/v2x/v20/io/OpenApi20ModelClonerDispatcher.java
 io/apitomy/datamodels/models/openapi/v2x/v20/io/OpenApi20ModelReader.java
 io/apitomy/datamodels/models/openapi/v2x/v20/io/OpenApi20ModelReaderDispatcher.java
 io/apitomy/datamodels/models/openapi/v2x/v20/io/OpenApi20ModelWriter.java
@@ -1107,6 +1139,8 @@ io/apitomy/datamodels/models/openapi/v3x/v30/OpenApi30Tag.java
 io/apitomy/datamodels/models/openapi/v3x/v30/OpenApi30TagImpl.java
 io/apitomy/datamodels/models/openapi/v3x/v30/OpenApi30XML.java
 io/apitomy/datamodels/models/openapi/v3x/v30/OpenApi30XMLImpl.java
+io/apitomy/datamodels/models/openapi/v3x/v30/io/OpenApi30ModelCloner.java
+io/apitomy/datamodels/models/openapi/v3x/v30/io/OpenApi30ModelClonerDispatcher.java
 io/apitomy/datamodels/models/openapi/v3x/v30/io/OpenApi30ModelReader.java
 io/apitomy/datamodels/models/openapi/v3x/v30/io/OpenApi30ModelReaderDispatcher.java
 io/apitomy/datamodels/models/openapi/v3x/v30/io/OpenApi30ModelWriter.java
@@ -1179,6 +1213,8 @@ io/apitomy/datamodels/models/openapi/v3x/v31/OpenApi31Tag.java
 io/apitomy/datamodels/models/openapi/v3x/v31/OpenApi31TagImpl.java
 io/apitomy/datamodels/models/openapi/v3x/v31/OpenApi31XML.java
 io/apitomy/datamodels/models/openapi/v3x/v31/OpenApi31XMLImpl.java
+io/apitomy/datamodels/models/openapi/v3x/v31/io/OpenApi31ModelCloner.java
+io/apitomy/datamodels/models/openapi/v3x/v31/io/OpenApi31ModelClonerDispatcher.java
 io/apitomy/datamodels/models/openapi/v3x/v31/io/OpenApi31ModelReader.java
 io/apitomy/datamodels/models/openapi/v3x/v31/io/OpenApi31ModelReaderDispatcher.java
 io/apitomy/datamodels/models/openapi/v3x/v31/io/OpenApi31ModelWriter.java
@@ -1263,6 +1299,8 @@ io/apitomy/datamodels/models/openrpc/v1x/v13/OpenRpc13ServerVariableImpl.java
 io/apitomy/datamodels/models/openrpc/v1x/v13/OpenRpc13ServersParent.java
 io/apitomy/datamodels/models/openrpc/v1x/v13/OpenRpc13Tag.java
 io/apitomy/datamodels/models/openrpc/v1x/v13/OpenRpc13TagImpl.java
+io/apitomy/datamodels/models/openrpc/v1x/v13/io/OpenRpc13ModelCloner.java
+io/apitomy/datamodels/models/openrpc/v1x/v13/io/OpenRpc13ModelClonerDispatcher.java
 io/apitomy/datamodels/models/openrpc/v1x/v13/io/OpenRpc13ModelReader.java
 io/apitomy/datamodels/models/openrpc/v1x/v13/io/OpenRpc13ModelReaderDispatcher.java
 io/apitomy/datamodels/models/openrpc/v1x/v13/io/OpenRpc13ModelWriter.java
@@ -1305,6 +1343,8 @@ io/apitomy/datamodels/models/openrpc/v1x/v14/OpenRpc14ServerVariableImpl.java
 io/apitomy/datamodels/models/openrpc/v1x/v14/OpenRpc14ServersParent.java
 io/apitomy/datamodels/models/openrpc/v1x/v14/OpenRpc14Tag.java
 io/apitomy/datamodels/models/openrpc/v1x/v14/OpenRpc14TagImpl.java
+io/apitomy/datamodels/models/openrpc/v1x/v14/io/OpenRpc14ModelCloner.java
+io/apitomy/datamodels/models/openrpc/v1x/v14/io/OpenRpc14ModelClonerDispatcher.java
 io/apitomy/datamodels/models/openrpc/v1x/v14/io/OpenRpc14ModelReader.java
 io/apitomy/datamodels/models/openrpc/v1x/v14/io/OpenRpc14ModelReaderDispatcher.java
 io/apitomy/datamodels/models/openrpc/v1x/v14/io/OpenRpc14ModelWriter.java
