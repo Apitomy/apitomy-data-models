@@ -53,7 +53,7 @@ public class JsonPointerTest {
              "definitions": {
                "Address": {"type": "object", "properties": {"street": {"type": "string"}}}
              }}""";
-        var doc = io.apitomy.datamodels.Library.readDocumentFromJSONString(schema);
+        var doc = (io.apitomy.datamodels.models.Node) io.apitomy.datamodels.Library.readRootFromJSONString(schema);
 
         var ptr = JsonPointer.parse("/definitions/Address");
         var result = ptr.evaluate(doc);
@@ -64,7 +64,7 @@ public class JsonPointerTest {
     public void testEvaluateNonExistentPath() {
         var schema = """
             {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object"}""";
-        var doc = io.apitomy.datamodels.Library.readDocumentFromJSONString(schema);
+        var doc = (io.apitomy.datamodels.models.Node) io.apitomy.datamodels.Library.readRootFromJSONString(schema);
 
         var ptr = JsonPointer.parse("/definitions/Missing");
         var result = ptr.evaluate(doc);

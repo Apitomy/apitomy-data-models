@@ -1,9 +1,9 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
-import io.apitomy.datamodels.models.jsonschema.draft.JSDraftDocument;
-import io.apitomy.datamodels.models.jsonschema.draft.JSDraftJSchema;
-import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaJSchemaListUnion;
-import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaUnion;
+import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
+import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaFullSchemaListUnion;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.*;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
@@ -70,16 +70,16 @@ public class ArraySchemaDiff {
         if (origItems == null && updItems == null) return;
 
         if (origItems != null && updItems != null) {
-            if (origItems.isJSchema() && updItems.isJSchema()) {
+            if (origItems.isFullSchema() && updItems.isFullSchema()) {
                 var subCtx = ctx.sub("items");
-                if (!DiffUtil.isSchemaCompatible(subCtx, origItems.asJSchema(), updItems.asJSchema(), true)) {
+                if (!DiffUtil.isSchemaCompatible(subCtx, origItems.asFullSchema(), updItems.asFullSchema(), true)) {
                     subCtx.addDifference(ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED, origItems, updItems);
                 }
-            } else if (origItems.isJSchemaList() && updItems.isJSchemaList()) {
-                diffTupleItems(origItems.asJSchemaList(), updItems.asJSchemaList());
-            } else if (origItems.isJSchemaList() && updItems.isJSchema()) {
+            } else if (origItems.isFullSchemaList() && updItems.isFullSchemaList()) {
+                diffTupleItems(origItems.asFullSchemaList(), updItems.asFullSchemaList());
+            } else if (origItems.isFullSchemaList() && updItems.isFullSchema()) {
                 ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, origItems, updItems);
-            } else if (origItems.isJSchema() && updItems.isJSchemaList()) {
+            } else if (origItems.isFullSchema() && updItems.isFullSchemaList()) {
                 ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, origItems, updItems);
             } else if (origItems.isBoolean() || updItems.isBoolean()) {
                 // boolean items handled via isUnionSchemaCompatible indirectly
@@ -106,11 +106,11 @@ public class ArraySchemaDiff {
             var origAI = getAdditionalItems(original);
             if (origAI != null && origAI.isBoolean() && !origAI.asBoolean()) {
                 ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED, origList.size(), updList.size());
-            } else if (origAI != null && origAI.isJSchema()) {
+            } else if (origAI != null && origAI.isFullSchema()) {
                 var allCompatible = true;
                 for (var i = minSize; i < updList.size(); i++) {
                     var subCtx = ctx.sub("items/" + i);
-                    if (!DiffUtil.isSchemaCompatible(subCtx, origAI.asJSchema(), updList.get(i), true)) {
+                    if (!DiffUtil.isSchemaCompatible(subCtx, origAI.asFullSchema(), updList.get(i), true)) {
                         allCompatible = false;
                         break;
                     }
@@ -128,11 +128,11 @@ public class ArraySchemaDiff {
             var updPermitsAdditional = updAI == null || (updAI.isBoolean() ? updAI.asBoolean() : true);
             if (!updPermitsAdditional) {
                 ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
-            } else if (updAI != null && updAI.isJSchema()) {
+            } else if (updAI != null && updAI.isFullSchema()) {
                 var allCompatible = true;
                 for (var i = minSize; i < origList.size(); i++) {
                     var subCtx = ctx.sub("items/" + i);
-                    if (!DiffUtil.isSchemaCompatible(subCtx, origList.get(i), updAI.asJSchema(), true)) {
+                    if (!DiffUtil.isSchemaCompatible(subCtx, origList.get(i), updAI.asFullSchema(), true)) {
                         allCompatible = false;
                         break;
                     }
@@ -158,8 +158,8 @@ public class ArraySchemaDiff {
         var updPermits = updAI == null || (updAI.isBoolean() ? updAI.asBoolean() : true);
         var origIsBoolean = origAI != null && origAI.isBoolean();
         var updIsBoolean = updAI != null && updAI.isBoolean();
-        var origIsSchema = origAI != null && origAI.isJSchema();
-        var updIsSchema = updAI != null && updAI.isJSchema();
+        var origIsSchema = origAI != null && origAI.isFullSchema();
+        var updIsSchema = updAI != null && updAI.isFullSchema();
 
         if ((origIsBoolean || origAI == null) && (updIsBoolean || updAI == null)) {
             diffBooleanTransition(ctx, origPermits, updPermits, true,
@@ -187,26 +187,26 @@ public class ArraySchemaDiff {
 
     // --- Version-specific accessors ---
 
-    private static BooleanJSchemaJSchemaListUnion getItems(SchemaAccessor schema) {
+    private static BooleanFullSchemaFullSchemaListUnion getItems(SchemaAccessor schema) {
         var node = schema.node();
-        if (node instanceof JSDraftDocument d) return d.getItems();
-        if (node instanceof JSDraftJSchema s) return s.getItems();
+        if (node instanceof JDFullSchema d) return d.getItems();
+        if (node instanceof JDFullSchema s) return s.getItems();
         return null;
     }
 
-    private static BooleanJSchemaUnion getAdditionalItems(SchemaAccessor schema) {
+    private static JsonSchema getAdditionalItems(SchemaAccessor schema) {
         var node = schema.node();
-        if (node instanceof JSDraftDocument d) return d.getAdditionalItems();
-        if (node instanceof JSDraftJSchema s) return s.getAdditionalItems();
+        if (node instanceof JDFullSchema d) return d.getAdditionalItems();
+        if (node instanceof JDFullSchema s) return s.getAdditionalItems();
         return null;
     }
 
-    private static BooleanJSchemaUnion getContains(SchemaAccessor schema) {
+    private static JsonSchema getContains(SchemaAccessor schema) {
         var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6Document d) return d.getContains();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6JSchema s) return s.getContains();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document d) return d.getContains();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema s) return s.getContains();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema d) return d.getContains();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema s) return s.getContains();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) return d.getContains();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) return s.getContains();
         return null;
     }
 }

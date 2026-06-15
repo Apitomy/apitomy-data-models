@@ -70,8 +70,10 @@ public class IoTest {
         ObjectNode originalParsed = (ObjectNode) JsonUtil.parseJSON(original);
 
         // Parse into a data model
-        Document doc = Library.readDocument(originalParsed);
-        Assertions.assertNotNull(doc, "Document was null.");
+        var root = Library.readRoot(originalParsed);
+        Assertions.assertNotNull(root, "Root was null.");
+        Assertions.assertInstanceOf(io.apitomy.datamodels.models.Node.class, root, "Root is not a Node");
+        var doc = (io.apitomy.datamodels.models.Node) root;
 
         // Make sure we read the appropriate number of "extra" properties
         ExtraPropertyDetectionVisitor epv = new ExtraPropertyDetectionVisitor();
@@ -87,7 +89,7 @@ public class IoTest {
                 "Wrong number of extra properties found: " + epv.extraProperties);
 
         // Write the data model back to JSON
-        ObjectNode roundTripJs = Library.writeDocument(doc);
+        ObjectNode roundTripJs = Library.writeNode(doc);
         Assertions.assertNotNull(roundTripJs);
 
         // Stringify the round trip object
@@ -122,7 +124,7 @@ public class IoTest {
      * Returns all nodes in the document.
      * @param doc the document to scan
      */
-    private List<Node> getAllNodes(Document doc) {
+    private List<Node> getAllNodes(Node doc) {
         IoTestAllNodeFinder finder = new IoTestAllNodeFinder();
         Library.visitTree(doc, finder, TraverserDirection.down);
         return finder.allNodes;

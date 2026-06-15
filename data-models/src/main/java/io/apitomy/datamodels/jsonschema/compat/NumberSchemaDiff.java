@@ -1,7 +1,7 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
-import io.apitomy.datamodels.models.jsonschema.draft.draft4.JSDraft4Document;
-import io.apitomy.datamodels.models.jsonschema.draft.draft4.JSDraft4JSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema;
 
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.*;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
@@ -169,25 +169,25 @@ public class NumberSchemaDiff {
     // --- Draft version helpers ---
 
     private static boolean isDraft4(SchemaAccessor schema) {
-        return schema.isInstanceOf(JSDraft4Document.class) || schema.isInstanceOf(JSDraft4JSchema.class);
+        return schema.isInstanceOf(JD4FullSchema.class) || schema.isInstanceOf(JD4FullSchema.class);
     }
 
     private static Boolean getDraft4ExclusiveMinimum(SchemaAccessor schema) {
-        if (schema.isInstanceOf(JSDraft4Document.class)) {
-            return schema.as(JSDraft4Document.class).isExclusiveMinimum();
+        if (schema.isInstanceOf(JD4FullSchema.class)) {
+            return schema.as(JD4FullSchema.class).isExclusiveMinimum();
         }
-        if (schema.isInstanceOf(JSDraft4JSchema.class)) {
-            return schema.as(JSDraft4JSchema.class).isExclusiveMinimum();
+        if (schema.isInstanceOf(JD4FullSchema.class)) {
+            return schema.as(JD4FullSchema.class).isExclusiveMinimum();
         }
         return null;
     }
 
     private static Boolean getDraft4ExclusiveMaximum(SchemaAccessor schema) {
-        if (schema.isInstanceOf(JSDraft4Document.class)) {
-            return schema.as(JSDraft4Document.class).isExclusiveMaximum();
+        if (schema.isInstanceOf(JD4FullSchema.class)) {
+            return schema.as(JD4FullSchema.class).isExclusiveMaximum();
         }
-        if (schema.isInstanceOf(JSDraft4JSchema.class)) {
-            return schema.as(JSDraft4JSchema.class).isExclusiveMaximum();
+        if (schema.isInstanceOf(JD4FullSchema.class)) {
+            return schema.as(JD4FullSchema.class).isExclusiveMaximum();
         }
         return null;
     }
@@ -196,16 +196,16 @@ public class NumberSchemaDiff {
         // Draft-6+ have exclusiveMinimum as Number
         // Check via the draft-group interfaces
         var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6Document d) {
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema d) {
             return d.getExclusiveMinimum();
         }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6JSchema s) {
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema s) {
             return s.getExclusiveMinimum();
         }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document d) {
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) {
             return d.getExclusiveMinimum();
         }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema s) {
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) {
             return s.getExclusiveMinimum();
         }
         return null;
@@ -213,16 +213,16 @@ public class NumberSchemaDiff {
 
     private static Number getExclusiveMaximumAsNumber(SchemaAccessor schema) {
         var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6Document d) {
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema d) {
             return d.getExclusiveMaximum();
         }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6JSchema s) {
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema s) {
             return s.getExclusiveMaximum();
         }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document d) {
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) {
             return d.getExclusiveMaximum();
         }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema s) {
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) {
             return s.getExclusiveMaximum();
         }
         return null;

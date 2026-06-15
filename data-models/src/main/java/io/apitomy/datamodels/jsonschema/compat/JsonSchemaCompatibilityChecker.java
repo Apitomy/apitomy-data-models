@@ -5,7 +5,7 @@ import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefResolver;
 import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefResolverChain;
 import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefTraversal;
 import io.apitomy.datamodels.models.ModelType;
-import io.apitomy.datamodels.models.jsonschema.JsonSchemaDocument;
+import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 
 import java.util.Set;
 
@@ -98,16 +98,16 @@ public final class JsonSchemaCompatibilityChecker {
                 && isForwardCompatible(originalSchemaJson, updatedSchemaJson);
     }
 
-    private static void flagModernVersions(DiffContext ctx, JsonSchemaDocument doc) {
+    private static void flagModernVersions(DiffContext ctx, JFullSchema doc) {
         var modelType = doc.root().modelType();
-        if (modelType == ModelType.JS201909 || modelType == ModelType.JS202012) {
+        if (modelType == ModelType.JM201909 || modelType == ModelType.JM202012) {
             ctx.addUnsupported("JSON Schema %s (modern version support not yet implemented)".formatted(modelType));
         }
     }
 
-    private static JsonSchemaDocument parseSchema(String schemaJson) {
-        var doc = Library.readDocumentFromJSONString(schemaJson);
-        if (!(doc instanceof JsonSchemaDocument jsonSchemaDoc)) {
+    private static JFullSchema parseSchema(String schemaJson) {
+        var doc = Library.readRootFromJSONString(schemaJson);
+        if (!(doc instanceof JFullSchema jsonSchemaDoc)) {
             throw new IllegalArgumentException(
                     "Input is not a JSON Schema document. Detected type: " + doc.root().modelType());
         }
