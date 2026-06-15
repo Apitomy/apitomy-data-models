@@ -69,7 +69,7 @@ allTests.forEach(spec => {
         expect(originalJson).not.toBeNull();
 
         // Parse/read the document
-        let sourceDoc: Document = Library.readDocument(originalJson);
+        let sourceDoc: Node = <Node><any>Library.readRoot(originalJson);
         expect(sourceDoc).not.toBeNull();
 
         // Dereference the document

@@ -2,7 +2,7 @@ package io.apitomy.datamodels.jsonschema.ref;
 
 import io.apitomy.datamodels.models.MappedNode;
 import io.apitomy.datamodels.models.Node;
-import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaUnion;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.util.NodeUtil;
 
 import java.util.Arrays;
@@ -95,7 +95,7 @@ public final class JsonPointer {
 
     private static Node toNode(Object obj) {
         if (obj instanceof Node n) return n;
-        if (obj instanceof BooleanJSchemaUnion union && union.isJSchema()) return union.asJSchema();
+        if (obj instanceof JsonSchema union && union.isFullSchema()) return union.asFullSchema();
         return null;
     }
 

@@ -21,7 +21,7 @@ allTests.forEach(spec => {
         expect(json).not.toBeNull();
 
         // Parse/read the document
-        let document: Document = Library.readDocument(json);
+        let document: Node = <Node><any>Library.readRoot(json);
         expect(document).not.toBeNull();
 
         // Parse the test path
