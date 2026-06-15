@@ -16,19 +16,24 @@
 
 package io.apitomy.datamodels.validation.rules.other;
 
+import io.apitomy.datamodels.models.Document;
+import io.apitomy.datamodels.models.Info;
 import io.apitomy.datamodels.models.Node;
+import io.apitomy.datamodels.models.Operation;
+import io.apitomy.datamodels.models.Server;
 import io.apitomy.datamodels.models.Tag;
 import io.apitomy.datamodels.models.asyncapi.AsyncApiChannel;
 import io.apitomy.datamodels.models.asyncapi.AsyncApiMessage;
 import io.apitomy.datamodels.models.asyncapi.AsyncApiMessageTrait;
-import io.apitomy.datamodels.models.asyncapi.AsyncApiOperation;
 import io.apitomy.datamodels.models.asyncapi.AsyncApiOperationTrait;
+import io.apitomy.datamodels.models.asyncapi.AsyncApiOperation;
 import io.apitomy.datamodels.models.asyncapi.v2x.AsyncApi2xDocument;
 import io.apitomy.datamodels.models.asyncapi.v2x.v25.AsyncApi25Server;
 import io.apitomy.datamodels.models.asyncapi.v2x.v26.AsyncApi26Server;
 import io.apitomy.datamodels.models.asyncapi.v3x.AsyncApi3xInfo;
 import io.apitomy.datamodels.models.asyncapi.v3x.AsyncApi3xServer;
 import io.apitomy.datamodels.models.openapi.OpenApiDocument;
+import io.apitomy.datamodels.models.visitors.CombinedVisitorAdapter;
 import io.apitomy.datamodels.validation.ValidationRule;
 import io.apitomy.datamodels.validation.ValidationRuleMetaData;
 
@@ -68,54 +73,77 @@ public class TagUniquenessValidationRule extends ValidationRule {
     }
 
     /**
-     * Returns the list of sibling tags from the given parent node.
+     * Returns the list of sibling tags from the given parent node by using the
+     * visitor pattern to dispatch to the correct parent type.
      * @param parent the parent node that owns the tag list
-     * @return the list of tags, or null if the parent type is not recognized
+     * @return the list of tags, or null if the parent type has no tags
      */
     private List<? extends Tag> getTagsFromParent(Node parent) {
-        // OpenAPI
-        if (parent instanceof OpenApiDocument) {
-            return ((OpenApiDocument) parent).getTags();
+        TagListExtractor extractor = new TagListExtractor();
+        parent.accept(extractor);
+        return extractor.tags;
+    }
+
+    /**
+     * Visitor that extracts the tag list from any node type that can own tags.
+     */
+    private static class TagListExtractor extends CombinedVisitorAdapter {
+
+        List<? extends Tag> tags;
+
+        @Override
+        public void visitDocument(Document node) {
+            if (node instanceof OpenApiDocument) {
+                this.tags = ((OpenApiDocument) node).getTags();
+            } else if (node instanceof AsyncApi2xDocument) {
+                this.tags = ((AsyncApi2xDocument) node).getTags();
+            }
         }
-        // AsyncAPI 2.x document-level tags
-        if (parent instanceof AsyncApi2xDocument) {
-            return ((AsyncApi2xDocument) parent).getTags();
+
+        @Override
+        public void visitInfo(Info node) {
+            if (node instanceof AsyncApi3xInfo) {
+                this.tags = ((AsyncApi3xInfo) node).getTags();
+            }
         }
-        // AsyncAPI 3.x info-level tags
-        if (parent instanceof AsyncApi3xInfo) {
-            return ((AsyncApi3xInfo) parent).getTags();
+
+        @Override
+        public void visitServer(Server node) {
+            if (node instanceof AsyncApi3xServer) {
+                this.tags = ((AsyncApi3xServer) node).getTags();
+            } else if (node instanceof AsyncApi25Server) {
+                this.tags = ((AsyncApi25Server) node).getTags();
+            } else if (node instanceof AsyncApi26Server) {
+                this.tags = ((AsyncApi26Server) node).getTags();
+            }
         }
-        // AsyncAPI operation tags (all versions)
-        if (parent instanceof AsyncApiOperation) {
-            return ((AsyncApiOperation) parent).getTags();
+
+        @Override
+        public void visitOperation(Operation node) {
+            if (node instanceof AsyncApiOperation) {
+                this.tags = ((AsyncApiOperation) node).getTags();
+            }
         }
-        // AsyncAPI message tags (all versions)
-        if (parent instanceof AsyncApiMessage) {
-            return ((AsyncApiMessage) parent).getTags();
+
+        @Override
+        public void visitMessage(AsyncApiMessage node) {
+            this.tags = node.getTags();
         }
-        // AsyncAPI message trait tags (all versions)
-        if (parent instanceof AsyncApiMessageTrait) {
-            return ((AsyncApiMessageTrait) parent).getTags();
+
+        @Override
+        public void visitMessageTrait(AsyncApiMessageTrait node) {
+            this.tags = node.getTags();
         }
-        // AsyncAPI operation trait tags (all versions)
-        if (parent instanceof AsyncApiOperationTrait) {
-            return ((AsyncApiOperationTrait) parent).getTags();
+
+        @Override
+        public void visitOperationTrait(AsyncApiOperationTrait node) {
+            this.tags = node.getTags();
         }
-        // AsyncAPI channel tags (3.x)
-        if (parent instanceof AsyncApiChannel) {
-            return ((AsyncApiChannel) parent).getTags();
+
+        @Override
+        public void visitChannel(AsyncApiChannel node) {
+            this.tags = node.getTags();
         }
-        // AsyncAPI server tags (version-specific)
-        if (parent instanceof AsyncApi3xServer) {
-            return ((AsyncApi3xServer) parent).getTags();
-        }
-        if (parent instanceof AsyncApi25Server) {
-            return ((AsyncApi25Server) parent).getTags();
-        }
-        if (parent instanceof AsyncApi26Server) {
-            return ((AsyncApi26Server) parent).getTags();
-        }
-        return null;
     }
 
 }
