@@ -2,17 +2,17 @@ package io.apitomy.datamodels.jsonschema.ref;
 
 import io.apitomy.datamodels.jsonschema.compat.SchemaAccessor;
 import io.apitomy.datamodels.models.Node;
-import io.apitomy.datamodels.models.jsonschema.draft.JSDraftDocument;
-import io.apitomy.datamodels.models.jsonschema.draft.JSDraftJSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.draft4.JSDraft4Document;
-import io.apitomy.datamodels.models.jsonschema.draft.draft4.JSDraft4JSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6Document;
-import io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6JSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document;
-import io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema;
-import io.apitomy.datamodels.models.jsonschema.modern.JSModernDocument;
-import io.apitomy.datamodels.models.jsonschema.modern.JSModernJSchema;
-import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaUnion;
+import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
+import io.apitomy.datamodels.models.jsonschema.modern.JMFullSchema;
+import io.apitomy.datamodels.models.jsonschema.modern.JMFullSchema;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 
 import java.util.HashSet;
 import java.util.List;
@@ -76,53 +76,53 @@ public class AnchorFragmentResolver implements FragmentResolver {
         return null;
     }
 
-    private static Node searchMapProperty(Map<String, BooleanJSchemaUnion> map, String anchorName,
+    private static Node searchMapProperty(Map<String, JsonSchema> map, String anchorName,
                                            Set<Integer> visited) {
         if (map == null) return null;
         for (var entry : map.values()) {
-            if (entry != null && entry.isJSchema()) {
-                var result = findAnchor(entry.asJSchema(), anchorName, visited);
+            if (entry != null && entry.isFullSchema()) {
+                var result = findAnchor(entry.asFullSchema(), anchorName, visited);
                 if (result != null) return result;
             }
         }
         return null;
     }
 
-    private static Node searchUnionProperty(BooleanJSchemaUnion union, String anchorName,
+    private static Node searchUnionProperty(JsonSchema union, String anchorName,
                                              Set<Integer> visited) {
-        if (union != null && union.isJSchema()) {
-            return findAnchor(union.asJSchema(), anchorName, visited);
+        if (union != null && union.isFullSchema()) {
+            return findAnchor(union.asFullSchema(), anchorName, visited);
         }
         return null;
     }
 
-    private static Node searchListProperty(List<BooleanJSchemaUnion> list, String anchorName,
+    private static Node searchListProperty(List<JsonSchema> list, String anchorName,
                                             Set<Integer> visited) {
         if (list == null) return null;
         for (var item : list) {
-            if (item != null && item.isJSchema()) {
-                var result = findAnchor(item.asJSchema(), anchorName, visited);
+            if (item != null && item.isFullSchema()) {
+                var result = findAnchor(item.asFullSchema(), anchorName, visited);
                 if (result != null) return result;
             }
         }
         return null;
     }
 
-    private static Map<String, BooleanJSchemaUnion> getDefinitions(Node node) {
-        if (node instanceof JSDraftDocument d) return d.getDefinitions() != null ? convertDefinitions(d.getDefinitions()) : null;
-        if (node instanceof JSDraftJSchema s) return s.getDefinitions() != null ? convertDefinitions(s.getDefinitions()) : null;
+    private static Map<String, JsonSchema> getDefinitions(Node node) {
+        if (node instanceof JDFullSchema d) return d.getDefinitions() != null ? convertDefinitions(d.getDefinitions()) : null;
+        if (node instanceof JDFullSchema s) return s.getDefinitions() != null ? convertDefinitions(s.getDefinitions()) : null;
         // TODO: modern versions use $defs
         return null;
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, BooleanJSchemaUnion> convertDefinitions(Map<String, ?> defs) {
-        return (Map<String, BooleanJSchemaUnion>) (Map<String, ?>) defs;
+    private static Map<String, JsonSchema> convertDefinitions(Map<String, ?> defs) {
+        return (Map<String, JsonSchema>) (Map<String, ?>) defs;
     }
 
     private static String getAnchor(Node node) {
-        if (node instanceof JSModernDocument d && d.get$anchor() != null) return d.get$anchor();
-        if (node instanceof JSModernJSchema s && s.get$anchor() != null) return s.get$anchor();
+        if (node instanceof JMFullSchema d && d.get$anchor() != null) return d.get$anchor();
+        if (node instanceof JMFullSchema s && s.get$anchor() != null) return s.get$anchor();
 
         var dollarId = getDollarId(node);
         if (dollarId != null && dollarId.startsWith("#") && dollarId.length() > 1) {
@@ -138,18 +138,18 @@ public class AnchorFragmentResolver implements FragmentResolver {
     }
 
     private static String getDollarId(Node node) {
-        if (node instanceof JSDraft6Document d) return d.get$id();
-        if (node instanceof JSDraft6JSchema s) return s.get$id();
-        if (node instanceof JSDraft7Document d) return d.get$id();
-        if (node instanceof JSDraft7JSchema s) return s.get$id();
-        if (node instanceof JSModernDocument d) return d.get$id();
-        if (node instanceof JSModernJSchema s) return s.get$id();
+        if (node instanceof JD6FullSchema d) return d.get$id();
+        if (node instanceof JD6FullSchema s) return s.get$id();
+        if (node instanceof JD7FullSchema d) return d.get$id();
+        if (node instanceof JD7FullSchema s) return s.get$id();
+        if (node instanceof JMFullSchema d) return d.get$id();
+        if (node instanceof JMFullSchema s) return s.get$id();
         return null;
     }
 
     private static String getLegacyId(Node node) {
-        if (node instanceof JSDraft4Document d) return d.getId();
-        if (node instanceof JSDraft4JSchema s) return s.getId();
+        if (node instanceof JD4FullSchema d) return d.getId();
+        if (node instanceof JD4FullSchema s) return s.getId();
         return null;
     }
 }

@@ -52,15 +52,15 @@ public class StringSchemaDiff {
 
     private static String getContentEncoding(SchemaAccessor schema) {
         var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document d) return d.getContentEncoding();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema s) return s.getContentEncoding();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) return d.getContentEncoding();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) return s.getContentEncoding();
         return null;
     }
 
     private static String getContentMediaType(SchemaAccessor schema) {
         var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document d) return d.getContentMediaType();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema s) return s.getContentMediaType();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) return d.getContentMediaType();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) return s.getContentMediaType();
         return null;
     }
 }

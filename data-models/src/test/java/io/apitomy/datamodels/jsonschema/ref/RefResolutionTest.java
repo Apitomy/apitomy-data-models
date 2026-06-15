@@ -1,8 +1,8 @@
 package io.apitomy.datamodels.jsonschema.ref;
 
 import io.apitomy.datamodels.Library;
-import io.apitomy.datamodels.models.jsonschema.JsonSchemaDocument;
-import io.apitomy.datamodels.models.jsonschema.JsonSchemaJSchema;
+import io.apitomy.datamodels.models.jsonschema.JFullSchema;
+import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -13,8 +13,8 @@ public class RefResolutionTest {
 
     private static final String D7 = "\"$schema\": \"http://json-schema.org/draft-07/schema#\"";
 
-    private static JsonSchemaDocument parse(String json) {
-        return (JsonSchemaDocument) Library.readDocumentFromJSONString(json);
+    private static JFullSchema parse(String json) {
+        return (JFullSchema) Library.readRootFromJSONString(json);
     }
 
     @Test
@@ -30,7 +30,7 @@ public class RefResolutionTest {
 
         Assertions.assertTrue(result.isPresent());
         Assertions.assertTrue(result.get().isAttached());
-        Assertions.assertTrue(result.get() instanceof JsonSchemaJSchema);
+        Assertions.assertTrue(result.get() instanceof JFullSchema);
     }
 
     @Test

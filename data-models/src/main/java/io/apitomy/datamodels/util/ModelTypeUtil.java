@@ -30,15 +30,15 @@ public class ModelTypeUtil {
                 return "3.0.0";
             case ASYNCAPI31:
                 return "3.1.0";
-            case JSDRAFT4:
+            case JD4:
                 return "http://json-schema.org/draft-04/schema#";
-            case JSDRAFT6:
+            case JD6:
                 return "http://json-schema.org/draft-06/schema#";
-            case JSDRAFT7:
+            case JD7:
                 return "http://json-schema.org/draft-07/schema#";
-            case JS201909:
+            case JM201909:
                 return "https://json-schema.org/draft/2019-09/schema";
-            case JS202012:
+            case JM202012:
                 return "https://json-schema.org/draft/2020-12/schema";
             case OPENAPI20:
                 return "2.0";
@@ -83,11 +83,11 @@ public class ModelTypeUtil {
             case OPENRPC13:
             case OPENRPC14:
                 return "openrpc";
-            case JSDRAFT4:
-            case JSDRAFT6:
-            case JSDRAFT7:
-            case JS201909:
-            case JS202012:
+            case JD4:
+            case JD6:
+            case JD7:
+            case JM201909:
+            case JM202012:
                 return "$schema";
         }
         throw new UnsupportedModelTypeException("Unsupported model type: " + type.name());
@@ -214,11 +214,11 @@ public class ModelTypeUtil {
 
     public static boolean isJsonSchemaModel(Node node) {
         switch (node.root().modelType()) {
-            case JSDRAFT4:
-            case JSDRAFT6:
-            case JSDRAFT7:
-            case JS201909:
-            case JS202012:
+            case JD4:
+            case JD6:
+            case JD7:
+            case JM201909:
+            case JM202012:
                 return true;
             default:
                 return false;

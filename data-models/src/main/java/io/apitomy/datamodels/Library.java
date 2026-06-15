@@ -78,7 +78,26 @@ public class Library {
      * @param type the model type to create
      * @return a new, empty document
      */
+    /**
+     * @deprecated Use {@link #createRoot(ModelType)} instead. This method only works for specs
+     * whose root entity implements {@link Document} (OpenAPI, AsyncAPI). For JSON Schema,
+     * the root is a FullSchema entity and this method will throw.
+     */
+    @Deprecated
     public static Document createDocument(ModelType type) {
+        RootCapable root = createRoot(type);
+        if (root instanceof Document) {
+            return (Document) root;
+        }
+        throw new UnsupportedModelTypeException(
+                "Root is not a Document. Use createRoot() instead. Got: "
+                + (root != null ? root.getClass().getSimpleName() : "null"));
+    }
+
+    /**
+     * Creates a new, empty root node of the given model type.
+     */
+    public static RootCapable createRoot(ModelType type) {
         ModelReader reader = ModelReaderFactory.createModelReader(type);
         ObjectNode json = JsonUtil.objectNode();
         String versionProp = ModelTypeUtil.getVersionPropertyName(type);
@@ -86,48 +105,70 @@ public class Library {
         if (versionProp != null) {
             JsonUtil.setStringProperty(json, versionProp, version);
         }
-        return (Document) reader.readRoot(json);
+        return reader.readRoot(json);
     }
 
     /**
-     * Reads an entire document from JSON data.  The JSON data (already parsed, not in string format) is
-     * read as a data model {@link Document} and returned.
-     * @param json
+     * @deprecated Use {@link #readRoot(ObjectNode)} instead. This method only works for specs
+     * whose root entity implements {@link Document}. For JSON Schema, use {@code readRoot()}.
      */
+    @Deprecated
     public static Document readDocument(ObjectNode json) {
-        // Clone the input because the reader is destructive to the source data.
+        RootCapable root = readRoot(json);
+        if (root instanceof Document) {
+            return (Document) root;
+        }
+        throw new UnsupportedModelTypeException(
+                "Root is not a Document. Use readRoot() instead. Got: "
+                + (root != null ? root.getClass().getSimpleName() : "null"));
+    }
+
+    /**
+     * Reads a root node from JSON data, returning the generic {@link RootCapable} type.
+     */
+    public static RootCapable readRoot(ObjectNode json) {
         ObjectNode clonedJson = (ObjectNode) JsonUtil.clone(json);
         ModelType type = ModelTypeDetector.discoverModelType(clonedJson);
-
         ModelReader reader = ModelReaderFactory.createModelReader(type);
-        return (Document) reader.readRoot(clonedJson);
+        return reader.readRoot(clonedJson);
     }
 
     /**
-     * Reads an entire document from a JSON formatted string.  This will parse the given string into
-     * JSON data and then call Library.readDocument.
-     * @param jsonString
+     * @deprecated Use {@link #readRootFromJSONString(String)} instead. This method only works
+     * for specs whose root entity implements {@link Document}. For JSON Schema, use
+     * {@code readRootFromJSONString()}.
      */
+    @Deprecated
     public static Document readDocumentFromJSONString(String jsonString) {
         ObjectNode json = (ObjectNode) JsonUtil.parseJSON(jsonString);
         return readDocument(json);
     }
 
     /**
-     * Called to serialize a given data model node to a JSON object.
-     * @param document
+     * Reads a root node from a JSON string, returning the generic {@link RootCapable} type.
      */
+    public static RootCapable readRootFromJSONString(String jsonString) {
+        ObjectNode json = (ObjectNode) JsonUtil.parseJSON(jsonString);
+        return readRoot(json);
+    }
+
+    /**
+     * @deprecated Use {@link #writeNode(Node)} instead. This method only works for specs
+     * whose root entity implements {@link Document}. For JSON Schema, use {@code writeNode()}.
+     */
+    @Deprecated
     public static ObjectNode writeDocument(Document document) {
         ModelWriter writer = ModelWriterFactory.createModelWriter(document.root().modelType());
         return writer.writeRoot((RootCapable) document);
     }
 
     /**
-     * Called to serialize a given data model to a JSON formatted string.
-     * @param document
+     * @deprecated Use {@link #writeNodeToString(Node)} instead. This method only works for specs
+     * whose root entity implements {@link Document}. For JSON Schema, use {@code writeNodeToString()}.
      */
+    @Deprecated
     public static String writeDocumentToJSONString(Document document) {
-        ObjectNode json = Library.writeDocument( document);
+        ObjectNode json = Library.writeDocument(document);
         return JsonUtil.stringify(json);
     }
 
@@ -209,7 +250,7 @@ public class Library {
      * @param nodePath
      * @param doc
      */
-    public static Node resolveNodePath(NodePath nodePath, Document doc) {
+    public static Node resolveNodePath(NodePath nodePath, Node doc) {
         return NodePathUtil.resolveNodePath(nodePath, doc);
     }
 

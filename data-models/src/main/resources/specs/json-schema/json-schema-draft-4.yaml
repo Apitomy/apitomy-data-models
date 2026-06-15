@@ -3,9 +3,9 @@ version: draft-4
 versions:
   - version: draft-4
     url: https://tools.ietf.org/html/draft-zyp-json-schema-04
-prefix: JSDraft4
+prefix: JD4
 namespace: io.apitomy.datamodels.models.jsonschema.draft.draft4
-majorVersionPrefix: JSDraft
+majorVersionPrefix: JD
 majorVersionNamespace: io.apitomy.datamodels.models.jsonschema.draft
 
 traits:
@@ -14,82 +14,15 @@ traits:
       - name: '$ref'
         type: string
 
+typeAliases:
+  - name: JsonSchema
+    type: boolean|FullSchema
+
 root:
-  type: Document
+  type: JsonSchema
 
 entities:
-  - name: Document
-    properties:
-      - name: id
-        type: string
-      - name: '$schema'
-        type: string
-      - name: title
-        type: string
-      - name: description
-        type: string
-      - name: default
-        type: any
-      - name: definitions
-        type: '{boolean|JSchema}'
-      - name: type
-        type: 'string|[string]'
-      - name: enum
-        type: '[any]'
-      - name: format
-        type: string
-      - name: allOf
-        type: '[boolean|JSchema]'
-      - name: anyOf
-        type: '[boolean|JSchema]'
-      - name: oneOf
-        type: '[boolean|JSchema]'
-      - name: not
-        type: 'boolean|JSchema'
-      - name: multipleOf
-        type: number
-      - name: minimum
-        type: number
-      - name: maximum
-        type: number
-      - name: exclusiveMinimum
-        type: boolean
-      - name: exclusiveMaximum
-        type: boolean
-      - name: minLength
-        type: integer
-      - name: maxLength
-        type: integer
-      - name: pattern
-        type: string
-      - name: items
-        type: 'boolean|JSchema|[JSchema]'
-      - name: additionalItems
-        type: 'boolean|JSchema'
-      - name: minItems
-        type: integer
-      - name: maxItems
-        type: integer
-      - name: uniqueItems
-        type: boolean
-      - name: properties
-        type: '{boolean|JSchema}'
-      - name: patternProperties
-        type: '{boolean|JSchema}'
-      - name: additionalProperties
-        type: 'boolean|JSchema'
-      - name: required
-        type: '[string]'
-      - name: minProperties
-        type: integer
-      - name: maxProperties
-        type: integer
-      - name: dependencies
-        type: '{any}'
-    propertyOrder:
-      - $this
-
-  - name: JSchema
+  - name: FullSchema
     traits:
       - Referenceable
     properties:
@@ -104,7 +37,7 @@ entities:
       - name: default
         type: any
       - name: definitions
-        type: '{boolean|JSchema}'
+        type: '{JsonSchema}'
       - name: type
         type: 'string|[string]'
       - name: enum
@@ -112,13 +45,13 @@ entities:
       - name: format
         type: string
       - name: allOf
-        type: '[boolean|JSchema]'
+        type: '[JsonSchema]'
       - name: anyOf
-        type: '[boolean|JSchema]'
+        type: '[JsonSchema]'
       - name: oneOf
-        type: '[boolean|JSchema]'
+        type: '[JsonSchema]'
       - name: not
-        type: 'boolean|JSchema'
+        type: JsonSchema
       - name: multipleOf
         type: number
       - name: minimum
@@ -136,9 +69,9 @@ entities:
       - name: pattern
         type: string
       - name: items
-        type: 'boolean|JSchema|[JSchema]'
+        type: 'boolean|FullSchema|[FullSchema]'
       - name: additionalItems
-        type: 'boolean|JSchema'
+        type: JsonSchema
       - name: minItems
         type: integer
       - name: maxItems
@@ -146,11 +79,11 @@ entities:
       - name: uniqueItems
         type: boolean
       - name: properties
-        type: '{boolean|JSchema}'
+        type: '{JsonSchema}'
       - name: patternProperties
-        type: '{boolean|JSchema}'
+        type: '{JsonSchema}'
       - name: additionalProperties
-        type: 'boolean|JSchema'
+        type: JsonSchema
       - name: required
         type: '[string]'
       - name: minProperties

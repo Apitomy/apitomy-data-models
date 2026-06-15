@@ -50,7 +50,7 @@ allTests.forEach(spec => {
         expect(json).not.toBeNull();
         
         // Parse/read the document
-        let document: Document = Library.readDocument(json);
+        let document: Node = <Node><any>Library.readRoot(json);
         
         // Make sure the correct # of extra properties were read
         let extraPropVis: ExtraPropertyDetectionVisitor = new ExtraPropertyDetectionVisitor();

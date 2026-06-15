@@ -1,6 +1,6 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
-import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaUnion;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -77,7 +77,7 @@ public class ObjectSchemaDiff {
             if (!origPermitsAdditional) {
                 // Original forbids additional, so adding properties extends the schema
                 ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED, null, addedKeys);
-            } else if (origAdditional != null && origAdditional.isJSchema() && updProps != null) {
+            } else if (origAdditional != null && origAdditional.isFullSchema() && updProps != null) {
                 // Original has an additionalProperties schema: adding a property replaces the
                 // additionalProperties schema with a specific one, which is compatible
                 // only if the new property schema is compatible with the old additionalProperties schema.
@@ -109,7 +109,7 @@ public class ObjectSchemaDiff {
             if (!updPermitsAdditional) {
                 // Updated forbids additional, so the removed property can no longer be set
                 ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED, removedKeys, null);
-            } else if (updAdditional != null && updAdditional.isJSchema() && origProps != null) {
+            } else if (updAdditional != null && updAdditional.isFullSchema() && origProps != null) {
                 // Updated has an additionalProperties schema: removed property values
                 // will now be validated against it. Compatible only if the AP schema
                 // accepts a superset of what the original property schema accepted.
@@ -145,8 +145,8 @@ public class ObjectSchemaDiff {
 
         var origIsBoolean = origAP != null && origAP.isBoolean();
         var updIsBoolean = updAP != null && updAP.isBoolean();
-        var origIsSchema = origAP != null && origAP.isJSchema();
-        var updIsSchema = updAP != null && updAP.isJSchema();
+        var origIsSchema = origAP != null && origAP.isFullSchema();
+        var updIsSchema = updAP != null && updAP.isFullSchema();
 
         if ((origIsBoolean || origAP == null) && (updIsBoolean || updAP == null)) {
             diffBooleanTransition(ctx, origPermits, updPermits, true,
@@ -229,10 +229,10 @@ public class ObjectSchemaDiff {
                 OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_NONE);
     }
 
-    private static BooleanJSchemaUnion getPropertyNames(SchemaAccessor schema) {
+    private static JsonSchema getPropertyNames(SchemaAccessor schema) {
         var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document d) return d.getPropertyNames();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema s) return s.getPropertyNames();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) return d.getPropertyNames();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) return s.getPropertyNames();
         return null;
     }
 
@@ -292,12 +292,12 @@ public class ObjectSchemaDiff {
 
     private static Map<String, com.fasterxml.jackson.databind.JsonNode> getDependencies(SchemaAccessor schema) {
         var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JSDraftDocument d) return d.getDependencies();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JSDraftJSchema s) return s.getDependencies();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema d) return d.getDependencies();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema s) return s.getDependencies();
         return null;
     }
 
-    private static boolean permitsAdditional(BooleanJSchemaUnion additionalProperties) {
+    private static boolean permitsAdditional(JsonSchema additionalProperties) {
         if (additionalProperties == null) return true; // default is true
         if (additionalProperties.isBoolean()) return additionalProperties.asBoolean();
         return true; // schema means additional properties are allowed (with constraints)

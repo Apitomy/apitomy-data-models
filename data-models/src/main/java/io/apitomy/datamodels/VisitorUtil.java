@@ -31,11 +31,11 @@ import io.apitomy.datamodels.models.asyncapi.v2x.v25.visitors.AsyncApi25Traverse
 import io.apitomy.datamodels.models.asyncapi.v2x.v26.visitors.AsyncApi26Traverser;
 import io.apitomy.datamodels.models.asyncapi.v3x.v30.visitors.AsyncApi30Traverser;
 import io.apitomy.datamodels.models.asyncapi.v3x.v31.visitors.AsyncApi31Traverser;
-import io.apitomy.datamodels.models.jsonschema.draft.draft4.visitors.JSDraft4Traverser;
-import io.apitomy.datamodels.models.jsonschema.draft.draft6.visitors.JSDraft6Traverser;
-import io.apitomy.datamodels.models.jsonschema.draft.draft7.visitors.JSDraft7Traverser;
-import io.apitomy.datamodels.models.jsonschema.modern.v201909.visitors.JS201909Traverser;
-import io.apitomy.datamodels.models.jsonschema.modern.v202012.visitors.JS202012Traverser;
+import io.apitomy.datamodels.models.jsonschema.draft.draft4.visitors.JD4Traverser;
+import io.apitomy.datamodels.models.jsonschema.draft.draft6.visitors.JD6Traverser;
+import io.apitomy.datamodels.models.jsonschema.draft.draft7.visitors.JD7Traverser;
+import io.apitomy.datamodels.models.jsonschema.modern.v201909.visitors.JM201909Traverser;
+import io.apitomy.datamodels.models.jsonschema.modern.v202012.visitors.JM202012Traverser;
 import io.apitomy.datamodels.models.openapi.v2x.v20.visitors.OpenApi20Traverser;
 import io.apitomy.datamodels.models.openapi.v3x.v30.visitors.OpenApi30Traverser;
 import io.apitomy.datamodels.models.openapi.v3x.v31.visitors.OpenApi31Traverser;
@@ -108,20 +108,20 @@ public class VisitorUtil {
                 case OPENRPC14:
                     traverser = new OpenRpc14Traverser(visitor);
                     break;
-                case JSDRAFT4:
-                    traverser = new JSDraft4Traverser(visitor);
+                case JD4:
+                    traverser = new JD4Traverser(visitor);
                     break;
-                case JSDRAFT6:
-                    traverser = new JSDraft6Traverser(visitor);
+                case JD6:
+                    traverser = new JD6Traverser(visitor);
                     break;
-                case JSDRAFT7:
-                    traverser = new JSDraft7Traverser(visitor);
+                case JD7:
+                    traverser = new JD7Traverser(visitor);
                     break;
-                case JS201909:
-                    traverser = new JS201909Traverser(visitor);
+                case JM201909:
+                    traverser = new JM201909Traverser(visitor);
                     break;
-                case JS202012:
-                    traverser = new JS202012Traverser(visitor);
+                case JM202012:
+                    traverser = new JM202012Traverser(visitor);
                     break;
             }
         }

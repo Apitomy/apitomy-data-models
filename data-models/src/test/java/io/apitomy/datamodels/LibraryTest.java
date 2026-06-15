@@ -1,7 +1,7 @@
 package io.apitomy.datamodels;
 
 import io.apitomy.datamodels.models.ModelType;
-import io.apitomy.datamodels.models.jsonschema.modern.v202012.JS202012Document;
+import io.apitomy.datamodels.models.jsonschema.modern.v202012.JM202012FullSchema;
 import io.apitomy.datamodels.models.openapi.OpenApiDocument;
 import io.apitomy.datamodels.models.union.StringUnionValueImpl;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Document;
@@ -23,7 +23,7 @@ public class LibraryTest {
 
     @Test
     public void testJsonSchema202012() {
-        JS202012Document document = (JS202012Document) Library.createDocument(ModelType.JS202012);
+        JM202012FullSchema document = (JM202012FullSchema) Library.createRoot(ModelType.JM202012);
         document.set$id("http://example.com/draft2020-12/my-schema.json");
         document.setType(new StringUnionValueImpl("string"));
 
@@ -34,7 +34,7 @@ public class LibraryTest {
     "type": "string"
 }""";
 
-        String actual = Library.writeDocumentToJSONString(document);
+        String actual = Library.writeNodeToString((io.apitomy.datamodels.models.Node) document);
         Assertions.assertEquals(expected, actual);
     }
 

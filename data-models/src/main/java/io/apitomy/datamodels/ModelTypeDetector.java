@@ -84,15 +84,15 @@ public class ModelTypeDetector {
         String schema = JsonUtil.getStringProperty(json, "$schema");
         if (schema != null) {
             if (schema.contains("draft-04")) {
-                return ModelType.JSDRAFT4;
+                return ModelType.JD4;
             } else if (schema.contains("draft-06")) {
-                return ModelType.JSDRAFT6;
+                return ModelType.JD6;
             } else if (schema.contains("draft-07")) {
-                return ModelType.JSDRAFT7;
+                return ModelType.JD7;
             } else if (schema.contains("2019-09")) {
-                return ModelType.JS201909;
+                return ModelType.JM201909;
             } else if (schema.contains("2020-12")) {
-                return ModelType.JS202012;
+                return ModelType.JM202012;
             } else {
                 throw new UnsupportedModelTypeException("Unknown/unsupported JSON Schema version: " + schema);
             }
@@ -102,6 +102,6 @@ public class ModelTypeDetector {
         //  Should check for schema keywords (type, properties, allOf, etc.) and
         //  version-specific keywords ($defs → 2019-09+, prefixItems → 2020-12, etc.)
         //  before falling back. Currently defaults to Draft 7 for any unrecognized document.
-        return ModelType.JSDRAFT7;
+        return ModelType.JD7;
     }
 }

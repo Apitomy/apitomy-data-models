@@ -7,6 +7,8 @@ import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.forge.roaster.model.source.MethodHolderSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
+import java.util.function.Predicate;
+
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.PropertyType;
@@ -55,23 +57,31 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
         } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
             createGetter(javaEntity, propertyWithOrigin);
             createSetter(javaEntity, propertyWithOrigin);
-        } else if (isEntity(property)) {
+        } else if (resolvedTypeIs(property, t -> t.isEntityType())) {
             createGetter(javaEntity, propertyWithOrigin);
             createSetter(javaEntity, propertyWithOrigin);
             createFactoryMethod(javaEntity, propertyWithOrigin);
-        } else if (isEntityList(property) || isEntityMap(property)) {
+        } else if (resolvedTypeIs(property, t -> t.isCollectionType()
+                && ((io.apitomy.umg.models.concept.type.CollectionType) t).getValueType().isEntityType())) {
             createFactoryMethod(javaEntity, propertyWithOrigin);
             createGetter(javaEntity, propertyWithOrigin);
             createAddMethod(javaEntity, propertyWithOrigin);
             createClearMethod(javaEntity, propertyWithOrigin);
             createRemoveMethod(javaEntity, propertyWithOrigin);
             createInsertMethod(javaEntity, propertyWithOrigin);
-        } else if (isUnion(property)) {
+        } else if (resolvedTypeIs(property, t -> t.isUnionType())) {
             createGetter(javaEntity, propertyWithOrigin);
             createSetter(javaEntity, propertyWithOrigin);
             createUnionFactoryMethods(javaEntity, propertyWithOrigin);
-        } else if (isUnionList(property) || isUnionMap(property)) {
+        } else if (resolvedTypeIs(property, t -> t.isCollectionType()
+                && ((io.apitomy.umg.models.concept.type.CollectionType) t).getValueType().isUnionType())) {
             createUnionFactoryMethods(javaEntity, propertyWithOrigin);
+            createGetter(javaEntity, propertyWithOrigin);
+            createAddMethod(javaEntity, propertyWithOrigin);
+            createClearMethod(javaEntity, propertyWithOrigin);
+            createRemoveMethod(javaEntity, propertyWithOrigin);
+            createInsertMethod(javaEntity, propertyWithOrigin);
+        } else if (resolvedTypeIs(property, t -> t.isCollectionType())) {
             createGetter(javaEntity, propertyWithOrigin);
             createAddMethod(javaEntity, propertyWithOrigin);
             createClearMethod(javaEntity, propertyWithOrigin);
@@ -80,6 +90,11 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
         } else {
             warn("Failed to create methods (not yet implemented) for property '" + property.getName() + "' of entity: " + javaEntity.getQualifiedName());
         }
+    }
+
+    private boolean resolvedTypeIs(PropertyModel property, Predicate<Type> predicate) {
+        var resolved = property.getResolvedType();
+        return resolved != null && predicate.test(resolved);
     }
 
     /**
