@@ -1373,8 +1373,6 @@ io/apitomy/datamodels/models/union/ListUnionValueImpl.java
 io/apitomy/datamodels/models/union/MapUnionValue.java
 io/apitomy/datamodels/models/union/MapUnionValueImpl.java
 io/apitomy/datamodels/models/union/MultiFormatSchemaSchemaUnion.java
-io/apitomy/datamodels/models/union/ObjectUnionValue.java
-io/apitomy/datamodels/models/union/ObjectUnionValueImpl.java
 io/apitomy/datamodels/models/union/PrimitiveUnionValue.java
 io/apitomy/datamodels/models/union/PrimitiveUnionValueImpl.java
 io/apitomy/datamodels/models/union/SchemaListUnionValue.java

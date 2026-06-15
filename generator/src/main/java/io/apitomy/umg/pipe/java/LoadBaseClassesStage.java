@@ -38,16 +38,12 @@ public class LoadBaseClassesStage extends AbstractStage {
                     "io.apitomy.umg.base.visitors.TraversalStep",
                     "io.apitomy.umg.base.visitors.TraversalContextImpl",
                     "io.apitomy.umg.base.visitors.ReverseTraverser",
-                    "io.apitomy.umg.base.union.BooleanUnionValueImpl",
                     "io.apitomy.umg.base.union.ListUnionValueImpl",
                     "io.apitomy.umg.base.union.MapUnionValueImpl",
                     "io.apitomy.umg.base.union.EntityListUnionValueImpl",
                     "io.apitomy.umg.base.union.EntityMapUnionValueImpl",
                     "io.apitomy.umg.base.union.PrimitiveUnionValueImpl",
                     "io.apitomy.umg.base.union.StringListUnionValueImpl",
-                    "io.apitomy.umg.base.union.StringUnionValueImpl",
-                    "io.apitomy.umg.base.union.ObjectUnionValueImpl",
-                    "io.apitomy.umg.base.union.AnyUnionValueImpl",
                     "io.apitomy.umg.base.union.UnionValueImpl"
                     );
             loadBaseInterfaces(
@@ -62,16 +58,12 @@ public class LoadBaseClassesStage extends AbstractStage {
                     "io.apitomy.umg.base.io.ModelCloner",
                     "io.apitomy.umg.base.io.ModelReader",
                     "io.apitomy.umg.base.io.ModelWriter",
-                    "io.apitomy.umg.base.union.BooleanUnionValue",
                     "io.apitomy.umg.base.union.EntityListUnionValue",
                     "io.apitomy.umg.base.union.EntityMapUnionValue",
                     "io.apitomy.umg.base.union.ListUnionValue",
                     "io.apitomy.umg.base.union.MapUnionValue",
                     "io.apitomy.umg.base.union.PrimitiveUnionValue",
                     "io.apitomy.umg.base.union.StringListUnionValue",
-                    "io.apitomy.umg.base.union.StringUnionValue",
-                    "io.apitomy.umg.base.union.ObjectUnionValue",
-                    "io.apitomy.umg.base.union.AnyUnionValue",
                     "io.apitomy.umg.base.union.Union",
                     "io.apitomy.umg.base.union.UnionValue"
                     );
