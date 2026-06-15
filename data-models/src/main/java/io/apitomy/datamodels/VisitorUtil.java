@@ -48,6 +48,7 @@ import io.apitomy.datamodels.models.visitors.Traverser;
 import io.apitomy.datamodels.models.visitors.Visitor;
 import io.apitomy.datamodels.paths.NodePath;
 import io.apitomy.datamodels.paths.NodePathSegment;
+import io.apitomy.datamodels.util.LoggerUtil;
 import io.apitomy.datamodels.util.NodeUtil;
 
 /**
@@ -196,8 +197,75 @@ public class VisitorUtil {
                     ((Node) current).accept(visitor);
                 }
             } catch (Exception e) {
-                // If any error occurs during traversal, stop gracefully
+                LoggerUtil.warn("Error during path traversal at segment '%s': %s",
+                        segment.getValue(), e.getMessage());
                 break;
+            }
+        }
+    }
+
+    /**
+     * Strict variant of {@link #visitPath(Node, NodePath, Visitor)} that throws on errors
+     * instead of silently stopping traversal. Use this when you need to ensure that the
+     * entire path was successfully traversed, and want errors to propagate to the caller.
+     *
+     * @param node The starting node (typically the root document)
+     * @param nodePath The path to traverse through the data model
+     * @param visitor The visitor to apply to each node along the path
+     * @throws DataModelsException if any error occurs during traversal
+     */
+    @SuppressWarnings("rawtypes")
+    public static void visitPathStrict(Node node, NodePath nodePath, Visitor visitor) {
+        List<NodePathSegment> segments = nodePath.getSegments();
+        Object current = node;
+
+        // Visit the starting node
+        if (NodeUtil.isNode(current)) {
+            ((Node) current).accept(visitor);
+        }
+
+        // Traverse each segment of the path
+        for (NodePathSegment segment : segments) {
+            if (current == null) {
+                break;
+            }
+
+            try {
+                if (!segment.isIndex()) {
+                    current = NodeUtil.getProperty(current, segment.getValue());
+                } else {
+                    if (NodeUtil.isUnion(current)) {
+                        Union union = (Union) current;
+                        current = union.unionValue();
+                    }
+
+                    if (NodeUtil.isNode(current)) {
+                        MappedNode mappedNode = (MappedNode) current;
+                        current = mappedNode.getItem(segment.getValue());
+                    } else if (NodeUtil.isList(current)) {
+                        int index = NodeUtil.toInteger(segment.getValue());
+                        List list = (List) current;
+                        if (index >= 0 && index < list.size()) {
+                            current = list.get(index);
+                        } else {
+                            break;
+                        }
+                    } else if (NodeUtil.isMap(current)) {
+                        Map map = (Map) current;
+                        current = NodeUtil.getMapItem(map, segment.getValue());
+                    }
+                }
+
+                if (current == null) {
+                    break;
+                }
+
+                if (NodeUtil.isNode(current)) {
+                    ((Node) current).accept(visitor);
+                }
+            } catch (Exception e) {
+                throw new DataModelsException("Error during path traversal at segment '"
+                        + segment.getValue() + "'", e);
             }
         }
     }

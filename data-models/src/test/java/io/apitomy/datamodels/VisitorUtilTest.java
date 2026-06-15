@@ -28,6 +28,7 @@ import io.apitomy.datamodels.models.Operation;
 import io.apitomy.datamodels.models.openapi.OpenApiResponse;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Document;
 import io.apitomy.datamodels.models.visitors.AllNodeVisitor;
+import io.apitomy.datamodels.models.visitors.Visitor;
 import io.apitomy.datamodels.paths.NodePath;
 
 /**
@@ -303,5 +304,54 @@ public class VisitorUtilTest {
         Assertions.assertTrue(visitor2.visitedNodes.size() > 0, "Second path should visit nodes");
         Assertions.assertEquals(visitor1.visitedNodes.get(0), visitor2.visitedNodes.get(0),
             "Both should start with document");
+    }
+
+    // --- visitPathStrict tests ---
+
+    @Test
+    public void testVisitPathStrict_ValidPath() {
+        OpenApi30Document document = (OpenApi30Document) Library.readDocumentFromJSONString(SAMPLE_OPENAPI);
+        NodePath path = NodePath.parse("/paths[/pets]/get/responses[200]");
+        NodeCollectorVisitor visitor = new NodeCollectorVisitor();
+
+        VisitorUtil.visitPathStrict(document, path, visitor);
+
+        Assertions.assertTrue(visitor.visitedNodes.size() >= 4, "Should visit at least 4 nodes");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "First node should be document");
+        Node lastNode = visitor.visitedNodes.get(visitor.visitedNodes.size() - 1);
+        Assertions.assertTrue(lastNode instanceof OpenApiResponse, "Last node should be a Response");
+    }
+
+    @Test
+    public void testVisitPathStrict_NonExistentPropertyStopsGracefully() {
+        OpenApi30Document document = (OpenApi30Document) Library.readDocumentFromJSONString(SAMPLE_OPENAPI);
+        NodePath path = NodePath.parse("/nonExistentProperty");
+        NodeCollectorVisitor visitor = new NodeCollectorVisitor();
+
+        VisitorUtil.visitPathStrict(document, path, visitor);
+
+        Assertions.assertEquals(1, visitor.visitedNodes.size(),
+                "Should visit only the document when property returns null");
+    }
+
+    @Test
+    public void testVisitPathStrict_ThrowsOnTraversalError() {
+        OpenApi30Document document = (OpenApi30Document) Library.readDocumentFromJSONString(SAMPLE_OPENAPI);
+        NodePath path = NodePath.parse("/info");
+
+        Visitor throwingVisitor = new AllNodeVisitor() {
+            private int count = 0;
+            @Override
+            protected void visitNode(Node node) {
+                count++;
+                if (count > 1) {
+                    throw new RuntimeException("Simulated visitor error");
+                }
+            }
+        };
+
+        Assertions.assertThrows(DataModelsException.class, () -> {
+            VisitorUtil.visitPathStrict(document, path, throwingVisitor);
+        });
     }
 }
