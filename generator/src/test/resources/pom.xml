@@ -61,7 +61,7 @@
         <version.yarn>1.22.5</version.yarn>
 
         <!-- Dependency Versions -->
-        <version.com.fasterxml.jackson>2.21.4</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.22.0</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.dataformat>2.10.0.pr1</version.com.fasterxml.jackson.dataformat>
         <version.commons-io>2.22.0</version.commons-io>
         <version.junit>4.13.2</version.junit>
