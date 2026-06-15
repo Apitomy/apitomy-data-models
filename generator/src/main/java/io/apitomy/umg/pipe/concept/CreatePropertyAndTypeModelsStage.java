@@ -112,6 +112,7 @@ public class CreatePropertyAndTypeModelsStage extends AbstractStage {
         var propertyType = PropertyType.parse(property.getType());
         var rawType = RawType.parse(property.getType());
         var resolvedType = resolveType(rawType, namespace);
+        indexTypesRecursively(resolvedType, namespace);
 
         var builder = PropertyModel.builder()
                 .name(property.getName())
@@ -205,6 +206,29 @@ public class CreatePropertyAndTypeModelsStage extends AbstractStage {
         }
 
         throw new IllegalStateException("Unknown raw type structure: " + rawType);
+    }
+
+    private void indexTypesRecursively(Type type, String namespace) {
+        if (type instanceof UnionType unionType) {
+            if (unionType.getAliasName() != null) {
+                // Type aliases are already indexed during alias processing
+                return;
+            }
+            var fqName = namespace + "." + unionType.getName();
+            if (!getState().getConceptIndex().hasType(fqName)) {
+                getState().getConceptIndex().indexType(fqName, unionType);
+            }
+            for (var variant : unionType.getTypes()) {
+                indexTypesRecursively(variant, namespace);
+            }
+        } else if (type instanceof PrimitiveUnionVariantType puv) {
+            var fqName = PrimitiveType.NAMESPACE + "." + puv.getName();
+            if (!getState().getConceptIndex().hasType(fqName)) {
+                getState().getConceptIndex().indexType(fqName, puv);
+            }
+        } else if (type instanceof io.apitomy.umg.models.concept.type.CollectionType ct) {
+            indexTypesRecursively(ct.getValueType(), namespace);
+        }
     }
 
     private boolean isPropertyShaded(Property property, EntityModel entityModel) {
