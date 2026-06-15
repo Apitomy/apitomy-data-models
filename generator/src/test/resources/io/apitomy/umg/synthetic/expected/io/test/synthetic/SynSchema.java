@@ -7,7 +7,7 @@ import io.test.synthetic.union.SchemaOrBoolean;
 import java.util.List;
 import java.util.Map;
 
-public interface SynSchema extends Node, SchemaOrBoolean, BooleanSchemaUnion, BooleanSchemaSchemaListUnion {
+public interface SynSchema extends Node, SchemaOrBoolean, BooleanSchemaSchemaListUnion, BooleanSchemaUnion {
 
 	public SynSchema createSchema();
 

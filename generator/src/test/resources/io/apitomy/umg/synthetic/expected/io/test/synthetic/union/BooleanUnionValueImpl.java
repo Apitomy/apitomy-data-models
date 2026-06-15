@@ -43,5 +43,4 @@ public class BooleanUnionValueImpl extends PrimitiveUnionValueImpl<Boolean> impl
 	public List<SynSchema> asSchemaList() {
 		throw new ClassCastException();
 	}
-
 }
