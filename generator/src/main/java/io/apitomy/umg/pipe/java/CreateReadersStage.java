@@ -79,10 +79,152 @@ public class CreateReadersStage extends AbstractJavaStage {
             }
         });
 
+        // Create type-based reader methods for unions and collections
+        createTypeBasedReaderMethods(specVersion, readerClassSource);
+
         // Create readRoot method based on the spec-level root type
         createReadRootFromSpec(specVersion, readerClassSource);
 
         getState().getJavaIndex().index(readerClassSource);
+    }
+
+    private void createTypeBasedReaderMethods(SpecificationVersion specVersion, JavaClassSource readerClassSource) {
+        var namespace = specVersion.getNamespace();
+
+        getState().getConceptIndex().findTypes(namespace).stream()
+                .filter(t -> t instanceof io.apitomy.umg.models.concept.type.UnionType)
+                .map(t -> (io.apitomy.umg.models.concept.type.UnionType) t)
+                .forEach(unionType -> createUnionReaderMethod(specVersion, readerClassSource, unionType));
+    }
+
+    private void createUnionReaderMethod(SpecificationVersion specVersion, JavaClassSource readerClassSource,
+                                          io.apitomy.umg.models.concept.type.UnionType unionType) {
+        var namespace = specVersion.getNamespace();
+        var nsModel = getState().getConceptIndex().lookupNamespace(namespace);
+        var jt = getJavaTypeFactory().createJavaType(unionType, nsModel);
+        String unionTypeName = jt.getSimpleName();
+        String methodName = "read" + unionTypeName;
+
+        // Skip if already created
+        if (readerClassSource.getMethod(methodName, JsonNode.class.getSimpleName()) != null) {
+            return;
+        }
+
+        debug("Creating union reader method: %s", methodName);
+
+        readerClassSource.addImport(JsonNode.class);
+        readerClassSource.addImport(ObjectNode.class);
+        jt.addImportsTo(readerClassSource);
+
+        MethodSource<JavaClassSource> method = readerClassSource.addMethod()
+                .setName(methodName)
+                .setReturnType(jt.toJavaTypeString())
+                .setPrivate();
+        method.addParameter("JsonNode", "json");
+
+        BodyBuilder body = new BodyBuilder();
+        body.append("if (json == null) return null;");
+
+        // Generate dispatch for each variant
+        boolean first = true;
+        for (var variantType : unionType.getTypes()) {
+            if (variantType instanceof io.apitomy.umg.models.concept.type.EntityType entityType) {
+                var entity = entityType.getEntity();
+                if (entity == null) entity = getState().getConceptIndex().lookupEntity(namespace, entityType.getName());
+                if (entity == null) continue;
+
+                JavaInterfaceSource entitySource = lookupJavaEntity(entity);
+                JavaClassSource entityImplSource = lookupJavaEntityImpl(entity);
+                readerClassSource.addImport(entitySource);
+                readerClassSource.addImport(entityImplSource);
+
+                body.addContext("entityType", entitySource.getName());
+                body.addContext("entityImplType", entityImplSource.getName());
+                body.addContext("readMethodName", readMethodName(entity));
+
+                var rule = unionType.getRuleFor(entityType.getName());
+                String condition;
+                if (rule != null && rule.getRuleType() == io.apitomy.umg.beans.UnionRuleType.PROPERTYEXISTS) {
+                    body.addContext("rulePropName", rule.getPropertyName());
+                    condition = "json.isObject() && json.has(\"${rulePropName}\")";
+                } else if (rule != null && rule.getRuleType() == io.apitomy.umg.beans.UnionRuleType.PROPERTYVALUE) {
+                    body.addContext("rulePropName", rule.getPropertyName());
+                    body.addContext("rulePropValue", rule.getPropertyValue());
+                    condition = "JsonUtil.isObjectWithPropertyValue(json, \"${rulePropName}\", \"${rulePropValue}\")";
+                } else {
+                    condition = "json.isObject()";
+                }
+
+                if (!first) body.append(" else ");
+                first = false;
+
+                body.append("if (" + condition + ") {");
+                body.append("    ${entityType} node = new ${entityImplType}();");
+                body.append("    this.${readMethodName}((ObjectNode) json, node);");
+                body.append("    return node;");
+                body.append("}");
+            } else if (variantType instanceof io.apitomy.umg.models.concept.type.PrimitiveUnionVariantType puv) {
+                Class<?> javaClass = Util.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
+                if (javaClass == null) continue;
+
+                String typeName = io.apitomy.umg.models.java.type.JavaTypeFactory.getUnionComponentName(variantType);
+                String unionValueClassFQN = getUnionTypeFQN(typeName + "UnionValueImpl");
+                JavaClassSource unionValueClass = getState().getJavaIndex().lookupClass(unionValueClassFQN);
+                if (unionValueClass == null) continue;
+
+                readerClassSource.addImport(unionValueClass);
+
+                body.addContext("isMethod", "is" + javaClass.getSimpleName());
+                body.addContext("toMethod", "to" + javaClass.getSimpleName());
+                body.addContext("unionValueClass", unionValueClass.getName());
+
+                if (!first) body.append(" else ");
+                first = false;
+
+                body.append("if (JsonUtil.${isMethod}(json)) {");
+                body.append("    return new ${unionValueClass}(JsonUtil.${toMethod}(json));");
+                body.append("}");
+            } else if (variantType instanceof io.apitomy.umg.models.concept.type.ListType listType
+                    && listType.getValueType() instanceof io.apitomy.umg.models.concept.type.EntityType listEntityType) {
+                var entity = listEntityType.getEntity();
+                if (entity == null) entity = getState().getConceptIndex().lookupEntity(namespace, listEntityType.getName());
+                if (entity == null) continue;
+
+                String typeName = io.apitomy.umg.models.java.type.JavaTypeFactory.getUnionComponentName(variantType);
+                String unionValueClassFQN = getUnionTypeFQN(typeName + "UnionValueImpl");
+                JavaClassSource unionValueClass = getState().getJavaIndex().lookupClass(unionValueClassFQN);
+                if (unionValueClass == null) continue;
+
+                JavaInterfaceSource entitySource = lookupJavaEntity(entity);
+                readerClassSource.addImport(entitySource);
+                readerClassSource.addImport(unionValueClass);
+                readerClassSource.addImport(java.util.List.class);
+                readerClassSource.addImport(java.util.ArrayList.class);
+
+                body.addContext("listValueType", entitySource.getName());
+                body.addContext("readMethodName", readMethodName(entity));
+                body.addContext("unionValueClass", unionValueClass.getName());
+
+                if (!first) body.append(" else ");
+                first = false;
+
+                body.append("if (JsonUtil.isArray(json)) {");
+                body.append("    List<JsonNode> array = JsonUtil.toList(json);");
+                body.append("    List<${listValueType}> models = new ArrayList<>();");
+                body.append("    array.forEach(item -> {");
+                body.append("        ObjectNode object = JsonUtil.toObject(item);");
+                body.append("        ${listValueType} model = new ${listValueType}Impl();");
+                body.append("        this.${readMethodName}(object, model);");
+                body.append("        models.add(model);");
+                body.append("    });");
+                body.append("    @SuppressWarnings({ \"unchecked\", \"rawtypes\" })");
+                body.append("    ${unionValueClass} unionValue = new ${unionValueClass}((List) models);");
+                body.append("    return unionValue;");
+                body.append("}");
+            }
+        }
+        body.append("return null;");
+        method.setBody(body.toString());
     }
 
     private void createReadRootFromSpec(SpecificationVersion specVersion, JavaClassSource readerClassSource) {
@@ -325,6 +467,8 @@ public class CreateReadersStage extends AbstractJavaStage {
                 handleStarProperty(body);
             } else if (property.getName().startsWith("/")) {
                 handleRegexProperty(body);
+            } else if (handleViaResolvedType(body)) {
+                // Handled by resolved type dispatch — union reader methods etc.
             } else if (property.getType().isEntityType()) {
                 handleEntityProperty(body);
             } else if (property.getType().isPrimitiveType()) {
@@ -343,6 +487,124 @@ public class CreateReadersStage extends AbstractJavaStage {
                 warn("Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
                 warn("       property type: " + property.getType());
             }
+        }
+
+        private boolean handleViaResolvedType(BodyBuilder body) {
+            PropertyModel property = propertyWithOrigin.getProperty();
+            var resolved = property.getResolvedType();
+            if (resolved == null) return false;
+
+            // Only use resolved type dispatch when PropertyType doesn't recognize the
+            // type correctly (e.g., type alias properties where PropertyType is simple
+            // but resolvedType is a union). For properties where PropertyType already
+            // works (inline unions), fall through to the old code path.
+            var pt = property.getType();
+            if (pt.isUnion() || (pt.isList() && pt.getNested().iterator().next().isUnion())
+                    || (pt.isMap() && pt.getNested().iterator().next().isUnion())) {
+                return false;
+            }
+
+            // Direct union property (e.g., not: Schema where Schema is a type alias)
+            if (resolved instanceof io.apitomy.umg.models.concept.type.UnionType) {
+                handleResolvedUnionProperty(body, resolved);
+                return true;
+            }
+
+            // List of union (e.g., allOf: [Schema])
+            if (resolved instanceof io.apitomy.umg.models.concept.type.ListType lt
+                    && lt.getValueType() instanceof io.apitomy.umg.models.concept.type.UnionType) {
+                handleResolvedUnionListProperty(body, lt);
+                return true;
+            }
+
+            // Map of union (e.g., definitions: {Schema})
+            if (resolved instanceof io.apitomy.umg.models.concept.type.MapType mt
+                    && mt.getValueType() instanceof io.apitomy.umg.models.concept.type.UnionType) {
+                handleResolvedUnionMapProperty(body, mt);
+                return true;
+            }
+
+            return false;
+        }
+
+        private void handleResolvedUnionProperty(BodyBuilder body, io.apitomy.umg.models.concept.type.Type resolved) {
+            PropertyModel property = propertyWithOrigin.getProperty();
+            var nsModel = propertyWithOrigin.getOrigin().getNamespace();
+            var jt = getJavaTypeFactory().createJavaType(resolved, nsModel);
+            String readMethodName = "read" + jt.getSimpleName();
+
+            readerClassSource.addImport(JsonNode.class);
+            jt.addImportsTo(readerClassSource);
+
+            body.addContext("propertyName", property.getName());
+            body.addContext("setterMethodName", setterMethodName(property));
+            body.addContext("readMethodName", readMethodName);
+
+            body.append("{");
+            body.append("    JsonNode value = JsonUtil.consumeAnyProperty(json, \"${propertyName}\");");
+            body.append("    if (value != null) {");
+            body.append("        node.${setterMethodName}(this.${readMethodName}(value));");
+            body.append("    }");
+            body.append("}");
+        }
+
+        private void handleResolvedUnionListProperty(BodyBuilder body,
+                io.apitomy.umg.models.concept.type.ListType listType) {
+            PropertyModel property = propertyWithOrigin.getProperty();
+            var nsModel = propertyWithOrigin.getOrigin().getNamespace();
+            var valueJt = getJavaTypeFactory().createJavaType(listType.getValueType(), nsModel);
+            String readMethodName = "read" + valueJt.getSimpleName();
+
+            readerClassSource.addImport(JsonNode.class);
+            readerClassSource.addImport(java.util.List.class);
+            readerClassSource.addImport(java.util.ArrayList.class);
+            valueJt.addImportsTo(readerClassSource);
+
+            body.addContext("propertyName", property.getName());
+            body.addContext("addMethodName", addMethodName(singularize(property.getName())));
+            body.addContext("readMethodName", readMethodName);
+            body.addContext("unionJavaType", valueJt.toJavaTypeString());
+
+            body.append("{");
+            body.append("    List<JsonNode> array = JsonUtil.consumeAnyArrayProperty(json, \"${propertyName}\");");
+            body.append("    if (array != null) {");
+            body.append("        array.forEach(item -> {");
+            body.append("            ${unionJavaType} value = this.${readMethodName}(item);");
+            body.append("            if (value != null) node.${addMethodName}(value);");
+            body.append("        });");
+            body.append("    }");
+            body.append("}");
+        }
+
+        private void handleResolvedUnionMapProperty(BodyBuilder body,
+                io.apitomy.umg.models.concept.type.MapType mapType) {
+            PropertyModel property = propertyWithOrigin.getProperty();
+            var nsModel = propertyWithOrigin.getOrigin().getNamespace();
+            var valueJt = getJavaTypeFactory().createJavaType(mapType.getValueType(), nsModel);
+            String readMethodName = "read" + valueJt.getSimpleName();
+
+            readerClassSource.addImport(JsonNode.class);
+            readerClassSource.addImport(ObjectNode.class);
+            readerClassSource.addImport(java.util.List.class);
+            valueJt.addImportsTo(readerClassSource);
+
+            body.addContext("propertyName", property.getName());
+            body.addContext("addMethodName", addMethodName(singularize(property.getName())));
+            body.addContext("readMethodName", readMethodName);
+            body.addContext("unionJavaType", valueJt.toJavaTypeString());
+
+            body.append("{");
+            body.append("    ObjectNode mapObj = JsonUtil.consumeObjectProperty(json, \"${propertyName}\");");
+            body.append("    if (mapObj != null) {");
+            body.append("        JsonUtil.keys(mapObj).forEach(key -> {");
+            body.append("            JsonNode value = JsonUtil.consumeAnyProperty(mapObj, key);");
+            body.append("            if (value != null) {");
+            body.append("                ${unionJavaType} model = this.${readMethodName}(value);");
+            body.append("                if (model != null) node.${addMethodName}(key, model);");
+            body.append("            }");
+            body.append("        });");
+            body.append("    }");
+            body.append("}");
         }
 
         private void handleStarProperty(BodyBuilder body) {

@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.test.synthetic.ModelType;
 import io.test.synthetic.RootCapable;
 import io.test.synthetic.io.ModelReader;
+import io.test.synthetic.union.BooleanSchemaSchemaListUnion;
 import io.test.synthetic.union.BooleanSchemaUnion;
 import io.test.synthetic.union.BooleanUnionValue;
 import io.test.synthetic.union.BooleanUnionValueImpl;
 import io.test.synthetic.union.SchemaListUnionValue;
 import io.test.synthetic.union.SchemaListUnionValueImpl;
+import io.test.synthetic.union.SchemaOrBoolean;
 import io.test.synthetic.util.JsonUtil;
 import io.test.synthetic.util.ReaderUtil;
 import io.test.synthetic.v2.Syn2Contact;
@@ -67,6 +69,12 @@ public class Syn2ModelReader implements ModelReader {
 					node.addWebhook(name, model);
 				}
 			});
+		}
+		{
+			JsonNode value = JsonUtil.consumeAnyProperty(json, "additionalSchema");
+			if (value != null) {
+				node.setAdditionalSchema(this.readSchemaOrBoolean(value));
+			}
 		}
 		{
 			List<String> propertyNames = JsonUtil.matchingKeys("^x-.+$", json);
@@ -295,6 +303,29 @@ public class Syn2ModelReader implements ModelReader {
 			}
 		}
 		{
+			ObjectNode mapObj = JsonUtil.consumeObjectProperty(json, "nestedSchemas");
+			if (mapObj != null) {
+				JsonUtil.keys(mapObj).forEach(key -> {
+					JsonNode value = JsonUtil.consumeAnyProperty(mapObj, key);
+					if (value != null) {
+						SchemaOrBoolean model = this.readSchemaOrBoolean(value);
+						if (model != null)
+							node.addNestedSchema(key, model);
+					}
+				});
+			}
+		}
+		{
+			List<JsonNode> array = JsonUtil.consumeAnyArrayProperty(json, "composedSchemas");
+			if (array != null) {
+				array.forEach(item -> {
+					SchemaOrBoolean value = this.readSchemaOrBoolean(item);
+					if (value != null)
+						node.addComposedSchema(value);
+				});
+			}
+		}
+		{
 			Integer value = JsonUtil.consumeIntegerProperty(json, "minLength");
 			node.setMinLength(value);
 		}
@@ -416,6 +447,57 @@ public class Syn2ModelReader implements ModelReader {
 			});
 		}
 		ReaderUtil.readExtraProperties(json, node);
+	}
+
+	private SchemaOrBoolean readSchemaOrBoolean(JsonNode json) {
+		if (json == null)
+			return null;
+		if (json.isObject() && json.has("type")) {
+			Syn2Schema node = new Syn2SchemaImpl();
+			this.readSchema((ObjectNode) json, node);
+			return node;
+		} else if (JsonUtil.isBoolean(json)) {
+			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json));
+		}
+		return null;
+	}
+
+	private BooleanSchemaSchemaListUnion readBooleanSchemaSchemaListUnion(JsonNode json) {
+		if (json == null)
+			return null;
+		if (json.isObject()) {
+			Syn2Schema node = new Syn2SchemaImpl();
+			this.readSchema((ObjectNode) json, node);
+			return node;
+		} else if (JsonUtil.isArray(json)) {
+			List<JsonNode> array = JsonUtil.toList(json);
+			List<Syn2Schema> models = new ArrayList<>();
+			array.forEach(item -> {
+				ObjectNode object = JsonUtil.toObject(item);
+				Syn2Schema model = new Syn2SchemaImpl();
+				this.readSchema(object, model);
+				models.add(model);
+			});
+			@SuppressWarnings({"unchecked", "rawtypes"})
+			SchemaListUnionValueImpl unionValue = new SchemaListUnionValueImpl((List) models);
+			return unionValue;
+		} else if (JsonUtil.isBoolean(json)) {
+			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json));
+		}
+		return null;
+	}
+
+	private BooleanSchemaUnion readBooleanSchemaUnion(JsonNode json) {
+		if (json == null)
+			return null;
+		if (json.isObject()) {
+			Syn2Schema node = new Syn2SchemaImpl();
+			this.readSchema((ObjectNode) json, node);
+			return node;
+		} else if (JsonUtil.isBoolean(json)) {
+			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json));
+		}
+		return null;
 	}
 
 	@Override
