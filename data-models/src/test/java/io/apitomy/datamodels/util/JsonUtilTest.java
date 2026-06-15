@@ -16,8 +16,8 @@
 
 package io.apitomy.datamodels.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -91,7 +91,7 @@ public class JsonUtilTest {
         JsonNode data = JsonUtil.parseJSON(INPUT);
         String actual = JsonUtil.stringify(data);
         //System.out.println(printed);
-        Assert.assertEquals(EXPECTED, actual);
+        Assertions.assertEquals(EXPECTED, actual);
     }
 
 }

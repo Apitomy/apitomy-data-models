@@ -6,8 +6,8 @@ import io.apitomy.datamodels.models.Schema;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Document;
 import io.apitomy.datamodels.paths.NodePath;
 import io.apitomy.datamodels.paths.NodePathUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class CreateNodesTest {
 
@@ -30,17 +30,17 @@ public class CreateNodesTest {
         NodePath schemaNP = createNodePath(doc.getComponents().getSchemas().get("fooType"));
         NodePath allOfNP = createNodePath(doc.getComponents().getSchemas().get("fooType").getAllOf().get(0));
 
-        Assert.assertEquals("/info", infoNP.toString());
-        Assert.assertEquals("/components/schemas[fooType]", schemaNP.toString());
-        Assert.assertEquals("/paths[/widgets]", pathNP.toString());
-        Assert.assertEquals("/components/schemas[fooType]/allOf[0]", allOfNP.toString());
+        Assertions.assertEquals("/info", infoNP.toString());
+        Assertions.assertEquals("/components/schemas[fooType]", schemaNP.toString());
+        Assertions.assertEquals("/paths[/widgets]", pathNP.toString());
+        Assertions.assertEquals("/components/schemas[fooType]/allOf[0]", allOfNP.toString());
 
-        Assert.assertNotNull(NodePathUtil.resolveNodePath(infoNP, doc));
-        Assert.assertNotNull(NodePathUtil.resolveNodePath(schemaNP, doc));
-        Assert.assertNotNull(NodePathUtil.resolveNodePath(pathNP, doc));
+        Assertions.assertNotNull(NodePathUtil.resolveNodePath(infoNP, doc));
+        Assertions.assertNotNull(NodePathUtil.resolveNodePath(schemaNP, doc));
+        Assertions.assertNotNull(NodePathUtil.resolveNodePath(pathNP, doc));
 
-        Assert.assertEquals("/widgets", doc.getPaths().getItem("/widgets").mapPropertyName());
-        Assert.assertEquals("fooType", doc.getComponents().getSchemas().get("fooType").mapPropertyName());
+        Assertions.assertEquals("/widgets", doc.getPaths().getItem("/widgets").mapPropertyName());
+        Assertions.assertEquals("fooType", doc.getComponents().getSchemas().get("fooType").mapPropertyName());
     }
 
     public static NodePath createNodePath(Node node) {
