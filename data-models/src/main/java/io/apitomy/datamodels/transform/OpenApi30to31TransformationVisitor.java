@@ -18,7 +18,6 @@ package io.apitomy.datamodels.transform;
 
 import java.util.List;
 
-import io.apitomy.datamodels.Library;
 import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.Schema;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Document;
@@ -39,7 +38,7 @@ public class OpenApi30to31TransformationVisitor extends OpenApi30VisitorAdapter 
     private OpenApi31Document doc31;
 
     public OpenApi30to31TransformationVisitor(OpenApi30Document source) {
-        doc31 = (OpenApi31Document) Library.cloneDocument(source, rawJson -> {
+        doc31 = (OpenApi31Document) TransformUtil.cloneAndTransform(source, rawJson -> {
             rawJson.put("openapi", "3.1.0");
             return rawJson;
         });

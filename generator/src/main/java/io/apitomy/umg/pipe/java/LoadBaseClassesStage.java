@@ -55,6 +55,7 @@ public class LoadBaseClassesStage extends AbstractStage {
                     "io.apitomy.umg.base.visitors.Traverser",
                     "io.apitomy.umg.base.visitors.TraversalContext",
                     "io.apitomy.umg.base.visitors.TraversingVisitor",
+                    "io.apitomy.umg.base.io.ModelCloner",
                     "io.apitomy.umg.base.io.ModelReader",
                     "io.apitomy.umg.base.io.ModelWriter",
                     "io.apitomy.umg.base.union.EntityListUnionValue",

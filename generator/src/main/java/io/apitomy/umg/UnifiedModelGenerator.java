@@ -42,6 +42,9 @@ import io.apitomy.umg.pipe.java.ConfigureInterfaceParentStage;
 import io.apitomy.umg.pipe.java.ConfigureInterfaceTraitsStage;
 import io.apitomy.umg.pipe.java.CreateAcceptMethodStage;
 import io.apitomy.umg.pipe.java.CreateAllNodeVisitorStage;
+import io.apitomy.umg.pipe.java.CreateClonerDispatchersStage;
+import io.apitomy.umg.pipe.java.CreateClonerFactoryStage;
+import io.apitomy.umg.pipe.java.CreateClonersStage;
 import io.apitomy.umg.pipe.java.CreateCombinedVisitorInterfacesStage;
 import io.apitomy.umg.pipe.java.CreateEmptyCloneMethodStage;
 import io.apitomy.umg.pipe.java.CreateEntityImplementationsStage;
@@ -151,6 +154,7 @@ public class UnifiedModelGenerator {
 
         pipe.addStage(new CreateReadersStage());
         pipe.addStage(new CreateWritersStage());
+        pipe.addStage(new CreateClonersStage());
         pipe.addStage(new CreateVisitorInterfacesStage());
         pipe.addStage(new CreateAcceptMethodStage());
         pipe.addStage(new CreateEmptyCloneMethodStage());
@@ -159,9 +163,11 @@ public class UnifiedModelGenerator {
         pipe.addStage(new CreateAllNodeVisitorStage());
         pipe.addStage(new CreateReaderDispatchersStage());
         pipe.addStage(new CreateWriterDispatchersStage());
+        pipe.addStage(new CreateClonerDispatchersStage());
         pipe.addStage(new CreateTraversersStage());
         pipe.addStage(new CreateReaderFactoryStage());
         pipe.addStage(new CreateWriterFactoryStage());
+        pipe.addStage(new CreateClonerFactoryStage());
 
         pipe.addStage(new RemoveUnusedImportsStage());
         pipe.addStage(new OrganizeImportsStage());
