@@ -125,7 +125,7 @@ public class VisitorUtil {
             }
         }
         if (traverser == null) {
-            throw new RuntimeException("Traverser not found for type: " + type);
+            throw new UnsupportedModelTypeException("Traverser not found for type: " + type);
         }
         traverser.traverse(node);
     }

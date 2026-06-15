@@ -1,5 +1,6 @@
 package io.apitomy.datamodels.util;
 
+import io.apitomy.datamodels.UnsupportedModelTypeException;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.Node;
 
@@ -52,7 +53,7 @@ public class ModelTypeUtil {
             case OPENRPC14:
                 return "1.4.0";
         }
-        throw new RuntimeException("Unsupported model type: " + type.name());
+        throw new UnsupportedModelTypeException("Unsupported model type: " + type.name());
     }
 
     /**
@@ -89,7 +90,7 @@ public class ModelTypeUtil {
             case JS202012:
                 return "$schema";
         }
-        throw new RuntimeException("Unsupported model type: " + type.name());
+        throw new UnsupportedModelTypeException("Unsupported model type: " + type.name());
     }
 
     public static boolean isOpenApiModel(Node node) {

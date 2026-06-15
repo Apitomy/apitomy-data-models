@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.apitomy.datamodels.DataModelsException;
 import io.apitomy.datamodels.Library;
+import io.apitomy.datamodels.UnsupportedModelTypeException;
 import io.apitomy.datamodels.TraverserDirection;
 import io.apitomy.datamodels.VisitorUtil;
 import io.apitomy.datamodels.models.Document;
@@ -62,7 +64,7 @@ public class Dereferencer {
 
         // Fail if strict mode is enabled and at least one ref was not resolved.
         if (this.strict && unresolveableRefCount > 0) {
-            throw new RuntimeException("Could not resolve at least one external reference.");
+            throw new DataModelsException("Could not resolve at least one external reference.");
         }
 
         return doc;
@@ -175,7 +177,7 @@ public class Dereferencer {
         } else if (ModelTypeUtil.isOpenRpcModel(doc)) {
             return new OpenRpcNodeImporter(doc, nodeWithUnresolvedRef, ref, shouldInline);
         }
-        throw new RuntimeException("Unsupported model type: " + doc.root().modelType());
+        throw new UnsupportedModelTypeException("Unsupported model type: " + doc.root().modelType());
     }
 
     /**
