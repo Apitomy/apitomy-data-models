@@ -257,7 +257,7 @@ public class Library {
             return newDoc;
         }
 
-        throw new RuntimeException("Transformation not supported.");
+        throw new TransformationException("Transformation not supported.");
     }
 
     /**
@@ -286,7 +286,7 @@ public class Library {
             return transformer.getResult();
         }
 
-        throw new RuntimeException("No single-step transformation from " + fromType + " to " + toType);
+        throw new TransformationException("No single-step transformation from " + fromType + " to " + toType);
     }
 
     /**

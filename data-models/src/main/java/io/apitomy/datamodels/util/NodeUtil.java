@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import io.apitomy.datamodels.DataModelsException;
 import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.union.Union;
 import io.apitomy.datamodels.visitors.DefinitionDetectionVisitor;
@@ -72,9 +73,9 @@ public class NodeUtil {
                             + " with " + args.length + " parameter(s) on " + target.getClass().getSimpleName()));
             return method.invoke(target, args);
         } catch (InvocationTargetException e) {
-            throw new RuntimeException(e.getCause());
+            throw new DataModelsException(e.getCause());
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataModelsException(e);
         }
     }
 

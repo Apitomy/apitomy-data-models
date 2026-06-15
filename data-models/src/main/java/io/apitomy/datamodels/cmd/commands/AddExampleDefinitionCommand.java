@@ -2,6 +2,7 @@ package io.apitomy.datamodels.cmd.commands;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.apitomy.datamodels.Library;
+import io.apitomy.datamodels.UnsupportedModelTypeException;
 import io.apitomy.datamodels.cmd.AbstractCommand;
 import io.apitomy.datamodels.models.Document;
 import io.apitomy.datamodels.models.Example;
@@ -84,7 +85,7 @@ public class AddExampleDefinitionCommand extends AbstractCommand {
         if (ModelTypeUtil.isOpenRpcModel(document)) {
             return new OpenRpcHelper();
         }
-        throw new RuntimeException("Unsupported model type: " + document.root().modelType());
+        throw new UnsupportedModelTypeException("Unsupported model type: " + document.root().modelType());
     }
 
     private interface AddExampleDefinitionCommandHelper {

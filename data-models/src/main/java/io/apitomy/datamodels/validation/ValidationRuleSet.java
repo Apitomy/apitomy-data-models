@@ -1,5 +1,6 @@
 package io.apitomy.datamodels.validation;
 
+import io.apitomy.datamodels.DataModelsException;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.util.ValidationUtil;
 import io.apitomy.datamodels.validation.rules.invalid.format.AaInvalidAsyncApiVersionFormatRule;
@@ -618,12 +619,12 @@ public class ValidationRuleSet {
 
         for (ValidationRuleMetaData rule : this.rules) {
             if (codes.contains(rule.code)) {
-                throw new RuntimeException("Duplicate rule code found: " + rule.code);
+                throw new DataModelsException("Duplicate rule code found: " + rule.code);
             } else {
                 codes.add(rule.code);
             }
             if (names.contains(rule.name)) {
-                throw new RuntimeException("Duplicate rule name found: " + rule.name);
+                throw new DataModelsException("Duplicate rule name found: " + rule.name);
             } else {
                 names.add(rule.name);
             }
