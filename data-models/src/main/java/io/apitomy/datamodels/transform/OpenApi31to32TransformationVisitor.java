@@ -16,7 +16,6 @@
 
 package io.apitomy.datamodels.transform;
 
-import io.apitomy.datamodels.Library;
 import io.apitomy.datamodels.models.openapi.v3x.v31.OpenApi31Document;
 import io.apitomy.datamodels.models.openapi.v3x.v31.visitors.OpenApi31Visitor;
 import io.apitomy.datamodels.models.openapi.v3x.v31.visitors.OpenApi31VisitorAdapter;
@@ -40,7 +39,7 @@ public class OpenApi31to32TransformationVisitor extends OpenApi31VisitorAdapter 
      * @param source the OpenAPI 3.1 document to transform
      */
     public OpenApi31to32TransformationVisitor(OpenApi31Document source) {
-        doc32 = (OpenApi32Document) Library.cloneDocument(source, rawJson -> {
+        doc32 = (OpenApi32Document) TransformUtil.cloneAndTransform(source, rawJson -> {
             rawJson.put("openapi", "3.2.0");
             return rawJson;
         });
