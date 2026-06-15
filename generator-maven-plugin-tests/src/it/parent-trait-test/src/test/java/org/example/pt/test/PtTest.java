@@ -3,8 +3,8 @@ package org.example.pt.test;
 import org.example.pt.PtFoo;
 import org.example.pt.PtFooParent;
 import org.example.pt.v1x.v10.Pt10Document;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -16,7 +16,7 @@ public class PtTest {
     public void testSimple() throws Exception {
         String testContent = loadTestResource("simple.json");
         Pt10Document document = PtTestLibrary.readDocument(testContent);
-        Assert.assertNotNull(document);
+        Assertions.assertNotNull(document);
 
         PtFoo foo = getFoo(document);
         System.out.println("Foo found: " + foo.getName());
@@ -33,7 +33,7 @@ public class PtTest {
         String resourcePath = "fixtures/" + resourceName;
         try (InputStream res = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
             if (res == null) {
-                Assert.fail("Test resource not found: " + resourcePath);
+                Assertions.fail("Test resource not found: " + resourcePath);
             }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             baos.write(res.readAllBytes());

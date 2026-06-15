@@ -3,7 +3,7 @@ package io.apitomy.umg;
 import io.apitomy.umg.io.SpecificationLoader;
 import io.apitomy.umg.models.spec.SpecificationModel;
 import org.apache.commons.io.FileUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,10 +20,10 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Snapshot test: generates code from the synthetic spec and compares
@@ -146,13 +146,13 @@ public class SyntheticSnapshotTest {
 
     private void assertGeneratedCodeCompiles(File outputDir) throws IOException {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        assertNotNull("Java compiler not available (requires JDK, not JRE)", compiler);
+        assertNotNull(compiler, "Java compiler not available (requires JDK, not JRE)");
 
         List<Path> javaFiles;
         try (Stream<Path> walk = Files.walk(outputDir.toPath())) {
             javaFiles = walk.filter(p -> p.toString().endsWith(".java")).toList();
         }
-        assertFalse("No .java files to compile", javaFiles.isEmpty());
+        assertFalse(javaFiles.isEmpty(), "No .java files to compile");
 
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
         try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null,

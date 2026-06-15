@@ -24,58 +24,42 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.apitomy.datamodels.util.CommandUtil;
 import io.apitomy.datamodels.models.util.JsonUtil;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-import org.skyscreamer.jsonassert.JSONAssert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Named;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
- * Tests that commands can be marshalled (Command → JSON) and that the result matches the
- * original JSON when round-tripped through unmarshall → marshall.
+ * Tests that commands can be marshalled (Command -> JSON) and that the result matches the
+ * original JSON when round-tripped through unmarshall -> marshall.
  *
  * @author eric.wittmann@gmail.com
  */
-@RunWith(Parameterized.class)
 public class CommandMarshallTest {
 
-    @Parameters(name = "{0}")
-    public static Collection<Object[]> testData() throws Exception {
+    /**
+     * Provides test cases for the parameterized test.
+     */
+    static Stream<Named<CommandTestCase>> provideTestCases() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         URL testsJsonUrl = Thread.currentThread().getContextClassLoader().getResource("fixtures/cmd/tests.json");
         List<CommandTestCase> allTests = mapper.readValue(testsJsonUrl,
                 mapper.getTypeFactory().constructCollectionType(List.class, CommandTestCase.class));
-
-        List<Object[]> params = new ArrayList<>();
-        for (CommandTestCase testCase : allTests) {
-            params.add(new Object[]{ testCase.getName(), testCase.getTest(), testCase.getCommands() });
-        }
-        return params;
+        return allTests.stream().map(tc -> Named.of(tc.getName(), tc));
     }
 
-    private final String testName;
-    private final String testPath;
-    private final String commandsSuffix;
-
-    public CommandMarshallTest(String testName, String testPath, String commandsSuffix) {
-        this.testName = testName;
-        this.testPath = testPath;
-        this.commandsSuffix = commandsSuffix;
-    }
-
-    @Test
-    public void testMarshallRoundTrip() throws Exception {
-        String commandsCP = "fixtures/cmd/" + testPath +
-                (commandsSuffix != null ? commandsSuffix : ".commands.json");
+    @ParameterizedTest
+    @MethodSource("provideTestCases")
+    void testMarshallRoundTrip(CommandTestCase testCase) throws Exception {
+        String commandsCP = "fixtures/cmd/" + testCase.getTest() +
+                (testCase.getCommands() != null ? testCase.getCommands() : ".commands.json");
         URL commandsUrl = Thread.currentThread().getContextClassLoader().getResource(commandsCP);
-        Assert.assertNotNull("Commands file not found: " + commandsCP, commandsUrl);
+        Assertions.assertNotNull(commandsUrl, "Commands file not found: " + commandsCP);
 
         String commandsJson = org.apache.commons.io.IOUtils.toString(commandsUrl, StandardCharsets.UTF_8);
         ArrayNode commandsArray = (ArrayNode) JsonUtil.parseJSON(commandsJson);
@@ -85,16 +69,17 @@ public class CommandMarshallTest {
 
             // Unmarshall the command from JSON
             ICommand command = CommandUtil.unmarshall(originalNode);
-            Assert.assertNotNull("Failed to unmarshall command at index " + i, command);
+            Assertions.assertNotNull(command, "Failed to unmarshall command at index " + i);
 
             // Marshall the command back to JSON
             ObjectNode marshalledNode = CommandUtil.marshall(command);
-            Assert.assertNotNull("Failed to marshall command at index " + i, marshalledNode);
+            Assertions.assertNotNull(marshalledNode, "Failed to marshall command at index " + i);
 
             // Verify __type is preserved
-            Assert.assertEquals("Command type mismatch at index " + i,
+            Assertions.assertEquals(
                     originalNode.get("__type").asText(),
-                    marshalledNode.get("__type").asText());
+                    marshalledNode.get("__type").asText(),
+                    "Command type mismatch at index " + i);
 
             // Verify that all marshalled fields match the corresponding original values.
             // Note: some fixtures contain extra metadata fields (e.g. _defName, _method)
@@ -106,19 +91,19 @@ public class CommandMarshallTest {
                 JsonNode actualValue = entry.getValue();
                 if (originalNode.has(fieldName)) {
                     JsonNode expectedValue = originalNode.get(fieldName);
-                    Assert.assertEquals(
-                            "Field '" + fieldName + "' value mismatch in " + testName,
-                            expectedValue, actualValue);
+                    Assertions.assertEquals(
+                            expectedValue, actualValue,
+                            "Field '" + fieldName + "' value mismatch in " + testCase.getName());
                 }
             });
 
-            // Verify round-trip consistency: marshall → unmarshall produces a command
+            // Verify round-trip consistency: marshall -> unmarshall produces a command
             // that marshalls identically
             ICommand roundTrippedCommand = CommandUtil.unmarshall(marshalledNode);
             ObjectNode secondMarshall = CommandUtil.marshall(roundTrippedCommand);
-            Assert.assertEquals(
-                    "Round-trip marshall inconsistency in " + testName + " at index " + i,
-                    marshalledNode, secondMarshall);
+            Assertions.assertEquals(
+                    marshalledNode, secondMarshall,
+                    "Round-trip marshall inconsistency in " + testCase.getName() + " at index " + i);
         }
     }
 }

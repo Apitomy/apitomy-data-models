@@ -2,8 +2,8 @@ package io.apitomy.datamodels.jsonschema.compat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -82,9 +82,9 @@ public class JsonSchemaCompatibilityTest {
             failed.forEach(f -> System.out.println("  - " + f));
         }
 
-        Assert.assertTrue(
-                "%d test cases failed:\n%s".formatted(failed.size(), String.join("\n", failed)),
-                failed.isEmpty());
+        Assertions.assertTrue(
+                failed.isEmpty(),
+                "%d test cases failed:\n%s".formatted(failed.size(), String.join("\n", failed)));
     }
 
     private static final String D7 = "\"$schema\": \"http://json-schema.org/draft-07/schema#\"";
@@ -93,7 +93,7 @@ public class JsonSchemaCompatibilityTest {
     public void testSimpleBackwardCompatible() {
         var original = "{%s, \"type\": \"string\", \"minLength\": 10}".formatted(D7);
         var updated = "{%s, \"type\": \"string\", \"minLength\": 5}".formatted(D7);
-        Assert.assertTrue(JsonSchemaCompatibilityChecker.isBackwardCompatible(original, updated));
+        Assertions.assertTrue(JsonSchemaCompatibilityChecker.isBackwardCompatible(original, updated));
     }
 
     @Test
@@ -112,23 +112,23 @@ public class JsonSchemaCompatibilityTest {
         var traversal = io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefTraversal.withDefaults();
         var home = doc.getProperties().get("home").asJSchema();
         var ref = ((io.apitomy.datamodels.models.Referenceable) home).get$ref();
-        Assert.assertEquals("#Address", ref);
-        Assert.assertTrue("$id-based anchor ref should be resolvable",
-                traversal.resolveRef(ref, home).isPresent());
+        Assertions.assertEquals("#Address", ref);
+        Assertions.assertTrue(traversal.resolveRef(ref, home).isPresent(),
+                "$id-based anchor ref should be resolvable");
     }
 
     @Test
     public void testSimpleBackwardIncompatible() {
         var original = "{%s, \"type\": \"string\", \"minLength\": 5}".formatted(D7);
         var updated = "{%s, \"type\": \"string\", \"minLength\": 10}".formatted(D7);
-        Assert.assertFalse(JsonSchemaCompatibilityChecker.isBackwardCompatible(original, updated));
+        Assertions.assertFalse(JsonSchemaCompatibilityChecker.isBackwardCompatible(original, updated));
     }
 
     @Test
     public void testTypeChange() {
         var original = "{%s, \"type\": \"string\"}".formatted(D7);
         var updated = "{%s, \"type\": \"number\"}".formatted(D7);
-        Assert.assertFalse(JsonSchemaCompatibilityChecker.isBackwardCompatible(original, updated));
+        Assertions.assertFalse(JsonSchemaCompatibilityChecker.isBackwardCompatible(original, updated));
     }
 
     @Test
@@ -139,7 +139,7 @@ public class JsonSchemaCompatibilityTest {
         var updated = """
                 {%s, "type": "object", "properties": {"name": {"type": "string"}}}
                 """.formatted(D7);
-        Assert.assertTrue(JsonSchemaCompatibilityChecker.isFullyCompatible(original, updated));
+        Assertions.assertTrue(JsonSchemaCompatibilityChecker.isFullyCompatible(original, updated));
     }
 
     private static String nodeToSchemaString(JsonNode node) {
