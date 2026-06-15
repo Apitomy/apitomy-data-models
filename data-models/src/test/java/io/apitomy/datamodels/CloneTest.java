@@ -17,7 +17,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.apitomy.datamodels.io.IoTestCase;
-import io.apitomy.datamodels.models.Document;
+import io.apitomy.datamodels.models.Node;
+import io.apitomy.datamodels.models.io.ModelCloner;
+import io.apitomy.datamodels.models.io.ModelClonerFactory;
 import io.apitomy.datamodels.models.util.JsonUtil;
 
 /**
@@ -47,14 +49,17 @@ public class CloneTest {
 
         String original = IOUtils.toString(testUrl, "UTF-8");
         ObjectNode originalParsed = (ObjectNode) JsonUtil.parseJSON(original);
-        Document doc = Library.readDocument(originalParsed);
-        Assertions.assertNotNull(doc);
+        var root = Library.readRoot(originalParsed);
+        Assertions.assertNotNull(root);
+        Assertions.assertInstanceOf(Node.class, root);
+        Node doc = (Node) root;
 
-        Document clone = Library.cloneDocument(doc);
+        ModelCloner cloner = ModelClonerFactory.createModelCloner(root.modelType());
+        Node clone = cloner.cloneNode(doc);
         Assertions.assertNotNull(clone);
         Assertions.assertNotSame(doc, clone, "Clone must be a distinct object");
 
-        ObjectNode cloneJson = Library.writeDocument(clone);
+        ObjectNode cloneJson = Library.writeNode(clone);
         String cloneStr = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(cloneJson);
 
         JSONAssert.assertEquals(original, cloneStr, true);

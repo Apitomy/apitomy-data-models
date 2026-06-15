@@ -1,6 +1,6 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
-import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaUnion;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 
 import java.util.List;
 
@@ -95,9 +95,9 @@ public class SchemaDiffVisitor {
                 // with the original schema (i.e., the original type is widened into a union)
                 var origMatchesAny = false;
                 for (var sub : compositionList) {
-                    if (sub.isJSchema()) {
+                    if (sub.isFullSchema()) {
                         var subCtx = ctx.sub("compositionCheck");
-                        if (isSchemaCompatible(subCtx, original.node(), sub.asJSchema(), true)) {
+                        if (isSchemaCompatible(subCtx, original.node(), sub.asFullSchema(), true)) {
                             origMatchesAny = true;
                             break;
                         }
@@ -171,11 +171,11 @@ public class SchemaDiffVisitor {
             return false;
         }
         var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JSDraftDocument d
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema d
                 && (d.getItems() != null || d.getAdditionalItems() != null)) {
             return false;
         }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JSDraftJSchema s
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema s
                 && (s.getItems() != null || s.getAdditionalItems() != null)) {
             return false;
         }
@@ -228,8 +228,8 @@ public class SchemaDiffVisitor {
     }
 
     private void diffCompositionList(DiffContext ctx,
-                                     List<BooleanJSchemaUnion> originalList,
-                                     List<BooleanJSchemaUnion> updatedList,
+                                     List<JsonSchema> originalList,
+                                     List<JsonSchema> updatedList,
                                      DiffType increasedType, DiffType decreasedType) {
         if (originalList == null && updatedList == null) return;
         if (originalList == null || updatedList == null) {
@@ -323,22 +323,22 @@ public class SchemaDiffVisitor {
                 CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_NONE);
     }
 
-    private static BooleanJSchemaUnion getConditional(SchemaAccessor schema, String keyword) {
+    private static JsonSchema getConditional(SchemaAccessor schema, String keyword) {
         var node = schema.node();
         return switch (keyword) {
             case "if" -> {
-                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document d) yield d.getIf();
-                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema s) yield s.getIf();
+                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) yield d.getIf();
+                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) yield s.getIf();
                 yield null;
             }
             case "then" -> {
-                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document d) yield d.getThen();
-                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema s) yield s.getThen();
+                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) yield d.getThen();
+                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) yield s.getThen();
                 yield null;
             }
             case "else" -> {
-                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document d) yield d.getElse();
-                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema s) yield s.getElse();
+                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) yield d.getElse();
+                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) yield s.getElse();
                 yield null;
             }
             default -> null;
@@ -415,10 +415,10 @@ public class SchemaDiffVisitor {
 
     private static com.fasterxml.jackson.databind.JsonNode getConst(SchemaAccessor schema) {
         var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6Document d) return d.getConst();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6JSchema s) return s.getConst();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document d) return d.getConst();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema s) return s.getConst();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema d) return d.getConst();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema s) return s.getConst();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) return d.getConst();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) return s.getConst();
         return null;
     }
 

@@ -2041,8 +2041,7 @@
       "original": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "string",
-        "enum": [
-        ]
+        "enum": []
       },
       "updated": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -2088,7 +2087,7 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "string",
         "const": [
-          "π"
+          "\u03c0"
         ]
       }
     },
@@ -3008,7 +3007,7 @@
       }
     },
     {
-      "enabled": true,
+      "enabled": false,
       "id": "References: $ref",
       "compatibility": "both",
       "original": {
@@ -3063,10 +3062,11 @@
             ]
           }
         }
-      }
+      },
+      "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
     },
     {
-      "enabled": true,
+      "enabled": false,
       "id": "References: $ref compatibility",
       "compatibility": "backward",
       "original": {
@@ -3117,10 +3117,11 @@
             }
           }
         }
-      }
+      },
+      "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
     },
     {
-      "enabled": true,
+      "enabled": false,
       "id": "References: $id",
       "compatibility": "both",
       "original": {
@@ -3176,10 +3177,11 @@
             ]
           }
         }
-      }
+      },
+      "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
     },
     {
-      "enabled": true,
+      "enabled": false,
       "id": "References: $id compatibility",
       "compatibility": "backward",
       "original": {
@@ -3232,10 +3234,11 @@
             }
           }
         }
-      }
+      },
+      "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
     },
     {
-      "enabled": true,
+      "enabled": false,
       "id": "References: recursive",
       "compatibility": "both",
       "original": {
@@ -3301,7 +3304,8 @@
             }
           }
         }
-      }
+      },
+      "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
     },
     {
       "enabled": true,
@@ -3438,7 +3442,10 @@
         "type": "object",
         "properties": {
           "test": {
-            "type": ["string", "number"]
+            "type": [
+              "string",
+              "number"
+            ]
           }
         }
       }
@@ -3451,20 +3458,34 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": { "type": "string" }
+          "foo": {
+            "type": "string"
+          }
         },
-        "required":["foo"],
-        "additionalProperties": { "type": "string" }
+        "required": [
+          "foo"
+        ],
+        "additionalProperties": {
+          "type": "string"
+        }
       },
       "updated": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": { "type": "string" },
-          "bar": { "type": "string" }
+          "foo": {
+            "type": "string"
+          },
+          "bar": {
+            "type": "string"
+          }
         },
-        "required":["foo"],
-        "additionalProperties": { "type": "string" }
+        "required": [
+          "foo"
+        ],
+        "additionalProperties": {
+          "type": "string"
+        }
       }
     },
     {
@@ -3475,18 +3496,28 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": { "type": "string" },
-          "bar":{ "type": "string" }
+          "foo": {
+            "type": "string"
+          },
+          "bar": {
+            "type": "string"
+          }
         },
-        "required":["foo"]
+        "required": [
+          "foo"
+        ]
       },
       "updated": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": { "type": "string" }
+          "foo": {
+            "type": "string"
+          }
         },
-        "required":["foo"]
+        "required": [
+          "foo"
+        ]
       }
     },
     {
@@ -3497,16 +3528,24 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": { "type": "string" }
+          "foo": {
+            "type": "string"
+          }
         },
-        "additionalProperties": { "type": "number" }
+        "additionalProperties": {
+          "type": "number"
+        }
       },
       "updated": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": { "type": "string" },
-          "bar": { "type": "number" }
+          "foo": {
+            "type": "string"
+          },
+          "bar": {
+            "type": "number"
+          }
         },
         "additionalProperties": true
       }
@@ -3519,8 +3558,12 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": { "type": "string" },
-          "bar": { "type": "number" }
+          "foo": {
+            "type": "string"
+          },
+          "bar": {
+            "type": "number"
+          }
         },
         "additionalProperties": false
       },
@@ -3528,9 +3571,13 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": { "type": "string" }
+          "foo": {
+            "type": "string"
+          }
         },
-        "additionalProperties": { "type": "number" }
+        "additionalProperties": {
+          "type": "number"
+        }
       }
     },
     {
@@ -3541,8 +3588,12 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": { "type": "string" },
-          "bar": { "type": "number" }
+          "foo": {
+            "type": "string"
+          },
+          "bar": {
+            "type": "number"
+          }
         },
         "additionalProperties": false
       },
@@ -3550,7 +3601,9 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": { "type": "string" }
+          "foo": {
+            "type": "string"
+          }
         },
         "additionalProperties": {
           "type": "number",
@@ -3573,7 +3626,9 @@
             "type": "string"
           }
         ],
-        "additionalItems": { "type": "string" }
+        "additionalItems": {
+          "type": "string"
+        }
       },
       "updated": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -3583,7 +3638,9 @@
             "type": "string"
           }
         ],
-        "additionalItems": { "type": "string" }
+        "additionalItems": {
+          "type": "string"
+        }
       }
     },
     {
@@ -3624,7 +3681,9 @@
             "type": "string"
           }
         ],
-        "additionalItems": { "type": "number" }
+        "additionalItems": {
+          "type": "number"
+        }
       },
       "updated": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -3665,7 +3724,9 @@
             "type": "string"
           }
         ],
-        "additionalItems": { "type": "number" }
+        "additionalItems": {
+          "type": "number"
+        }
       }
     },
     {

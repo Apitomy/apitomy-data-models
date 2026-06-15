@@ -1,7 +1,7 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
 import io.apitomy.datamodels.models.Node;
-import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaUnion;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -176,8 +176,8 @@ public final class DiffUtil {
         return subCtx.foundAllDifferencesAreCompatible();
     }
 
-    public static boolean isUnionSchemaCompatible(DiffContext ctx, BooleanJSchemaUnion original,
-                                                   BooleanJSchemaUnion updated, boolean backward) {
+    public static boolean isUnionSchemaCompatible(DiffContext ctx, JsonSchema original,
+                                                   JsonSchema updated, boolean backward) {
         if (original == null || updated == null) return original == updated;
         if (original.isBoolean() && updated.isBoolean()) {
             if (original.asBoolean() == updated.asBoolean()) return true;
@@ -207,11 +207,11 @@ public final class DiffUtil {
                 return !updated.asBoolean();
             }
         }
-        return isSchemaCompatible(ctx, original.asJSchema(), updated.asJSchema(), backward);
+        return isSchemaCompatible(ctx, original.asFullSchema(), updated.asFullSchema(), backward);
     }
 
-    public static void compareSchema(DiffContext ctx, BooleanJSchemaUnion original,
-                                      BooleanJSchemaUnion updated,
+    public static void compareSchema(DiffContext ctx, JsonSchema original,
+                                      JsonSchema updated,
                                       DiffType addedType, DiffType removedType,
                                       DiffType bothType, DiffType backwardNotForwardType,
                                       DiffType forwardNotBackwardType, DiffType noneType) {
@@ -221,8 +221,8 @@ public final class DiffUtil {
         }
     }
 
-    public static void compareSchemaWhenExist(DiffContext ctx, BooleanJSchemaUnion original,
-                                               BooleanJSchemaUnion updated,
+    public static void compareSchemaWhenExist(DiffContext ctx, JsonSchema original,
+                                               JsonSchema updated,
                                                DiffType bothType, DiffType backwardType,
                                                DiffType forwardType, DiffType noneType) {
         var backward = isUnionSchemaCompatible(ctx, original, updated, true);
