@@ -71,10 +71,102 @@ public class CreateWritersStage extends AbstractJavaStage {
             }
         });
 
+        // Create type-based writer methods for unions
+        createTypeBasedWriterMethods(specVersion, writerClassSource);
+
         // Create writeRoot method based on the spec-level root type
         createWriteRootFromSpec(specVersion, writerClassSource);
 
         getState().getJavaIndex().index(writerClassSource);
+    }
+
+    private void createTypeBasedWriterMethods(SpecificationVersion specVersion, JavaClassSource writerClassSource) {
+        var namespace = specVersion.getNamespace();
+
+        getState().getConceptIndex().findTypes(namespace).stream()
+                .filter(t -> t instanceof io.apitomy.umg.models.concept.type.UnionType)
+                .map(t -> (io.apitomy.umg.models.concept.type.UnionType) t)
+                .forEach(unionType -> createUnionWriterMethod(specVersion, writerClassSource, unionType));
+    }
+
+    private void createUnionWriterMethod(SpecificationVersion specVersion, JavaClassSource writerClassSource,
+                                          io.apitomy.umg.models.concept.type.UnionType unionType) {
+        var namespace = specVersion.getNamespace();
+        var nsModel = getState().getConceptIndex().lookupNamespace(namespace);
+        var jt = getJavaTypeFactory().createJavaType(unionType, nsModel);
+        String unionTypeName = jt.getSimpleName();
+        String methodName = "write" + unionTypeName;
+
+        if (hasMethod(writerClassSource, methodName)) {
+            return;
+        }
+
+        debug("Creating union writer method: %s", methodName);
+
+        writerClassSource.addImport(ObjectNode.class);
+        writerClassSource.addImport(JsonNode.class);
+        jt.addImportsTo(writerClassSource);
+
+        MethodSource<JavaClassSource> method = writerClassSource.addMethod()
+                .setName(methodName)
+                .setReturnType("JsonNode")
+                .setPrivate();
+        method.addParameter(jt.toJavaTypeString(), "union");
+
+        BodyBuilder body = new BodyBuilder();
+        body.append("if (union == null) return null;");
+
+        for (var variantType : unionType.getTypes()) {
+            if (variantType instanceof io.apitomy.umg.models.concept.type.EntityType entityType) {
+                var entity = entityType.getEntity();
+                if (entity == null) entity = getState().getConceptIndex().lookupEntity(namespace, entityType.getName());
+                if (entity == null) continue;
+
+                String typeName = io.apitomy.umg.models.java.type.JavaTypeFactory.getUnionComponentName(variantType);
+                JavaInterfaceSource entitySource = lookupJavaEntity(entity);
+                writerClassSource.addImport(entitySource);
+
+                body.addContext("isMethod", "is" + typeName);
+                body.addContext("asMethod", "as" + typeName);
+                body.addContext("entityType", entitySource.getName());
+                body.addContext("writeMethodName", writeMethodName(entity));
+
+                body.append("if (union.${isMethod}()) {");
+                body.append("    ObjectNode jsonValue = JsonUtil.objectNode();");
+                body.append("    this.${writeMethodName}((${entityType}) union.${asMethod}(), jsonValue);");
+                body.append("    return jsonValue;");
+                body.append("}");
+            } else if (variantType instanceof io.apitomy.umg.models.concept.type.PrimitiveUnionVariantType puv) {
+                String typeName = io.apitomy.umg.models.java.type.JavaTypeFactory.getUnionComponentName(variantType);
+                Class<?> javaClass = Util.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
+                if (javaClass == null) continue;
+
+                body.addContext("isMethod", "is" + typeName);
+                body.addContext("asMethod", "as" + typeName);
+
+                if (JsonNode.class.isAssignableFrom(javaClass)) {
+                    body.append("if (union.${isMethod}()) {");
+                    body.append("    return union.${asMethod}();");
+                    body.append("}");
+                } else {
+                    String toJsonMethod;
+                    if (Boolean.class.equals(javaClass)) toJsonMethod = "booleanToJsonNode";
+                    else if (String.class.equals(javaClass)) toJsonMethod = "stringToJsonNode";
+                    else toJsonMethod = "numberToJsonNode";
+
+                    body.addContext("toJsonMethod", toJsonMethod);
+                    body.append("if (union.${isMethod}()) {");
+                    body.append("    return JsonUtil.${toJsonMethod}(union.${asMethod}());");
+                    body.append("}");
+                }
+            }
+        }
+        body.append("return null;");
+        method.setBody(body.toString());
+    }
+
+    private boolean hasMethod(JavaClassSource source, String name) {
+        return source.getMethods().stream().anyMatch(m -> m.getName().equals(name));
     }
 
     private void createWriteRootFromSpec(SpecificationVersion specVersion, JavaClassSource writerClassSource) {
@@ -269,6 +361,8 @@ public class CreateWritersStage extends AbstractJavaStage {
                 handleStarProperty(body);
             } else if (isRegexProperty(property)) {
                 handleRegexProperty(body);
+            } else if (handleViaResolvedType(body)) {
+                // Handled by resolved type dispatch
             } else if (isEntity(property)) {
                 handleEntityProperty(body);
             } else if (isPrimitive(property)) {
@@ -287,6 +381,117 @@ public class CreateWritersStage extends AbstractJavaStage {
                 warn("Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
                 warn("       property type: " + property.getType());
             }
+        }
+
+        private boolean handleViaResolvedType(BodyBuilder body) {
+            PropertyModel property = propertyWithOrigin.getProperty();
+            var resolved = property.getResolvedType();
+            if (resolved == null) return false;
+
+            // Only use resolved type dispatch for type-alias-backed unions
+            var pt = property.getType();
+            if (pt.isUnion() || (pt.isList() && pt.getNested().iterator().next().isUnion())
+                    || (pt.isMap() && pt.getNested().iterator().next().isUnion())) {
+                return false;
+            }
+
+            if (resolved instanceof io.apitomy.umg.models.concept.type.UnionType) {
+                handleResolvedUnionProperty(body, resolved);
+                return true;
+            }
+
+            if (resolved instanceof io.apitomy.umg.models.concept.type.ListType lt
+                    && lt.getValueType() instanceof io.apitomy.umg.models.concept.type.UnionType) {
+                handleResolvedUnionListProperty(body, lt);
+                return true;
+            }
+
+            if (resolved instanceof io.apitomy.umg.models.concept.type.MapType mt
+                    && mt.getValueType() instanceof io.apitomy.umg.models.concept.type.UnionType) {
+                handleResolvedUnionMapProperty(body, mt);
+                return true;
+            }
+
+            return false;
+        }
+
+        private void handleResolvedUnionProperty(BodyBuilder body, io.apitomy.umg.models.concept.type.Type resolved) {
+            PropertyModel property = propertyWithOrigin.getProperty();
+            var nsModel = propertyWithOrigin.getOrigin().getNamespace();
+            var jt = getJavaTypeFactory().createJavaType(resolved, nsModel);
+            String writeMethodName = "write" + jt.getSimpleName();
+
+            jt.addImportsTo(writerClassSource);
+            writerClassSource.addImport(JsonNode.class);
+
+            body.addContext("propertyName", property.getName());
+            body.addContext("getterMethodName", getterMethodName(property));
+            body.addContext("writeMethodName", writeMethodName);
+
+            body.append("{");
+            body.append("    JsonNode value = this.${writeMethodName}(node.${getterMethodName}());");
+            body.append("    if (value != null) JsonUtil.setAnyProperty(json, \"${propertyName}\", value);");
+            body.append("}");
+        }
+
+        private void handleResolvedUnionListProperty(BodyBuilder body,
+                io.apitomy.umg.models.concept.type.ListType listType) {
+            PropertyModel property = propertyWithOrigin.getProperty();
+            var nsModel = propertyWithOrigin.getOrigin().getNamespace();
+            var valueJt = getJavaTypeFactory().createJavaType(listType.getValueType(), nsModel);
+            String writeMethodName = "write" + valueJt.getSimpleName();
+
+            valueJt.addImportsTo(writerClassSource);
+            writerClassSource.addImport(JsonNode.class);
+            writerClassSource.addImport(ArrayNode.class);
+            writerClassSource.addImport(List.class);
+
+            body.addContext("propertyName", property.getName());
+            body.addContext("getterMethodName", getterMethodName(property));
+            body.addContext("writeMethodName", writeMethodName);
+            body.addContext("unionJavaType", valueJt.toJavaTypeString());
+
+            body.append("{");
+            body.append("    List<${unionJavaType}> items = node.${getterMethodName}();");
+            body.append("    if (items != null && !items.isEmpty()) {");
+            body.append("        ArrayNode array = JsonUtil.arrayNode();");
+            body.append("        items.forEach(item -> {");
+            body.append("            JsonNode value = this.${writeMethodName}(item);");
+            body.append("            if (value != null) array.add(value);");
+            body.append("        });");
+            body.append("        JsonUtil.setAnyProperty(json, \"${propertyName}\", array);");
+            body.append("    }");
+            body.append("}");
+        }
+
+        private void handleResolvedUnionMapProperty(BodyBuilder body,
+                io.apitomy.umg.models.concept.type.MapType mapType) {
+            PropertyModel property = propertyWithOrigin.getProperty();
+            var nsModel = propertyWithOrigin.getOrigin().getNamespace();
+            var valueJt = getJavaTypeFactory().createJavaType(mapType.getValueType(), nsModel);
+            String writeMethodName = "write" + valueJt.getSimpleName();
+
+            valueJt.addImportsTo(writerClassSource);
+            writerClassSource.addImport(JsonNode.class);
+            writerClassSource.addImport(ObjectNode.class);
+            writerClassSource.addImport(Map.class);
+
+            body.addContext("propertyName", property.getName());
+            body.addContext("getterMethodName", getterMethodName(property));
+            body.addContext("writeMethodName", writeMethodName);
+            body.addContext("unionJavaType", valueJt.toJavaTypeString());
+
+            body.append("{");
+            body.append("    Map<String, ${unionJavaType}> items = node.${getterMethodName}();");
+            body.append("    if (items != null && !items.isEmpty()) {");
+            body.append("        ObjectNode mapJson = JsonUtil.objectNode();");
+            body.append("        items.forEach((key, item) -> {");
+            body.append("            JsonNode value = this.${writeMethodName}(item);");
+            body.append("            if (value != null) JsonUtil.setAnyProperty(mapJson, key, value);");
+            body.append("        });");
+            body.append("        JsonUtil.setObjectProperty(json, \"${propertyName}\", mapJson);");
+            body.append("    }");
+            body.append("}");
         }
 
         private void handleStarProperty(BodyBuilder body) {
@@ -734,7 +939,7 @@ public class CreateWritersStage extends AbstractJavaStage {
             });
 
             body.append("        });");
-            body.append("        JsonUtil.setAnyProperty(json, \"${propertyName}\", array);");
+            body.append("        JsonUtil.setArrayProperty(json, \"${propertyName}\", array);");
             body.append("    }");
             body.append("}");
 

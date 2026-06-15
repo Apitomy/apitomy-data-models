@@ -327,6 +327,10 @@ export class JsonUtil {
     public static setAnyProperty(json: object, propertyName: string, value: any): void {
         JsonUtil.setProperty(json, propertyName, value);
     }
+    /* Set a JSON (Array) property. */
+    public static setArrayProperty(json: object, propertyName: string, value: any[]): void {
+        JsonUtil.setProperty(json, propertyName, value);
+    }
     /* Set an array of anys property. */
     public static setAnyArrayProperty(json: object, propertyName: string, value: any[]): void {
         JsonUtil.setProperty(json, propertyName, value);
@@ -457,6 +461,18 @@ export class JsonUtil {
     }
 
     public static toJsonNode(value: any): any {
+        return value;
+    }
+
+    public static booleanToJsonNode(value: boolean): any {
+        return value;
+    }
+
+    public static stringToJsonNode(value: string): any {
+        return value;
+    }
+
+    public static numberToJsonNode(value: number): any {
         return value;
     }
 

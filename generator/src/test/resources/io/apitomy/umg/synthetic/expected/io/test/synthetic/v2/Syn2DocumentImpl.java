@@ -45,6 +45,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	public void setInfo(SynInfo value) {
 		this.info = value;
 		if (value != null) {
+			((NodeImpl) value).setParent(this);
 			((NodeImpl) value)._setParentPropertyName("info");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}
@@ -192,6 +193,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	public void setAdditionalSchema(SchemaOrBoolean value) {
 		this.additionalSchema = value;
 		if (value != null) {
+			((NodeImpl) value).setParent(this);
 			((NodeImpl) value)._setParentPropertyName("additionalSchema");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}

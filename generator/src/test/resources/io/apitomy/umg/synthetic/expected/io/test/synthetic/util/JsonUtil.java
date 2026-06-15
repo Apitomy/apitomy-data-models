@@ -703,6 +703,26 @@ public class JsonUtil {
 		return factory.textNode(value);
 	}
 
+	public static void setArrayProperty(ObjectNode json, String propertyName, ArrayNode value) {
+		if (value != null) {
+			json.set(propertyName, value);
+		}
+	}
+
+	public static JsonNode booleanToJsonNode(Boolean value) {
+		return value != null ? factory.booleanNode(value) : null;
+	}
+
+	public static JsonNode stringToJsonNode(String value) {
+		return value != null ? factory.textNode(value) : null;
+	}
+
+	public static JsonNode numberToJsonNode(Number value) {
+		if (value == null)
+			return null;
+		return factory.numberNode(value.doubleValue());
+	}
+
 	public static void addToArray(ArrayNode array, JsonNode value) {
 		array.add(value);
 	}

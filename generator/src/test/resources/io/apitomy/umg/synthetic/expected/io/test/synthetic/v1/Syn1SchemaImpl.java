@@ -69,12 +69,14 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 		this.items = value;
 		if (value != null) {
 			if (value.isEntity()) {
+				((NodeImpl) value).setParent(this);
 				((NodeImpl) value)._setParentPropertyName("items");
 				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 			} else if (value.isEntityList()) {
 				List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();
 				for (Object entity : entityList) {
 					if (entity != null) {
+						((NodeImpl) entity).setParent(this);
 						((NodeImpl) entity)._setParentPropertyName("items");
 						((NodeImpl) entity)._setParentPropertyType(ParentPropertyType.array);
 					}
@@ -85,6 +87,7 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 				for (String key : keys) {
 					NodeImpl entity = (NodeImpl) entityMap.get(key);
 					if (entity != null) {
+						entity.setParent(this);
 						entity._setParentPropertyName("items");
 						entity._setParentPropertyType(ParentPropertyType.map);
 						entity._setMapPropertyName(key);

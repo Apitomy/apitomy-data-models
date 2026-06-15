@@ -9,6 +9,7 @@ import io.test.synthetic.SynSchema;
 import io.test.synthetic.io.ModelWriter;
 import io.test.synthetic.union.BooleanSchemaSchemaListUnion;
 import io.test.synthetic.union.BooleanSchemaUnion;
+import io.test.synthetic.union.SchemaOrBoolean;
 import io.test.synthetic.util.JsonUtil;
 import io.test.synthetic.util.WriterUtil;
 import io.test.synthetic.v1.Syn1Contact;
@@ -50,6 +51,11 @@ public class Syn1ModelWriter implements ModelWriter {
 		}
 		JsonUtil.setStringArrayProperty(json, "tags", node.getTags());
 		JsonUtil.setStringMapProperty(json, "metadata", node.getMetadata());
+		{
+			JsonNode value = this.writeSchemaOrBoolean(node.getAdditionalSchema());
+			if (value != null)
+				JsonUtil.setAnyProperty(json, "additionalSchema", value);
+		}
 		{
 			Map<String, JsonNode> values = node.getExtensions();
 			if (values != null && !values.isEmpty()) {
@@ -203,7 +209,7 @@ public class Syn1ModelWriter implements ModelWriter {
 						JsonUtil.addToArray(array, object);
 					}
 				});
-				JsonUtil.setAnyProperty(json, "allOf", array);
+				JsonUtil.setArrayProperty(json, "allOf", array);
 			}
 		}
 		{
@@ -222,6 +228,30 @@ public class Syn1ModelWriter implements ModelWriter {
 					}
 				});
 				JsonUtil.setObjectProperty(json, "definitions", mapObject);
+			}
+		}
+		{
+			Map<String, SchemaOrBoolean> items = node.getNestedSchemas();
+			if (items != null && !items.isEmpty()) {
+				ObjectNode mapJson = JsonUtil.objectNode();
+				items.forEach((key, item) -> {
+					JsonNode value = this.writeSchemaOrBoolean(item);
+					if (value != null)
+						JsonUtil.setAnyProperty(mapJson, key, value);
+				});
+				JsonUtil.setObjectProperty(json, "nestedSchemas", mapJson);
+			}
+		}
+		{
+			List<SchemaOrBoolean> items = node.getComposedSchemas();
+			if (items != null && !items.isEmpty()) {
+				ArrayNode array = JsonUtil.arrayNode();
+				items.forEach(item -> {
+					JsonNode value = this.writeSchemaOrBoolean(item);
+					if (value != null)
+						array.add(value);
+				});
+				JsonUtil.setAnyProperty(json, "composedSchemas", array);
 			}
 		}
 		JsonUtil.setIntegerProperty(json, "minLength", node.getMinLength());
@@ -331,6 +361,48 @@ public class Syn1ModelWriter implements ModelWriter {
 			}
 		}
 		WriterUtil.writeExtraProperties(node, json);
+	}
+
+	private JsonNode writeSchemaOrBoolean(SchemaOrBoolean union) {
+		if (union == null)
+			return null;
+		if (union.isSchema()) {
+			ObjectNode jsonValue = JsonUtil.objectNode();
+			this.writeSchema((Syn1Schema) union.asSchema(), jsonValue);
+			return jsonValue;
+		}
+		if (union.isBoolean()) {
+			return JsonUtil.booleanToJsonNode(union.asBoolean());
+		}
+		return null;
+	}
+
+	private JsonNode writeBooleanSchemaSchemaListUnion(BooleanSchemaSchemaListUnion union) {
+		if (union == null)
+			return null;
+		if (union.isSchema()) {
+			ObjectNode jsonValue = JsonUtil.objectNode();
+			this.writeSchema((Syn1Schema) union.asSchema(), jsonValue);
+			return jsonValue;
+		}
+		if (union.isBoolean()) {
+			return JsonUtil.booleanToJsonNode(union.asBoolean());
+		}
+		return null;
+	}
+
+	private JsonNode writeBooleanSchemaUnion(BooleanSchemaUnion union) {
+		if (union == null)
+			return null;
+		if (union.isSchema()) {
+			ObjectNode jsonValue = JsonUtil.objectNode();
+			this.writeSchema((Syn1Schema) union.asSchema(), jsonValue);
+			return jsonValue;
+		}
+		if (union.isBoolean()) {
+			return JsonUtil.booleanToJsonNode(union.asBoolean());
+		}
+		return null;
 	}
 
 	@Override
