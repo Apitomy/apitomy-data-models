@@ -73,9 +73,9 @@
 
         <!-- Test Only Deps -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${version.junit}</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${version.junit-jupiter}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

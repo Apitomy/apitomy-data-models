@@ -1,8 +1,8 @@
 package org.example.unionmap.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -20,8 +20,8 @@ import org.example.unionmap.union.MultiFormatSchemaStandardSchemaUnion;
 import org.example.unionmap.v10.Umtm10Document;
 import org.example.unionmap.v10.visitors.Umtm10Traverser;
 import org.example.unionmap.visitors.AllNodeVisitor;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -85,9 +85,9 @@ public class UnionMapTest {
         assertNotNull(s2);
         assertNotNull(s3);
 
-        assertTrue("Expected 'StandardSchema1' to be a StandardSchema", s1.isStandardSchema());
-        assertTrue("Expected 'MultiFormatSchema1' to be a MultiFormatSchema", s2.isMultiFormatSchema());
-        assertTrue("Expected 'StandardSchema2' to be a StandardSchema", s3.isStandardSchema());
+        assertTrue(s1.isStandardSchema(), "Expected 'StandardSchema1' to be a StandardSchema");
+        assertTrue(s2.isMultiFormatSchema(), "Expected 'MultiFormatSchema1' to be a MultiFormatSchema");
+        assertTrue(s3.isStandardSchema(), "Expected 'StandardSchema2' to be a StandardSchema");
 
         UmtmStandardSchema ss1 = s1.asStandardSchema();
         UmtmMultiFormatSchema mfs2 = s2.asMultiFormatSchema();
@@ -289,7 +289,7 @@ public class UnionMapTest {
         String resourcePath = "fixtures/" + resourceName;
         try (InputStream res = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
             if (res == null) {
-                Assert.fail("Test resource not found: " + resourcePath);
+                Assertions.fail("Test resource not found: " + resourcePath);
             }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             baos.write(res.readAllBytes());
@@ -298,7 +298,7 @@ public class UnionMapTest {
     }
 
     private void assertJsonEquals(String expectedJson, String actualJson) throws Exception {
-        Assert.assertEquals(mapper.readTree(expectedJson), mapper.readTree(actualJson));
+        Assertions.assertEquals(mapper.readTree(expectedJson), mapper.readTree(actualJson));
     }
 
 }

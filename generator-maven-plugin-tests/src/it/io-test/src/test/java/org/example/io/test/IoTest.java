@@ -5,8 +5,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.example.io.v10.Iot10Document;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -18,23 +18,23 @@ public class IoTest {
     public void testReaderSimplest() throws Exception {
         String testContent = loadTestResource("simplest.json");
         Iot10Document document = IoTestLibrary.readDocument(testContent);
-        Assert.assertNotNull(document);
-        Assert.assertEquals("simplest", document.getId());
+        Assertions.assertNotNull(document);
+        Assertions.assertEquals("simplest", document.getId());
     }
 
     @Test
     public void testReaderSimple() throws Exception {
         String testContent = loadTestResource("simple.json");
         Iot10Document document = IoTestLibrary.readDocument(testContent);
-        Assert.assertNotNull(document);
-        Assert.assertEquals("simple", document.getId());
-        Assert.assertNotNull(document.getPrimitives());
-        Assert.assertEquals("hello-world", document.getPrimitives().getStringProperty());
-        Assert.assertEquals(true, document.getPrimitives().isBooleanProperty());
-        Assert.assertEquals(Integer.valueOf(17), document.getPrimitives().getIntegerProperty());
-        Assert.assertEquals(Double.valueOf(117.5), document.getPrimitives().getNumberProperty());
-        Assert.assertNotNull(document.getPrimitives().getObjectProperty());
-        Assert.assertNotNull(document.getPrimitives().getAnyProperty());
+        Assertions.assertNotNull(document);
+        Assertions.assertEquals("simple", document.getId());
+        Assertions.assertNotNull(document.getPrimitives());
+        Assertions.assertEquals("hello-world", document.getPrimitives().getStringProperty());
+        Assertions.assertEquals(true, document.getPrimitives().isBooleanProperty());
+        Assertions.assertEquals(Integer.valueOf(17), document.getPrimitives().getIntegerProperty());
+        Assertions.assertEquals(Double.valueOf(117.5), document.getPrimitives().getNumberProperty());
+        Assertions.assertNotNull(document.getPrimitives().getObjectProperty());
+        Assertions.assertNotNull(document.getPrimitives().getAnyProperty());
     }
 
     @Test
@@ -63,7 +63,7 @@ public class IoTest {
         String resourcePath = "fixtures/" + resourceName;
         try (InputStream res = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
             if (res == null) {
-                Assert.fail("Test resource not found: " + resourcePath);
+                Assertions.fail("Test resource not found: " + resourcePath);
             }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             baos.write(res.readAllBytes());
@@ -72,7 +72,7 @@ public class IoTest {
     }
 
     private void assertJsonEquals(String expectedJson, String actualJson) throws Exception {
-        Assert.assertEquals(mapper.readTree(expectedJson), mapper.readTree(actualJson));
+        Assertions.assertEquals(mapper.readTree(expectedJson), mapper.readTree(actualJson));
     }
 
 }

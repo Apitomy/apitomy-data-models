@@ -1,89 +1,89 @@
 package io.apitomy.datamodels.jsonschema.ref;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class JsonRefTest {
 
     @Test
     public void testInternalPointer() {
         var ref = JsonRef.parse("#/definitions/Address");
-        Assert.assertTrue(ref.isInternal());
-        Assert.assertTrue(ref.isPointer());
-        Assert.assertFalse(ref.isAnchor());
-        Assert.assertFalse(ref.isExternal());
-        Assert.assertNull(ref.resource());
-        Assert.assertEquals("/definitions/Address", ref.fragment());
-        Assert.assertEquals(2, ref.pointer().segments().size());
-        Assert.assertEquals("definitions", ref.pointer().segments().get(0));
-        Assert.assertEquals("Address", ref.pointer().segments().get(1));
+        Assertions.assertTrue(ref.isInternal());
+        Assertions.assertTrue(ref.isPointer());
+        Assertions.assertFalse(ref.isAnchor());
+        Assertions.assertFalse(ref.isExternal());
+        Assertions.assertNull(ref.resource());
+        Assertions.assertEquals("/definitions/Address", ref.fragment());
+        Assertions.assertEquals(2, ref.pointer().segments().size());
+        Assertions.assertEquals("definitions", ref.pointer().segments().get(0));
+        Assertions.assertEquals("Address", ref.pointer().segments().get(1));
     }
 
     @Test
     public void testInternalAnchor() {
         var ref = JsonRef.parse("#Address");
-        Assert.assertTrue(ref.isInternal());
-        Assert.assertFalse(ref.isPointer());
-        Assert.assertTrue(ref.isAnchor());
-        Assert.assertNull(ref.resource());
-        Assert.assertEquals("Address", ref.anchor());
-        Assert.assertNull(ref.pointer());
+        Assertions.assertTrue(ref.isInternal());
+        Assertions.assertFalse(ref.isPointer());
+        Assertions.assertTrue(ref.isAnchor());
+        Assertions.assertNull(ref.resource());
+        Assertions.assertEquals("Address", ref.anchor());
+        Assertions.assertNull(ref.pointer());
     }
 
     @Test
     public void testRootRef() {
         var ref = JsonRef.parse("#");
-        Assert.assertTrue(ref.isInternal());
-        Assert.assertTrue(ref.isRoot());
-        Assert.assertFalse(ref.isPointer());
-        Assert.assertFalse(ref.isAnchor());
-        Assert.assertEquals("", ref.fragment());
+        Assertions.assertTrue(ref.isInternal());
+        Assertions.assertTrue(ref.isRoot());
+        Assertions.assertFalse(ref.isPointer());
+        Assertions.assertFalse(ref.isAnchor());
+        Assertions.assertEquals("", ref.fragment());
     }
 
     @Test
     public void testExternalWithPointer() {
         var ref = JsonRef.parse("other.json#/defs/Bar");
-        Assert.assertTrue(ref.isExternal());
-        Assert.assertFalse(ref.isInternal());
-        Assert.assertTrue(ref.isPointer());
-        Assert.assertEquals("other.json", ref.resource());
-        Assert.assertEquals(2, ref.pointer().segments().size());
-        Assert.assertEquals("defs", ref.pointer().segments().get(0));
-        Assert.assertEquals("Bar", ref.pointer().segments().get(1));
+        Assertions.assertTrue(ref.isExternal());
+        Assertions.assertFalse(ref.isInternal());
+        Assertions.assertTrue(ref.isPointer());
+        Assertions.assertEquals("other.json", ref.resource());
+        Assertions.assertEquals(2, ref.pointer().segments().size());
+        Assertions.assertEquals("defs", ref.pointer().segments().get(0));
+        Assertions.assertEquals("Bar", ref.pointer().segments().get(1));
     }
 
     @Test
     public void testExternalNoFragment() {
         var ref = JsonRef.parse("https://example.com/schema.json");
-        Assert.assertTrue(ref.isExternal());
-        Assert.assertFalse(ref.isPointer());
-        Assert.assertFalse(ref.isAnchor());
-        Assert.assertNull(ref.fragment());
-        Assert.assertEquals("https://example.com/schema.json", ref.resource());
+        Assertions.assertTrue(ref.isExternal());
+        Assertions.assertFalse(ref.isPointer());
+        Assertions.assertFalse(ref.isAnchor());
+        Assertions.assertNull(ref.fragment());
+        Assertions.assertEquals("https://example.com/schema.json", ref.resource());
     }
 
     @Test
     public void testExternalWithAnchor() {
         var ref = JsonRef.parse("other.json#myAnchor");
-        Assert.assertTrue(ref.isExternal());
-        Assert.assertTrue(ref.isAnchor());
-        Assert.assertEquals("other.json", ref.resource());
-        Assert.assertEquals("myAnchor", ref.anchor());
+        Assertions.assertTrue(ref.isExternal());
+        Assertions.assertTrue(ref.isAnchor());
+        Assertions.assertEquals("other.json", ref.resource());
+        Assertions.assertEquals("myAnchor", ref.anchor());
     }
 
     @Test
     public void testDefsPointer() {
         var ref = JsonRef.parse("#/$defs/Foo");
-        Assert.assertTrue(ref.isPointer());
-        Assert.assertEquals("$defs", ref.pointer().segments().get(0));
-        Assert.assertEquals("Foo", ref.pointer().segments().get(1));
+        Assertions.assertTrue(ref.isPointer());
+        Assertions.assertEquals("$defs", ref.pointer().segments().get(0));
+        Assertions.assertEquals("Foo", ref.pointer().segments().get(1));
     }
 
     @Test
     public void testRawPreserved() {
         var raw = "other.json#/definitions/Address";
         var ref = JsonRef.parse(raw);
-        Assert.assertEquals(raw, ref.raw());
-        Assert.assertEquals(raw, ref.toString());
+        Assertions.assertEquals(raw, ref.raw());
+        Assertions.assertEquals(raw, ref.toString());
     }
 }
