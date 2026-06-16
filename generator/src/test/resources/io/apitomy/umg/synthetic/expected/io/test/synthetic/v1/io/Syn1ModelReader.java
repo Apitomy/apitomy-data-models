@@ -3,6 +3,7 @@ package io.test.synthetic.v1.io;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.test.synthetic.ModelType;
+import io.test.synthetic.NodeImpl;
 import io.test.synthetic.RootCapable;
 import io.test.synthetic.io.ModelReader;
 import io.test.synthetic.union.BooleanSchemaSchemaListUnion;
@@ -46,8 +47,8 @@ public class Syn1ModelReader implements ModelReader {
 			if (objects != null) {
 				objects.forEach(object -> {
 					Syn1Item model = (Syn1Item) node.createItem();
-					this.readItem(object, model);
 					node.addItem(model);
+					this.readItem(object, model);
 				});
 			}
 		}
@@ -209,6 +210,7 @@ public class Syn1ModelReader implements ModelReader {
 					array.forEach(item -> {
 						ObjectNode object = JsonUtil.toObject(item);
 						Syn1Schema model = (Syn1Schema) node.createSchema();
+						((NodeImpl) model)._setParent(node);
 						this.readSchema(object, model);
 						models.add(model);
 					});
@@ -234,8 +236,8 @@ public class Syn1ModelReader implements ModelReader {
 						if (JsonUtil.isObject(value)) {
 							ObjectNode object = JsonUtil.toObject(value);
 							Syn1Schema model = (Syn1Schema) node.createSchema();
-							readSchema(object, model);
 							node.addProperty(key, model);
+							readSchema(object, model);
 						} else if (JsonUtil.isBoolean(value)) {
 							Boolean pValue = JsonUtil.toBoolean(value);
 							BooleanUnionValue unionValue = new BooleanUnionValueImpl(pValue);
@@ -252,8 +254,8 @@ public class Syn1ModelReader implements ModelReader {
 					if (JsonUtil.isObject(value)) {
 						ObjectNode object = JsonUtil.toObject(value);
 						Syn1Schema model = (Syn1Schema) node.createSchema();
-						readSchema(object, model);
 						node.addAllOf(model);
+						readSchema(object, model);
 					} else if (JsonUtil.isBoolean(value)) {
 						Boolean pValue = JsonUtil.toBoolean(value);
 						BooleanUnionValue unionValue = new BooleanUnionValueImpl(pValue);
@@ -272,8 +274,8 @@ public class Syn1ModelReader implements ModelReader {
 						if (JsonUtil.isObject(value)) {
 							ObjectNode object = JsonUtil.toObject(value);
 							Syn1Schema model = (Syn1Schema) node.createSchema();
-							readSchema(object, model);
 							node.addDefinition(key, model);
+							readSchema(object, model);
 						} else if (JsonUtil.isBoolean(value)) {
 							Boolean pValue = JsonUtil.toBoolean(value);
 							BooleanUnionValue unionValue = new BooleanUnionValueImpl(pValue);
@@ -335,8 +337,8 @@ public class Syn1ModelReader implements ModelReader {
 				ObjectNode object = JsonUtil.consumeObjectProperty(json, name);
 				if (object != null) {
 					Syn1PathItem model = (Syn1PathItem) node.createPathItem();
-					this.readPathItem(object, model);
 					node.addItem(name, model);
+					this.readPathItem(object, model);
 				}
 			});
 		}
@@ -408,8 +410,8 @@ public class Syn1ModelReader implements ModelReader {
 			if (objects != null) {
 				objects.forEach(object -> {
 					Syn1Item model = (Syn1Item) node.createItem();
-					this.readItem(object, model);
 					node.addParameter(model);
+					this.readItem(object, model);
 				});
 			}
 		}

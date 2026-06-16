@@ -193,7 +193,7 @@ public class ValidationTest implements IReferenceResolver {
                 ObjectNode resolvedContent = ReferenceUtil.resolveFragmentFromJS(content, fragment);
                 Assertions.assertNotNull(resolvedContent, "Failed to resolve fragment: " + fragment);
                 Node emptyClone = from.emptyClone();
-                emptyClone.attach(from.parent());
+                ((io.apitomy.datamodels.models.NodeImpl) emptyClone)._setParent(from.parent());
                 Node node = Library.readNode(resolvedContent, emptyClone);
                 return ResolvedReference.fromNode(node);
             }
