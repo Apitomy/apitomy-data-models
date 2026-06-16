@@ -54,7 +54,7 @@ public class Syn1OperationImpl extends NodeImpl implements Syn1Operation {
 	@Override
 	public Syn1Item createItem() {
 		Syn1ItemImpl node = new Syn1ItemImpl();
-		node.setParent(this);
+		node._setParent(this);
 		return node;
 	}
 
@@ -70,6 +70,7 @@ public class Syn1OperationImpl extends NodeImpl implements Syn1Operation {
 		}
 		this.parameters.add(value);
 		if (value != null) {
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("parameters");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
 		}
@@ -78,6 +79,10 @@ public class Syn1OperationImpl extends NodeImpl implements Syn1Operation {
 	@Override
 	public void clearParameters() {
 		if (this.parameters != null) {
+			this.parameters.forEach(item -> {
+				if (item != null)
+					item.detach();
+			});
 			this.parameters.clear();
 		}
 	}
@@ -85,7 +90,9 @@ public class Syn1OperationImpl extends NodeImpl implements Syn1Operation {
 	@Override
 	public void removeParameter(SynItem value) {
 		if (this.parameters != null) {
-			this.parameters.remove(value);
+			if (value != null && this.parameters.remove(value)) {
+				value.detach();
+			}
 		}
 	}
 
@@ -98,6 +105,7 @@ public class Syn1OperationImpl extends NodeImpl implements Syn1Operation {
 			this.parameters = DataModelUtil.insertListEntry(this.parameters, value, atIndex);
 		}
 		if (value != null) {
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("parameters");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
 		}
