@@ -47,7 +47,6 @@ public class OpenApi2NodeImporter extends ReferencedNodeImporter {
             }
             String name = generateNodeName(getNameHintFromRef("ImportedParameter"), params.getItemNames());
             params.addItem(name, (OpenApi20Parameter) node);
-            node.attach(params);
             setPathToImportedNode(node, collection, name);
         }
     }
@@ -74,7 +73,6 @@ public class OpenApi2NodeImporter extends ReferencedNodeImporter {
             }
             String name = generateNodeName(getNameHintFromRef("ImportedResponse"), responses.getItemNames());
             responses.addItem(name, (OpenApi20Response) node);
-            node.attach(responses);
             setPathToImportedNode(node, collection, name);
         }
     }
@@ -93,7 +91,6 @@ public class OpenApi2NodeImporter extends ReferencedNodeImporter {
             }
             String name = generateNodeName(getNameHintFromRef("ImportedSchema"), definitions.getItemNames());
             definitions.addItem(name, (OpenApi20Schema) node);
-            node.attach(definitions);
             setPathToImportedNode(node, collection, name);
         }
     }

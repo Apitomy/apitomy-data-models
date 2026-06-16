@@ -44,7 +44,7 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 	public void setInfo(SynInfo value) {
 		this.info = value;
 		if (value != null) {
-			((NodeImpl) value).setParent(this);
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("info");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}
@@ -53,14 +53,14 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 	@Override
 	public Syn1Info createInfo() {
 		Syn1InfoImpl node = new Syn1InfoImpl();
-		node.setParent(this);
+		node._setParent(this);
 		return node;
 	}
 
 	@Override
 	public Syn1Item createItem() {
 		Syn1ItemImpl node = new Syn1ItemImpl();
-		node.setParent(this);
+		node._setParent(this);
 		return node;
 	}
 
@@ -76,6 +76,7 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 		}
 		this.items.add(value);
 		if (value != null) {
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("items");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
 		}
@@ -84,6 +85,10 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 	@Override
 	public void clearItems() {
 		if (this.items != null) {
+			this.items.forEach(item -> {
+				if (item != null)
+					item.detach();
+			});
 			this.items.clear();
 		}
 	}
@@ -91,7 +96,9 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 	@Override
 	public void removeItem(SynItem value) {
 		if (this.items != null) {
-			this.items.remove(value);
+			if (value != null && this.items.remove(value)) {
+				value.detach();
+			}
 		}
 	}
 
@@ -104,6 +111,7 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 			this.items = DataModelUtil.insertListEntry(this.items, value, atIndex);
 		}
 		if (value != null) {
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("items");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
 		}
@@ -138,7 +146,7 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 	public void setAdditionalSchema(SchemaOrBoolean value) {
 		this.additionalSchema = value;
 		if (value != null) {
-			((NodeImpl) value).setParent(this);
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("additionalSchema");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}

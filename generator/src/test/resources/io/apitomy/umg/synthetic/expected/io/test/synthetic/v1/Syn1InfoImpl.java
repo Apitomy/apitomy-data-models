@@ -37,7 +37,7 @@ public class Syn1InfoImpl extends NodeImpl implements Syn1Info {
 	public void setContact(SynContact value) {
 		this.contact = value;
 		if (value != null) {
-			((NodeImpl) value).setParent(this);
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("contact");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}
@@ -46,7 +46,7 @@ public class Syn1InfoImpl extends NodeImpl implements Syn1Info {
 	@Override
 	public Syn1Contact createContact() {
 		Syn1ContactImpl node = new Syn1ContactImpl();
-		node.setParent(this);
+		node._setParent(this);
 		return node;
 	}
 

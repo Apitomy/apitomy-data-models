@@ -41,6 +41,7 @@ public class Syn1PathsImpl extends NodeImpl implements Syn1Paths {
 	public void addItem(String name, SynPathItem item) {
 		this._items.put(name, item);
 		if (item != null) {
+			((NodeImpl) item)._setParent(this);
 			((NodeImpl) item)._setParentPropertyName(null);
 			((NodeImpl) item)._setParentPropertyType(ParentPropertyType.map);
 			((NodeImpl) item)._setMapPropertyName(name);
@@ -51,6 +52,7 @@ public class Syn1PathsImpl extends NodeImpl implements Syn1Paths {
 	public void insertItem(String name, SynPathItem item, int atIndex) {
 		this._items = DataModelUtil.insertMapEntry(this._items, name, item, atIndex);
 		if (item != null) {
+			((NodeImpl) item)._setParent(this);
 			((NodeImpl) item)._setParentPropertyName(null);
 			((NodeImpl) item)._setParentPropertyType(ParentPropertyType.map);
 			((NodeImpl) item)._setMapPropertyName(name);
@@ -59,18 +61,25 @@ public class Syn1PathsImpl extends NodeImpl implements Syn1Paths {
 
 	@Override
 	public SynPathItem removeItem(String name) {
-		return this._items.remove(name);
+		SynPathItem removed = this._items.remove(name);
+		if (removed != null)
+			removed.detach();
+		return removed;
 	}
 
 	@Override
 	public void clearItems() {
+		this._items.values().forEach(item -> {
+			if (item != null)
+				item.detach();
+		});
 		this._items.clear();
 	}
 
 	@Override
 	public Syn1PathItem createPathItem() {
 		Syn1PathItemImpl node = new Syn1PathItemImpl();
-		node.setParent(this);
+		node._setParent(this);
 		return node;
 	}
 

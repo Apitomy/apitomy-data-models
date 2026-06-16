@@ -8,6 +8,7 @@ import io.test.synthetic.ParentPropertyType;
 import io.test.synthetic.SynSchema;
 import io.test.synthetic.union.BooleanSchemaUnion;
 import io.test.synthetic.union.UnionValue;
+import io.test.synthetic.union.UnionValueImpl;
 import io.test.synthetic.util.DataModelUtil;
 import io.test.synthetic.v2.visitors.Syn2Visitor;
 import io.test.synthetic.visitors.Visitor;
@@ -111,7 +112,7 @@ public class Syn2ItemImpl extends NodeImpl implements Syn2Item {
 	public void setSchema(SynSchema value) {
 		this.schema = value;
 		if (value != null) {
-			((NodeImpl) value).setParent(this);
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("schema");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}
@@ -120,7 +121,7 @@ public class Syn2ItemImpl extends NodeImpl implements Syn2Item {
 	@Override
 	public Syn2Schema createSchema() {
 		Syn2SchemaImpl node = new Syn2SchemaImpl();
-		node.setParent(this);
+		node._setParent(this);
 		return node;
 	}
 
@@ -144,30 +145,40 @@ public class Syn2ItemImpl extends NodeImpl implements Syn2Item {
 		this.defaultValue = value;
 		if (value != null) {
 			if (value.isEntity()) {
-				((NodeImpl) value).setParent(this);
+				((NodeImpl) value)._setParent(this);
 				((NodeImpl) value)._setParentPropertyName("defaultValue");
 				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 			} else if (value.isEntityList()) {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("defaultValue");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
 				List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();
 				for (Object entity : entityList) {
 					if (entity != null) {
-						((NodeImpl) entity).setParent(this);
+						((NodeImpl) entity)._setParent(this);
 						((NodeImpl) entity)._setParentPropertyName("defaultValue");
 						((NodeImpl) entity)._setParentPropertyType(ParentPropertyType.array);
 					}
 				}
 			} else if (value.isEntityMap()) {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("defaultValue");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
 				Map<String, ?> entityMap = (Map<String, ?>) ((UnionValue<?>) value).getValue();
 				Collection<String> keys = entityMap.keySet();
 				for (String key : keys) {
 					NodeImpl entity = (NodeImpl) entityMap.get(key);
 					if (entity != null) {
-						entity.setParent(this);
+						entity._setParent(this);
 						entity._setParentPropertyName("defaultValue");
 						entity._setParentPropertyType(ParentPropertyType.map);
 						entity._setMapPropertyName(key);
 					}
 				}
+			} else {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("defaultValue");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
 			}
 		}
 	}

@@ -637,8 +637,8 @@ public class CreateReadersStage extends AbstractJavaStage {
                 body.append("        ObjectNode object = JsonUtil.consumeObjectProperty(json, name);");
                 body.append("        if (object != null) {");
                 body.append("            ${entityJavaType} model = (${entityJavaType}) node.${createMethodName}();");
-                body.append("            this.${readMethodName}(object, model);");
                 body.append("            node.${addMethodName}(name, model);");
+                body.append("            this.${readMethodName}(object, model);");
                 body.append("        }");
                 body.append("    });");
                 body.append("}");
@@ -695,8 +695,8 @@ public class CreateReadersStage extends AbstractJavaStage {
                 body.append("        ObjectNode object = JsonUtil.consumeObjectProperty(json, name);");
                 body.append("        if (object != null) {");
                 body.append("            ${entityJavaType} model = (${entityJavaType}) node.${createMethodName}();");
-                body.append("            this.${readMethodName}(object, model);");
                 body.append("            node.${addMethodName}(name, model);");
+                body.append("            this.${readMethodName}(object, model);");
                 body.append("        }");
                 body.append("    });");
                 body.append("}");
@@ -808,8 +808,8 @@ public class CreateReadersStage extends AbstractJavaStage {
                 body.append("    if (objects != null) {");
                 body.append("        objects.forEach(object -> {");
                 body.append("            ${listValueJavaType} model = (${listValueJavaType}) node.${createMethodName}();");
-                body.append("            this.${readMethodName}(object, model);");
                 body.append("            node.${addMethodName}(model);");
+                body.append("            this.${readMethodName}(object, model);");
                 body.append("        });");
                 body.append("    }");
                 body.append("}");
@@ -862,8 +862,8 @@ public class CreateReadersStage extends AbstractJavaStage {
                 body.append("        ObjectNode mapValue = JsonUtil.consumeObjectProperty(object, name);");
                 body.append("        if (mapValue != null) {");
                 body.append("            ${mapValueJavaType} model = (${mapValueJavaType}) node.${createMethodName}();");
-                body.append("            this.${readMethodName}(mapValue, model);");
                 body.append("            node.${addMethodName}(name, model);");
+                body.append("            this.${readMethodName}(mapValue, model);");
                 body.append("        }");
                 body.append("    });");
                 body.append("}");
@@ -1058,6 +1058,8 @@ public class CreateReadersStage extends AbstractJavaStage {
                     readerClassSource.addImport(JsonNode.class);
                     readerClassSource.addImport(List.class);
                     readerClassSource.addImport(ArrayList.class);
+                    JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
+                    readerClassSource.addImport(nodeImplSource);
 
                     body.addContext("unionValueInterfaceName", unionValueInterfaceName);
                     body.addContext("unionValueClassName", unionValueClassName);
@@ -1073,6 +1075,7 @@ public class CreateReadersStage extends AbstractJavaStage {
                     body.append("    array.forEach(item -> {");
                     body.append("        ObjectNode object = JsonUtil.toObject(item);");
                     body.append("        ${listValueJavaType} model = (${listValueJavaType}) node.${createMethodName}();");
+                    body.append("        ((NodeImpl) model)._setParent(node);");
                     body.append("        this.${readMethodName}(object, model);");
                     body.append("        models.add(model);");
                     body.append("    });");
@@ -1208,8 +1211,8 @@ public class CreateReadersStage extends AbstractJavaStage {
 
                     body.append("    ObjectNode object = JsonUtil.toObject(value);");
                     body.append("    ${propertyEntityType} model = (${propertyEntityType}) node.${createMethodName}();");
-                    body.append("    ${readMethodName}(object, model);");
                     body.append("    node.${addMethodName}(model);");
+                    body.append("    ${readMethodName}(object, model);");
                     body.append("}");
                 } else {
                     warn("UNION LIST property '" + property.getName() + "' not read (unsupported union subtype) for entity: " + entityModel.fullyQualifiedName());
@@ -1339,8 +1342,8 @@ public class CreateReadersStage extends AbstractJavaStage {
 
                             body.append("    ObjectNode object = JsonUtil.toObject(value);");
                             body.append("    ${propertyEntityType} model = (${propertyEntityType}) node.${createMethodName}();");
-                            body.append("    ${readMethodName}(object, model);");
                             body.append("    node.${addMethodName}(key, model);");
+                            body.append("    ${readMethodName}(object, model);");
                             body.append("}");
                         }
                     }

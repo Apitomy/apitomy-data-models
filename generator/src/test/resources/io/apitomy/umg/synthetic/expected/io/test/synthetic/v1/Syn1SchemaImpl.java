@@ -11,6 +11,7 @@ import io.test.synthetic.union.BooleanSchemaSchemaListUnion;
 import io.test.synthetic.union.BooleanSchemaUnion;
 import io.test.synthetic.union.SchemaOrBoolean;
 import io.test.synthetic.union.UnionValue;
+import io.test.synthetic.union.UnionValueImpl;
 import io.test.synthetic.util.DataModelUtil;
 import io.test.synthetic.v1.visitors.Syn1Visitor;
 import io.test.synthetic.visitors.Visitor;
@@ -69,30 +70,40 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 		this.items = value;
 		if (value != null) {
 			if (value.isEntity()) {
-				((NodeImpl) value).setParent(this);
+				((NodeImpl) value)._setParent(this);
 				((NodeImpl) value)._setParentPropertyName("items");
 				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 			} else if (value.isEntityList()) {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("items");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
 				List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();
 				for (Object entity : entityList) {
 					if (entity != null) {
-						((NodeImpl) entity).setParent(this);
+						((NodeImpl) entity)._setParent(this);
 						((NodeImpl) entity)._setParentPropertyName("items");
 						((NodeImpl) entity)._setParentPropertyType(ParentPropertyType.array);
 					}
 				}
 			} else if (value.isEntityMap()) {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("items");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
 				Map<String, ?> entityMap = (Map<String, ?>) ((UnionValue<?>) value).getValue();
 				Collection<String> keys = entityMap.keySet();
 				for (String key : keys) {
 					NodeImpl entity = (NodeImpl) entityMap.get(key);
 					if (entity != null) {
-						entity.setParent(this);
+						entity._setParent(this);
 						entity._setParentPropertyName("items");
 						entity._setParentPropertyType(ParentPropertyType.map);
 						entity._setMapPropertyName(key);
 					}
 				}
+			} else {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("items");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
 			}
 		}
 	}
@@ -100,7 +111,7 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 	@Override
 	public Syn1Schema createSchema() {
 		Syn1SchemaImpl node = new Syn1SchemaImpl();
-		node.setParent(this);
+		node._setParent(this);
 		return node;
 	}
 
@@ -125,6 +136,10 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 	@Override
 	public void clearProperties() {
 		if (this.properties != null) {
+			this.properties.values().forEach(item -> {
+				if (item != null)
+					item.detach();
+			});
 			this.properties.clear();
 		}
 	}
@@ -162,15 +177,26 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 			this.allOf = new ArrayList<>();
 		}
 		this.allOf.add(value);
-		if (value != null && value.isEntity()) {
-			((NodeImpl) value)._setParentPropertyName("allOf");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
+		if (value != null) {
+			if (value.isEntity()) {
+				((NodeImpl) value)._setParent(this);
+				((NodeImpl) value)._setParentPropertyName("allOf");
+				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
+			} else {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("allOf");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.array);
+			}
 		}
 	}
 
 	@Override
 	public void clearAllOf() {
 		if (this.allOf != null) {
+			this.allOf.forEach(item -> {
+				if (item != null)
+					item.detach();
+			});
 			this.allOf.clear();
 		}
 	}
@@ -178,7 +204,9 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 	@Override
 	public void removeAllOf(BooleanSchemaUnion value) {
 		if (this.allOf != null) {
-			this.allOf.remove(value);
+			if (value != null && this.allOf.remove(value)) {
+				value.detach();
+			}
 		}
 	}
 
@@ -190,9 +218,16 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 		} else {
 			this.allOf = DataModelUtil.insertListEntry(this.allOf, value, atIndex);
 		}
-		if (value != null && value.isEntity()) {
-			((NodeImpl) value)._setParentPropertyName("allOf");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
+		if (value != null) {
+			if (value.isEntity()) {
+				((NodeImpl) value)._setParent(this);
+				((NodeImpl) value)._setParentPropertyName("allOf");
+				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
+			} else {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("allOf");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.array);
+			}
 		}
 	}
 
@@ -217,6 +252,10 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 	@Override
 	public void clearDefinitions() {
 		if (this.definitions != null) {
+			this.definitions.values().forEach(item -> {
+				if (item != null)
+					item.detach();
+			});
 			this.definitions.clear();
 		}
 	}
@@ -255,6 +294,7 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 		}
 		this.nestedSchemas.put(name, value);
 		if (value != null) {
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("nestedSchemas");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
 			((NodeImpl) value)._setMapPropertyName(name);
@@ -264,6 +304,10 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 	@Override
 	public void clearNestedSchemas() {
 		if (this.nestedSchemas != null) {
+			this.nestedSchemas.values().forEach(item -> {
+				if (item != null)
+					item.detach();
+			});
 			this.nestedSchemas.clear();
 		}
 	}
@@ -284,6 +328,7 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 			this.nestedSchemas = DataModelUtil.insertMapEntry(this.nestedSchemas, name, value, atIndex);
 		}
 		if (value != null) {
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("nestedSchemas");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
 			((NodeImpl) value)._setMapPropertyName(name);
@@ -302,6 +347,7 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 		}
 		this.composedSchemas.add(value);
 		if (value != null) {
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("composedSchemas");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
 		}
@@ -310,6 +356,10 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 	@Override
 	public void clearComposedSchemas() {
 		if (this.composedSchemas != null) {
+			this.composedSchemas.forEach(item -> {
+				if (item != null)
+					item.detach();
+			});
 			this.composedSchemas.clear();
 		}
 	}
@@ -317,7 +367,9 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 	@Override
 	public void removeComposedSchema(SchemaOrBoolean value) {
 		if (this.composedSchemas != null) {
-			this.composedSchemas.remove(value);
+			if (value != null && this.composedSchemas.remove(value)) {
+				value.detach();
+			}
 		}
 	}
 
@@ -330,6 +382,7 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 			this.composedSchemas = DataModelUtil.insertListEntry(this.composedSchemas, value, atIndex);
 		}
 		if (value != null) {
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("composedSchemas");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
 		}

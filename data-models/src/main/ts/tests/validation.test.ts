@@ -72,7 +72,7 @@ class ValidationTestReferenceResolver implements IReferenceResolver {
 
     private toModel(jsonNode: any, from: Node): Node {
         let rval: Node = from.emptyClone();
-        rval.attach(from.parent());
+        (rval as any)._setParent(from.parent());
         return Library.readNode(jsonNode, rval);
     }
 

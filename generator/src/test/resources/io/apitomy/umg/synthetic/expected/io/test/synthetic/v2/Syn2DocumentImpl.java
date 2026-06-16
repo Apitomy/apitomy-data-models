@@ -45,7 +45,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	public void setInfo(SynInfo value) {
 		this.info = value;
 		if (value != null) {
-			((NodeImpl) value).setParent(this);
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("info");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}
@@ -54,14 +54,14 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	@Override
 	public Syn2Info createInfo() {
 		Syn2InfoImpl node = new Syn2InfoImpl();
-		node.setParent(this);
+		node._setParent(this);
 		return node;
 	}
 
 	@Override
 	public Syn2Item createItem() {
 		Syn2ItemImpl node = new Syn2ItemImpl();
-		node.setParent(this);
+		node._setParent(this);
 		return node;
 	}
 
@@ -77,6 +77,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 		}
 		this.items.add(value);
 		if (value != null) {
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("items");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
 		}
@@ -85,6 +86,10 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	@Override
 	public void clearItems() {
 		if (this.items != null) {
+			this.items.forEach(item -> {
+				if (item != null)
+					item.detach();
+			});
 			this.items.clear();
 		}
 	}
@@ -92,7 +97,9 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	@Override
 	public void removeItem(SynItem value) {
 		if (this.items != null) {
-			this.items.remove(value);
+			if (value != null && this.items.remove(value)) {
+				value.detach();
+			}
 		}
 	}
 
@@ -105,6 +112,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 			this.items = DataModelUtil.insertListEntry(this.items, value, atIndex);
 		}
 		if (value != null) {
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("items");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
 		}
@@ -133,7 +141,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	@Override
 	public Syn2PathItem createPathItem() {
 		Syn2PathItemImpl node = new Syn2PathItemImpl();
-		node.setParent(this);
+		node._setParent(this);
 		return node;
 	}
 
@@ -149,6 +157,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 		}
 		this.webhooks.put(name, value);
 		if (value != null) {
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("webhooks");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
 			((NodeImpl) value)._setMapPropertyName(name);
@@ -158,6 +167,10 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	@Override
 	public void clearWebhooks() {
 		if (this.webhooks != null) {
+			this.webhooks.values().forEach(item -> {
+				if (item != null)
+					item.detach();
+			});
 			this.webhooks.clear();
 		}
 	}
@@ -178,6 +191,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 			this.webhooks = DataModelUtil.insertMapEntry(this.webhooks, name, value, atIndex);
 		}
 		if (value != null) {
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("webhooks");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
 			((NodeImpl) value)._setMapPropertyName(name);
@@ -193,7 +207,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	public void setAdditionalSchema(SchemaOrBoolean value) {
 		this.additionalSchema = value;
 		if (value != null) {
-			((NodeImpl) value).setParent(this);
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("additionalSchema");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}

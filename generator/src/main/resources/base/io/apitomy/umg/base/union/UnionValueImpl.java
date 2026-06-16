@@ -1,6 +1,9 @@
 package io.apitomy.umg.base.union;
 
 import io.apitomy.umg.base.ModelType;
+import io.apitomy.umg.base.Node;
+import io.apitomy.umg.base.ParentPropertyType;
+import io.apitomy.umg.base.RootCapable;
 import io.apitomy.umg.base.visitors.Visitor;
 
 /**
@@ -11,6 +14,10 @@ public abstract class UnionValueImpl<T> implements UnionValue<T>, Union {
 
     private T value;
     private ModelType _modelType;
+    private Node _parent;
+    private String _parentPropertyName;
+    private ParentPropertyType _parentPropertyType;
+    private String _mapPropertyName;
 
     public UnionValueImpl() {
     }
@@ -30,6 +37,55 @@ public abstract class UnionValueImpl<T> implements UnionValue<T>, Union {
 
     public ModelType modelType() {
         return this._modelType;
+    }
+
+    @Override
+    public Node parent() {
+        return this._parent;
+    }
+
+    @Override
+    public String parentPropertyName() {
+        return this._parentPropertyName;
+    }
+
+    @Override
+    public ParentPropertyType parentPropertyType() {
+        return this._parentPropertyType;
+    }
+
+    public void _setParent(Node parent) {
+        this._parent = parent;
+    }
+
+    public void _setParentPropertyName(String name) {
+        this._parentPropertyName = name;
+    }
+
+    public void _setParentPropertyType(ParentPropertyType type) {
+        this._parentPropertyType = type;
+    }
+
+    @Override
+    public String mapPropertyName() {
+        return this._mapPropertyName;
+    }
+
+    public void _setMapPropertyName(String name) {
+        this._mapPropertyName = name;
+    }
+
+    @Override
+    public RootCapable root() {
+        return this._parent != null ? this._parent.root() : null;
+    }
+
+    @Override
+    public void detach() {
+        this._parent = null;
+        this._parentPropertyName = null;
+        this._parentPropertyType = null;
+        this._mapPropertyName = null;
     }
 
     @Override
@@ -60,6 +116,11 @@ public abstract class UnionValueImpl<T> implements UnionValue<T>, Union {
     @Override
     public boolean isNode() {
         return false;
+    }
+
+    @Override
+    public boolean isAttached() {
+        return this._parent != null;
     }
 
     @Override

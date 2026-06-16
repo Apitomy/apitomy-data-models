@@ -73,7 +73,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedChannelBinding"), getComponentNames(components.getChannelBindings()));
             components.addChannelBinding(name, node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -87,7 +86,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedChannel"), getComponentNames(components.getChannels()));
             components.addChannel(name, (AsyncApi3xChannel) node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -101,7 +99,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedCorrelationID"), getComponentNames(components.getCorrelationIds()));
             components.addCorrelationId(name, node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -116,7 +113,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             Map<String, ?> externalDocs = ((AsyncApi3xComponents) components).getExternalDocs();
             String name = generateNodeName(getNameHintFromRef("ImportedExternalDocs"), getComponentNames(externalDocs));
             ((AsyncApi3xComponents) components).addExternalDoc(name, (AsyncApi3xExternalDocumentation) node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -130,7 +126,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedMessage"), getComponentNames(components.getMessages()));
             components.addMessage(name, node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -144,7 +139,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedMessageBinding"), getComponentNames(components.getMessageBindings()));
             components.addMessageBinding(name, node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -158,7 +152,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedMessageTrait"), getComponentNames(components.getMessageTraits()));
             components.addMessageTrait(name, node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -173,7 +166,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             String name = generateNodeName(getNameHintFromRef("ImportedSchema"), getComponentNames(components.getSchemas()));
             // AsyncAPI 3.0 schemas are a union type, use addSchema() method
             components.addSchema(name, (AsyncApi3xMultiFormatSchema) node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -187,7 +179,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedOperation"), getComponentNames(components.getOperations()));
             components.addOperation(name, (AsyncApi3xOperation) node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -201,7 +192,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedOperationBinding"), getComponentNames(components.getOperationBindings()));
             components.addOperationBinding(name, node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -215,7 +205,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedReply"), getComponentNames(components.getReplies()));
             components.addReply(name, (AsyncApi3xOperationReply) node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -229,7 +218,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedReplyAddress"), getComponentNames(components.getReplyAddresses()));
             components.addReplyAddress(name, (AsyncApi3xOperationReplyAddress) node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -243,7 +231,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedOperationTrait"), getComponentNames(components.getOperationTraits()));
             components.addOperationTrait(name, node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -257,7 +244,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedParameter"), getComponentNames(components.getParameters()));
             components.addParameter(name, (AsyncApiParameter) node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -311,17 +297,14 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             if (isAvroSchema(node)) {
                 AsyncApi3xMultiFormatSchema multiFormatSchema = wrapInMultiFormatSchema(node, "avro");
                 components.addSchema(name, multiFormatSchema);
-                multiFormatSchema.attach(components);
                 setPathToImportedNode(multiFormatSchema, componentType, name);
             } else if (isProtobufSchema(node)) {
                 AsyncApi3xMultiFormatSchema multiFormatSchema = wrapInMultiFormatSchema(node, "protobuf");
                 components.addSchema(name, multiFormatSchema);
-                multiFormatSchema.attach(components);
                 setPathToImportedNode(multiFormatSchema, componentType, name);
             } else {
                 // Cast to MultiFormatSchemaSchemaUnion (AsyncApi3xSchema implements this)
                 components.addSchema(name, (MultiFormatSchemaSchemaUnion) node);
-                node.attach(components);
                 setPathToImportedNode(node, componentType, name);
             }
         }
@@ -336,7 +319,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedSecurityScheme"), getComponentNames(components.getSecuritySchemes()));
             components.addSecurityScheme(name, (AsyncApiSecurityScheme) node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -350,7 +332,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedServer"), getComponentNames(components.getServers()));
             components.addServer(name, (AsyncApi3xServer) node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -364,7 +345,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedServerBinding"), getComponentNames(components.getServerBindings()));
             components.addServerBinding(name, node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -378,7 +358,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedServerVariable"), getComponentNames(components.getServerVariables()));
             components.addServerVariable(name, (AsyncApi3xServerVariable) node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -392,7 +371,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
             AsyncApi3xComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedTag"), getComponentNames(components.getTags()));
             components.addTag(name, (AsyncApi3xTag) node);
-            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -422,7 +400,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
 
         // Add to components
         components.addSchema(name, multiFormatSchema);
-        multiFormatSchema.attach(components);
         setPathToImportedNode(multiFormatSchema, componentType, name);
     }
 
@@ -449,7 +426,6 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
 
         // Add to components
         components.addSchema(name, multiFormatSchema);
-        multiFormatSchema.attach(components);
         setPathToImportedNode(multiFormatSchema, componentType, name);
     }
 

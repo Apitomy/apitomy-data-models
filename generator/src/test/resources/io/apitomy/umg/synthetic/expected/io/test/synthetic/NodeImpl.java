@@ -31,7 +31,7 @@ public abstract class NodeImpl implements Node {
 		if (this instanceof RootCapable && ((RootCapable) this).isRoot()) {
 			return (RootCapable) this;
 		}
-		return this._parent.root();
+		return this._parent != null ? this._parent.root() : null;
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public abstract class NodeImpl implements Node {
 		return this._mapPropertyName;
 	}
 
-	public void setParent(Node parent) {
+	public void _setParent(Node parent) {
 		this._parent = parent;
 	}
 
@@ -68,6 +68,14 @@ public abstract class NodeImpl implements Node {
 
 	public void _setMapPropertyName(String name) {
 		this._mapPropertyName = name;
+	}
+
+	@Override
+	public void detach() {
+		this._parent = null;
+		this._parentPropertyName = null;
+		this._parentPropertyType = null;
+		this._mapPropertyName = null;
 	}
 
 	@Override
@@ -147,17 +155,7 @@ public abstract class NodeImpl implements Node {
 
 	@Override
 	public boolean isAttached() {
-		if (_parent == null) {
-			return false;
-		}
-		return true;
-	}
-
-	@Override
-	public void attach(Node parent) {
-		if (!parent.isAttached())
-			throw new IllegalArgumentException("Target parent node (method argument) is not itself attached.");
-		this.setParent(parent);
+		return _parent != null;
 	}
 
 	/*
