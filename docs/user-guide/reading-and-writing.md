@@ -220,6 +220,43 @@ Create a deep copy of a document. The clone is fully independent of the original
 
 ---
 
+## Error Handling
+
+The library uses a typed exception hierarchy rooted at `DataModelsException` (which extends
+`RuntimeException` for backward compatibility). When reading a document with an unrecognized
+specification version, the library throws `UnsupportedModelTypeException`.
+
+=== "Java"
+
+    ```java
+    import io.apitomy.datamodels.UnsupportedModelTypeException;
+
+    try {
+        Document doc = Library.readDocumentFromJSONString(json);
+    } catch (UnsupportedModelTypeException e) {
+        System.err.println("Unsupported spec version: " + e.getMessage());
+    }
+    ```
+
+=== "TypeScript"
+
+    ```typescript
+    try {
+        const doc = Library.readDocumentFromJSONString(json);
+    } catch (e) {
+        console.error('Unsupported spec version:', e.message);
+    }
+    ```
+
+| Exception | Thrown When |
+|-----------|------------|
+| `DataModelsException` | Base class for all library exceptions |
+| `UnsupportedModelTypeException` | Unknown or unsupported specification version |
+| `TransformationException` | Unsupported document transformation (see [Document Transformation](document-transformation.md)) |
+| `CommandException` | Command marshalling or unmarshalling failure (see [Commands](commands.md)) |
+
+---
+
 ## Extra Properties
 
 API specifications allow vendor extensions (properties prefixed with `x-`). These are

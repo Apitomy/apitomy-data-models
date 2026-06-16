@@ -38,8 +38,8 @@ in a self-contained document.
 
 ## Strict Mode
 
-By default, unresolvable references are silently skipped. Enable strict mode to preserve them
-as-is (the `$ref` remains in the output).
+By default, unresolvable references are silently skipped. Enable strict mode to throw a
+`DataModelsException` if any external references could not be resolved.
 
 === "Java"
 
