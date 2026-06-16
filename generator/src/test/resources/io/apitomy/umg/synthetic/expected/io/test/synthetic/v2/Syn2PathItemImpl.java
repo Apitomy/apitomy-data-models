@@ -50,7 +50,7 @@ public class Syn2PathItemImpl extends NodeImpl implements Syn2PathItem {
 	public void setGet(SynOperation value) {
 		this.get = value;
 		if (value != null) {
-			((NodeImpl) value).setParent(this);
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("get");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}
@@ -59,7 +59,7 @@ public class Syn2PathItemImpl extends NodeImpl implements Syn2PathItem {
 	@Override
 	public Syn2Operation createOperation() {
 		Syn2OperationImpl node = new Syn2OperationImpl();
-		node.setParent(this);
+		node._setParent(this);
 		return node;
 	}
 
@@ -72,7 +72,7 @@ public class Syn2PathItemImpl extends NodeImpl implements Syn2PathItem {
 	public void setPut(SynOperation value) {
 		this.put = value;
 		if (value != null) {
-			((NodeImpl) value).setParent(this);
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("put");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}
@@ -87,7 +87,7 @@ public class Syn2PathItemImpl extends NodeImpl implements Syn2PathItem {
 	public void setPost(SynOperation value) {
 		this.post = value;
 		if (value != null) {
-			((NodeImpl) value).setParent(this);
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("post");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}
@@ -102,7 +102,7 @@ public class Syn2PathItemImpl extends NodeImpl implements Syn2PathItem {
 	public void setDelete(Syn2Operation value) {
 		this.delete = value;
 		if (value != null) {
-			((NodeImpl) value).setParent(this);
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("delete");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}

@@ -49,7 +49,7 @@ public class Syn1PathItemImpl extends NodeImpl implements Syn1PathItem {
 	public void setGet(SynOperation value) {
 		this.get = value;
 		if (value != null) {
-			((NodeImpl) value).setParent(this);
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("get");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}
@@ -58,7 +58,7 @@ public class Syn1PathItemImpl extends NodeImpl implements Syn1PathItem {
 	@Override
 	public Syn1Operation createOperation() {
 		Syn1OperationImpl node = new Syn1OperationImpl();
-		node.setParent(this);
+		node._setParent(this);
 		return node;
 	}
 
@@ -71,7 +71,7 @@ public class Syn1PathItemImpl extends NodeImpl implements Syn1PathItem {
 	public void setPut(SynOperation value) {
 		this.put = value;
 		if (value != null) {
-			((NodeImpl) value).setParent(this);
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("put");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}
@@ -86,7 +86,7 @@ public class Syn1PathItemImpl extends NodeImpl implements Syn1PathItem {
 	public void setPost(SynOperation value) {
 		this.post = value;
 		if (value != null) {
-			((NodeImpl) value).setParent(this);
+			((NodeImpl) value)._setParent(this);
 			((NodeImpl) value)._setParentPropertyName("post");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}
