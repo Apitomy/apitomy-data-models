@@ -9,6 +9,7 @@ import io.test.synthetic.RootCapableImpl;
 import io.test.synthetic.SynSchema;
 import io.test.synthetic.union.BooleanSchemaSchemaListUnion;
 import io.test.synthetic.union.BooleanSchemaUnion;
+import io.test.synthetic.union.SchemaOrBoolean;
 import io.test.synthetic.union.UnionValue;
 import io.test.synthetic.util.DataModelUtil;
 import io.test.synthetic.v2.visitors.Syn2Visitor;
@@ -27,6 +28,8 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 	private Map<String, BooleanSchemaUnion> properties;
 	private List<BooleanSchemaUnion> allOf;
 	private Map<String, BooleanSchemaUnion> definitions;
+	private Map<String, SchemaOrBoolean> nestedSchemas;
+	private List<SchemaOrBoolean> composedSchemas;
 	private Integer minLength;
 	private Integer maxLength;
 	private List<JsonNode> _enum;
@@ -66,12 +69,14 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 		this.items = value;
 		if (value != null) {
 			if (value.isEntity()) {
+				((NodeImpl) value).setParent(this);
 				((NodeImpl) value)._setParentPropertyName("items");
 				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 			} else if (value.isEntityList()) {
 				List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();
 				for (Object entity : entityList) {
 					if (entity != null) {
+						((NodeImpl) entity).setParent(this);
 						((NodeImpl) entity)._setParentPropertyName("items");
 						((NodeImpl) entity)._setParentPropertyType(ParentPropertyType.array);
 					}
@@ -82,6 +87,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 				for (String key : keys) {
 					NodeImpl entity = (NodeImpl) entityMap.get(key);
 					if (entity != null) {
+						entity.setParent(this);
 						entity._setParentPropertyName("items");
 						entity._setParentPropertyType(ParentPropertyType.map);
 						entity._setMapPropertyName(key);
@@ -234,6 +240,98 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 			((NodeImpl) value)._setParentPropertyName("definitions");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
 			((NodeImpl) value)._setMapPropertyName(name);
+		}
+	}
+
+	@Override
+	public Map<String, SchemaOrBoolean> getNestedSchemas() {
+		return nestedSchemas;
+	}
+
+	@Override
+	public void addNestedSchema(String name, SchemaOrBoolean value) {
+		if (this.nestedSchemas == null) {
+			this.nestedSchemas = new LinkedHashMap<>();
+		}
+		this.nestedSchemas.put(name, value);
+		if (value != null) {
+			((NodeImpl) value)._setParentPropertyName("nestedSchemas");
+			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
+			((NodeImpl) value)._setMapPropertyName(name);
+		}
+	}
+
+	@Override
+	public void clearNestedSchemas() {
+		if (this.nestedSchemas != null) {
+			this.nestedSchemas.clear();
+		}
+	}
+
+	@Override
+	public void removeNestedSchema(String name) {
+		if (this.nestedSchemas != null) {
+			this.nestedSchemas.remove(name);
+		}
+	}
+
+	@Override
+	public void insertNestedSchema(String name, SchemaOrBoolean value, int atIndex) {
+		if (this.nestedSchemas == null) {
+			this.nestedSchemas = new LinkedHashMap<>();
+			this.nestedSchemas.put(name, value);
+		} else {
+			this.nestedSchemas = DataModelUtil.insertMapEntry(this.nestedSchemas, name, value, atIndex);
+		}
+		if (value != null) {
+			((NodeImpl) value)._setParentPropertyName("nestedSchemas");
+			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
+			((NodeImpl) value)._setMapPropertyName(name);
+		}
+	}
+
+	@Override
+	public List<SchemaOrBoolean> getComposedSchemas() {
+		return composedSchemas;
+	}
+
+	@Override
+	public void addComposedSchema(SchemaOrBoolean value) {
+		if (this.composedSchemas == null) {
+			this.composedSchemas = new ArrayList<>();
+		}
+		this.composedSchemas.add(value);
+		if (value != null) {
+			((NodeImpl) value)._setParentPropertyName("composedSchemas");
+			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
+		}
+	}
+
+	@Override
+	public void clearComposedSchemas() {
+		if (this.composedSchemas != null) {
+			this.composedSchemas.clear();
+		}
+	}
+
+	@Override
+	public void removeComposedSchema(SchemaOrBoolean value) {
+		if (this.composedSchemas != null) {
+			this.composedSchemas.remove(value);
+		}
+	}
+
+	@Override
+	public void insertComposedSchema(SchemaOrBoolean value, int atIndex) {
+		if (this.composedSchemas == null) {
+			this.composedSchemas = new ArrayList<>();
+			this.composedSchemas.add(value);
+		} else {
+			this.composedSchemas = DataModelUtil.insertListEntry(this.composedSchemas, value, atIndex);
+		}
+		if (value != null) {
+			((NodeImpl) value)._setParentPropertyName("composedSchemas");
+			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
 		}
 	}
 

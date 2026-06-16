@@ -54,6 +54,14 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return specVersion.getNamespace() + ".io";
     }
 
+    protected String getClonerClassName(SpecificationVersion specVersion) {
+        return specVersion.getPrefix() + "ModelCloner";
+    }
+
+    protected String getClonerPackageName(SpecificationVersion specVersion) {
+        return specVersion.getNamespace() + ".io";
+    }
+
     protected String getTraverserClassName(SpecificationVersion specVersion) {
         return specVersion.getPrefix() + "Traverser";
     }
@@ -209,6 +217,10 @@ public abstract class AbstractJavaStage extends AbstractStage {
 
     protected String getModelWriterInterfaceFQN() {
         return getState().getConfig().getRootNamespace() + ".io.ModelWriter";
+    }
+
+    protected String getModelClonerInterfaceFQN() {
+        return getState().getConfig().getRootNamespace() + ".io.ModelCloner";
     }
 
     protected String getRootVisitorInterfaceFQN() {

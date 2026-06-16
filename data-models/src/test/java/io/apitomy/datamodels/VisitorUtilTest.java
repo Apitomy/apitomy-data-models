@@ -19,8 +19,8 @@ package io.apitomy.datamodels;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.apitomy.datamodels.models.Info;
 import io.apitomy.datamodels.models.Node;
@@ -28,6 +28,7 @@ import io.apitomy.datamodels.models.Operation;
 import io.apitomy.datamodels.models.openapi.OpenApiResponse;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Document;
 import io.apitomy.datamodels.models.visitors.AllNodeVisitor;
+import io.apitomy.datamodels.models.visitors.Visitor;
 import io.apitomy.datamodels.paths.NodePath;
 
 /**
@@ -103,9 +104,9 @@ public class VisitorUtilTest {
 
         VisitorUtil.visitTree(document, visitor, TraverserDirection.down);
 
-        Assert.assertNotNull(visitor.visitedNodes);
-        Assert.assertTrue("Should visit multiple nodes", visitor.visitedNodes.size() > 10);
-        Assert.assertEquals("First node should be the document", document, visitor.visitedNodes.get(0));
+        Assertions.assertNotNull(visitor.visitedNodes);
+        Assertions.assertTrue(visitor.visitedNodes.size() > 10, "Should visit multiple nodes");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "First node should be the document");
     }
 
     @Test
@@ -116,8 +117,8 @@ public class VisitorUtilTest {
 
         VisitorUtil.visitTree(info, visitor, TraverserDirection.up);
 
-        Assert.assertNotNull(visitor.visitedNodes);
-        Assert.assertTrue("Should visit at least 2 nodes", visitor.visitedNodes.size() >= 2);
+        Assertions.assertNotNull(visitor.visitedNodes);
+        Assertions.assertTrue(visitor.visitedNodes.size() >= 2, "Should visit at least 2 nodes");
     }
 
     @Test
@@ -128,8 +129,8 @@ public class VisitorUtilTest {
 
         VisitorUtil.visitPath(document, path, visitor);
 
-        Assert.assertEquals("Should visit only the document", 1, visitor.visitedNodes.size());
-        Assert.assertEquals("Should visit the document", document, visitor.visitedNodes.get(0));
+        Assertions.assertEquals(1, visitor.visitedNodes.size(), "Should visit only the document");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "Should visit the document");
     }
 
     @Test
@@ -140,9 +141,9 @@ public class VisitorUtilTest {
 
         VisitorUtil.visitPath(document, path, visitor);
 
-        Assert.assertEquals("Should visit document and info", 2, visitor.visitedNodes.size());
-        Assert.assertEquals("First node should be document", document, visitor.visitedNodes.get(0));
-        Assert.assertTrue("Second node should be Info", visitor.visitedNodes.get(1) instanceof Info);
+        Assertions.assertEquals(2, visitor.visitedNodes.size(), "Should visit document and info");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "First node should be document");
+        Assertions.assertTrue(visitor.visitedNodes.get(1) instanceof Info, "Second node should be Info");
     }
 
     @Test
@@ -153,8 +154,8 @@ public class VisitorUtilTest {
 
         VisitorUtil.visitPath(document, path, visitor);
 
-        Assert.assertEquals("Should visit document, info, and contact", 3, visitor.visitedNodes.size());
-        Assert.assertEquals("First node should be document", document, visitor.visitedNodes.get(0));
+        Assertions.assertEquals(3, visitor.visitedNodes.size(), "Should visit document, info, and contact");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "First node should be document");
     }
 
     @Test
@@ -165,10 +166,10 @@ public class VisitorUtilTest {
 
         VisitorUtil.visitPath(document, path, visitor);
 
-        Assert.assertTrue("Should visit at least 3 nodes", visitor.visitedNodes.size() >= 3);
-        Assert.assertEquals("First node should be document", document, visitor.visitedNodes.get(0));
+        Assertions.assertTrue(visitor.visitedNodes.size() >= 3, "Should visit at least 3 nodes");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "First node should be document");
         Node lastNode = visitor.visitedNodes.get(visitor.visitedNodes.size() - 1);
-        Assert.assertTrue("Last node should be an Operation", lastNode instanceof Operation);
+        Assertions.assertTrue(lastNode instanceof Operation, "Last node should be an Operation");
     }
 
     @Test
@@ -179,10 +180,10 @@ public class VisitorUtilTest {
 
         VisitorUtil.visitPath(document, path, visitor);
 
-        Assert.assertTrue("Should visit at least 4 nodes", visitor.visitedNodes.size() >= 4);
-        Assert.assertEquals("First node should be document", document, visitor.visitedNodes.get(0));
+        Assertions.assertTrue(visitor.visitedNodes.size() >= 4, "Should visit at least 4 nodes");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "First node should be document");
         Node lastNode = visitor.visitedNodes.get(visitor.visitedNodes.size() - 1);
-        Assert.assertTrue("Last node should be a Response", lastNode instanceof OpenApiResponse);
+        Assertions.assertTrue(lastNode instanceof OpenApiResponse, "Last node should be a Response");
     }
 
     @Test
@@ -193,8 +194,8 @@ public class VisitorUtilTest {
 
         VisitorUtil.visitPath(document, path, visitor);
 
-        Assert.assertEquals("Should visit document and first tag", 2, visitor.visitedNodes.size());
-        Assert.assertEquals("First node should be document", document, visitor.visitedNodes.get(0));
+        Assertions.assertEquals(2, visitor.visitedNodes.size(), "Should visit document and first tag");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "First node should be document");
     }
 
     @Test
@@ -205,8 +206,8 @@ public class VisitorUtilTest {
 
         VisitorUtil.visitPath(document, path, visitor);
 
-        Assert.assertEquals("Should visit document and second tag", 2, visitor.visitedNodes.size());
-        Assert.assertEquals("First node should be document", document, visitor.visitedNodes.get(0));
+        Assertions.assertEquals(2, visitor.visitedNodes.size(), "Should visit document and second tag");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "First node should be document");
     }
 
     @Test
@@ -217,8 +218,8 @@ public class VisitorUtilTest {
 
         VisitorUtil.visitPath(document, path, visitor);
 
-        Assert.assertEquals("Should visit only the document", 1, visitor.visitedNodes.size());
-        Assert.assertEquals("Should visit the document", document, visitor.visitedNodes.get(0));
+        Assertions.assertEquals(1, visitor.visitedNodes.size(), "Should visit only the document");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "Should visit the document");
     }
 
     @Test
@@ -230,8 +231,8 @@ public class VisitorUtilTest {
         VisitorUtil.visitPath(document, path, visitor);
 
         // Should visit document and paths, but stop before the non-existent path item
-        Assert.assertTrue("Should visit at least the document", visitor.visitedNodes.size() >= 1);
-        Assert.assertEquals("First node should be document", document, visitor.visitedNodes.get(0));
+        Assertions.assertTrue(visitor.visitedNodes.size() >= 1, "Should visit at least the document");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "First node should be document");
     }
 
     @Test
@@ -243,8 +244,8 @@ public class VisitorUtilTest {
         VisitorUtil.visitPath(document, path, visitor);
 
         // Should visit only the document, stopping at the out-of-bounds index
-        Assert.assertEquals("Should visit only the document", 1, visitor.visitedNodes.size());
-        Assert.assertEquals("Should visit the document", document, visitor.visitedNodes.get(0));
+        Assertions.assertEquals(1, visitor.visitedNodes.size(), "Should visit only the document");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "Should visit the document");
     }
 
     @Test
@@ -256,8 +257,8 @@ public class VisitorUtilTest {
         VisitorUtil.visitPath(document, path, visitor);
 
         // Should visit document, info, and contact, but stop at invalid property
-        Assert.assertEquals("Should visit document, info, and contact", 3, visitor.visitedNodes.size());
-        Assert.assertEquals("First node should be document", document, visitor.visitedNodes.get(0));
+        Assertions.assertEquals(3, visitor.visitedNodes.size(), "Should visit document, info, and contact");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "First node should be document");
     }
 
     @Test
@@ -269,8 +270,8 @@ public class VisitorUtilTest {
         VisitorUtil.visitPath(document, path, visitor);
 
         // Should visit nodes up to responses, but not the non-existent 404 response
-        Assert.assertTrue("Should visit at least 3 nodes", visitor.visitedNodes.size() >= 3);
-        Assert.assertEquals("First node should be document", document, visitor.visitedNodes.get(0));
+        Assertions.assertTrue(visitor.visitedNodes.size() >= 3, "Should visit at least 3 nodes");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "First node should be document");
     }
 
     @Test
@@ -281,8 +282,8 @@ public class VisitorUtilTest {
 
         VisitorUtil.visitPath(document, path, visitor);
 
-        Assert.assertEquals("Should visit only the document", 1, visitor.visitedNodes.size());
-        Assert.assertEquals("Should visit the document", document, visitor.visitedNodes.get(0));
+        Assertions.assertEquals(1, visitor.visitedNodes.size(), "Should visit only the document");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "Should visit the document");
     }
 
     @Test
@@ -299,9 +300,58 @@ public class VisitorUtilTest {
         VisitorUtil.visitPath(document, path1, visitor1);
         VisitorUtil.visitPath(document, path2, visitor2);
 
-        Assert.assertTrue("First path should visit nodes", visitor1.visitedNodes.size() > 0);
-        Assert.assertTrue("Second path should visit nodes", visitor2.visitedNodes.size() > 0);
-        Assert.assertEquals("Both should start with document",
-            visitor1.visitedNodes.get(0), visitor2.visitedNodes.get(0));
+        Assertions.assertTrue(visitor1.visitedNodes.size() > 0, "First path should visit nodes");
+        Assertions.assertTrue(visitor2.visitedNodes.size() > 0, "Second path should visit nodes");
+        Assertions.assertEquals(visitor1.visitedNodes.get(0), visitor2.visitedNodes.get(0),
+            "Both should start with document");
+    }
+
+    // --- visitPathStrict tests ---
+
+    @Test
+    public void testVisitPathStrict_ValidPath() {
+        OpenApi30Document document = (OpenApi30Document) Library.readDocumentFromJSONString(SAMPLE_OPENAPI);
+        NodePath path = NodePath.parse("/paths[/pets]/get/responses[200]");
+        NodeCollectorVisitor visitor = new NodeCollectorVisitor();
+
+        VisitorUtil.visitPathStrict(document, path, visitor);
+
+        Assertions.assertTrue(visitor.visitedNodes.size() >= 4, "Should visit at least 4 nodes");
+        Assertions.assertEquals(document, visitor.visitedNodes.get(0), "First node should be document");
+        Node lastNode = visitor.visitedNodes.get(visitor.visitedNodes.size() - 1);
+        Assertions.assertTrue(lastNode instanceof OpenApiResponse, "Last node should be a Response");
+    }
+
+    @Test
+    public void testVisitPathStrict_NonExistentPropertyStopsGracefully() {
+        OpenApi30Document document = (OpenApi30Document) Library.readDocumentFromJSONString(SAMPLE_OPENAPI);
+        NodePath path = NodePath.parse("/nonExistentProperty");
+        NodeCollectorVisitor visitor = new NodeCollectorVisitor();
+
+        VisitorUtil.visitPathStrict(document, path, visitor);
+
+        Assertions.assertEquals(1, visitor.visitedNodes.size(),
+                "Should visit only the document when property returns null");
+    }
+
+    @Test
+    public void testVisitPathStrict_ThrowsOnTraversalError() {
+        OpenApi30Document document = (OpenApi30Document) Library.readDocumentFromJSONString(SAMPLE_OPENAPI);
+        NodePath path = NodePath.parse("/info");
+
+        Visitor throwingVisitor = new AllNodeVisitor() {
+            private int count = 0;
+            @Override
+            protected void visitNode(Node node) {
+                count++;
+                if (count > 1) {
+                    throw new RuntimeException("Simulated visitor error");
+                }
+            }
+        };
+
+        Assertions.assertThrows(DataModelsException.class, () -> {
+            VisitorUtil.visitPathStrict(document, path, throwingVisitor);
+        });
     }
 }

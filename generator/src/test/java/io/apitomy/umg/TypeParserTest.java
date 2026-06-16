@@ -2,8 +2,8 @@ package io.apitomy.umg;
 
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.apitomy.umg.models.concept.PropertyType;
 
@@ -19,18 +19,18 @@ public class TypeParserTest {
         PropertyType.parse("{{foo|bar}}");
         PropertyType.parse("{[foo]|{bar}|baz}|quox");
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 PropertyType.builder().simple(true).simpleType("foo").build(),
                 PropertyType.parse("foo"));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 PropertyType.builder().union(true).nested(Set.of(
                         PropertyType.builder().simple(true).simpleType("foo").build(),
                         PropertyType.builder().simple(true).simpleType("bar").build()
                         )).build(),
                 PropertyType.parse("foo|bar"));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 PropertyType.builder().union(true).nested(Set.of(
                         PropertyType.builder().simple(true).simpleType("foo").build(),
                         PropertyType.builder().simple(true).simpleType("bar").build(),
@@ -38,7 +38,7 @@ public class TypeParserTest {
                         )).build(),
                 PropertyType.parse("foo|bar|baz"));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 PropertyType.builder().map(true).nested(Set.of(
                         PropertyType.builder().union(true).nested(Set.of(
                                 PropertyType.builder().simple(true).simpleType("foo").build(),
@@ -47,7 +47,7 @@ public class TypeParserTest {
                         )).build(),
                 PropertyType.parse("{foo|bar}"));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 PropertyType.builder().map(true).nested(Set.of(
                         PropertyType.builder().map(true).nested(Set.of(
                                 PropertyType.builder().union(true).nested(Set.of(
@@ -58,7 +58,7 @@ public class TypeParserTest {
                         )).build(),
                 PropertyType.parse("{{foo|bar}}"));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 PropertyType.builder().union(true).nested(Set.of(
                         PropertyType.builder().map(true).nested(Set.of(
                                 PropertyType.builder().union(true).nested(Set.of(

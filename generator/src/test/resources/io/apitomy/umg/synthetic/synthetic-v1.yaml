@@ -166,6 +166,12 @@ entities:
       # Feature 19: Map of unions
       - name: definitions
         type: '{boolean|Schema}'
+      # Feature 22: Map of type alias (union)
+      - name: nestedSchemas
+        type: '{SchemaOrBoolean}'
+      # Feature 22: List of type alias (union)
+      - name: composedSchemas
+        type: '[SchemaOrBoolean]'
       - name: minLength
         type: integer
       - name: maxLength

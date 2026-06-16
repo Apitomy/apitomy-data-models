@@ -23,6 +23,8 @@ import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.RootCapable;
 import io.apitomy.datamodels.models.asyncapi.AsyncApiDocument;
+import io.apitomy.datamodels.models.io.ModelCloner;
+import io.apitomy.datamodels.models.io.ModelClonerFactory;
 import io.apitomy.datamodels.models.io.ModelReader;
 import io.apitomy.datamodels.models.io.ModelReaderFactory;
 import io.apitomy.datamodels.models.io.ModelWriter;
@@ -39,6 +41,7 @@ import io.apitomy.datamodels.refs.ReferenceResolverChain;
 import io.apitomy.datamodels.transform.OpenApi20to30TransformationVisitor;
 import io.apitomy.datamodels.transform.OpenApi30to31TransformationVisitor;
 import io.apitomy.datamodels.transform.OpenApi31to32TransformationVisitor;
+import io.apitomy.datamodels.transform.TransformUtil;
 import io.apitomy.datamodels.util.ModelTypeUtil;
 import io.apitomy.datamodels.util.ValidationUtil;
 import io.apitomy.datamodels.validation.DefaultSeverityRegistry;
@@ -47,7 +50,6 @@ import io.apitomy.datamodels.validation.ValidationProblem;
 import io.apitomy.datamodels.validation.ValidationVisitor;
 
 import java.util.List;
-import java.util.function.UnaryOperator;
 
 /**
  * The most common entry points into using the data models library.  Provides convenience methods
@@ -247,17 +249,16 @@ public class Library {
         }
 
         if (ModelTypeUtil.isAsyncApiModel(source)) {
-            AsyncApiDocument doc = (AsyncApiDocument) source;
-            String oldVersion = doc.getAsyncapi();
+            String versionProp = ModelTypeUtil.getVersionPropertyName(toType);
             String newVersion = ModelTypeUtil.getVersion(toType);
-
-            doc.setAsyncapi(newVersion);
-            AsyncApiDocument newDoc = (AsyncApiDocument) cloneDocument(source);
-            doc.setAsyncapi(oldVersion);
+            AsyncApiDocument newDoc = (AsyncApiDocument) TransformUtil.cloneAndTransform(source, rawJson -> {
+                rawJson.put(versionProp, newVersion);
+                return rawJson;
+            });
             return newDoc;
         }
 
-        throw new RuntimeException("Transformation not supported.");
+        throw new TransformationException("Transformation not supported.");
     }
 
     /**
@@ -286,28 +287,19 @@ public class Library {
             return transformer.getResult();
         }
 
-        throw new RuntimeException("No single-step transformation from " + fromType + " to " + toType);
+        throw new TransformationException("No single-step transformation from " + fromType + " to " + toType);
     }
 
     /**
-     * Clones the given document by serializing it to a JS object, and then re-parsing it.
-     * @param source
+     * Clones the given document by performing a deep copy of the entire node tree.  Uses a
+     * generated cloner that walks the source tree once, creating new node instances and
+     * copying property values directly — avoiding JSON serialization overhead.
+     * @param source the document to clone
+     * @return a new document that is a deep copy of the source
      */
     public static Document cloneDocument(Document source) {
-        return cloneDocument(source, UnaryOperator.identity());
-    }
-
-    /**
-     * Clones the given document by serializing it to a JS object, and then re-parsing it.
-     * @param source
-     * @param transformer
-     */
-    public static Document cloneDocument(Document source, UnaryOperator<ObjectNode> transformer) {
-        // TODO have the code generator produce a Cloner of some kind that knows how to clone any Node.
-        //      We already have reader/writer dispatchers.  We only need something that can create a new,
-        //      empty model instance from an existing (not empty) model.
-        ObjectNode jsObj = transformer.apply(writeNode(source));
-        return readDocument(jsObj);
+        ModelCloner cloner = ModelClonerFactory.createModelCloner(source.root().modelType());
+        return (Document) cloner.cloneNode(source);
     }
 
     /**

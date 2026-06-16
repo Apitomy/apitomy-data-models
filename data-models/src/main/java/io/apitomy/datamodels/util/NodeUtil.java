@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import io.apitomy.datamodels.DataModelsException;
 import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.union.Union;
 import io.apitomy.datamodels.visitors.DefinitionDetectionVisitor;
@@ -72,9 +73,9 @@ public class NodeUtil {
                             + " with " + args.length + " parameter(s) on " + target.getClass().getSimpleName()));
             return method.invoke(target, args);
         } catch (InvocationTargetException e) {
-            throw new RuntimeException(e.getCause());
+            throw new DataModelsException(e.getCause());
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataModelsException(e);
         }
     }
 
@@ -90,9 +91,11 @@ public class NodeUtil {
             Method method = node.getClass().getMethod(getterName);
             return method.invoke(node);
         } catch (NoSuchMethodException nsme) {
-            // Might be a boolean getter...
+            // Might be a boolean getter — fall through to try "is" prefix
         } catch (SecurityException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e1) {
+            LoggerUtil.warn("Failed to get property '%s' (via %s) on Node '%s': %s",
+                    propertyName, getterName, node.getClass().getSimpleName(), e1.getMessage());
             return null;
         }
 
@@ -101,8 +104,12 @@ public class NodeUtil {
         try {
             Method method = node.getClass().getMethod(getterName);
             return method.invoke(node);
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+        } catch (NoSuchMethodException nsme) {
+            return null;
+        } catch (SecurityException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e1) {
+            LoggerUtil.warn("Failed to get property '%s' (via %s) on Node '%s': %s",
+                    propertyName, getterName, node.getClass().getSimpleName(), e1.getMessage());
             return null;
         }
     }

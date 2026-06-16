@@ -46,7 +46,7 @@ public class ModelTypeDetector {
             } else if (asyncapi.startsWith("3.1")) {
                 return ModelType.ASYNCAPI31;
             } else {
-                throw new RuntimeException("Unknown/unsupported AsyncAPI version: " + asyncapi);
+                throw new UnsupportedModelTypeException("Unknown/unsupported AsyncAPI version: " + asyncapi);
             }
         }
         if (openapi != null) {
@@ -59,14 +59,14 @@ public class ModelTypeDetector {
             } else if (openapi.startsWith("3.2")) {
                 return ModelType.OPENAPI32;
             } else {
-                throw new RuntimeException("Unknown/unsupported OpenAPI version: " + openapi);
+                throw new UnsupportedModelTypeException("Unknown/unsupported OpenAPI version: " + openapi);
             }
         }
         if (swagger != null) {
             if (swagger.startsWith("2.")) {
                 return ModelType.OPENAPI20;
             } else {
-                throw new RuntimeException("Unknown/unsupported OpenAPI/Swagger version: " + swagger);
+                throw new UnsupportedModelTypeException("Unknown/unsupported OpenAPI/Swagger version: " + swagger);
             }
         }
 
@@ -77,7 +77,7 @@ public class ModelTypeDetector {
             } else if (openrpc.startsWith("1.4")) {
                 return ModelType.OPENRPC14;
             } else {
-                throw new RuntimeException("Unknown/unsupported OpenRPC version: " + openrpc);
+                throw new UnsupportedModelTypeException("Unknown/unsupported OpenRPC version: " + openrpc);
             }
         }
 
@@ -94,7 +94,7 @@ public class ModelTypeDetector {
             } else if (schema.contains("2020-12")) {
                 return ModelType.JS202012;
             } else {
-                throw new RuntimeException("Unknown/unsupported JSON Schema version: " + schema);
+                throw new UnsupportedModelTypeException("Unknown/unsupported JSON Schema version: " + schema);
             }
         }
 

@@ -43,6 +43,8 @@ public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
 		node.accept(this.visitor);
 		Syn1Schema model = (Syn1Schema) node;
 		this.traverseUnion("items", model.getItems());
+		this.traverseMap("nestedSchemas", model.getNestedSchemas());
+		this.traverseList("composedSchemas", model.getComposedSchemas());
 	}
 
 	@Override

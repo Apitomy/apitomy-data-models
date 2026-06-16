@@ -6,8 +6,8 @@ import io.apitomy.datamodels.models.openapi.OpenApiDocument;
 import io.apitomy.datamodels.models.union.StringUnionValueImpl;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Document;
 import io.apitomy.datamodels.models.openrpc.v1x.v14.OpenRpc14Document;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class LibraryTest {
 
@@ -18,7 +18,7 @@ public class LibraryTest {
     @Test
     public void testReadDocumentFromJSONString() {
         OpenApi30Document document = (OpenApi30Document) Library.readDocumentFromJSONString(EMPTY_OPENAPI);
-        Assert.assertEquals("3.0.1", document.getOpenapi());
+        Assertions.assertEquals("3.0.1", document.getOpenapi());
     }
 
     @Test
@@ -35,7 +35,7 @@ public class LibraryTest {
 }""";
 
         String actual = Library.writeDocumentToJSONString(document);
-        Assert.assertEquals(expected, actual);
+        Assertions.assertEquals(expected, actual);
     }
 
     @Test
@@ -55,7 +55,7 @@ public class LibraryTest {
 }""";
 
         String actual = Library.writeDocumentToJSONString(document);
-        Assert.assertEquals(expected, actual);
+        Assertions.assertEquals(expected, actual);
     }
 
     @Test
@@ -65,9 +65,9 @@ public class LibraryTest {
         document.getInfo().setTitle("My API");
         document.getInfo().setVersion("1.0");
 
-        Assert.assertEquals("3.0.3", document.getOpenapi());
-        Assert.assertEquals("My API", document.getInfo().getTitle());
-        Assert.assertEquals("1.0", document.getInfo().getVersion());
+        Assertions.assertEquals("3.0.3", document.getOpenapi());
+        Assertions.assertEquals("My API", document.getInfo().getTitle());
+        Assertions.assertEquals("1.0", document.getInfo().getVersion());
     }
 
     @Test
@@ -77,9 +77,9 @@ public class LibraryTest {
         document.getInfo().setTitle("My RPC API");
         document.getInfo().setVersion("1.0");
 
-        Assert.assertEquals("1.4.0", document.getOpenrpc());
-        Assert.assertEquals("My RPC API", document.getInfo().getTitle());
-        Assert.assertEquals("1.0", document.getInfo().getVersion());
+        Assertions.assertEquals("1.4.0", document.getOpenrpc());
+        Assertions.assertEquals("My RPC API", document.getInfo().getTitle());
+        Assertions.assertEquals("1.0", document.getInfo().getVersion());
     }
 
 }

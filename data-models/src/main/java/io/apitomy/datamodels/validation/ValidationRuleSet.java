@@ -1,5 +1,6 @@
 package io.apitomy.datamodels.validation;
 
+import io.apitomy.datamodels.DataModelsException;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.util.ValidationUtil;
 import io.apitomy.datamodels.validation.rules.invalid.format.AaInvalidAsyncApiVersionFormatRule;
@@ -312,7 +313,7 @@ public class ValidationRuleSet {
 
         this.rules.add(md("UNKNOWN-001", "Unknown/Unexpected Property", "Unknown Property", "All", new ModelType[]{ModelType.OPENAPI20, ModelType.OPENAPI30, ModelType.OPENAPI31, ModelType.OPENAPI32}, true, "An unexpected property \"${'property'}\" was found.  Extension properties should begin with \"x-\".", OasUnknownPropertyRule.class));
         /** Uniqueness **/
-        this.rules.add(md("TAG-003", "Duplicate Tag Definition", "Uniqueness", "Tag", new ModelType[]{ModelType.OPENAPI20, ModelType.OPENAPI30, ModelType.OPENAPI31, ModelType.OPENAPI32, ModelType.ASYNCAPI20, ModelType.ASYNCAPI21, ModelType.ASYNCAPI22, ModelType.ASYNCAPI23, ModelType.ASYNCAPI24, ModelType.ASYNCAPI25, ModelType.ASYNCAPI26, ModelType.OPENRPC13, ModelType.OPENRPC14}, true, "Duplicate tag '${'tagName'}' found (every tag must have a unique name).", TagUniquenessValidationRule.class));
+        this.rules.add(md("TAG-003", "Duplicate Tag Definition", "Uniqueness", "Tag", new ModelType[]{ModelType.OPENAPI20, ModelType.OPENAPI30, ModelType.OPENAPI31, ModelType.OPENAPI32, ModelType.ASYNCAPI20, ModelType.ASYNCAPI21, ModelType.ASYNCAPI22, ModelType.ASYNCAPI23, ModelType.ASYNCAPI24, ModelType.ASYNCAPI25, ModelType.ASYNCAPI26, ModelType.ASYNCAPI30, ModelType.ASYNCAPI31, ModelType.OPENRPC13, ModelType.OPENRPC14}, true, "Duplicate tag '${'tagName'}' found (every tag must have a unique name).", TagUniquenessValidationRule.class));
         this.rules.add(md("OP-003", "Duplicate Operation ID", "Uniqueness", "Operation", new ModelType[]{ModelType.OPENAPI20, ModelType.OPENAPI30, ModelType.OPENAPI31, ModelType.OPENAPI32, ModelType.ASYNCAPI20, ModelType.ASYNCAPI21, ModelType.ASYNCAPI22, ModelType.ASYNCAPI23, ModelType.ASYNCAPI24, ModelType.ASYNCAPI25, ModelType.ASYNCAPI26}, true, "Duplicate operationId '${'operationId'}' found (operation IDs must be unique across all operations in the API).", OasOperationIdUniquenessValidationRule.class));
         this.rules.add(md("PAR-019", "Duplicate Parameter", "Uniqueness", "Parameter", new ModelType[]{ModelType.OPENAPI20, ModelType.OPENAPI30, ModelType.OPENAPI31, ModelType.OPENAPI32}, true, "Duplicate ${'paramIn'} parameter named '${'paramName'}' found (parameters must be unique by name and location).", OasParameterUniquenessValidationRule.class));
         this.rules.add(md("PAR-020", "Duplicate Body Parameter", "Uniqueness", "Parameter", new ModelType[]{ModelType.OPENAPI20}, true, "Operation has multiple \"body\" parameters.", OasBodyParameterUniquenessValidationRule.class));
@@ -618,12 +619,12 @@ public class ValidationRuleSet {
 
         for (ValidationRuleMetaData rule : this.rules) {
             if (codes.contains(rule.code)) {
-                throw new RuntimeException("Duplicate rule code found: " + rule.code);
+                throw new DataModelsException("Duplicate rule code found: " + rule.code);
             } else {
                 codes.add(rule.code);
             }
             if (names.contains(rule.name)) {
-                throw new RuntimeException("Duplicate rule name found: " + rule.name);
+                throw new DataModelsException("Duplicate rule name found: " + rule.name);
             } else {
                 names.add(rule.name);
             }

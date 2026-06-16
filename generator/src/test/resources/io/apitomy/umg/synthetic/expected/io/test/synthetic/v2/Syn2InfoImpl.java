@@ -38,6 +38,7 @@ public class Syn2InfoImpl extends NodeImpl implements Syn2Info {
 	public void setContact(SynContact value) {
 		this.contact = value;
 		if (value != null) {
+			((NodeImpl) value).setParent(this);
 			((NodeImpl) value)._setParentPropertyName("contact");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}

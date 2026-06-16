@@ -1,9 +1,9 @@
 package io.apitomy.umg;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +23,7 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import io.apitomy.umg.io.SpecificationLoader;
 import io.apitomy.umg.models.spec.SpecificationModel;
@@ -87,11 +87,11 @@ public class FullGeneratorTest {
      */
     private void assertOutputNotEmpty(File outputDir) throws IOException {
         File[] topLevelFiles = outputDir.listFiles();
-        assertNotNull("Output directory should exist and be listable", topLevelFiles);
-        assertTrue("Output directory should not be empty", topLevelFiles.length > 0);
+        assertNotNull(topLevelFiles, "Output directory should exist and be listable");
+        assertTrue(topLevelFiles.length > 0, "Output directory should not be empty");
 
         List<Path> javaFiles = collectJavaFiles(outputDir);
-        assertFalse("Expected generated .java files but found none", javaFiles.isEmpty());
+        assertFalse(javaFiles.isEmpty(), "Expected generated .java files but found none");
         System.out.println("[Full] Generated " + javaFiles.size() + " .java files");
     }
 
@@ -117,10 +117,10 @@ public class FullGeneratorTest {
      */
     private void assertGeneratedCodeCompiles(File outputDir) throws IOException {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        assertNotNull("Java compiler not available (requires JDK, not JRE)", compiler);
+        assertNotNull(compiler, "Java compiler not available (requires JDK, not JRE)");
 
         List<Path> javaFiles = collectJavaFiles(outputDir);
-        assertFalse("No .java files to compile", javaFiles.isEmpty());
+        assertFalse(javaFiles.isEmpty(), "No .java files to compile");
 
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
         try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null,
@@ -222,7 +222,7 @@ public class FullGeneratorTest {
      */
     private void assertFileExists(File dir, String fileName, String message) {
         Optional<Path> found = findFile(dir, fileName);
-        assertTrue(message + " (looked for " + fileName + ")", found.isPresent());
+        assertTrue(found.isPresent(), message + " (looked for " + fileName + ")");
     }
 
     /**

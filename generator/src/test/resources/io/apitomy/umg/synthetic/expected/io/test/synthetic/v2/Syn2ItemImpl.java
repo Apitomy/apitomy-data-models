@@ -111,6 +111,7 @@ public class Syn2ItemImpl extends NodeImpl implements Syn2Item {
 	public void setSchema(SynSchema value) {
 		this.schema = value;
 		if (value != null) {
+			((NodeImpl) value).setParent(this);
 			((NodeImpl) value)._setParentPropertyName("schema");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 		}
@@ -143,12 +144,14 @@ public class Syn2ItemImpl extends NodeImpl implements Syn2Item {
 		this.defaultValue = value;
 		if (value != null) {
 			if (value.isEntity()) {
+				((NodeImpl) value).setParent(this);
 				((NodeImpl) value)._setParentPropertyName("defaultValue");
 				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
 			} else if (value.isEntityList()) {
 				List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();
 				for (Object entity : entityList) {
 					if (entity != null) {
+						((NodeImpl) entity).setParent(this);
 						((NodeImpl) entity)._setParentPropertyName("defaultValue");
 						((NodeImpl) entity)._setParentPropertyType(ParentPropertyType.array);
 					}
@@ -159,6 +162,7 @@ public class Syn2ItemImpl extends NodeImpl implements Syn2Item {
 				for (String key : keys) {
 					NodeImpl entity = (NodeImpl) entityMap.get(key);
 					if (entity != null) {
+						entity.setParent(this);
 						entity._setParentPropertyName("defaultValue");
 						entity._setParentPropertyType(ParentPropertyType.map);
 						entity._setMapPropertyName(key);

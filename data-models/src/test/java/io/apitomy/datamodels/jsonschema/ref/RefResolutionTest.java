@@ -3,8 +3,8 @@ package io.apitomy.datamodels.jsonschema.ref;
 import io.apitomy.datamodels.Library;
 import io.apitomy.datamodels.models.jsonschema.JsonSchemaDocument;
 import io.apitomy.datamodels.models.jsonschema.JsonSchemaJSchema;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Smoke tests for JSON Schema reference resolution — resolvers, traversal, and cycle detection.
@@ -28,9 +28,9 @@ public class RefResolutionTest {
         var traversal = JsonSchemaRefTraversal.withDefaults();
         var result = traversal.resolveRef("#/definitions/Addr", doc);
 
-        Assert.assertTrue(result.isPresent());
-        Assert.assertTrue(result.get().isAttached());
-        Assert.assertTrue(result.get() instanceof JsonSchemaJSchema);
+        Assertions.assertTrue(result.isPresent());
+        Assertions.assertTrue(result.get().isAttached());
+        Assertions.assertTrue(result.get() instanceof JsonSchemaJSchema);
     }
 
     @Test
@@ -44,8 +44,8 @@ public class RefResolutionTest {
         var traversal = JsonSchemaRefTraversal.withDefaults();
         var result = traversal.resolveRef("#Addr", doc);
 
-        Assert.assertTrue(result.isPresent());
-        Assert.assertTrue(result.get().isAttached());
+        Assertions.assertTrue(result.isPresent());
+        Assertions.assertTrue(result.get().isAttached());
     }
 
     @Test
@@ -55,7 +55,7 @@ public class RefResolutionTest {
         var traversal = JsonSchemaRefTraversal.withDefaults();
         var result = traversal.resolveRef("#/definitions/Missing", doc);
 
-        Assert.assertTrue(result.isEmpty());
+        Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
@@ -76,12 +76,12 @@ public class RefResolutionTest {
 
         // First resolution should succeed
         var result = traversal.resolveRef("#/definitions/Person", doc);
-        Assert.assertTrue(result.isPresent());
+        Assertions.assertTrue(result.isPresent());
 
         // Second resolution should use cache (same result)
         var cached = traversal.resolveRef("#/definitions/Person", doc);
-        Assert.assertTrue(cached.isPresent());
-        Assert.assertSame(result.get(), cached.get());
+        Assertions.assertTrue(cached.isPresent());
+        Assertions.assertSame(result.get(), cached.get());
     }
 
     @Test
@@ -97,10 +97,10 @@ public class RefResolutionTest {
         var byPointer = traversal.resolveRef("#/definitions/Addr", doc);
         var byAnchor = traversal.resolveRef("#Addr", doc);
 
-        Assert.assertTrue(byPointer.isPresent());
-        Assert.assertTrue(byAnchor.isPresent());
-        Assert.assertSame("Both should resolve to the same node",
-                byPointer.get(), byAnchor.get());
+        Assertions.assertTrue(byPointer.isPresent());
+        Assertions.assertTrue(byAnchor.isPresent());
+        Assertions.assertSame(byPointer.get(), byAnchor.get(),
+                "Both should resolve to the same node");
     }
 
     @Test
@@ -111,8 +111,8 @@ public class RefResolutionTest {
         var traversal = JsonSchemaRefTraversal.withDefaults();
         var result = traversal.resolveRef("https://example.com/schema.json", doc);
 
-        Assert.assertTrue("External refs should not be resolved by default resolvers",
-                result.isEmpty());
+        Assertions.assertTrue(result.isEmpty(),
+                "External refs should not be resolved by default resolvers");
     }
 
     @Test
@@ -134,8 +134,8 @@ public class RefResolutionTest {
         var traversal = new JsonSchemaRefTraversal(chain);
         var result = traversal.resolveRef("external.json", doc);
 
-        Assert.assertTrue(result.isPresent());
-        Assert.assertFalse("External ref should be detached", result.get().isAttached());
+        Assertions.assertTrue(result.isPresent());
+        Assertions.assertFalse(result.get().isAttached(), "External ref should be detached");
     }
 
     @Test
@@ -156,6 +156,6 @@ public class RefResolutionTest {
 
         var traversal = JsonSchemaRefTraversal.withDefaults();
         var result = traversal.resolveRef("#DeepAnchor", doc);
-        Assert.assertTrue("Anchor nested in properties should be found", result.isPresent());
+        Assertions.assertTrue(result.isPresent(), "Anchor nested in properties should be found");
     }
 }

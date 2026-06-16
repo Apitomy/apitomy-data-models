@@ -3,7 +3,7 @@ package io.apitomy.umg;
 import io.apitomy.umg.io.SpecificationLoader;
 import io.apitomy.umg.models.spec.SpecificationModel;
 import org.apache.commons.io.FileUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Files;
