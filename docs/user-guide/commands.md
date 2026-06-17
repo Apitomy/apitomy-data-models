@@ -177,6 +177,35 @@ Undoing the aggregate undoes all of its child commands in reverse order.
 
 ---
 
+## Error Handling
+
+Command marshalling and unmarshalling errors throw `CommandException` (a subclass of
+`DataModelsException`).
+
+=== "Java"
+
+    ```java
+    import io.apitomy.datamodels.cmd.CommandException;
+
+    try {
+        ICommand cmd = CommandFactory.unmarshall(commandJson);
+    } catch (CommandException e) {
+        System.err.println("Invalid command: " + e.getMessage());
+    }
+    ```
+
+=== "TypeScript"
+
+    ```typescript
+    try {
+        const cmd = CommandFactory.unmarshall(commandJson);
+    } catch (e) {
+        console.error('Invalid command:', e.message);
+    }
+    ```
+
+---
+
 ## Available Command Categories
 
 The library provides commands for all common document mutations:

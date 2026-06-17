@@ -1,5 +1,5 @@
 site_name: Apitomy Data Models
-site_description: A library for reading, writing, and manipulating OpenAPI and AsyncAPI documents
+site_description: A library for reading, writing, and manipulating OpenAPI, AsyncAPI, OpenRPC, and JSON Schema documents
 site_author: Apitomy
 site_url: https://www.apitomy.io/projects/data-models/docs/
 
@@ -51,6 +51,7 @@ nav:
     - Node Paths: user-guide/node-paths.md
     - Dereferencing: user-guide/dereferencing.md
     - Document Transformation: user-guide/document-transformation.md
+    - Schema Compatibility: user-guide/schema-compatibility.md
   - Examples: examples/index.md
 
 docs_dir: ./docs
