@@ -17,6 +17,8 @@ import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.PropertyType;
+import io.apitomy.umg.models.concept.type.CollectionType;
+import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 
 /**
@@ -235,7 +237,10 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
         body.addContext("fieldName", fieldName);
         body.addContext("propertyName", propertyName);
         body.append("this.${fieldName} = value;");
-        if (isEntity(property)) {
+        Type resolvedType = property.getResolvedType();
+        boolean isEntityType = resolvedType != null ? resolvedType.isEntityType() : isEntity(property);
+        boolean isUnionType = resolvedType != null ? resolvedType.isUnionType() : isUnion(property);
+        if (isEntityType) {
             JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
             javaEntity.addImport(parentPropertyTypeSource);
             JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
@@ -246,7 +251,7 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
             body.append("    ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
             body.append("    ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);");
             body.append("}");
-        } else if (isUnion(property)) {
+        } else if (isUnionType) {
             JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
             javaEntity.addImport(parentPropertyTypeSource);
             JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
@@ -325,15 +330,23 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
 
     @Override
     protected void createAddMethodBody(JavaSource<?> javaEntity, PropertyModel property, MethodSource<?> method) {
-        PropertyType type = property.getType().getNested().iterator().next();
         String fieldName = getFieldName(property);
         String propertyName = property.getName();
+
+        Type resolvedValueType = null;
+        if (property.getResolvedType() != null && property.getResolvedType().isCollectionType()) {
+            resolvedValueType = ((CollectionType) property.getResolvedType()).getValueType();
+        }
+        PropertyType type = property.getType().getNested().iterator().next();
+        boolean isEntityValue = resolvedValueType != null ? resolvedValueType.isEntityType() : type.isEntityType();
+        boolean isUnionValue = resolvedValueType != null ? resolvedValueType.isUnionType() : type.isUnion();
+        boolean isPrimitiveValue = resolvedValueType != null ? resolvedValueType.isPrimitiveType() : type.isPrimitiveType();
 
         BodyBuilder body = new BodyBuilder();
         body.addContext("fieldName", fieldName);
         body.addContext("propertyName", propertyName);
 
-        if (type.isEntityType() || type.isPrimitiveType() || type.isUnion()) {
+        if (isEntityValue || isPrimitiveValue || isUnionValue) {
             if (property.getType().isMap()) {
                 javaEntity.addImport(LinkedHashMap.class);
 
@@ -341,7 +354,7 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
                 body.append("    this.${fieldName} = new LinkedHashMap<>();");
                 body.append("}");
                 body.append("this.${fieldName}.put(name, value);");
-                if (type.isEntityType()) {
+                if (isEntityValue) {
                     JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
                     javaEntity.addImport(parentPropertyTypeSource);
                     JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
@@ -353,7 +366,7 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
                     body.append("    ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);");
                     body.append("    ((NodeImpl) value)._setMapPropertyName(name);");
                     body.append("}");
-                } else if (type.isUnion()) {
+                } else if (isUnionValue) {
                     JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
                     javaEntity.addImport(parentPropertyTypeSource);
                     JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
@@ -374,7 +387,7 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
                 body.append("    this.${fieldName} = new ArrayList<>();");
                 body.append("}");
                 body.append("this.${fieldName}.add(value);");
-                if (type.isEntityType()) {
+                if (isEntityValue) {
                     JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
                     javaEntity.addImport(parentPropertyTypeSource);
                     JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
@@ -385,7 +398,7 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
                     body.append("    ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
                     body.append("    ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);");
                     body.append("}");
-                } else if (type.isUnion()) {
+                } else if (isUnionValue) {
                     JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
                     javaEntity.addImport(parentPropertyTypeSource);
                     JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
@@ -417,10 +430,17 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
     @Override
     protected void createClearMethodBody(PropertyModel property, MethodSource<?> method) {
         String fieldName = getFieldName(property);
+        Type resolvedValueType = null;
+        if (property.getResolvedType() != null && property.getResolvedType().isCollectionType()) {
+            resolvedValueType = ((CollectionType) property.getResolvedType()).getValueType();
+        }
         PropertyType nestedType = property.getType().getNested().iterator().next();
+        boolean needsDetach = resolvedValueType != null
+                ? (resolvedValueType.isEntityType() || resolvedValueType.isUnionType())
+                : (nestedType.isEntityType() || nestedType.isUnion());
         BodyBuilder body = new BodyBuilder();
         body.addContext("fieldName", fieldName);
-        if (nestedType.isEntityType() || nestedType.isUnion()) {
+        if (needsDetach) {
             String valuesExpr = property.getType().isMap()
                     ? "this." + fieldName + ".values()" : "this." + fieldName;
             body.addContext("valuesExpr", valuesExpr);
@@ -444,10 +464,17 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
         BodyBuilder body = new BodyBuilder();
         body.addContext("fieldName", fieldName);
 
+        Type resolvedValueType = null;
+        if (property.getResolvedType() != null && property.getResolvedType().isCollectionType()) {
+            resolvedValueType = ((CollectionType) property.getResolvedType()).getValueType();
+        }
         PropertyType nestedType = property.getType().getNested().iterator().next();
+        boolean needsDetach = resolvedValueType != null
+                ? (resolvedValueType.isEntityType() || resolvedValueType.isUnionType())
+                : (nestedType.isEntityType() || nestedType.isUnion());
         if (property.getType().isList()) {
             body.append("if (this.${fieldName} != null) {");
-            if (nestedType.isEntityType() || nestedType.isUnion()) {
+            if (needsDetach) {
                 body.append("    if (value != null && this.${fieldName}.remove(value)) {");
                 body.append("        value.detach();");
                 body.append("    }");
@@ -466,15 +493,23 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
 
     @Override
     protected void createInsertMethodBody(JavaSource<?> javaEntity, PropertyModel property, MethodSource<?> method) {
-        PropertyType type = property.getType().getNested().iterator().next();
         String fieldName = getFieldName(property);
         String propertyName = property.getName();
+
+        Type resolvedValueType = null;
+        if (property.getResolvedType() != null && property.getResolvedType().isCollectionType()) {
+            resolvedValueType = ((CollectionType) property.getResolvedType()).getValueType();
+        }
+        PropertyType type = property.getType().getNested().iterator().next();
+        boolean isEntityValue = resolvedValueType != null ? resolvedValueType.isEntityType() : type.isEntityType();
+        boolean isUnionValue = resolvedValueType != null ? resolvedValueType.isUnionType() : type.isUnion();
+        boolean isPrimitiveValue = resolvedValueType != null ? resolvedValueType.isPrimitiveType() : type.isPrimitiveType();
 
         BodyBuilder body = new BodyBuilder();
         body.addContext("fieldName", fieldName);
         body.addContext("propertyName", propertyName);
 
-        if (type.isEntityType() || type.isPrimitiveType() || type.isUnion()) {
+        if (isEntityValue || isPrimitiveValue || isUnionValue) {
             if (property.getType().isMap()) {
                 JavaClassSource dataModelUtilSource = getState().getJavaIndex().lookupClass(getDataModelUtilFQCN());
                 javaEntity.addImport(dataModelUtilSource);
@@ -487,7 +522,7 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
                 body.append("    this.${fieldName} = DataModelUtil.insertMapEntry(this.${fieldName}, name, value, atIndex);");
                 body.append("}");
 
-                if (type.isEntityType()) {
+                if (isEntityValue) {
                     JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
                     javaEntity.addImport(parentPropertyTypeSource);
                     JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
@@ -499,7 +534,7 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
                     body.append("    ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);");
                     body.append("    ((NodeImpl) value)._setMapPropertyName(name);");
                     body.append("}");
-                } else if (type.isUnion()) {
+                } else if (isUnionValue) {
                     JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
                     javaEntity.addImport(parentPropertyTypeSource);
                     JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
@@ -524,7 +559,7 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
                 body.append("} else {");
                 body.append("    this.${fieldName} = DataModelUtil.insertListEntry(this.${fieldName}, value, atIndex);");
                 body.append("}");
-                if (type.isEntityType()) {
+                if (isEntityValue) {
                     JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
                     javaEntity.addImport(parentPropertyTypeSource);
                     JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
@@ -535,7 +570,7 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
                     body.append("    ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
                     body.append("    ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);");
                     body.append("}");
-                } else if (type.isUnion()) {
+                } else if (isUnionValue) {
                     JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
                     javaEntity.addImport(parentPropertyTypeSource);
                     JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());

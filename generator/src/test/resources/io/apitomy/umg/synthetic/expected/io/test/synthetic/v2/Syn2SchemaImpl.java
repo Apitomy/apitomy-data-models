@@ -293,8 +293,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 			this.nestedSchemas = new LinkedHashMap<>();
 		}
 		this.nestedSchemas.put(name, value);
-		if (value != null) {
-			((NodeImpl) value)._setParent(this);
+		if (value != null && value.isEntity()) {
 			((NodeImpl) value)._setParentPropertyName("nestedSchemas");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
 			((NodeImpl) value)._setMapPropertyName(name);
@@ -327,8 +326,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 		} else {
 			this.nestedSchemas = DataModelUtil.insertMapEntry(this.nestedSchemas, name, value, atIndex);
 		}
-		if (value != null) {
-			((NodeImpl) value)._setParent(this);
+		if (value != null && value.isEntity()) {
 			((NodeImpl) value)._setParentPropertyName("nestedSchemas");
 			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
 			((NodeImpl) value)._setMapPropertyName(name);
@@ -347,9 +345,15 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 		}
 		this.composedSchemas.add(value);
 		if (value != null) {
-			((NodeImpl) value)._setParent(this);
-			((NodeImpl) value)._setParentPropertyName("composedSchemas");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
+			if (value.isEntity()) {
+				((NodeImpl) value)._setParent(this);
+				((NodeImpl) value)._setParentPropertyName("composedSchemas");
+				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
+			} else {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("composedSchemas");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.array);
+			}
 		}
 	}
 
@@ -382,9 +386,15 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 			this.composedSchemas = DataModelUtil.insertListEntry(this.composedSchemas, value, atIndex);
 		}
 		if (value != null) {
-			((NodeImpl) value)._setParent(this);
-			((NodeImpl) value)._setParentPropertyName("composedSchemas");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
+			if (value.isEntity()) {
+				((NodeImpl) value)._setParent(this);
+				((NodeImpl) value)._setParentPropertyName("composedSchemas");
+				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
+			} else {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("composedSchemas");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.array);
+			}
 		}
 	}
 
