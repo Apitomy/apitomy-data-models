@@ -283,6 +283,41 @@ Find all vendor extensions (`x-` properties) across the document.
     detector.extensions.forEach(ext => console.log(ext));
     ```
 
+### Visiting Along a Node Path
+
+Use `VisitorUtil.visitPath()` to visit each node along a specific path. By default, errors
+during traversal are logged and traversal stops silently. Use `visitPathStrict()` for
+fail-fast behavior — it throws `DataModelsException` if an error occurs.
+
+=== "Java"
+
+    ```java
+    import io.apitomy.datamodels.VisitorUtil;
+    import io.apitomy.datamodels.paths.NodePath;
+
+    NodePath path = Library.parseNodePath("/paths[/pets]/get");
+
+    // Silent — logs warnings on errors, stops traversal
+    VisitorUtil.visitPath(doc, path, visitor);
+
+    // Strict — throws DataModelsException on errors
+    VisitorUtil.visitPathStrict(doc, path, visitor);
+    ```
+
+=== "TypeScript"
+
+    ```typescript
+    import { VisitorUtil, NodePath } from '@apitomy/data-models';
+
+    const path = Library.parseNodePath('/paths[/pets]/get');
+
+    // Silent — logs warnings on errors, stops traversal
+    VisitorUtil.visitPath(doc, path, visitor);
+
+    // Strict — throws on errors
+    VisitorUtil.visitPathStrict(doc, path, visitor);
+    ```
+
 ### Walking Up the Tree
 
 Use `TraverserDirection.up` to find ancestors of a node. For example, finding which path
