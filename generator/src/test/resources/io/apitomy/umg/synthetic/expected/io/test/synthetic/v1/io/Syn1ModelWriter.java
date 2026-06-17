@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.test.synthetic.RootCapable;
 import io.test.synthetic.SynItem;
-import io.test.synthetic.SynSchema;
 import io.test.synthetic.io.ModelWriter;
 import io.test.synthetic.union.BooleanSchemaSchemaListUnion;
 import io.test.synthetic.union.BooleanSchemaUnion;
@@ -20,6 +19,7 @@ import io.test.synthetic.v1.Syn1Operation;
 import io.test.synthetic.v1.Syn1PathItem;
 import io.test.synthetic.v1.Syn1Paths;
 import io.test.synthetic.v1.Syn1Schema;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -123,17 +123,9 @@ public class Syn1ModelWriter implements ModelWriter {
 		}
 		JsonUtil.setAnyArrayProperty(json, "examples", node.getExamples());
 		{
-			BooleanSchemaUnion union = node.getDefaultValue();
-			if (union != null) {
-				if (union.isBoolean()) {
-					JsonUtil.setBooleanProperty(json, "defaultValue", union.asBoolean());
-				}
-				if (union.isSchema()) {
-					ObjectNode jsonValue = JsonUtil.objectNode();
-					this.writeSchema((Syn1Schema) union.asSchema(), jsonValue);
-					JsonUtil.setObjectProperty(json, "defaultValue", jsonValue);
-				}
-			}
+			JsonNode value = this.writeBooleanSchemaUnion(node.getDefaultValue());
+			if (value != null)
+				JsonUtil.setAnyProperty(json, "defaultValue", value);
 		}
 		JsonUtil.setStringProperty(json, "title", node.getTitle());
 		{
@@ -155,87 +147,55 @@ public class Syn1ModelWriter implements ModelWriter {
 		JsonUtil.setStringProperty(json, "$ref", node.get$ref());
 		JsonUtil.setStringProperty(json, "type", node.getType());
 		{
-			BooleanSchemaSchemaListUnion union = node.getItems();
-			if (union != null) {
-				if (union.isBoolean()) {
-					JsonUtil.setBooleanProperty(json, "items", union.asBoolean());
-				}
-				if (union.isSchema()) {
-					ObjectNode jsonValue = JsonUtil.objectNode();
-					this.writeSchema((Syn1Schema) union.asSchema(), jsonValue);
-					JsonUtil.setObjectProperty(json, "items", jsonValue);
-				}
-				if (union.isSchemaList()) {
-					List<? extends SynSchema> models = union.asSchemaList();
-					ArrayNode array = JsonUtil.arrayNode();
-					models.forEach(model -> {
-						ObjectNode object = JsonUtil.objectNode();
-						this.writeSchema((Syn1Schema) model, object);
-						JsonUtil.addToArray(array, object);
-					});
-					JsonUtil.setAnyProperty(json, "items", array);
-				}
-			}
+			JsonNode value = this.writeBooleanSchemaSchemaListUnion(node.getItems());
+			if (value != null)
+				JsonUtil.setAnyProperty(json, "items", value);
 		}
 		{
-			Map<String, BooleanSchemaUnion> unionMap = node.getProperties();
-			if (unionMap != null && !unionMap.isEmpty()) {
-				ObjectNode mapObject = JsonUtil.objectNode();
-				unionMap.keySet().forEach(key -> {
-					BooleanSchemaUnion union = unionMap.get(key);
-					if (union.isBoolean()) {
-						mapObject.put(key, union.asBoolean());
-					}
-					if (union.isSchema()) {
-						ObjectNode object = JsonUtil.objectNode();
-						this.writeSchema((Syn1Schema) union.asSchema(), object);
-						JsonUtil.setObjectProperty(mapObject, key, object);
-					}
+			Map<String, BooleanSchemaUnion> items = node.getProperties();
+			if (items != null && !items.isEmpty()) {
+				ObjectNode mapJson = JsonUtil.objectNode();
+				Collection<String> keys = items.keySet();
+				keys.forEach(key -> {
+					JsonNode value = this.writeBooleanSchemaUnion(items.get(key));
+					if (value != null)
+						JsonUtil.setAnyProperty(mapJson, key, value);
 				});
-				JsonUtil.setObjectProperty(json, "properties", mapObject);
+				JsonUtil.setObjectProperty(json, "properties", mapJson);
 			}
 		}
 		{
-			List<BooleanSchemaUnion> unionList = node.getAllOf();
-			if (unionList != null && !unionList.isEmpty()) {
+			List<BooleanSchemaUnion> items = node.getAllOf();
+			if (items != null && !items.isEmpty()) {
 				ArrayNode array = JsonUtil.arrayNode();
-				unionList.forEach(union -> {
-					if (union.isBoolean()) {
-						array.add(union.asBoolean());
-					}
-					if (union.isSchema()) {
-						ObjectNode object = JsonUtil.objectNode();
-						this.writeSchema((Syn1Schema) union.asSchema(), object);
-						JsonUtil.addToArray(array, object);
-					}
+				items.forEach(item -> {
+					JsonNode value = this.writeBooleanSchemaUnion(item);
+					if (value != null)
+						array.add(value);
 				});
-				JsonUtil.setArrayProperty(json, "allOf", array);
+				JsonUtil.setAnyProperty(json, "allOf", array);
 			}
 		}
 		{
-			Map<String, BooleanSchemaUnion> unionMap = node.getDefinitions();
-			if (unionMap != null && !unionMap.isEmpty()) {
-				ObjectNode mapObject = JsonUtil.objectNode();
-				unionMap.keySet().forEach(key -> {
-					BooleanSchemaUnion union = unionMap.get(key);
-					if (union.isBoolean()) {
-						mapObject.put(key, union.asBoolean());
-					}
-					if (union.isSchema()) {
-						ObjectNode object = JsonUtil.objectNode();
-						this.writeSchema((Syn1Schema) union.asSchema(), object);
-						JsonUtil.setObjectProperty(mapObject, key, object);
-					}
+			Map<String, BooleanSchemaUnion> items = node.getDefinitions();
+			if (items != null && !items.isEmpty()) {
+				ObjectNode mapJson = JsonUtil.objectNode();
+				Collection<String> keys = items.keySet();
+				keys.forEach(key -> {
+					JsonNode value = this.writeBooleanSchemaUnion(items.get(key));
+					if (value != null)
+						JsonUtil.setAnyProperty(mapJson, key, value);
 				});
-				JsonUtil.setObjectProperty(json, "definitions", mapObject);
+				JsonUtil.setObjectProperty(json, "definitions", mapJson);
 			}
 		}
 		{
 			Map<String, SchemaOrBoolean> items = node.getNestedSchemas();
 			if (items != null && !items.isEmpty()) {
 				ObjectNode mapJson = JsonUtil.objectNode();
-				items.forEach((key, item) -> {
-					JsonNode value = this.writeSchemaOrBoolean(item);
+				Collection<String> keys = items.keySet();
+				keys.forEach(key -> {
+					JsonNode value = this.writeSchemaOrBoolean(items.get(key));
 					if (value != null)
 						JsonUtil.setAnyProperty(mapJson, key, value);
 				});
@@ -385,6 +345,15 @@ public class Syn1ModelWriter implements ModelWriter {
 			this.writeSchema((Syn1Schema) union.asSchema(), jsonValue);
 			return jsonValue;
 		}
+		if (union.isSchemaList()) {
+			ArrayNode array = JsonUtil.arrayNode();
+			for (Object item : (java.util.List<?>) union.asSchemaList()) {
+				ObjectNode itemNode = JsonUtil.objectNode();
+				this.writeSchema((Syn1Schema) item, itemNode);
+				array.add(itemNode);
+			}
+			return array;
+		}
 		if (union.isBoolean()) {
 			return JsonUtil.booleanToJsonNode(union.asBoolean());
 		}
@@ -407,10 +376,10 @@ public class Syn1ModelWriter implements ModelWriter {
 
 	@Override
 	public ObjectNode writeRoot(RootCapable node) {
-		ObjectNode json = JsonUtil.objectNode();
-		if (node instanceof Syn1Schema) {
-			this.writeSchema((Syn1Schema) node, json);
+		JsonNode result = this.writeSchemaOrBoolean((SchemaOrBoolean) node);
+		if (result instanceof ObjectNode) {
+			return (ObjectNode) result;
 		}
-		return json;
+		return null;
 	}
 }

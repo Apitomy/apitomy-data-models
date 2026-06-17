@@ -126,10 +126,18 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 			this.properties = new LinkedHashMap<>();
 		}
 		this.properties.put(name, value);
-		if (value != null && value.isEntity()) {
-			((NodeImpl) value)._setParentPropertyName("properties");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
-			((NodeImpl) value)._setMapPropertyName(name);
+		if (value != null) {
+			if (value.isEntity()) {
+				((NodeImpl) value)._setParent(this);
+				((NodeImpl) value)._setParentPropertyName("properties");
+				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
+				((NodeImpl) value)._setMapPropertyName(name);
+			} else {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("properties");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.map);
+				((UnionValueImpl<?>) value)._setMapPropertyName(name);
+			}
 		}
 	}
 
@@ -159,10 +167,18 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 		} else {
 			this.properties = DataModelUtil.insertMapEntry(this.properties, name, value, atIndex);
 		}
-		if (value != null && value.isEntity()) {
-			((NodeImpl) value)._setParentPropertyName("properties");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
-			((NodeImpl) value)._setMapPropertyName(name);
+		if (value != null) {
+			if (value.isEntity()) {
+				((NodeImpl) value)._setParent(this);
+				((NodeImpl) value)._setParentPropertyName("properties");
+				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
+				((NodeImpl) value)._setMapPropertyName(name);
+			} else {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("properties");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.map);
+				((UnionValueImpl<?>) value)._setMapPropertyName(name);
+			}
 		}
 	}
 
@@ -242,10 +258,18 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 			this.definitions = new LinkedHashMap<>();
 		}
 		this.definitions.put(name, value);
-		if (value != null && value.isEntity()) {
-			((NodeImpl) value)._setParentPropertyName("definitions");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
-			((NodeImpl) value)._setMapPropertyName(name);
+		if (value != null) {
+			if (value.isEntity()) {
+				((NodeImpl) value)._setParent(this);
+				((NodeImpl) value)._setParentPropertyName("definitions");
+				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
+				((NodeImpl) value)._setMapPropertyName(name);
+			} else {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("definitions");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.map);
+				((UnionValueImpl<?>) value)._setMapPropertyName(name);
+			}
 		}
 	}
 
@@ -275,10 +299,18 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 		} else {
 			this.definitions = DataModelUtil.insertMapEntry(this.definitions, name, value, atIndex);
 		}
-		if (value != null && value.isEntity()) {
-			((NodeImpl) value)._setParentPropertyName("definitions");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
-			((NodeImpl) value)._setMapPropertyName(name);
+		if (value != null) {
+			if (value.isEntity()) {
+				((NodeImpl) value)._setParent(this);
+				((NodeImpl) value)._setParentPropertyName("definitions");
+				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
+				((NodeImpl) value)._setMapPropertyName(name);
+			} else {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("definitions");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.map);
+				((UnionValueImpl<?>) value)._setMapPropertyName(name);
+			}
 		}
 	}
 
@@ -293,10 +325,18 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 			this.nestedSchemas = new LinkedHashMap<>();
 		}
 		this.nestedSchemas.put(name, value);
-		if (value != null && value.isEntity()) {
-			((NodeImpl) value)._setParentPropertyName("nestedSchemas");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
-			((NodeImpl) value)._setMapPropertyName(name);
+		if (value != null) {
+			if (value.isEntity()) {
+				((NodeImpl) value)._setParent(this);
+				((NodeImpl) value)._setParentPropertyName("nestedSchemas");
+				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
+				((NodeImpl) value)._setMapPropertyName(name);
+			} else {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("nestedSchemas");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.map);
+				((UnionValueImpl<?>) value)._setMapPropertyName(name);
+			}
 		}
 	}
 
@@ -326,10 +366,18 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 		} else {
 			this.nestedSchemas = DataModelUtil.insertMapEntry(this.nestedSchemas, name, value, atIndex);
 		}
-		if (value != null && value.isEntity()) {
-			((NodeImpl) value)._setParentPropertyName("nestedSchemas");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
-			((NodeImpl) value)._setMapPropertyName(name);
+		if (value != null) {
+			if (value.isEntity()) {
+				((NodeImpl) value)._setParent(this);
+				((NodeImpl) value)._setParentPropertyName("nestedSchemas");
+				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);
+				((NodeImpl) value)._setMapPropertyName(name);
+			} else {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("nestedSchemas");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.map);
+				((UnionValueImpl<?>) value)._setMapPropertyName(name);
+			}
 		}
 	}
 

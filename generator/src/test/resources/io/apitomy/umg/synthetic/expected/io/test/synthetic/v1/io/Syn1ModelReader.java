@@ -3,14 +3,11 @@ package io.test.synthetic.v1.io;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.test.synthetic.ModelType;
-import io.test.synthetic.NodeImpl;
 import io.test.synthetic.RootCapable;
 import io.test.synthetic.io.ModelReader;
 import io.test.synthetic.union.BooleanSchemaSchemaListUnion;
 import io.test.synthetic.union.BooleanSchemaUnion;
-import io.test.synthetic.union.BooleanUnionValue;
 import io.test.synthetic.union.BooleanUnionValueImpl;
-import io.test.synthetic.union.SchemaListUnionValue;
 import io.test.synthetic.union.SchemaListUnionValueImpl;
 import io.test.synthetic.union.SchemaOrBoolean;
 import io.test.synthetic.util.JsonUtil;
@@ -63,7 +60,7 @@ public class Syn1ModelReader implements ModelReader {
 		{
 			JsonNode value = JsonUtil.consumeAnyProperty(json, "additionalSchema");
 			if (value != null) {
-				node.setAdditionalSchema(this.readSchemaOrBoolean(value));
+				node.setAdditionalSchema(this.readSchemaOrBoolean(value, null));
 			}
 		}
 		{
@@ -161,17 +158,7 @@ public class Syn1ModelReader implements ModelReader {
 		{
 			JsonNode value = JsonUtil.consumeAnyProperty(json, "defaultValue");
 			if (value != null) {
-				if (JsonUtil.isObjectWithProperty(value, "type")) {
-					ObjectNode object = JsonUtil.toObject(value);
-					node.setDefaultValue(node.createSchema());
-					readSchema(object, (Syn1Schema) node.getDefaultValue());
-				} else if (JsonUtil.isBoolean(value)) {
-					Boolean pValue = JsonUtil.toBoolean(value);
-					BooleanUnionValue unionValue = new BooleanUnionValueImpl(pValue);
-					node.setDefaultValue(unionValue);
-				} else {
-					node.addExtraProperty("defaultValue", value);
-				}
+				node.setDefaultValue(this.readBooleanSchemaUnion(value, null));
 			}
 		}
 		{
@@ -200,49 +187,18 @@ public class Syn1ModelReader implements ModelReader {
 		{
 			JsonNode value = JsonUtil.consumeAnyProperty(json, "items");
 			if (value != null) {
-				if (JsonUtil.isObjectWithProperty(value, "type")) {
-					ObjectNode object = JsonUtil.toObject(value);
-					node.setItems(node.createSchema());
-					readSchema(object, (Syn1Schema) node.getItems());
-				} else if (JsonUtil.isArray(value)) {
-					List<JsonNode> array = JsonUtil.toList(value);
-					List<Syn1Schema> models = new ArrayList<>();
-					array.forEach(item -> {
-						ObjectNode object = JsonUtil.toObject(item);
-						Syn1Schema model = (Syn1Schema) node.createSchema();
-						((NodeImpl) model)._setParent(node);
-						this.readSchema(object, model);
-						models.add(model);
-					});
-					@SuppressWarnings({"unchecked", "rawtypes"})
-					SchemaListUnionValue unionValue = new SchemaListUnionValueImpl((List) models);
-					node.setItems(unionValue);
-				} else if (JsonUtil.isBoolean(value)) {
-					Boolean pValue = JsonUtil.toBoolean(value);
-					BooleanUnionValue unionValue = new BooleanUnionValueImpl(pValue);
-					node.setItems(unionValue);
-				} else {
-					node.addExtraProperty("items", value);
-				}
+				node.setItems(this.readBooleanSchemaSchemaListUnion(value, null));
 			}
 		}
 		{
-			ObjectNode mapObject = JsonUtil.consumeObjectProperty(json, "properties");
-			if (mapObject != null) {
-				List<String> keys = JsonUtil.keys(mapObject);
-				keys.forEach(key -> {
-					JsonNode value = JsonUtil.consumeAnyProperty(mapObject, key);
+			ObjectNode mapObj = JsonUtil.consumeObjectProperty(json, "properties");
+			if (mapObj != null) {
+				JsonUtil.keys(mapObj).forEach(key -> {
+					JsonNode value = JsonUtil.consumeAnyProperty(mapObj, key);
 					if (value != null) {
-						if (JsonUtil.isObject(value)) {
-							ObjectNode object = JsonUtil.toObject(value);
-							Syn1Schema model = (Syn1Schema) node.createSchema();
+						BooleanSchemaUnion model = this.readBooleanSchemaUnion(value, null);
+						if (model != null)
 							node.addProperty(key, model);
-							readSchema(object, model);
-						} else if (JsonUtil.isBoolean(value)) {
-							Boolean pValue = JsonUtil.toBoolean(value);
-							BooleanUnionValue unionValue = new BooleanUnionValueImpl(pValue);
-							node.addProperty(key, unionValue);
-						}
 					}
 				});
 			}
@@ -250,37 +206,22 @@ public class Syn1ModelReader implements ModelReader {
 		{
 			List<JsonNode> array = JsonUtil.consumeAnyArrayProperty(json, "allOf");
 			if (array != null) {
-				array.forEach(value -> {
-					if (JsonUtil.isObject(value)) {
-						ObjectNode object = JsonUtil.toObject(value);
-						Syn1Schema model = (Syn1Schema) node.createSchema();
-						node.addAllOf(model);
-						readSchema(object, model);
-					} else if (JsonUtil.isBoolean(value)) {
-						Boolean pValue = JsonUtil.toBoolean(value);
-						BooleanUnionValue unionValue = new BooleanUnionValueImpl(pValue);
-						node.addAllOf(unionValue);
-					}
+				array.forEach(item -> {
+					BooleanSchemaUnion value = this.readBooleanSchemaUnion(item, null);
+					if (value != null)
+						node.addAllOf(value);
 				});
 			}
 		}
 		{
-			ObjectNode mapObject = JsonUtil.consumeObjectProperty(json, "definitions");
-			if (mapObject != null) {
-				List<String> keys = JsonUtil.keys(mapObject);
-				keys.forEach(key -> {
-					JsonNode value = JsonUtil.consumeAnyProperty(mapObject, key);
+			ObjectNode mapObj = JsonUtil.consumeObjectProperty(json, "definitions");
+			if (mapObj != null) {
+				JsonUtil.keys(mapObj).forEach(key -> {
+					JsonNode value = JsonUtil.consumeAnyProperty(mapObj, key);
 					if (value != null) {
-						if (JsonUtil.isObject(value)) {
-							ObjectNode object = JsonUtil.toObject(value);
-							Syn1Schema model = (Syn1Schema) node.createSchema();
+						BooleanSchemaUnion model = this.readBooleanSchemaUnion(value, null);
+						if (model != null)
 							node.addDefinition(key, model);
-							readSchema(object, model);
-						} else if (JsonUtil.isBoolean(value)) {
-							Boolean pValue = JsonUtil.toBoolean(value);
-							BooleanUnionValue unionValue = new BooleanUnionValueImpl(pValue);
-							node.addDefinition(key, unionValue);
-						}
 					}
 				});
 			}
@@ -291,7 +232,7 @@ public class Syn1ModelReader implements ModelReader {
 				JsonUtil.keys(mapObj).forEach(key -> {
 					JsonNode value = JsonUtil.consumeAnyProperty(mapObj, key);
 					if (value != null) {
-						SchemaOrBoolean model = this.readSchemaOrBoolean(value);
+						SchemaOrBoolean model = this.readSchemaOrBoolean(value, null);
 						if (model != null)
 							node.addNestedSchema(key, model);
 					}
@@ -302,7 +243,7 @@ public class Syn1ModelReader implements ModelReader {
 			List<JsonNode> array = JsonUtil.consumeAnyArrayProperty(json, "composedSchemas");
 			if (array != null) {
 				array.forEach(item -> {
-					SchemaOrBoolean value = this.readSchemaOrBoolean(item);
+					SchemaOrBoolean value = this.readSchemaOrBoolean(item, null);
 					if (value != null)
 						node.addComposedSchema(value);
 				});
@@ -425,23 +366,23 @@ public class Syn1ModelReader implements ModelReader {
 		ReaderUtil.readExtraProperties(json, node);
 	}
 
-	private SchemaOrBoolean readSchemaOrBoolean(JsonNode json) {
+	private SchemaOrBoolean readSchemaOrBoolean(JsonNode json, ModelType modelType) {
 		if (json == null)
 			return null;
-		if (json.isObject() && json.has("type")) {
+		if (JsonUtil.isObjectWithProperty(json, "type")) {
 			Syn1Schema node = new Syn1SchemaImpl();
 			this.readSchema((ObjectNode) json, node);
 			return node;
 		} else if (JsonUtil.isBoolean(json)) {
-			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json));
+			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json), modelType);
 		}
 		return null;
 	}
 
-	private BooleanSchemaSchemaListUnion readBooleanSchemaSchemaListUnion(JsonNode json) {
+	private BooleanSchemaSchemaListUnion readBooleanSchemaSchemaListUnion(JsonNode json, ModelType modelType) {
 		if (json == null)
 			return null;
-		if (json.isObject()) {
+		if (JsonUtil.isObjectWithProperty(json, "type")) {
 			Syn1Schema node = new Syn1SchemaImpl();
 			this.readSchema((ObjectNode) json, node);
 			return node;
@@ -458,34 +399,26 @@ public class Syn1ModelReader implements ModelReader {
 			SchemaListUnionValueImpl unionValue = new SchemaListUnionValueImpl((List) models);
 			return unionValue;
 		} else if (JsonUtil.isBoolean(json)) {
-			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json));
+			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json), modelType);
 		}
 		return null;
 	}
 
-	private BooleanSchemaUnion readBooleanSchemaUnion(JsonNode json) {
+	private BooleanSchemaUnion readBooleanSchemaUnion(JsonNode json, ModelType modelType) {
 		if (json == null)
 			return null;
-		if (json.isObject()) {
+		if (JsonUtil.isObjectWithProperty(json, "type")) {
 			Syn1Schema node = new Syn1SchemaImpl();
 			this.readSchema((ObjectNode) json, node);
 			return node;
 		} else if (JsonUtil.isBoolean(json)) {
-			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json));
+			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json), modelType);
 		}
 		return null;
 	}
 
 	@Override
 	public RootCapable readRoot(JsonNode json) {
-		if (json.isObject() && json.has("type")) {
-			Syn1Schema rootModel = new Syn1SchemaImpl();
-			this.readSchema((ObjectNode) json, rootModel);
-			return rootModel;
-		} else if (JsonUtil.isBoolean(json)) {
-			Boolean value = JsonUtil.toBoolean(json);
-			return new BooleanUnionValueImpl(value, ModelType.SYN1);
-		}
-		return null;
+		return (RootCapable) this.readSchemaOrBoolean(json, ModelType.SYN1);
 	}
 }
