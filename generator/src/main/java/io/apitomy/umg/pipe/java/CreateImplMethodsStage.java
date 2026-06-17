@@ -373,11 +373,21 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
                     javaEntity.addImport(nodeImplSource);
                     JavaInterfaceSource unionValueSource = getState().getJavaIndex().lookupInterface(getUnionValueInterfaceFQN());
                     javaEntity.addImport(unionValueSource);
+                    JavaClassSource unionValueImplSource = getState().getJavaIndex().lookupClass(getUnionTypeFQN("UnionValueImpl"));
+                    javaEntity.addImport(unionValueImplSource);
 
-                    body.append("if (value != null && value.isEntity()) {");
-                    body.append("    ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("    ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);");
-                    body.append("    ((NodeImpl) value)._setMapPropertyName(name);");
+                    body.append("if (value != null) {");
+                    body.append("    if (value.isEntity()) {");
+                    body.append("        ((NodeImpl) value)._setParent(this);");
+                    body.append("        ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
+                    body.append("        ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);");
+                    body.append("        ((NodeImpl) value)._setMapPropertyName(name);");
+                    body.append("    } else {");
+                    body.append("        ((UnionValueImpl<?>) value)._setParent(this);");
+                    body.append("        ((UnionValueImpl<?>) value)._setParentPropertyName(\"${propertyName}\");");
+                    body.append("        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.map);");
+                    body.append("        ((UnionValueImpl<?>) value)._setMapPropertyName(name);");
+                    body.append("    }");
                     body.append("}");
                 }
             } else {
@@ -541,11 +551,21 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
                     javaEntity.addImport(nodeImplSource);
                     JavaInterfaceSource unionValueSource = getState().getJavaIndex().lookupInterface(getUnionValueInterfaceFQN());
                     javaEntity.addImport(unionValueSource);
+                    JavaClassSource unionValueImplSource = getState().getJavaIndex().lookupClass(getUnionTypeFQN("UnionValueImpl"));
+                    javaEntity.addImport(unionValueImplSource);
 
-                    body.append("if (value != null && value.isEntity()) {");
-                    body.append("    ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("    ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);");
-                    body.append("    ((NodeImpl) value)._setMapPropertyName(name);");
+                    body.append("if (value != null) {");
+                    body.append("    if (value.isEntity()) {");
+                    body.append("        ((NodeImpl) value)._setParent(this);");
+                    body.append("        ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
+                    body.append("        ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);");
+                    body.append("        ((NodeImpl) value)._setMapPropertyName(name);");
+                    body.append("    } else {");
+                    body.append("        ((UnionValueImpl<?>) value)._setParent(this);");
+                    body.append("        ((UnionValueImpl<?>) value)._setParentPropertyName(\"${propertyName}\");");
+                    body.append("        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.map);");
+                    body.append("        ((UnionValueImpl<?>) value)._setMapPropertyName(name);");
+                    body.append("    }");
                     body.append("}");
                 }
             } else {

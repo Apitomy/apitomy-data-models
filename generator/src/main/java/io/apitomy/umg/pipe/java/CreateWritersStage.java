@@ -159,6 +159,54 @@ public class CreateWritersStage extends AbstractJavaStage {
                     body.append("    return JsonUtil.${toJsonMethod}(union.${asMethod}());");
                     body.append("}");
                 }
+            } else if (variantType instanceof io.apitomy.umg.models.concept.type.ListType listType) {
+                String typeName = io.apitomy.umg.models.java.type.JavaTypeFactory.getUnionComponentName(variantType);
+
+                body.addContext("isMethod", "is" + typeName);
+                body.addContext("asMethod", "as" + typeName);
+
+                writerClassSource.addImport(ArrayNode.class);
+
+                if (listType.getValueType() instanceof io.apitomy.umg.models.concept.type.EntityType listEntityType) {
+                    var entity = listEntityType.getEntity();
+                    if (entity == null) entity = getState().getConceptIndex().lookupEntity(namespace, listEntityType.getName());
+                    if (entity == null) continue;
+
+                    JavaInterfaceSource entitySource = lookupJavaEntity(entity);
+                    writerClassSource.addImport(entitySource);
+                    body.addContext("entityType", entitySource.getName());
+                    body.addContext("writeMethodName", writeMethodName(entity));
+
+                    body.append("if (union.${isMethod}()) {");
+                    body.append("    ArrayNode array = JsonUtil.arrayNode();");
+                    body.append("    for (Object item : (java.util.List<?>) union.${asMethod}()) {");
+                    body.append("        ObjectNode itemNode = JsonUtil.objectNode();");
+                    body.append("        this.${writeMethodName}((${entityType}) item, itemNode);");
+                    body.append("        array.add(itemNode);");
+                    body.append("    }");
+                    body.append("    return array;");
+                    body.append("}");
+                } else if (listType.getValueType() instanceof io.apitomy.umg.models.concept.type.PrimitiveType primType) {
+                    Class<?> javaClass = Util.PRIMITIVE_TYPE_MAP.get(primType.name().toLowerCase());
+                    if (javaClass == null) continue;
+
+                    writerClassSource.addImport(javaClass);
+                    body.addContext("primType", javaClass.getSimpleName());
+
+                    String addExpr;
+                    if (Boolean.class.equals(javaClass)) addExpr = "array.add((Boolean) item)";
+                    else if (String.class.equals(javaClass)) addExpr = "array.add((String) item)";
+                    else addExpr = "array.add(JsonUtil.numberToJsonNode((Number) item))";
+
+                    body.addContext("addExpr", addExpr);
+                    body.append("if (union.${isMethod}()) {");
+                    body.append("    ArrayNode array = JsonUtil.arrayNode();");
+                    body.append("    for (Object item : (java.util.List<?>) union.${asMethod}()) {");
+                    body.append("        ${addExpr};");
+                    body.append("    }");
+                    body.append("    return array;");
+                    body.append("}");
+                }
             }
         }
         body.append("return null;");
@@ -191,7 +239,14 @@ public class CreateWritersStage extends AbstractJavaStage {
                                              io.apitomy.umg.models.concept.type.UnionType unionType) {
         JavaInterfaceSource rootCapableSource = getState().getJavaIndex().lookupInterface(getRootNodeInterfaceFQN());
         writerClassSource.addImport(rootCapableSource);
+        writerClassSource.addImport(JsonNode.class);
         writerClassSource.addImport(ObjectNode.class);
+
+        var namespace = specVersion.getNamespace();
+        var nsModel = getState().getConceptIndex().lookupNamespace(namespace);
+        var jt = getJavaTypeFactory().createJavaType(unionType, nsModel);
+        String writeMethodName = "write" + jt.getSimpleName();
+        jt.addImportsTo(writerClassSource);
 
         MethodSource<JavaClassSource> writeRootMethodSource = writerClassSource.addMethod()
                 .setName("writeRoot")
@@ -201,36 +256,14 @@ public class CreateWritersStage extends AbstractJavaStage {
         writeRootMethodSource.addAnnotation(Override.class);
 
         BodyBuilder body = new BodyBuilder();
-        var namespace = specVersion.getNamespace();
+        body.addContext("writeMethodName", writeMethodName);
+        body.addContext("unionType", jt.toJavaTypeString());
 
-        body.append("ObjectNode json = JsonUtil.objectNode();");
-
-        boolean first = true;
-        for (var variantType : unionType.getTypes()) {
-            if (!(variantType instanceof io.apitomy.umg.models.concept.type.EntityType entityType)) continue;
-
-            var entity = entityType.getEntity();
-            if (entity == null) {
-                entity = getState().getConceptIndex().lookupEntity(namespace, entityType.getName());
-            }
-            if (entity == null) continue;
-
-            JavaInterfaceSource entitySource = lookupJavaEntity(entity);
-            writerClassSource.addImport(entitySource);
-
-            body.addContext("entityType", entitySource.getName());
-            body.addContext("writeMethodName", writeMethodName(entity));
-
-            if (!first) {
-                body.append(" else ");
-            }
-            first = false;
-
-            body.append("if (node instanceof ${entityType}) {");
-            body.append("    this.${writeMethodName}((${entityType}) node, json);");
-            body.append("}");
-        }
-        body.append("return json;");
+        body.append("JsonNode result = this.${writeMethodName}((${unionType}) node);");
+        body.append("if (result instanceof ObjectNode) {");
+        body.append("    return (ObjectNode) result;");
+        body.append("}");
+        body.append("return null;");
         writeRootMethodSource.setBody(body.toString());
     }
 
@@ -388,13 +421,7 @@ public class CreateWritersStage extends AbstractJavaStage {
             var resolved = property.getResolvedType();
             if (resolved == null) return false;
 
-            // Only use resolved type dispatch for type-alias-backed unions
-            var pt = property.getType();
-            if (pt.isUnion() || (pt.isList() && pt.getNested().iterator().next().isUnion())
-                    || (pt.isMap() && pt.getNested().iterator().next().isUnion())) {
-                return false;
-            }
-
+            // Direct union property (both type aliases and inline unions)
             if (resolved instanceof io.apitomy.umg.models.concept.type.UnionType) {
                 handleResolvedUnionProperty(body, resolved);
                 return true;
@@ -481,12 +508,15 @@ public class CreateWritersStage extends AbstractJavaStage {
             body.addContext("writeMethodName", writeMethodName);
             body.addContext("unionJavaType", valueJt.toJavaTypeString());
 
+            writerClassSource.addImport(Collection.class);
+
             body.append("{");
             body.append("    Map<String, ${unionJavaType}> items = node.${getterMethodName}();");
             body.append("    if (items != null && !items.isEmpty()) {");
             body.append("        ObjectNode mapJson = JsonUtil.objectNode();");
-            body.append("        items.forEach((key, item) -> {");
-            body.append("            JsonNode value = this.${writeMethodName}(item);");
+            body.append("        Collection<String> keys = items.keySet();");
+            body.append("        keys.forEach(key -> {");
+            body.append("            JsonNode value = this.${writeMethodName}(items.get(key));");
             body.append("            if (value != null) JsonUtil.setAnyProperty(mapJson, key, value);");
             body.append("        });");
             body.append("        JsonUtil.setObjectProperty(json, \"${propertyName}\", mapJson);");
