@@ -112,6 +112,11 @@ public class CreatePropertyAndTypeModelsStage extends AbstractStage {
         var propertyType = PropertyType.parse(property.getType());
         var rawType = RawType.parse(property.getType());
         var resolvedType = resolveType(rawType, namespace);
+        if (resolvedType instanceof UnionType ut
+                && property.getUnionRules() != null && !property.getUnionRules().isEmpty()
+                && (ut.getUnionRules() == null || ut.getUnionRules().isEmpty())) {
+            ut.setUnionRules(property.getUnionRules());
+        }
         indexTypesRecursively(resolvedType, namespace);
 
         var builder = PropertyModel.builder()
