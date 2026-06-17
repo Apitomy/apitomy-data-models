@@ -7,10 +7,13 @@ import io.test.synthetic.ParentPropertyType;
 import io.test.synthetic.SynInfo;
 import io.test.synthetic.SynItem;
 import io.test.synthetic.union.SchemaOrBoolean;
+import io.test.synthetic.union.UnionValue;
+import io.test.synthetic.union.UnionValueImpl;
 import io.test.synthetic.util.DataModelUtil;
 import io.test.synthetic.v1.visitors.Syn1Visitor;
 import io.test.synthetic.visitors.Visitor;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,9 +149,42 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 	public void setAdditionalSchema(SchemaOrBoolean value) {
 		this.additionalSchema = value;
 		if (value != null) {
-			((NodeImpl) value)._setParent(this);
-			((NodeImpl) value)._setParentPropertyName("additionalSchema");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
+			if (value.isEntity()) {
+				((NodeImpl) value)._setParent(this);
+				((NodeImpl) value)._setParentPropertyName("additionalSchema");
+				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
+			} else if (value.isEntityList()) {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("additionalSchema");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
+				List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();
+				for (Object entity : entityList) {
+					if (entity != null) {
+						((NodeImpl) entity)._setParent(this);
+						((NodeImpl) entity)._setParentPropertyName("additionalSchema");
+						((NodeImpl) entity)._setParentPropertyType(ParentPropertyType.array);
+					}
+				}
+			} else if (value.isEntityMap()) {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("additionalSchema");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
+				Map<String, ?> entityMap = (Map<String, ?>) ((UnionValue<?>) value).getValue();
+				Collection<String> keys = entityMap.keySet();
+				for (String key : keys) {
+					NodeImpl entity = (NodeImpl) entityMap.get(key);
+					if (entity != null) {
+						entity._setParent(this);
+						entity._setParentPropertyName("additionalSchema");
+						entity._setParentPropertyType(ParentPropertyType.map);
+						entity._setMapPropertyName(key);
+					}
+				}
+			} else {
+				((UnionValueImpl<?>) value)._setParent(this);
+				((UnionValueImpl<?>) value)._setParentPropertyName("additionalSchema");
+				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
+			}
 		}
 	}
 
