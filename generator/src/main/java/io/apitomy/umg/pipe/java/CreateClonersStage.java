@@ -148,6 +148,8 @@ public class CreateClonersStage extends AbstractJavaStage {
                 handleStarProperty(body);
             } else if (isRegexProperty(property)) {
                 handleRegexProperty(body);
+            } else if (handleViaResolvedType(body)) {
+                // Handled by resolved type dispatch
             } else if (isEntity(property)) {
                 handleEntityProperty(body);
             } else if (isPrimitive(property)) {
@@ -166,6 +168,31 @@ public class CreateClonersStage extends AbstractJavaStage {
                 warn("Entity property '" + property.getName() + "' not cloned (unsupported) for entity: " + entityModel.fullyQualifiedName());
                 warn("       property type: " + property.getType());
             }
+        }
+
+        private boolean handleViaResolvedType(BodyBuilder body) {
+            PropertyModel property = propertyWithOrigin.getProperty();
+            var resolved = property.getResolvedType();
+            if (resolved == null) return false;
+
+            if (resolved instanceof io.apitomy.umg.models.concept.type.UnionType) {
+                handleUnionProperty(body);
+                return true;
+            }
+
+            if (resolved instanceof io.apitomy.umg.models.concept.type.ListType lt
+                    && lt.getValueType() instanceof io.apitomy.umg.models.concept.type.UnionType) {
+                handleUnionListProperty(body);
+                return true;
+            }
+
+            if (resolved instanceof io.apitomy.umg.models.concept.type.MapType mt
+                    && mt.getValueType() instanceof io.apitomy.umg.models.concept.type.UnionType) {
+                handleUnionMapProperty(body);
+                return true;
+            }
+
+            return false;
         }
 
         private void handlePrimitiveProperty(BodyBuilder body) {
@@ -425,12 +452,35 @@ public class CreateClonersStage extends AbstractJavaStage {
             }
         }
 
+        private PropertyType getEffectiveUnionType(PropertyModel property) {
+            if (property.getType().isUnion()) {
+                return property.getType();
+            }
+            var resolved = property.getResolvedType();
+            if (resolved != null && resolved.getRawType() != null) {
+                return PropertyType.parse(resolved.getRawType().asRawType());
+            }
+            return property.getType();
+        }
+
+        private String getUnionJavaTypeName(PropertyModel property, UnionPropertyType ut) {
+            var resolved = property.getResolvedType();
+            if (resolved instanceof io.apitomy.umg.models.concept.type.UnionType unionType
+                    && unionType.getAliasName() != null) {
+                var nsModel = propertyWithOrigin.getOrigin().getNamespace();
+                var jt = getJavaTypeFactory().createJavaType(resolved, nsModel);
+                jt.addImportsTo(clonerClassSource);
+                return jt.getSimpleName();
+            }
+            return ut.toJavaTypeString();
+        }
+
         private void handleUnionProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             NamespaceModel nsContext = propertyWithOrigin.getOrigin().getNamespace();
-            UnionPropertyType ut = new UnionPropertyType(property.getType());
+            UnionPropertyType ut = new UnionPropertyType(getEffectiveUnionType(property));
 
-            body.addContext("unionJavaType", ut.toJavaTypeString());
+            body.addContext("unionJavaType", getUnionJavaTypeName(property, ut));
             body.addContext("getterMethodName", getterMethodName(property));
             body.addContext("setterMethodName", setterMethodName(property));
 
@@ -481,13 +531,16 @@ public class CreateClonersStage extends AbstractJavaStage {
                     EntityModel nestedTypeEntity = getState().getConceptIndex().lookupEntity(nestedTypeEntityName);
                     if (nestedTypeEntity != null) {
                         JavaInterfaceSource entityJavaSource = resolveJavaEntityType(nestedTypeEntityNS, nestedType);
-                        if (entityJavaSource != null) {
+                        JavaClassSource entityImplSource = lookupJavaEntityImpl(getJavaEntityClassFQN(nestedTypeEntity));
+                        if (entityJavaSource != null && entityImplSource != null) {
                             clonerClassSource.addImport(entityJavaSource);
+                            clonerClassSource.addImport(entityImplSource);
                             body.addContext("entityType", entityJavaSource.getName());
-                            body.addContext("createMethodName", createMethodName(nestedTypeEntity));
+                            body.addContext("entityImplType", entityImplSource.getName());
                             body.addContext("cloneMethodName", cloneMethodName(nestedTypeEntity));
-                            body.append("            target.${setterMethodName}(target.${createMethodName}());");
-                            body.append("            this.${cloneMethodName}((${entityType}) srcUnion.${asMethodName}(), (${entityType}) target.${getterMethodName}());");
+                            body.append("            ${entityType} tgtEntity = new ${entityImplType}();");
+                            body.append("            this.${cloneMethodName}((${entityType}) srcUnion.${asMethodName}(), tgtEntity);");
+                            body.append("            target.${setterMethodName}(tgtEntity);");
                         }
                     }
                 } else if (jt.isEntityList()) {
@@ -540,13 +593,26 @@ public class CreateClonersStage extends AbstractJavaStage {
         private void handleUnionListProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             NamespaceModel nsContext = propertyWithOrigin.getOrigin().getNamespace();
-            PropertyType unionType = property.getType().getNested().iterator().next();
+            PropertyType unionType;
+            var resolved = property.getResolvedType();
+            if (resolved instanceof io.apitomy.umg.models.concept.type.ListType lt
+                    && lt.getValueType().getRawType() != null) {
+                unionType = PropertyType.parse(lt.getValueType().getRawType().asRawType());
+            } else {
+                unionType = property.getType().getNested().iterator().next();
+            }
             UnionPropertyType ut = new UnionPropertyType(unionType);
 
             clonerClassSource.addImport(List.class);
             ut.addImportsTo(clonerClassSource);
 
-            body.addContext("unionJavaType", ut.toJavaTypeString());
+            String unionJavaType = ut.toJavaTypeString();
+            if (resolved instanceof io.apitomy.umg.models.concept.type.ListType lt2
+                    && lt2.getValueType() instanceof io.apitomy.umg.models.concept.type.UnionType vut
+                    && vut.getAliasName() != null) {
+                unionJavaType = vut.getAliasName();
+            }
+            body.addContext("unionJavaType", unionJavaType);
             body.addContext("getterMethodName", getterMethodName(property));
             body.addContext("addMethodName", addMethodName(singularize(property.getName())));
 
@@ -583,12 +649,14 @@ public class CreateClonersStage extends AbstractJavaStage {
                     EntityModel nestedTypeEntity = getState().getConceptIndex().lookupEntity(nestedTypeEntityName);
                     if (nestedTypeEntity != null) {
                         JavaInterfaceSource entityJavaSource = resolveJavaEntityType(nestedTypeEntityNS, nestedType);
-                        if (entityJavaSource != null) {
+                        JavaClassSource entityImplSource = lookupJavaEntityImpl(getJavaEntityClassFQN(nestedTypeEntity));
+                        if (entityJavaSource != null && entityImplSource != null) {
                             clonerClassSource.addImport(entityJavaSource);
+                            clonerClassSource.addImport(entityImplSource);
                             body.addContext("entityType", entityJavaSource.getName());
-                            body.addContext("createMethodName", createMethodName(nestedTypeEntity));
+                            body.addContext("entityImplType", entityImplSource.getName());
                             body.addContext("cloneMethodName", cloneMethodName(nestedTypeEntity));
-                            body.append("                ${entityType} tgtItem = (${entityType}) target.${createMethodName}();");
+                            body.append("                ${entityType} tgtItem = new ${entityImplType}();");
                             body.append("                this.${cloneMethodName}((${entityType}) srcUnion.${asMethodName}(), tgtItem);");
                             body.append("                target.${addMethodName}(tgtItem);");
                         }
@@ -608,13 +676,26 @@ public class CreateClonersStage extends AbstractJavaStage {
         private void handleUnionMapProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             NamespaceModel nsContext = propertyWithOrigin.getOrigin().getNamespace();
-            PropertyType unionType = property.getType().getNested().iterator().next();
+            PropertyType unionType;
+            var resolved = property.getResolvedType();
+            if (resolved instanceof io.apitomy.umg.models.concept.type.MapType mt
+                    && mt.getValueType().getRawType() != null) {
+                unionType = PropertyType.parse(mt.getValueType().getRawType().asRawType());
+            } else {
+                unionType = property.getType().getNested().iterator().next();
+            }
             UnionPropertyType ut = new UnionPropertyType(unionType);
 
             clonerClassSource.addImport(Map.class);
             ut.addImportsTo(clonerClassSource);
 
-            body.addContext("unionJavaType", ut.toJavaTypeString());
+            String unionJavaType = ut.toJavaTypeString();
+            if (resolved instanceof io.apitomy.umg.models.concept.type.MapType mt2
+                    && mt2.getValueType() instanceof io.apitomy.umg.models.concept.type.UnionType vut
+                    && vut.getAliasName() != null) {
+                unionJavaType = vut.getAliasName();
+            }
+            body.addContext("unionJavaType", unionJavaType);
             body.addContext("getterMethodName", getterMethodName(property));
             body.addContext("addMethodName", addMethodName(singularize(property.getName())));
 
@@ -652,12 +733,14 @@ public class CreateClonersStage extends AbstractJavaStage {
                     EntityModel nestedTypeEntity = getState().getConceptIndex().lookupEntity(nestedTypeEntityName);
                     if (nestedTypeEntity != null) {
                         JavaInterfaceSource entityJavaSource = resolveJavaEntityType(nestedTypeEntityNS, nestedType);
-                        if (entityJavaSource != null) {
+                        JavaClassSource entityImplSource = lookupJavaEntityImpl(getJavaEntityClassFQN(nestedTypeEntity));
+                        if (entityJavaSource != null && entityImplSource != null) {
                             clonerClassSource.addImport(entityJavaSource);
+                            clonerClassSource.addImport(entityImplSource);
                             body.addContext("entityType", entityJavaSource.getName());
-                            body.addContext("createMethodName", createMethodName(nestedTypeEntity));
+                            body.addContext("entityImplType", entityImplSource.getName());
                             body.addContext("cloneMethodName", cloneMethodName(nestedTypeEntity));
-                            body.append("                ${entityType} tgtItem = (${entityType}) target.${createMethodName}();");
+                            body.append("                ${entityType} tgtItem = new ${entityImplType}();");
                             body.append("                this.${cloneMethodName}((${entityType}) srcUnion.${asMethodName}(), tgtItem);");
                             body.append("                target.${addMethodName}(key, tgtItem);");
                         }
