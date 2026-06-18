@@ -9,6 +9,7 @@ import io.test.synthetic.union.BooleanUnionValue;
 import io.test.synthetic.union.BooleanUnionValueImpl;
 import io.test.synthetic.union.SchemaListUnionValue;
 import io.test.synthetic.union.SchemaListUnionValueImpl;
+import io.test.synthetic.union.SchemaOrBoolean;
 import io.test.synthetic.util.JsonUtil;
 import io.test.synthetic.v2.Syn2Contact;
 import io.test.synthetic.v2.Syn2Document;
@@ -18,6 +19,7 @@ import io.test.synthetic.v2.Syn2Operation;
 import io.test.synthetic.v2.Syn2PathItem;
 import io.test.synthetic.v2.Syn2Paths;
 import io.test.synthetic.v2.Syn2Schema;
+import io.test.synthetic.v2.Syn2SchemaImpl;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,6 +65,19 @@ public class Syn2ModelCloner {
 					this.clonePathItem((Syn2PathItem) srcMap.get(name), tgtItem);
 					target.addWebhook(name, tgtItem);
 				});
+			}
+		}
+		{
+			SchemaOrBoolean srcUnion = source.getAdditionalSchema();
+			if (srcUnion != null) {
+				if (srcUnion.isBoolean()) {
+					target.setAdditionalSchema(new BooleanUnionValueImpl(srcUnion.asBoolean()));
+				}
+				if (srcUnion.isSchema()) {
+					Syn2Schema tgtEntity = new Syn2SchemaImpl();
+					this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtEntity);
+					target.setAdditionalSchema(tgtEntity);
+				}
 			}
 		}
 		{
@@ -163,8 +178,9 @@ public class Syn2ModelCloner {
 					target.setDefaultValue(new BooleanUnionValueImpl(srcUnion.asBoolean()));
 				}
 				if (srcUnion.isSchema()) {
-					target.setDefaultValue(target.createSchema());
-					this.cloneSchema((Syn2Schema) srcUnion.asSchema(), (Syn2Schema) target.getDefaultValue());
+					Syn2Schema tgtEntity = new Syn2SchemaImpl();
+					this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtEntity);
+					target.setDefaultValue(tgtEntity);
 				}
 			}
 		}
@@ -202,8 +218,9 @@ public class Syn2ModelCloner {
 					target.setItems(new BooleanUnionValueImpl(srcUnion.asBoolean()));
 				}
 				if (srcUnion.isSchema()) {
-					target.setItems(target.createSchema());
-					this.cloneSchema((Syn2Schema) srcUnion.asSchema(), (Syn2Schema) target.getItems());
+					Syn2Schema tgtEntity = new Syn2SchemaImpl();
+					this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtEntity);
+					target.setItems(tgtEntity);
 				}
 				if (srcUnion.isSchemaList()) {
 					List<Syn2Schema> clonedList = new ArrayList<>();
@@ -227,7 +244,7 @@ public class Syn2ModelCloner {
 						target.addProperty(key, new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
 					if (srcUnion.isSchema()) {
-						Syn2Schema tgtItem = (Syn2Schema) target.createSchema();
+						Syn2Schema tgtItem = new Syn2SchemaImpl();
 						this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtItem);
 						target.addProperty(key, tgtItem);
 					}
@@ -242,7 +259,7 @@ public class Syn2ModelCloner {
 						target.addAllOf(new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
 					if (srcUnion.isSchema()) {
-						Syn2Schema tgtItem = (Syn2Schema) target.createSchema();
+						Syn2Schema tgtItem = new Syn2SchemaImpl();
 						this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtItem);
 						target.addAllOf(tgtItem);
 					}
@@ -258,9 +275,40 @@ public class Syn2ModelCloner {
 						target.addDefinition(key, new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
 					if (srcUnion.isSchema()) {
-						Syn2Schema tgtItem = (Syn2Schema) target.createSchema();
+						Syn2Schema tgtItem = new Syn2SchemaImpl();
 						this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtItem);
 						target.addDefinition(key, tgtItem);
+					}
+				});
+			}
+		}
+		{
+			Map<String, SchemaOrBoolean> srcMap = source.getNestedSchemas();
+			if (srcMap != null && !srcMap.isEmpty()) {
+				srcMap.keySet().forEach(key -> {
+					SchemaOrBoolean srcUnion = srcMap.get(key);
+					if (srcUnion.isBoolean()) {
+						target.addNestedSchema(key, new BooleanUnionValueImpl(srcUnion.asBoolean()));
+					}
+					if (srcUnion.isSchema()) {
+						Syn2Schema tgtItem = new Syn2SchemaImpl();
+						this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtItem);
+						target.addNestedSchema(key, tgtItem);
+					}
+				});
+			}
+		}
+		{
+			List<SchemaOrBoolean> srcList = source.getComposedSchemas();
+			if (srcList != null && !srcList.isEmpty()) {
+				srcList.forEach(srcUnion -> {
+					if (srcUnion.isBoolean()) {
+						target.addComposedSchema(new BooleanUnionValueImpl(srcUnion.asBoolean()));
+					}
+					if (srcUnion.isSchema()) {
+						Syn2Schema tgtItem = new Syn2SchemaImpl();
+						this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtItem);
+						target.addComposedSchema(tgtItem);
 					}
 				});
 			}
