@@ -587,7 +587,12 @@ public class CreateClonersStage extends AbstractJavaStage {
             body.append("    }");
             body.append("}");
 
-            ut.addImportsTo(clonerClassSource);
+            var resolved2 = property.getResolvedType();
+            boolean isAlias = resolved2 instanceof io.apitomy.umg.models.concept.type.UnionType ut2
+                    && ut2.getAliasName() != null;
+            if (!isAlias) {
+                ut.addImportsTo(clonerClassSource);
+            }
         }
 
         private void handleUnionListProperty(BodyBuilder body) {
@@ -604,13 +609,18 @@ public class CreateClonersStage extends AbstractJavaStage {
             UnionPropertyType ut = new UnionPropertyType(unionType);
 
             clonerClassSource.addImport(List.class);
-            ut.addImportsTo(clonerClassSource);
 
-            String unionJavaType = ut.toJavaTypeString();
+            String unionJavaType;
             if (resolved instanceof io.apitomy.umg.models.concept.type.ListType lt2
                     && lt2.getValueType() instanceof io.apitomy.umg.models.concept.type.UnionType vut
                     && vut.getAliasName() != null) {
-                unionJavaType = vut.getAliasName();
+                var nsModel = propertyWithOrigin.getOrigin().getNamespace();
+                var jt = getJavaTypeFactory().createJavaType(vut, nsModel);
+                jt.addImportsTo(clonerClassSource);
+                unionJavaType = jt.getSimpleName();
+            } else {
+                ut.addImportsTo(clonerClassSource);
+                unionJavaType = ut.toJavaTypeString();
             }
             body.addContext("unionJavaType", unionJavaType);
             body.addContext("getterMethodName", getterMethodName(property));
@@ -687,13 +697,18 @@ public class CreateClonersStage extends AbstractJavaStage {
             UnionPropertyType ut = new UnionPropertyType(unionType);
 
             clonerClassSource.addImport(Map.class);
-            ut.addImportsTo(clonerClassSource);
 
-            String unionJavaType = ut.toJavaTypeString();
+            String unionJavaType;
             if (resolved instanceof io.apitomy.umg.models.concept.type.MapType mt2
                     && mt2.getValueType() instanceof io.apitomy.umg.models.concept.type.UnionType vut
                     && vut.getAliasName() != null) {
-                unionJavaType = vut.getAliasName();
+                var nsModel = propertyWithOrigin.getOrigin().getNamespace();
+                var jt = getJavaTypeFactory().createJavaType(vut, nsModel);
+                jt.addImportsTo(clonerClassSource);
+                unionJavaType = jt.getSimpleName();
+            } else {
+                ut.addImportsTo(clonerClassSource);
+                unionJavaType = ut.toJavaTypeString();
             }
             body.addContext("unionJavaType", unionJavaType);
             body.addContext("getterMethodName", getterMethodName(property));
