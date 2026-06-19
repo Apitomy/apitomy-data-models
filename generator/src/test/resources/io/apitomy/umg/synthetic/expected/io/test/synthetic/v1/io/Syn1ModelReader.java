@@ -2,14 +2,14 @@ package io.test.synthetic.v1.io;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.test.synthetic.BooleanSchemaSchemaListUnion;
+import io.test.synthetic.BooleanSchemaUnion;
 import io.test.synthetic.ModelType;
 import io.test.synthetic.RootCapable;
+import io.test.synthetic.SchemaListUnionValueImpl;
+import io.test.synthetic.SchemaOrBoolean;
 import io.test.synthetic.io.ModelReader;
-import io.test.synthetic.union.BooleanSchemaSchemaListUnion;
-import io.test.synthetic.union.BooleanSchemaUnion;
 import io.test.synthetic.union.BooleanUnionValueImpl;
-import io.test.synthetic.union.SchemaListUnionValueImpl;
-import io.test.synthetic.union.SchemaOrBoolean;
 import io.test.synthetic.util.JsonUtil;
 import io.test.synthetic.util.ReaderUtil;
 import io.test.synthetic.v1.Syn1Contact;

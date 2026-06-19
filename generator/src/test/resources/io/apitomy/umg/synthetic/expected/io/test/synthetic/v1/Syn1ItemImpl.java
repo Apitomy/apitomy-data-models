@@ -2,11 +2,11 @@ package io.test.synthetic.v1;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.test.synthetic.BooleanSchemaUnion;
 import io.test.synthetic.Node;
 import io.test.synthetic.NodeImpl;
 import io.test.synthetic.ParentPropertyType;
 import io.test.synthetic.SynSchema;
-import io.test.synthetic.union.BooleanSchemaUnion;
 import io.test.synthetic.union.UnionValue;
 import io.test.synthetic.union.UnionValueImpl;
 import io.test.synthetic.util.DataModelUtil;

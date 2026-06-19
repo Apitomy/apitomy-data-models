@@ -31,7 +31,8 @@ public class ApplyUnionInterfacesToTypesStage extends AbstractJavaStage {
 
     private void applyUnionInterface(UnionType unionType) {
         String unionName = getUnionName(unionType);
-        String unionFQN = getUnionTypeFQN(unionName);
+        String unionPackage = resolveUnionPackage(unionType);
+        String unionFQN = unionPackage + "." + unionName;
         JavaInterfaceSource unionInterface = getState().getJavaIndex().lookupInterface(unionFQN);
         if (unionInterface == null) {
             warn("Union interface not found: %s", unionFQN);
@@ -59,10 +60,12 @@ public class ApplyUnionInterfacesToTypesStage extends AbstractJavaStage {
             return getState().getJavaIndex().lookupInterface(getUnionTypeFQN(typeName + "UnionValue"));
         } else if (variantType instanceof ListType listType) {
             String typeName = JavaTypeFactory.getUnionComponentName(listType);
-            return getState().getJavaIndex().lookupInterface(getUnionTypeFQN(typeName + "UnionValue"));
+            String pkg = resolveUnionPackage(unionType);
+            return getState().getJavaIndex().lookupInterface(pkg + "." + typeName + "UnionValue");
         } else if (variantType instanceof MapType mapType) {
             String typeName = JavaTypeFactory.getUnionComponentName(mapType);
-            return getState().getJavaIndex().lookupInterface(getUnionTypeFQN(typeName + "UnionValue"));
+            String pkg = resolveUnionPackage(unionType);
+            return getState().getJavaIndex().lookupInterface(pkg + "." + typeName + "UnionValue");
         } else if (variantType instanceof UnionType nestedUnion) {
             // Nested union (type alias as variant) — skip, its own variants are handled separately
             return null;

@@ -40,7 +40,8 @@ public class CreateCollectionUnionValuesStage extends AbstractJavaStage {
         String mapOrList = isList ? "List" : "Map";
         String unionValueName = typeName + mapOrList + "UnionValue";
         String unionValueImplName = unionValueName + "Impl";
-        String _package = getUnionTypesPackageName();
+        String _package = resolveUnionPackage(unionType);
+        String sharedPackage = getUnionTypesPackageName();
         String unionValueFQN = _package + "." + unionValueName;
 
         if (getState().getJavaIndex().lookupInterface(unionValueFQN) != null) {
@@ -49,11 +50,11 @@ public class CreateCollectionUnionValuesStage extends AbstractJavaStage {
 
         debug("Creating collection union value: %s", unionValueName);
 
-        // Base class/interface
+        // Base class/interface (always in shared package)
         String entityCollectionUnionValueName = "Entity" + mapOrList + "UnionValue";
         String entityCollectionUnionValueImplName = entityCollectionUnionValueName + "Impl";
-        String entityCollectionUnionValueFQN = _package + "." + entityCollectionUnionValueName;
-        String entityCollectionUnionValueImplFQN = _package + "." + entityCollectionUnionValueImplName;
+        String entityCollectionUnionValueFQN = sharedPackage + "." + entityCollectionUnionValueName;
+        String entityCollectionUnionValueImplFQN = sharedPackage + "." + entityCollectionUnionValueImplName;
 
         // Resolve entity Java interface using common resolution
         var nsModel = getState().getConceptIndex().lookupNamespace(unionType.getNamespace());
@@ -82,6 +83,7 @@ public class CreateCollectionUnionValuesStage extends AbstractJavaStage {
                 .setPublic();
         valueImpl.addImport(entityCollectionUnionValueImplSource);
         valueImpl.addImport(entitySource);
+        valueImpl.addImport(java.util.List.class);
         valueImpl.addInterface(valueInterface);
         if (isList) {
             valueImpl.setSuperType(entityCollectionUnionValueImplName + "<" + entitySource.getName() + ">");

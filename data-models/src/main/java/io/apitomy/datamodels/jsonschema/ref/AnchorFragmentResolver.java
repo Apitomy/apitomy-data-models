@@ -12,7 +12,7 @@ import io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document;
 import io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema;
 import io.apitomy.datamodels.models.jsonschema.modern.JSModernDocument;
 import io.apitomy.datamodels.models.jsonschema.modern.JSModernJSchema;
-import io.apitomy.datamodels.models.union.BooleanJSchemaUnion;
+import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaUnion;
 
 import java.util.HashSet;
 import java.util.List;
