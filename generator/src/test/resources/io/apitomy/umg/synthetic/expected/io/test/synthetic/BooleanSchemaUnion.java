@@ -1,6 +1,6 @@
-package io.test.synthetic.union;
+package io.test.synthetic;
 
-import io.test.synthetic.SynSchema;
+import io.test.synthetic.union.Union;
 
 public interface BooleanSchemaUnion extends Union {
 
