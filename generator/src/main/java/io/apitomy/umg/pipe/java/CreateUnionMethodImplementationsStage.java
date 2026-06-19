@@ -67,6 +67,10 @@ public class CreateUnionMethodImplementationsStage extends AbstractJavaStage {
             String typeName = JavaTypeFactory.getUnionComponentName(variantType);
             String implFQN = getUnionTypeFQN(typeName + "UnionValueImpl");
             JavaClassSource impl = getState().getJavaIndex().lookupClass(implFQN);
+            if (impl == null) {
+                String pkg = resolveUnionPackage(unionType);
+                impl = getState().getJavaIndex().lookupClass(pkg + "." + typeName + "UnionValueImpl");
+            }
             if (impl != null) result.add(impl);
         }
 

@@ -104,9 +104,31 @@ public class JavaTypeFactory {
                     .map(JavaTypeFactory::getUnionComponentName)
                     .collect(Collectors.joining()) + "Union";
         }
-        var unionFQN = unionTypesPackage + "." + unionName;
+        String unionPackage = resolveUnionPackage(unionType);
+        var unionFQN = unionPackage + "." + unionName;
 
         return new UnionJavaType(unionType, unionName, unionFQN, variantJavaTypes);
+    }
+
+    private String resolveUnionPackage(UnionType unionType) {
+        for (var variant : unionType.getTypes()) {
+            EntityType entityType = null;
+            if (variant instanceof EntityType et) {
+                entityType = et;
+            } else if (variant instanceof ListType lt && lt.getValueType() instanceof EntityType et) {
+                entityType = et;
+            } else if (variant instanceof MapType mt && mt.getValueType() instanceof EntityType et) {
+                entityType = et;
+            }
+            if (entityType != null) {
+                var common = conceptIndex.lookupCommonEntity(
+                        unionType.getNamespace(), entityType.getName());
+                if (common != null) {
+                    return common.getNamespace().fullName();
+                }
+            }
+        }
+        return unionTypesPackage;
     }
 
     public static String getUnionComponentName(Type type) {

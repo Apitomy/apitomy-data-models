@@ -27,7 +27,7 @@ public class CreateUnionInterfacesStage extends AbstractJavaStage {
 
     private void createUnionInterface(UnionType unionType) {
         String name = getUnionName(unionType);
-        String _package = getUnionTypesPackageName();
+        String _package = resolveUnionPackage(unionType);
         String fqn = _package + "." + name;
 
         if (getState().getJavaIndex().lookupInterface(fqn) != null) {

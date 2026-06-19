@@ -3,13 +3,13 @@ package io.test.synthetic.v2.io;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.test.synthetic.BooleanSchemaSchemaListUnion;
+import io.test.synthetic.BooleanSchemaUnion;
 import io.test.synthetic.RootCapable;
+import io.test.synthetic.SchemaOrBoolean;
 import io.test.synthetic.SynItem;
 import io.test.synthetic.SynPathItem;
 import io.test.synthetic.io.ModelWriter;
-import io.test.synthetic.union.BooleanSchemaSchemaListUnion;
-import io.test.synthetic.union.BooleanSchemaUnion;
-import io.test.synthetic.union.SchemaOrBoolean;
 import io.test.synthetic.util.JsonUtil;
 import io.test.synthetic.util.WriterUtil;
 import io.test.synthetic.v2.Syn2Contact;
@@ -399,7 +399,7 @@ public class Syn2ModelWriter implements ModelWriter {
 	@Override
 	public ObjectNode writeRoot(RootCapable node) {
 		JsonNode result = this.writeSchemaOrBoolean((SchemaOrBoolean) node);
-		if (result instanceof ObjectNode) {
+		if (result != null && JsonUtil.isObjectNode(result)) {
 			return (ObjectNode) result;
 		}
 		return null;

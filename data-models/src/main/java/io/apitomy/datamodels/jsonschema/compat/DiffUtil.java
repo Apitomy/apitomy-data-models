@@ -1,7 +1,7 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
 import io.apitomy.datamodels.models.Node;
-import io.apitomy.datamodels.models.union.BooleanJSchemaUnion;
+import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaUnion;
 
 import java.math.BigDecimal;
 import java.util.HashSet;

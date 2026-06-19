@@ -40,7 +40,7 @@ import io.apitomy.datamodels.models.asyncapi.v3x.AsyncApi3xServer;
 import io.apitomy.datamodels.models.asyncapi.v3x.AsyncApi3xServerVariable;
 import io.apitomy.datamodels.models.asyncapi.v3x.AsyncApi3xTag;
 import io.apitomy.datamodels.models.union.AnyUnionValueImpl;
-import io.apitomy.datamodels.models.union.MultiFormatSchemaSchemaUnion;
+import io.apitomy.datamodels.models.asyncapi.MultiFormatSchemaSchemaUnion;
 import io.apitomy.datamodels.models.util.JsonUtil;
 import io.apitomy.datamodels.util.LoggerUtil;
 import io.apitomy.datamodels.util.NodeUtil;

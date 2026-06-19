@@ -2,7 +2,6 @@ package io.test.synthetic;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.test.synthetic.union.BooleanSchemaUnion;
 import java.util.List;
 
 public interface SynItem extends Node {

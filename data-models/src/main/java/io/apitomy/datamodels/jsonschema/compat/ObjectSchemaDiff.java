@@ -1,6 +1,6 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
-import io.apitomy.datamodels.models.union.BooleanJSchemaUnion;
+import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaUnion;
 
 import java.util.ArrayList;
 import java.util.HashSet;

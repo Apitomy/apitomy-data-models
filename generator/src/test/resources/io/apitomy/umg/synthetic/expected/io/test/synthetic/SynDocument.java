@@ -1,6 +1,5 @@
 package io.test.synthetic;
 
-import io.test.synthetic.union.SchemaOrBoolean;
 import java.util.List;
 import java.util.Map;
 

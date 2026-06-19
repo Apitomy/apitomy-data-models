@@ -2,8 +2,8 @@ package io.apitomy.datamodels.jsonschema.compat;
 
 import io.apitomy.datamodels.models.jsonschema.draft.JSDraftDocument;
 import io.apitomy.datamodels.models.jsonschema.draft.JSDraftJSchema;
-import io.apitomy.datamodels.models.union.BooleanJSchemaJSchemaListUnion;
-import io.apitomy.datamodels.models.union.BooleanJSchemaUnion;
+import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaJSchemaListUnion;
+import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaUnion;
 
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.*;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;

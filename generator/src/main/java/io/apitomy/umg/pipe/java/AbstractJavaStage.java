@@ -437,6 +437,34 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return getUnionTypesPackageName() + "." + name;
     }
 
+    protected String getUnionTypeFQN(String name, String namespace) {
+        String pkg = namespace != null ? namespace : getUnionTypesPackageName();
+        return pkg + "." + name;
+    }
+
+    protected String resolveUnionPackage(io.apitomy.umg.models.concept.type.UnionType unionType) {
+        for (var variant : unionType.getTypes()) {
+            io.apitomy.umg.models.concept.type.EntityType entityType = null;
+            if (variant instanceof io.apitomy.umg.models.concept.type.EntityType et) {
+                entityType = et;
+            } else if (variant instanceof io.apitomy.umg.models.concept.type.ListType lt
+                    && lt.getValueType() instanceof io.apitomy.umg.models.concept.type.EntityType et) {
+                entityType = et;
+            } else if (variant instanceof io.apitomy.umg.models.concept.type.MapType mt
+                    && mt.getValueType() instanceof io.apitomy.umg.models.concept.type.EntityType et) {
+                entityType = et;
+            }
+            if (entityType != null) {
+                EntityModel common = getState().getConceptIndex().lookupCommonEntity(
+                        unionType.getNamespace(), entityType.getName());
+                if (common != null) {
+                    return common.getNamespace().fullName();
+                }
+            }
+        }
+        return getUnionTypesPackageName();
+    }
+
     public class JavaType {
         private final PropertyType propertyType;
         private final String namespaceContext;
@@ -679,8 +707,15 @@ public abstract class AbstractJavaStage extends AbstractStage {
         private final List<PropertyType> nestedTypes;
 
         public void addImportsTo(Importer<?> importer) {
-            String unionTypeFQN = getUnionTypeFQN(name);
-            importer.addImport(unionTypeFQN);
+            var source = getState().getJavaIndex().lookupInterface(getUnionTypeFQN(name));
+            if (source == null) {
+                source = getState().getJavaIndex().findInterfaceBySimpleName(name);
+            }
+            if (source != null) {
+                importer.addImport(source);
+            } else {
+                importer.addImport(getUnionTypeFQN(name));
+            }
         }
 
         public String getName() {

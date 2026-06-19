@@ -197,6 +197,10 @@ public class CreateReadersStage extends AbstractJavaStage {
                 String typeName = io.apitomy.umg.models.java.type.JavaTypeFactory.getUnionComponentName(variantType);
                 String unionValueClassFQN = getUnionTypeFQN(typeName + "UnionValueImpl");
                 JavaClassSource unionValueClass = getState().getJavaIndex().lookupClass(unionValueClassFQN);
+                if (unionValueClass == null) {
+                    unionValueClass = getState().getJavaIndex().lookupClass(
+                            resolveUnionPackage(unionType) + "." + typeName + "UnionValueImpl");
+                }
                 if (unionValueClass == null) continue;
 
                 JavaInterfaceSource entitySource = lookupJavaEntity(entity);

@@ -2,7 +2,7 @@ package io.apitomy.datamodels.jsonschema.ref;
 
 import io.apitomy.datamodels.models.MappedNode;
 import io.apitomy.datamodels.models.Node;
-import io.apitomy.datamodels.models.union.BooleanJSchemaUnion;
+import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaUnion;
 import io.apitomy.datamodels.util.NodeUtil;
 
 import java.util.Arrays;

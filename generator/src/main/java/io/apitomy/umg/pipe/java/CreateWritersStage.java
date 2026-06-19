@@ -260,7 +260,7 @@ public class CreateWritersStage extends AbstractJavaStage {
         body.addContext("unionType", jt.toJavaTypeString());
 
         body.append("JsonNode result = this.${writeMethodName}((${unionType}) node);");
-        body.append("if (result instanceof ObjectNode) {");
+        body.append("if (result != null && JsonUtil.isObjectNode(result)) {");
         body.append("    return (ObjectNode) result;");
         body.append("}");
         body.append("return null;");
