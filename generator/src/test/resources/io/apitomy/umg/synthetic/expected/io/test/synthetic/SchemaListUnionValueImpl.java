@@ -1,6 +1,6 @@
-package io.test.synthetic.union;
+package io.test.synthetic;
 
-import io.test.synthetic.SynSchema;
+import io.test.synthetic.union.EntityListUnionValueImpl;
 import java.util.List;
 
 public class SchemaListUnionValueImpl extends EntityListUnionValueImpl<SynSchema> implements SchemaListUnionValue {

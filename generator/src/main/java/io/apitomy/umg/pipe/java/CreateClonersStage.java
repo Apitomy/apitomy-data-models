@@ -555,6 +555,12 @@ public class CreateClonersStage extends AbstractJavaStage {
                             String unionValueClassFQN = unionValueInterfaceFQN + "Impl";
                             JavaInterfaceSource unionValueInterface = getState().getJavaIndex().lookupInterface(unionValueInterfaceFQN);
                             JavaClassSource unionValueClass = getState().getJavaIndex().lookupClass(unionValueClassFQN);
+                            if (unionValueInterface == null) {
+                                unionValueInterface = getState().getJavaIndex().findInterfaceBySimpleName(unionValueName + "UnionValue");
+                            }
+                            if (unionValueClass == null) {
+                                unionValueClass = getState().getJavaIndex().findClassBySimpleName(unionValueName + "UnionValueImpl");
+                            }
                             if (unionValueInterface != null && unionValueClass != null) {
                                 clonerClassSource.addImport(listItemEntitySource);
                                 clonerClassSource.addImport(unionValueInterface);

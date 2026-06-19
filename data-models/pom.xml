@@ -58,9 +58,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.jsweet</groupId>
+            <groupId>io.apitomy</groupId>
             <artifactId>jsweet-transpiler</artifactId>
-            <version>${version.org.jsweet-transpiler}</version>
+            <version>${version.jsweet-maven-plugin}</version>
             <scope>provided</scope>
         </dependency>
 

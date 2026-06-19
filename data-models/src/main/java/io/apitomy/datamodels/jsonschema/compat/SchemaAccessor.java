@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.jsonschema.JsonSchemaDocument;
 import io.apitomy.datamodels.models.jsonschema.JsonSchemaJSchema;
-import io.apitomy.datamodels.models.union.BooleanJSchemaJSchemaListUnion;
-import io.apitomy.datamodels.models.union.BooleanJSchemaUnion;
+import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaJSchemaListUnion;
+import io.apitomy.datamodels.models.jsonschema.BooleanJSchemaUnion;
 import io.apitomy.datamodels.models.union.StringStringListUnion;
 
 import java.util.List;
