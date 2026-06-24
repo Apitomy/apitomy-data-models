@@ -20,8 +20,8 @@ import java.util.Set;
  * Scans the document tree for {@code $anchor} (2019-09+) or {@code $id}/{@code id} with
  * a fragment value (draft-4 through draft-7).
  * <p>
- * Manually walks the schema tree since the generated traverser
- * does not visit sub-schemas inside map/list properties like definitions.
+ * Walks the schema tree manually (rather than using the generated traverser)
+ * because anchor search needs to return a found node, not fire visitor callbacks.
  */
 public class AnchorFragmentResolver implements FragmentResolver {
 

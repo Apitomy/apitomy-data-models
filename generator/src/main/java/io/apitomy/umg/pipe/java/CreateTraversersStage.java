@@ -118,7 +118,8 @@ public class CreateTraversersStage extends AbstractVisitorStage {
         body.append("node.accept(this.visitor);");
 
         Collection<PropertyModel> allProperties = getState().getConceptIndex().getAllEntityProperties(entityModel).stream().map(property -> property.getProperty()).filter(property -> {
-            return isEntity(property) || isEntityList(property) || isEntityMap(property) || isUnion(property);
+            return isEntity(property) || isEntityList(property) || isEntityMap(property)
+                    || isUnion(property) || isUnionList(property) || isUnionMap(property);
         }).collect(Collectors.toList());
 
         if (!allProperties.isEmpty()) {
@@ -147,6 +148,10 @@ public class CreateTraversersStage extends AbstractVisitorStage {
                 body.append("this.traverseMap(\"${propertyName}\", model.${propertyGetter}());");
             } else if (isUnion(property)) {
                 body.append("this.traverseUnion(\"${propertyName}\", model.${propertyGetter}());");
+            } else if (isUnionList(property)) {
+                body.append("this.traverseList(\"${propertyName}\", model.${propertyGetter}());");
+            } else if (isUnionMap(property)) {
+                body.append("this.traverseMap(\"${propertyName}\", model.${propertyGetter}());");
             } else {
                 warn("Unhandled property in traverser: " + property);
             }
