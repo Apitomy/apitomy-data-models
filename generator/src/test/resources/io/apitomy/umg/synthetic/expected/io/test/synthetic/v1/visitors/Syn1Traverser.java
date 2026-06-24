@@ -72,7 +72,7 @@ public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
 		Syn1Document model = (Syn1Document) node;
 		this.traverseNode("info", model.getInfo());
 		this.traverseList("items", model.getItems());
-		this.traverseNode("additionalSchema", model.getAdditionalSchema());
+		this.traverseUnion("additionalSchema", model.getAdditionalSchema());
 	}
 
 	@Override
