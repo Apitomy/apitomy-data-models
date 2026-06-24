@@ -766,6 +766,15 @@ public class CreateClonersStage extends AbstractJavaStage {
                             body.append("                target.${addMethodName}(key, tgtItem);");
                         }
                     }
+                } else if (nestedType.isList()) {
+                    String unionValueClassFQN = getUnionTypeFQN(typeName + "UnionValueImpl");
+                    JavaClassSource unionValueClass = getState().getJavaIndex().lookupClass(unionValueClassFQN);
+                    if (unionValueClass != null) {
+                        clonerClassSource.addImport(unionValueClass);
+                        clonerClassSource.addImport(java.util.ArrayList.class);
+                        body.addContext("unionValueClassName", unionValueClass.getName());
+                        body.append("                target.${addMethodName}(key, new ${unionValueClassName}(new java.util.ArrayList<>(srcUnion.${asMethodName}())));");
+                    }
                 } else {
                     warn("UNION MAP property '" + property.getName() + "' nested type not cloned (unsupported): " + nestedType);
                 }

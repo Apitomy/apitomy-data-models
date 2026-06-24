@@ -1,6 +1,6 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.apitomy.datamodels.models.jsonschema.Dependency;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
@@ -262,11 +262,9 @@ public class ObjectSchemaDiff {
             for (var key : commonKeys) {
                 var origValue = origDeps.get(key);
                 var updValue = updDeps.get(key);
-                if (origValue.isArray() && updValue.isArray()) {
-                    var origSet = new HashSet<String>();
-                    origValue.forEach(n -> origSet.add(n.asText()));
-                    var updSet = new HashSet<String>();
-                    updValue.forEach(n -> updSet.add(n.asText()));
+                if (origValue.isStringList() && updValue.isStringList()) {
+                    var origSet = new HashSet<>(origValue.asStringList());
+                    var updSet = new HashSet<>(updValue.asStringList());
                     for (var v : origSet) {
                         if (!updSet.contains(v)) {
                             ctx.addDifference(OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_REMOVED, v, null);
@@ -280,19 +278,17 @@ public class ObjectSchemaDiff {
                     if (!origSet.equals(updSet)) {
                         ctx.addDifference(OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_CHANGED, origValue, updValue);
                     }
-                } else if (origValue.isObject() && updValue.isObject()) {
-                    // Schema dependencies — compare as schemas
-                    // This is a simplified comparison; full comparison would require
-                    // parsing the JsonNode as a schema document
-                    if (!origValue.equals(updValue)) {
-                        ctx.addDifference(OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED, origValue, updValue);
+                } else if (origValue.isFullSchema() && updValue.isFullSchema()) {
+                    var subCtx = ctx.sub("dependencies/" + key);
+                    if (!isSchemaCompatible(subCtx, origValue.asFullSchema(), updValue.asFullSchema(), true)) {
+                        subCtx.addDifference(OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED, origValue, updValue);
                     }
                 }
             }
         }
     }
 
-    private static Map<String, JsonNode> getDependencies(JFullSchema schema) {
+    private static Map<String, Dependency> getDependencies(JFullSchema schema) {
         if (schema instanceof JDFullSchema d) return d.getDependencies();
         return null;
     }

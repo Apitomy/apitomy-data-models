@@ -1,884 +1,885 @@
 [
-	{
-		"name": "[AsyncAPI 2] Simplest",
-		"test": "asyncapi/2.0/simple/simplest.json"
-	},
-	{
-		"name": "[AsyncAPI 2] Simple Info",
-		"test": "asyncapi/2.0/simple/simple-info.json"
-	},
-	{
-		"name": "[AsyncAPI 2] Simple Info With Extra Properties",
-		"test": "asyncapi/2.0/simple/simple-info-extraProperties.json",
-		"extraProperties": 4
-	},
-	{
-		"name": "[AsyncAPI 2] Simple Info With Extensions",
-		"test": "asyncapi/2.0/simple/simple-info-extensions.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Simplest",
-		"test": "asyncapi/3.0/simple/simplest.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Simple Info",
-		"test": "asyncapi/3.0/simple/simple-info.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Simple Info With Extra Properties",
-		"test": "asyncapi/3.0/simple/simple-info-extraProperties.json",
-		"extraProperties": 4
-	},
-	{
-		"name": "[AsyncAPI 3] Simple Info With Extensions",
-		"test": "asyncapi/3.0/simple/simple-info-extensions.json"
-	},
-	{
-		"name": "[AsyncAPI 3.1] Simplest",
-		"test": "asyncapi/3.1/simple/simplest.json"
-	},
-	{
-		"name": "[AsyncAPI 2] Complete anyof",
-		"test": "asyncapi/2.0/complete/anyof.json"
-	},
-	{
-		"name": "[AsyncAPI 2] Complete application-headers",
-		"test": "asyncapi/2.0/complete/application-headers.json"
-	},
-	{
-		"name": "[AsyncAPI 2] Complete Info",
-		"test": "asyncapi/2.0/complete/complete-info.json"
-	},
-	{
-		"name": "[AsyncAPI 2] Complete correlation-id",
-		"test": "asyncapi/2.0/complete/correlation-id.json"
-	},
-	{
-		"name": "[AsyncAPI 2] Complete gitter-streaming",
-		"test": "asyncapi/2.0/complete/gitter-streaming.json"
-	},
-	{
-		"name": "[AsyncAPI 2] Complete not",
-		"test": "asyncapi/2.0/complete/not.json"
-	},
-	{
-		"name": "[AsyncAPI 2] Complete oneof",
-		"test": "asyncapi/2.0/complete/oneof.json"
-	},
-	{
-		"name": "[AsyncAPI 2] Complete rpc-client",
-		"test": "asyncapi/2.0/complete/rpc-client.json"
-	},
-	{
-		"name": "[AsyncAPI 2] Complete rpc-server",
-		"test": "asyncapi/2.0/complete/rpc-server.json"
-	},
-	{
-		"name": "[AsyncAPI 2] Complete slack-rtm",
-		"test": "asyncapi/2.0/complete/slack-rtm.json"
-	},
-	{
-		"name": "[AsyncAPI 2] Complete streetlights",
-		"test": "asyncapi/2.0/complete/streetlights.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Adeo Kafka Request",
-		"test": "asyncapi/3.0/complete/adeo-kafka-request-reply-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] AnyOf",
-		"test": "asyncapi/3.0/complete/anyof-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] App Headers",
-		"test": "asyncapi/3.0/complete/application-headers-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Correlation ID",
-		"test": "asyncapi/3.0/complete/correlation-id-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Gitter Streaming",
-		"test": "asyncapi/3.0/complete/gitter-streaming-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Mercure",
-		"test": "asyncapi/3.0/complete/mercure-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Not",
-		"test": "asyncapi/3.0/complete/not-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] OneOf",
-		"test": "asyncapi/3.0/complete/oneof-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Operation Security",
-		"test": "asyncapi/3.0/complete/operation-security-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] RPC Client",
-		"test": "asyncapi/3.0/complete/rpc-client-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] RPC Server",
-		"test": "asyncapi/3.0/complete/rpc-server-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Simple",
-		"test": "asyncapi/3.0/complete/simple-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Slack RTM",
-		"test": "asyncapi/3.0/complete/slack-rtm-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Streetlights Kafka",
-		"test": "asyncapi/3.0/complete/streetlights-kafka-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Streetlights MQTT",
-		"test": "asyncapi/3.0/complete/streetlights-mqtt-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Streetlights OpSec",
-		"test": "asyncapi/3.0/complete/streetlights-operation-security-asyncapi.json"
-	},
-	{
-		"name": "[AsyncAPI 3] Websocket Gemini",
-		"test": "asyncapi/3.0/complete/websocket-gemini-asyncapi.json"
-	},
-	{
-		"name": "[OpenAPI 2] Simple - External Docs",
-		"test": "openapi/2.0/simple/simple-externalDocs.json"
-	},
-	{
-		"name": "[OpenAPI 2] Simple - Info + Extensions",
-		"test": "openapi/2.0/simple/simple-info-extensions.json"
-	},
-	{
-		"name": "[OpenAPI 2] Simple - Info",
-		"test": "openapi/2.0/simple/simple-info.json"
-	},
-	{
-		"name": "[OpenAPI 2] Simple - - Security",
-		"test": "openapi/2.0/simple/simple-security.json"
-	},
-	{
-		"name": "[OpenAPI 2] Simple - Tags",
-		"test": "openapi/2.0/simple/simple-tags.json"
-	},
-	{
-		"name": "[OpenAPI 2] Simplest",
-		"test": "openapi/2.0/simple/simplest.json"
-	},
-	{
-		"name": "[OpenAPI 2] Extra Properties",
-		"test": "openapi/2.0/extra-properties/extra-properties.json",
-		"extraProperties": 3
-	},
-	{
-		"name": "[OpenAPI 2] Full - Meerkat",
-		"test": "openapi/2.0/complete/api.meerkat.com.br.json"
-	},
-	{
-		"name": "[OpenAPI 2] Full - Apistrat",
-		"test": "openapi/2.0/complete/austin2015.apistrat.com.json"
-	},
-	{
-		"name": "[OpenAPI 2] Complete - Security Defs",
-		"test": "openapi/2.0/complete/complete-securityDefinitions.json"
-	},
-	{
-		"name": "[OpenAPI 2] Complete - Tags",
-		"test": "openapi/2.0/complete/complete-tags.json"
-	},
-	{
-		"name": "[OpenAPI 2] Full - Trade Gov",
-		"test": "openapi/2.0/complete/developer.trade.gov.json"
-	},
-	{
-		"name": "[OpenAPI 2] Full - Pet Store",
-		"test": "openapi/2.0/complete/pet-store.json"
-	},
-	{
-		"name": "[OpenAPI 2] Full - Hairmare.ch",
-		"test": "openapi/2.0/complete/subnet.api.hairmare.ch.json"
-	},
-	{
-		"name": "[OpenAPI 2] Full - Weatherbit",
-		"test": "openapi/2.0/complete/www.weatherbit.io.json"
-	},
-	{
-		"name": "[OpenAPI 2] JSON Schema - BASIC",
-		"test": "openapi/2.0/definitions/json-schema-basic.json"
-	},
-	{
-		"name": "[OpenAPI 2] JSON Schema - fstab",
-		"test": "openapi/2.0/definitions/json-schema-fstab.json"
-	},
-	{
-		"name": "[OpenAPI 2] JSON Schema - Products",
-		"test": "openapi/2.0/definitions/json-schema-products.json"
-	},
-	{
-		"name": "[OpenAPI 2] JSON Schema - Primitive",
-		"test": "openapi/2.0/definitions/primitive.json"
-	},
-	{
-		"name": "[OpenAPI 2] Schema - Additional Props",
-		"test": "openapi/2.0/definitions/schema-with-additionalProperties.json"
-	},
-	{
-		"name": "[OpenAPI 2] Schema - AllOf",
-		"test": "openapi/2.0/definitions/schema-with-allOf.json"
-	},
-	{
-		"name": "[OpenAPI 2] Schema - Composition",
-		"test": "openapi/2.0/definitions/schema-with-composition.json"
-	},
-	{
-		"name": "[OpenAPI 2] Schema - Example",
-		"test": "openapi/2.0/definitions/schema-with-example.json"
-	},
-	{
-		"name": "[OpenAPI 2] Schema - Extensions",
-		"test": "openapi/2.0/definitions/schema-with-extension.json"
-	},
-	{
-		"name": "[OpenAPI 2] Schema - External Docs",
-		"test": "openapi/2.0/definitions/schema-with-externalDocs.json"
-	},
-	{
-		"name": "[OpenAPI 2] Schema - MetaData",
-		"test": "openapi/2.0/definitions/schema-with-metaData.json"
-	},
-	{
-		"name": "[OpenAPI 2] Schema - Polymorphism",
-		"test": "openapi/2.0/definitions/schema-with-polymorphism.json"
-	},
-	{
-		"name": "[OpenAPI 2] Schema - XML",
-		"test": "openapi/2.0/definitions/schema-with-xml.json"
-	},
-	{
-		"name": "[OpenAPI 2] Schema - Example [1]",
-		"test": "openapi/2.0/definitions/spec-example-1.json"
-	},
-	{
-		"name": "[OpenAPI 2] Parameters - Array Param",
-		"test": "openapi/2.0/parameters/array-param.json"
-	},
-	{
-		"name": "[OpenAPI 2] Parameters - Spec Example 1",
-		"test": "openapi/2.0/parameters/spec-example-1.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - All Ops",
-		"test": "openapi/2.0/paths/paths-all-operations.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Default Response",
-		"test": "openapi/2.0/paths/paths-default-response.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Empty",
-		"test": "openapi/2.0/paths/paths-empty.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - External Docs",
-		"test": "openapi/2.0/paths/paths-externalDocs.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Get + Params",
-		"test": "openapi/2.0/paths/paths-get-with-params.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Get + Tags",
-		"test": "openapi/2.0/paths/paths-get-with-tags.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Get",
-		"test": "openapi/2.0/paths/paths-get.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Path + Params",
-		"test": "openapi/2.0/paths/paths-path-with-params.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - $ref",
-		"test": "openapi/2.0/paths/paths-ref.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Response + Examples",
-		"test": "openapi/2.0/paths/paths-response-with-examples.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Response + Headers",
-		"test": "openapi/2.0/paths/paths-response-with-headers.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Response + $ref",
-		"test": "openapi/2.0/paths/paths-response-with-ref.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Response + Schema",
-		"test": "openapi/2.0/paths/paths-response-with-schema.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Responses + Extensions",
-		"test": "openapi/2.0/paths/paths-responses-with-extensions.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Responses",
-		"test": "openapi/2.0/paths/paths-responses.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Security",
-		"test": "openapi/2.0/paths/paths-security.json"
-	},
-	{
-		"name": "[OpenAPI 2] Paths - Extensions",
-		"test": "openapi/2.0/paths/paths-with-extensions.json"
-	},
-	{
-		"name": "[OpenAPI 2] Responses - Spec Examples [All]",
-		"test": "openapi/2.0/responses/response-spec-examples.json"
-	},
-	{
-		"name": "[OpenAPI 2] Responses - Spec Example 1",
-		"test": "openapi/2.0/responses/spec-example-1.json"
-	},
-	{
-		"name": "[OpenAPI 2] Security Definitions",
-		"test": "openapi/2.0/securityDefinitions/securityDefinitions.json"
-	},
-	{
-		"name": "[OpenAPI 3] Complete - Tags",
-		"test": "openapi/3.0/complete/complete-tags.json"
-	},
-	{
-		"name": "[OpenAPI 3] Components - Callbacks",
-		"test": "openapi/3.0/components/components-callbacks.json"
-	},
-	{
-		"name": "[OpenAPI 3] Components - Empty",
-		"test": "openapi/3.0/components/components-empty.json"
-	},
-	{
-		"name": "[OpenAPI 3] Components - Examples",
-		"test": "openapi/3.0/components/components-examples.json"
-	},
-	{
-		"name": "[OpenAPI 3] Components - Headers",
-		"test": "openapi/3.0/components/components-headers.json"
-	},
-	{
-		"name": "[OpenAPI 3] Components - Links",
-		"test": "openapi/3.0/components/components-links.json"
-	},
-	{
-		"name": "[OpenAPI 3] Components - Parameters",
-		"test": "openapi/3.0/components/components-parameters.json"
-	},
-	{
-		"name": "[OpenAPI 3] Components - Ref Loops",
-		"test": "openapi/3.0/components/components-ref-loops.json"
-	},
-	{
-		"name": "[OpenAPI 3] Components - Request Bodies",
-		"test": "openapi/3.0/components/components-requestBodies.json"
-	},
-	{
-		"name": "[OpenAPI 3] Components - Responses",
-		"test": "openapi/3.0/components/components-responses.json"
-	},
-	{
-		"name": "[OpenAPI 3] Components - Schemas Extensions",
-		"test": "openapi/3.0/components/components-schemas-extensions.json"
-	},
-	{
-		"name": "[OpenAPI 3] Components - Schemas",
-		"test": "openapi/3.0/components/components-schemas.json"
-	},
-	{
-		"name": "[OpenAPI 3] Components - Security Schemes",
-		"test": "openapi/3.0/components/components-securitySchemes.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - All Operations",
-		"test": "openapi/3.0/paths/paths-all-operations.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - Empty",
-		"test": "openapi/3.0/paths/paths-empty.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - GET Callbacks",
-		"test": "openapi/3.0/paths/paths-get-callbacks.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - GET Parameters",
-		"test": "openapi/3.0/paths/paths-get-parameters.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - GET Request Body Content",
-		"test": "openapi/3.0/paths/paths-get-requestBody-content.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - GET Request Body Example",
-		"test": "openapi/3.0/paths/paths-get-requestBody-example.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - GET Request Body",
-		"test": "openapi/3.0/paths/paths-get-requestBody.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - GET Response Content",
-		"test": "openapi/3.0/paths/paths-get-response-content.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - GET Response Headers",
-		"test": "openapi/3.0/paths/paths-get-response-headers.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - GET Response Links",
-		"test": "openapi/3.0/paths/paths-get-response-links.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - GET Responses",
-		"test": "openapi/3.0/paths/paths-get-responses.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - GET Security Anon",
-		"test": "openapi/3.0/paths/paths-get-security-anon.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - GET Security",
-		"test": "openapi/3.0/paths/paths-get-security.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - GET Servers",
-		"test": "openapi/3.0/paths/paths-get-servers.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - GET",
-		"test": "openapi/3.0/paths/paths-get.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - Parameters",
-		"test": "openapi/3.0/paths/paths-parameters.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - Ref",
-		"test": "openapi/3.0/paths/paths-ref.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - Servers",
-		"test": "openapi/3.0/paths/paths-servers.json"
-	},
-	{
-		"name": "[OpenAPI 3] Paths - Extensions",
-		"test": "openapi/3.0/paths/paths-with-extensions.json"
-	},
-	{
-		"name": "[OpenAPI 3] Discriminator",
-		"test": "openapi/3.0/schemas/discriminator.json"
-	},
-	{
-		"name": "[OpenAPI 3] Additional Properties",
-		"test": "openapi/3.0/schemas/additionalProperties.json"
-	},
-	{
-		"name": "[OpenAPI 3] Simple External Docs",
-		"test": "openapi/3.0/simple/simple-externalDocs.json"
-	},
-	{
-		"name": "[OpenAPI 3] Simple Info + Extensions",
-		"test": "openapi/3.0/simple/simple-info-extensions.json"
-	},
-	{
-		"name": "[OpenAPI 3] Simple Info",
-		"test": "openapi/3.0/simple/simple-info.json"
-	},
-	{
-		"name": "[OpenAPI 3] Simple Security",
-		"test": "openapi/3.0/simple/simple-security.json"
-	},
-	{
-		"name": "[OpenAPI 3] Simple Servers",
-		"test": "openapi/3.0/simple/simple-servers.json"
-	},
-	{
-		"name": "[OpenAPI 3] Simple Tags",
-		"test": "openapi/3.0/simple/simple-tags.json"
-	},
-	{
-		"name": "[OpenAPI 3] Simplest",
-		"test": "openapi/3.0/simple/simplest.json"
-	},
-	{
-		"name": "[OpenAPI 3] Extra Properties",
-		"test": "openapi/3.0/extra-properties/extra-properties.json",
-		"extraProperties": 3
-	},
-	{
-		"name": "[OpenAPI 3.1] All Of Self Ref",
-		"test": "openapi/3.1/recursive/allof-self-ref.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Simplest",
-		"test": "openapi/3.2/simple/simplest.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Simple Info",
-		"test": "openapi/3.2/simple/simple-info.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Simple Tags",
-		"test": "openapi/3.2/simple/simple-tags.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Simple Servers",
-		"test": "openapi/3.2/simple/simple-servers.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Simple Self",
-		"test": "openapi/3.2/simple/simple-self.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Simple Security",
-		"test": "openapi/3.2/simple/simple-security.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Paths - All Operations",
-		"test": "openapi/3.2/paths/paths-all-operations.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Paths - Query Operation",
-		"test": "openapi/3.2/paths/paths-query-operation.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Paths - Additional Operations",
-		"test": "openapi/3.2/paths/paths-additional-operations.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Components - Media Types",
-		"test": "openapi/3.2/components/components-media-types.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Item Schema",
-		"test": "openapi/3.2/new-features/item-schema.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Discriminator Default Mapping",
-		"test": "openapi/3.2/new-features/discriminator-default-mapping.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] XML Node Type",
-		"test": "openapi/3.2/new-features/xml-node-type.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Security Scheme Enhancements",
-		"test": "openapi/3.2/new-features/security-scheme-enhancements.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Example Enhancements",
-		"test": "openapi/3.2/new-features/example-enhancements.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Response Summary",
-		"test": "openapi/3.2/new-features/response-summary.json"
-	},
-	{
-		"name": "[OpenAPI 3.2] Complete 3.2",
-		"test": "openapi/3.2/new-features/complete-3.2.json"
-	},
-	{
-		"name": "[OpenRPC 1.3] Simplest",
-		"test": "openrpc/1.3/simple/simplest.json"
-	},
-	{
-		"name": "[OpenRPC 1.3] Simple Info",
-		"test": "openrpc/1.3/simple/simple-info.json"
-	},
-	{
-		"name": "[OpenRPC 1.3] Simple Info With Extensions",
-		"test": "openrpc/1.3/simple/simple-info-extensions.json"
-	},
-	{
-		"name": "[OpenRPC 1.3] Complete Petstore",
-		"test": "openrpc/1.3/complete/petstore.json"
-	},
-	{
-		"name": "[OpenRPC 1.4] Simplest",
-		"test": "openrpc/1.4/simple/simplest.json"
-	},
-	{
-		"name": "[OpenRPC 1.4] Simple Info",
-		"test": "openrpc/1.4/simple/simple-info.json"
-	},
-	{
-		"name": "[OpenRPC 1.4] Simple Info With Extensions",
-		"test": "openrpc/1.4/simple/simple-info-extensions.json"
-	},
-	{
-		"name": "[OpenRPC 1.4] Complete Petstore",
-		"test": "openrpc/1.4/complete/petstore.json"
-	},
-	{
-		"name": "[JSON Schema Draft-4] Meta Schema",
-		"test": "json-schema/draft-4/meta-schema.json",
-		"extraProperties": 0
-	},
-	{
-		"name": "[JSON Schema Draft-4] Test Suite Integer",
-		"test": "json-schema/draft-4/json-schema-test-suite-integer.json"
-	},
-	{
-		"name": "[JSON Schema Draft-4] SchemaStore Babelrc",
-		"test": "json-schema/draft-4/schemastore-babelrc.json"
-	},
-	{
-		"name": "[JSON Schema Draft-4] SchemaStore Bower",
-		"test": "json-schema/draft-4/schemastore-bower.json"
-	},
-	{
-		"name": "[JSON Schema Draft-4] SchemaStore CoffeeLint",
-		"test": "json-schema/draft-4/schemastore-coffeelint.json"
-	},
-	{
-		"name": "[JSON Schema Draft-4] SchemaStore CSScomb",
-		"test": "json-schema/draft-4/schemastore-csscomb.json"
-	},
-	{
-		"name": "[JSON Schema Draft-4] SchemaStore HTMLHint",
-		"test": "json-schema/draft-4/schemastore-htmlhint.json"
-	},
-	{
-		"name": "[JSON Schema Draft-4] SchemaStore Kustomization",
-		"test": "json-schema/draft-4/schemastore-kustomization.json"
-	},
-	{
-		"name": "[JSON Schema Draft-4] SchemaStore SARIF 1.0",
-		"test": "json-schema/draft-4/schemastore-sarif-1.0.json"
-	},
-	{
-		"name": "[JSON Schema Draft-4] SchemaStore TSD",
-		"test": "json-schema/draft-4/schemastore-tsd.json"
-	},
-	{
-		"name": "[JSON Schema Draft-4] SchemaStore Web Manifest Combined",
-		"test": "json-schema/draft-4/schemastore-web-manifest-combined.json"
-	},
-	{
-		"name": "[JSON Schema Draft-4] SchemaStore Web Manifest",
-		"test": "json-schema/draft-4/schemastore-web-manifest.json",
-		"extraProperties": 8
-	},
-	{
-		"name": "[JSON Schema Draft-4] VSCode Launch",
-		"test": "json-schema/draft-4/vscode-launch.json",
-		"extraProperties": 1
-	},
-	{
-		"name": "[JSON Schema Draft-4] Boolean Schemas",
-		"test": "json-schema/draft-4/boolean-schemas.json"
-	},
-	{
-		"name": "[JSON Schema Draft-6] Meta Schema",
-		"test": "json-schema/draft-6/meta-schema.json"
-	},
-	{
-		"name": "[JSON Schema Draft-6] Hyper Schema",
-		"test": "json-schema/draft-6/hyper-schema.json",
-		"extraProperties": 1
-	},
-	{
-		"name": "[JSON Schema Draft-6] Hyper Schema Links",
-		"test": "json-schema/draft-6/hyper-schema-links.json"
-	},
-	{
-		"name": "[JSON Schema Draft-6] Test Suite Integer",
-		"test": "json-schema/draft-6/json-schema-test-suite-integer.json"
-	},
-	{
-		"name": "[JSON Schema Draft-6] Boolean Schemas",
-		"test": "json-schema/draft-6/boolean-schemas.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] GeoJSON",
-		"test": "json-schema/draft-7/geojson.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] GeoJSON Feature",
-		"test": "json-schema/draft-7/geojson-feature.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] GeoJSON Feature Collection",
-		"test": "json-schema/draft-7/geojson-feature-collection.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] GeoJSON Point",
-		"test": "json-schema/draft-7/geojson-point.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] GeoJSON Polygon",
-		"test": "json-schema/draft-7/geojson-polygon.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] SchemaStore Chrome Manifest",
-		"test": "json-schema/draft-7/schemastore-chrome-manifest.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] SchemaStore Container Structure Test",
-		"test": "json-schema/draft-7/schemastore-container-structure-test.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] SchemaStore Dependabot 2.0",
-		"test": "json-schema/draft-7/schemastore-dependabot-2.0.json",
-		"extraProperties": 2
-	},
-	{
-		"name": "[JSON Schema Draft-7] SchemaStore ESLintrc",
-		"test": "json-schema/draft-7/schemastore-eslintrc.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] SchemaStore Jekyll",
-		"test": "json-schema/draft-7/schemastore-jekyll.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] SchemaStore JSDoc",
-		"test": "json-schema/draft-7/schemastore-jsdoc.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] SchemaStore Lerna",
-		"test": "json-schema/draft-7/schemastore-lerna.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] SchemaStore Nodemon",
-		"test": "json-schema/draft-7/schemastore-nodemon.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] SchemaStore Pubspec",
-		"test": "json-schema/draft-7/schemastore-pubspec.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] Meta Schema",
-		"test": "json-schema/draft-7/meta-schema.json"
-	},
-	{
-		"name": "[JSON Schema Draft-7] Boolean Schemas",
-		"test": "json-schema/draft-7/boolean-schemas.json"
-	},
-	{
-		"name": "[JSON Schema 2019-09] Meta Schema",
-		"test": "json-schema/2019-09/meta-schema.json",
-		"extraProperties": 1
-	},
-	{
-		"name": "[JSON Schema 2019-09] Meta Schema Applicator",
-		"test": "json-schema/2019-09/meta-schema-applicator.json"
-	},
-	{
-		"name": "[JSON Schema 2019-09] Meta Schema Content",
-		"test": "json-schema/2019-09/meta-schema-content.json"
-	},
-	{
-		"name": "[JSON Schema 2019-09] Meta Schema Core",
-		"test": "json-schema/2019-09/meta-schema-core.json"
-	},
-	{
-		"name": "[JSON Schema 2019-09] Meta Schema Format",
-		"test": "json-schema/2019-09/meta-schema-format.json"
-	},
-	{
-		"name": "[JSON Schema 2019-09] Test Suite Dependent Required",
-		"test": "json-schema/2019-09/json-schema-test-suite-dependent-required.json"
-	},
-	{
-		"name": "[JSON Schema 2019-09] Test Suite Ignore Ref Sibling",
-		"test": "json-schema/2019-09/json-schema-test-suite-ignore-ref-sibling.json"
-	},
-	{
-		"name": "[JSON Schema 2019-09] Test Suite Integer",
-		"test": "json-schema/2019-09/json-schema-test-suite-integer.json"
-	},
-	{
-		"name": "[JSON Schema 2019-09] Meta Schema Meta Data",
-		"test": "json-schema/2019-09/meta-schema-meta-data.json"
-	},
-	{
-		"name": "[JSON Schema 2019-09] Meta Schema Validation",
-		"test": "json-schema/2019-09/meta-schema-validation.json"
-	},
-	{
-		"name": "[JSON Schema 2019-09] Boolean Schemas",
-		"test": "json-schema/2019-09/boolean-schemas.json"
-	},
-	{
-		"name": "[JSON Schema 2020-12] Meta Schema",
-		"test": "json-schema/2020-12/meta-schema.json",
-		"extraProperties": 1
-	},
-	{
-		"name": "[JSON Schema 2020-12] Meta Schema Applicator",
-		"test": "json-schema/2020-12/meta-schema-applicator.json"
-	},
-	{
-		"name": "[JSON Schema 2020-12] Meta Schema Content",
-		"test": "json-schema/2020-12/meta-schema-content.json"
-	},
-	{
-		"name": "[JSON Schema 2020-12] Meta Schema Core",
-		"test": "json-schema/2020-12/meta-schema-core.json"
-	},
-	{
-		"name": "[JSON Schema 2020-12] Meta Schema Format Annotation",
-		"test": "json-schema/2020-12/meta-schema-format-annotation.json"
-	},
-	{
-		"name": "[JSON Schema 2020-12] Meta Schema Format Assertion",
-		"test": "json-schema/2020-12/meta-schema-format-assertion.json"
-	},
-	{
-		"name": "[JSON Schema 2020-12] Meta Schema Unevaluated",
-		"test": "json-schema/2020-12/meta-schema-unevaluated.json"
-	},
-	{
-		"name": "[JSON Schema 2020-12] Test Suite Format Assertion True",
-		"test": "json-schema/2020-12/json-schema-test-suite-format-assertion-true.json",
-		"extraProperties": 1
-	},
-	{
-		"name": "[JSON Schema 2020-12] Test Suite Integer",
-		"test": "json-schema/2020-12/json-schema-test-suite-integer.json"
-	},
-	{
-		"name": "[JSON Schema 2020-12] Test Suite Nested Prefix Items",
-		"test": "json-schema/2020-12/json-schema-test-suite-nested-prefix-items.json"
-	},
-	{
-		"name": "[JSON Schema 2020-12] Test Suite Ref and Defs",
-		"test": "json-schema/2020-12/json-schema-test-suite-ref-and-defs.json",
-		"extraProperties": 0
-	},
-	{
-		"name": "[JSON Schema 2020-12] SchemaStore YAMLLint",
-		"test": "json-schema/2020-12/schemastore-yamllint.json",
-		"extraProperties": 0
-	},
-	{
-		"name": "[JSON Schema 2020-12] Meta Schema Meta Data",
-		"test": "json-schema/2020-12/meta-schema-meta-data.json"
-	},
-	{
-		"name": "[JSON Schema 2020-12] Meta Schema Validation",
-		"test": "json-schema/2020-12/meta-schema-validation.json"
-	},
-	{
-		"name": "[JSON Schema 2020-12] Boolean Schemas",
-		"test": "json-schema/2020-12/boolean-schemas.json"
-	}
+  {
+    "name": "[AsyncAPI 2] Simplest",
+    "test": "asyncapi/2.0/simple/simplest.json"
+  },
+  {
+    "name": "[AsyncAPI 2] Simple Info",
+    "test": "asyncapi/2.0/simple/simple-info.json"
+  },
+  {
+    "name": "[AsyncAPI 2] Simple Info With Extra Properties",
+    "test": "asyncapi/2.0/simple/simple-info-extraProperties.json",
+    "extraProperties": 4
+  },
+  {
+    "name": "[AsyncAPI 2] Simple Info With Extensions",
+    "test": "asyncapi/2.0/simple/simple-info-extensions.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Simplest",
+    "test": "asyncapi/3.0/simple/simplest.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Simple Info",
+    "test": "asyncapi/3.0/simple/simple-info.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Simple Info With Extra Properties",
+    "test": "asyncapi/3.0/simple/simple-info-extraProperties.json",
+    "extraProperties": 4
+  },
+  {
+    "name": "[AsyncAPI 3] Simple Info With Extensions",
+    "test": "asyncapi/3.0/simple/simple-info-extensions.json"
+  },
+  {
+    "name": "[AsyncAPI 3.1] Simplest",
+    "test": "asyncapi/3.1/simple/simplest.json"
+  },
+  {
+    "name": "[AsyncAPI 2] Complete anyof",
+    "test": "asyncapi/2.0/complete/anyof.json"
+  },
+  {
+    "name": "[AsyncAPI 2] Complete application-headers",
+    "test": "asyncapi/2.0/complete/application-headers.json"
+  },
+  {
+    "name": "[AsyncAPI 2] Complete Info",
+    "test": "asyncapi/2.0/complete/complete-info.json"
+  },
+  {
+    "name": "[AsyncAPI 2] Complete correlation-id",
+    "test": "asyncapi/2.0/complete/correlation-id.json"
+  },
+  {
+    "name": "[AsyncAPI 2] Complete gitter-streaming",
+    "test": "asyncapi/2.0/complete/gitter-streaming.json"
+  },
+  {
+    "name": "[AsyncAPI 2] Complete not",
+    "test": "asyncapi/2.0/complete/not.json"
+  },
+  {
+    "name": "[AsyncAPI 2] Complete oneof",
+    "test": "asyncapi/2.0/complete/oneof.json"
+  },
+  {
+    "name": "[AsyncAPI 2] Complete rpc-client",
+    "test": "asyncapi/2.0/complete/rpc-client.json"
+  },
+  {
+    "name": "[AsyncAPI 2] Complete rpc-server",
+    "test": "asyncapi/2.0/complete/rpc-server.json"
+  },
+  {
+    "name": "[AsyncAPI 2] Complete slack-rtm",
+    "test": "asyncapi/2.0/complete/slack-rtm.json"
+  },
+  {
+    "name": "[AsyncAPI 2] Complete streetlights",
+    "test": "asyncapi/2.0/complete/streetlights.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Adeo Kafka Request",
+    "test": "asyncapi/3.0/complete/adeo-kafka-request-reply-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] AnyOf",
+    "test": "asyncapi/3.0/complete/anyof-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] App Headers",
+    "test": "asyncapi/3.0/complete/application-headers-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Correlation ID",
+    "test": "asyncapi/3.0/complete/correlation-id-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Gitter Streaming",
+    "test": "asyncapi/3.0/complete/gitter-streaming-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Mercure",
+    "test": "asyncapi/3.0/complete/mercure-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Not",
+    "test": "asyncapi/3.0/complete/not-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] OneOf",
+    "test": "asyncapi/3.0/complete/oneof-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Operation Security",
+    "test": "asyncapi/3.0/complete/operation-security-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] RPC Client",
+    "test": "asyncapi/3.0/complete/rpc-client-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] RPC Server",
+    "test": "asyncapi/3.0/complete/rpc-server-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Simple",
+    "test": "asyncapi/3.0/complete/simple-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Slack RTM",
+    "test": "asyncapi/3.0/complete/slack-rtm-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Streetlights Kafka",
+    "test": "asyncapi/3.0/complete/streetlights-kafka-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Streetlights MQTT",
+    "test": "asyncapi/3.0/complete/streetlights-mqtt-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Streetlights OpSec",
+    "test": "asyncapi/3.0/complete/streetlights-operation-security-asyncapi.json"
+  },
+  {
+    "name": "[AsyncAPI 3] Websocket Gemini",
+    "test": "asyncapi/3.0/complete/websocket-gemini-asyncapi.json"
+  },
+  {
+    "name": "[OpenAPI 2] Simple - External Docs",
+    "test": "openapi/2.0/simple/simple-externalDocs.json"
+  },
+  {
+    "name": "[OpenAPI 2] Simple - Info + Extensions",
+    "test": "openapi/2.0/simple/simple-info-extensions.json"
+  },
+  {
+    "name": "[OpenAPI 2] Simple - Info",
+    "test": "openapi/2.0/simple/simple-info.json"
+  },
+  {
+    "name": "[OpenAPI 2] Simple - - Security",
+    "test": "openapi/2.0/simple/simple-security.json"
+  },
+  {
+    "name": "[OpenAPI 2] Simple - Tags",
+    "test": "openapi/2.0/simple/simple-tags.json"
+  },
+  {
+    "name": "[OpenAPI 2] Simplest",
+    "test": "openapi/2.0/simple/simplest.json"
+  },
+  {
+    "name": "[OpenAPI 2] Extra Properties",
+    "test": "openapi/2.0/extra-properties/extra-properties.json",
+    "extraProperties": 3
+  },
+  {
+    "name": "[OpenAPI 2] Full - Meerkat",
+    "test": "openapi/2.0/complete/api.meerkat.com.br.json"
+  },
+  {
+    "name": "[OpenAPI 2] Full - Apistrat",
+    "test": "openapi/2.0/complete/austin2015.apistrat.com.json"
+  },
+  {
+    "name": "[OpenAPI 2] Complete - Security Defs",
+    "test": "openapi/2.0/complete/complete-securityDefinitions.json"
+  },
+  {
+    "name": "[OpenAPI 2] Complete - Tags",
+    "test": "openapi/2.0/complete/complete-tags.json"
+  },
+  {
+    "name": "[OpenAPI 2] Full - Trade Gov",
+    "test": "openapi/2.0/complete/developer.trade.gov.json"
+  },
+  {
+    "name": "[OpenAPI 2] Full - Pet Store",
+    "test": "openapi/2.0/complete/pet-store.json"
+  },
+  {
+    "name": "[OpenAPI 2] Full - Hairmare.ch",
+    "test": "openapi/2.0/complete/subnet.api.hairmare.ch.json"
+  },
+  {
+    "name": "[OpenAPI 2] Full - Weatherbit",
+    "test": "openapi/2.0/complete/www.weatherbit.io.json"
+  },
+  {
+    "name": "[OpenAPI 2] JSON Schema - BASIC",
+    "test": "openapi/2.0/definitions/json-schema-basic.json"
+  },
+  {
+    "name": "[OpenAPI 2] JSON Schema - fstab",
+    "test": "openapi/2.0/definitions/json-schema-fstab.json"
+  },
+  {
+    "name": "[OpenAPI 2] JSON Schema - Products",
+    "test": "openapi/2.0/definitions/json-schema-products.json"
+  },
+  {
+    "name": "[OpenAPI 2] JSON Schema - Primitive",
+    "test": "openapi/2.0/definitions/primitive.json"
+  },
+  {
+    "name": "[OpenAPI 2] Schema - Additional Props",
+    "test": "openapi/2.0/definitions/schema-with-additionalProperties.json"
+  },
+  {
+    "name": "[OpenAPI 2] Schema - AllOf",
+    "test": "openapi/2.0/definitions/schema-with-allOf.json"
+  },
+  {
+    "name": "[OpenAPI 2] Schema - Composition",
+    "test": "openapi/2.0/definitions/schema-with-composition.json"
+  },
+  {
+    "name": "[OpenAPI 2] Schema - Example",
+    "test": "openapi/2.0/definitions/schema-with-example.json"
+  },
+  {
+    "name": "[OpenAPI 2] Schema - Extensions",
+    "test": "openapi/2.0/definitions/schema-with-extension.json"
+  },
+  {
+    "name": "[OpenAPI 2] Schema - External Docs",
+    "test": "openapi/2.0/definitions/schema-with-externalDocs.json"
+  },
+  {
+    "name": "[OpenAPI 2] Schema - MetaData",
+    "test": "openapi/2.0/definitions/schema-with-metaData.json"
+  },
+  {
+    "name": "[OpenAPI 2] Schema - Polymorphism",
+    "test": "openapi/2.0/definitions/schema-with-polymorphism.json"
+  },
+  {
+    "name": "[OpenAPI 2] Schema - XML",
+    "test": "openapi/2.0/definitions/schema-with-xml.json"
+  },
+  {
+    "name": "[OpenAPI 2] Schema - Example [1]",
+    "test": "openapi/2.0/definitions/spec-example-1.json"
+  },
+  {
+    "name": "[OpenAPI 2] Parameters - Array Param",
+    "test": "openapi/2.0/parameters/array-param.json"
+  },
+  {
+    "name": "[OpenAPI 2] Parameters - Spec Example 1",
+    "test": "openapi/2.0/parameters/spec-example-1.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - All Ops",
+    "test": "openapi/2.0/paths/paths-all-operations.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Default Response",
+    "test": "openapi/2.0/paths/paths-default-response.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Empty",
+    "test": "openapi/2.0/paths/paths-empty.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - External Docs",
+    "test": "openapi/2.0/paths/paths-externalDocs.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Get + Params",
+    "test": "openapi/2.0/paths/paths-get-with-params.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Get + Tags",
+    "test": "openapi/2.0/paths/paths-get-with-tags.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Get",
+    "test": "openapi/2.0/paths/paths-get.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Path + Params",
+    "test": "openapi/2.0/paths/paths-path-with-params.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - $ref",
+    "test": "openapi/2.0/paths/paths-ref.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Response + Examples",
+    "test": "openapi/2.0/paths/paths-response-with-examples.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Response + Headers",
+    "test": "openapi/2.0/paths/paths-response-with-headers.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Response + $ref",
+    "test": "openapi/2.0/paths/paths-response-with-ref.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Response + Schema",
+    "test": "openapi/2.0/paths/paths-response-with-schema.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Responses + Extensions",
+    "test": "openapi/2.0/paths/paths-responses-with-extensions.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Responses",
+    "test": "openapi/2.0/paths/paths-responses.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Security",
+    "test": "openapi/2.0/paths/paths-security.json"
+  },
+  {
+    "name": "[OpenAPI 2] Paths - Extensions",
+    "test": "openapi/2.0/paths/paths-with-extensions.json"
+  },
+  {
+    "name": "[OpenAPI 2] Responses - Spec Examples [All]",
+    "test": "openapi/2.0/responses/response-spec-examples.json"
+  },
+  {
+    "name": "[OpenAPI 2] Responses - Spec Example 1",
+    "test": "openapi/2.0/responses/spec-example-1.json"
+  },
+  {
+    "name": "[OpenAPI 2] Security Definitions",
+    "test": "openapi/2.0/securityDefinitions/securityDefinitions.json"
+  },
+  {
+    "name": "[OpenAPI 3] Complete - Tags",
+    "test": "openapi/3.0/complete/complete-tags.json"
+  },
+  {
+    "name": "[OpenAPI 3] Components - Callbacks",
+    "test": "openapi/3.0/components/components-callbacks.json"
+  },
+  {
+    "name": "[OpenAPI 3] Components - Empty",
+    "test": "openapi/3.0/components/components-empty.json"
+  },
+  {
+    "name": "[OpenAPI 3] Components - Examples",
+    "test": "openapi/3.0/components/components-examples.json"
+  },
+  {
+    "name": "[OpenAPI 3] Components - Headers",
+    "test": "openapi/3.0/components/components-headers.json"
+  },
+  {
+    "name": "[OpenAPI 3] Components - Links",
+    "test": "openapi/3.0/components/components-links.json"
+  },
+  {
+    "name": "[OpenAPI 3] Components - Parameters",
+    "test": "openapi/3.0/components/components-parameters.json"
+  },
+  {
+    "name": "[OpenAPI 3] Components - Ref Loops",
+    "test": "openapi/3.0/components/components-ref-loops.json"
+  },
+  {
+    "name": "[OpenAPI 3] Components - Request Bodies",
+    "test": "openapi/3.0/components/components-requestBodies.json"
+  },
+  {
+    "name": "[OpenAPI 3] Components - Responses",
+    "test": "openapi/3.0/components/components-responses.json"
+  },
+  {
+    "name": "[OpenAPI 3] Components - Schemas Extensions",
+    "test": "openapi/3.0/components/components-schemas-extensions.json"
+  },
+  {
+    "name": "[OpenAPI 3] Components - Schemas",
+    "test": "openapi/3.0/components/components-schemas.json"
+  },
+  {
+    "name": "[OpenAPI 3] Components - Security Schemes",
+    "test": "openapi/3.0/components/components-securitySchemes.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - All Operations",
+    "test": "openapi/3.0/paths/paths-all-operations.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - Empty",
+    "test": "openapi/3.0/paths/paths-empty.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - GET Callbacks",
+    "test": "openapi/3.0/paths/paths-get-callbacks.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - GET Parameters",
+    "test": "openapi/3.0/paths/paths-get-parameters.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - GET Request Body Content",
+    "test": "openapi/3.0/paths/paths-get-requestBody-content.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - GET Request Body Example",
+    "test": "openapi/3.0/paths/paths-get-requestBody-example.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - GET Request Body",
+    "test": "openapi/3.0/paths/paths-get-requestBody.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - GET Response Content",
+    "test": "openapi/3.0/paths/paths-get-response-content.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - GET Response Headers",
+    "test": "openapi/3.0/paths/paths-get-response-headers.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - GET Response Links",
+    "test": "openapi/3.0/paths/paths-get-response-links.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - GET Responses",
+    "test": "openapi/3.0/paths/paths-get-responses.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - GET Security Anon",
+    "test": "openapi/3.0/paths/paths-get-security-anon.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - GET Security",
+    "test": "openapi/3.0/paths/paths-get-security.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - GET Servers",
+    "test": "openapi/3.0/paths/paths-get-servers.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - GET",
+    "test": "openapi/3.0/paths/paths-get.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - Parameters",
+    "test": "openapi/3.0/paths/paths-parameters.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - Ref",
+    "test": "openapi/3.0/paths/paths-ref.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - Servers",
+    "test": "openapi/3.0/paths/paths-servers.json"
+  },
+  {
+    "name": "[OpenAPI 3] Paths - Extensions",
+    "test": "openapi/3.0/paths/paths-with-extensions.json"
+  },
+  {
+    "name": "[OpenAPI 3] Discriminator",
+    "test": "openapi/3.0/schemas/discriminator.json"
+  },
+  {
+    "name": "[OpenAPI 3] Additional Properties",
+    "test": "openapi/3.0/schemas/additionalProperties.json"
+  },
+  {
+    "name": "[OpenAPI 3] Simple External Docs",
+    "test": "openapi/3.0/simple/simple-externalDocs.json"
+  },
+  {
+    "name": "[OpenAPI 3] Simple Info + Extensions",
+    "test": "openapi/3.0/simple/simple-info-extensions.json"
+  },
+  {
+    "name": "[OpenAPI 3] Simple Info",
+    "test": "openapi/3.0/simple/simple-info.json"
+  },
+  {
+    "name": "[OpenAPI 3] Simple Security",
+    "test": "openapi/3.0/simple/simple-security.json"
+  },
+  {
+    "name": "[OpenAPI 3] Simple Servers",
+    "test": "openapi/3.0/simple/simple-servers.json"
+  },
+  {
+    "name": "[OpenAPI 3] Simple Tags",
+    "test": "openapi/3.0/simple/simple-tags.json"
+  },
+  {
+    "name": "[OpenAPI 3] Simplest",
+    "test": "openapi/3.0/simple/simplest.json"
+  },
+  {
+    "name": "[OpenAPI 3] Extra Properties",
+    "test": "openapi/3.0/extra-properties/extra-properties.json",
+    "extraProperties": 3
+  },
+  {
+    "name": "[OpenAPI 3.1] All Of Self Ref",
+    "test": "openapi/3.1/recursive/allof-self-ref.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Simplest",
+    "test": "openapi/3.2/simple/simplest.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Simple Info",
+    "test": "openapi/3.2/simple/simple-info.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Simple Tags",
+    "test": "openapi/3.2/simple/simple-tags.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Simple Servers",
+    "test": "openapi/3.2/simple/simple-servers.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Simple Self",
+    "test": "openapi/3.2/simple/simple-self.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Simple Security",
+    "test": "openapi/3.2/simple/simple-security.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Paths - All Operations",
+    "test": "openapi/3.2/paths/paths-all-operations.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Paths - Query Operation",
+    "test": "openapi/3.2/paths/paths-query-operation.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Paths - Additional Operations",
+    "test": "openapi/3.2/paths/paths-additional-operations.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Components - Media Types",
+    "test": "openapi/3.2/components/components-media-types.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Item Schema",
+    "test": "openapi/3.2/new-features/item-schema.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Discriminator Default Mapping",
+    "test": "openapi/3.2/new-features/discriminator-default-mapping.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] XML Node Type",
+    "test": "openapi/3.2/new-features/xml-node-type.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Security Scheme Enhancements",
+    "test": "openapi/3.2/new-features/security-scheme-enhancements.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Example Enhancements",
+    "test": "openapi/3.2/new-features/example-enhancements.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Response Summary",
+    "test": "openapi/3.2/new-features/response-summary.json"
+  },
+  {
+    "name": "[OpenAPI 3.2] Complete 3.2",
+    "test": "openapi/3.2/new-features/complete-3.2.json"
+  },
+  {
+    "name": "[OpenRPC 1.3] Simplest",
+    "test": "openrpc/1.3/simple/simplest.json"
+  },
+  {
+    "name": "[OpenRPC 1.3] Simple Info",
+    "test": "openrpc/1.3/simple/simple-info.json"
+  },
+  {
+    "name": "[OpenRPC 1.3] Simple Info With Extensions",
+    "test": "openrpc/1.3/simple/simple-info-extensions.json"
+  },
+  {
+    "name": "[OpenRPC 1.3] Complete Petstore",
+    "test": "openrpc/1.3/complete/petstore.json"
+  },
+  {
+    "name": "[OpenRPC 1.4] Simplest",
+    "test": "openrpc/1.4/simple/simplest.json"
+  },
+  {
+    "name": "[OpenRPC 1.4] Simple Info",
+    "test": "openrpc/1.4/simple/simple-info.json"
+  },
+  {
+    "name": "[OpenRPC 1.4] Simple Info With Extensions",
+    "test": "openrpc/1.4/simple/simple-info-extensions.json"
+  },
+  {
+    "name": "[OpenRPC 1.4] Complete Petstore",
+    "test": "openrpc/1.4/complete/petstore.json"
+  },
+  {
+    "name": "[JSON Schema Draft-4] Meta Schema",
+    "test": "json-schema/draft-4/meta-schema.json",
+    "extraProperties": 0
+  },
+  {
+    "name": "[JSON Schema Draft-4] Test Suite Integer",
+    "test": "json-schema/draft-4/json-schema-test-suite-integer.json"
+  },
+  {
+    "name": "[JSON Schema Draft-4] SchemaStore Babelrc",
+    "test": "json-schema/draft-4/schemastore-babelrc.json"
+  },
+  {
+    "name": "[JSON Schema Draft-4] SchemaStore Bower",
+    "test": "json-schema/draft-4/schemastore-bower.json"
+  },
+  {
+    "name": "[JSON Schema Draft-4] SchemaStore CoffeeLint",
+    "test": "json-schema/draft-4/schemastore-coffeelint.json"
+  },
+  {
+    "name": "[JSON Schema Draft-4] SchemaStore CSScomb",
+    "test": "json-schema/draft-4/schemastore-csscomb.json"
+  },
+  {
+    "name": "[JSON Schema Draft-4] SchemaStore HTMLHint",
+    "test": "json-schema/draft-4/schemastore-htmlhint.json"
+  },
+  {
+    "name": "[JSON Schema Draft-4] SchemaStore Kustomization",
+    "test": "json-schema/draft-4/schemastore-kustomization.json"
+  },
+  {
+    "name": "[JSON Schema Draft-4] SchemaStore SARIF 1.0",
+    "test": "json-schema/draft-4/schemastore-sarif-1.0.json"
+  },
+  {
+    "name": "[JSON Schema Draft-4] SchemaStore TSD",
+    "test": "json-schema/draft-4/schemastore-tsd.json"
+  },
+  {
+    "name": "[JSON Schema Draft-4] SchemaStore Web Manifest Combined",
+    "test": "json-schema/draft-4/schemastore-web-manifest-combined.json"
+  },
+  {
+    "name": "[JSON Schema Draft-4] SchemaStore Web Manifest",
+    "test": "json-schema/draft-4/schemastore-web-manifest.json",
+    "extraProperties": 8
+  },
+  {
+    "name": "[JSON Schema Draft-4] VSCode Launch",
+    "test": "json-schema/draft-4/vscode-launch.json",
+    "extraProperties": 1
+  },
+  {
+    "name": "[JSON Schema Draft-4] Boolean Schemas",
+    "test": "json-schema/draft-4/boolean-schemas.json"
+  },
+  {
+    "name": "[JSON Schema Draft-6] Meta Schema",
+    "test": "json-schema/draft-6/meta-schema.json"
+  },
+  {
+    "name": "[JSON Schema Draft-6] Hyper Schema",
+    "test": "json-schema/draft-6/hyper-schema.json",
+    "extraProperties": 1
+  },
+  {
+    "name": "[JSON Schema Draft-6] Hyper Schema Links",
+    "test": "json-schema/draft-6/hyper-schema-links.json"
+  },
+  {
+    "name": "[JSON Schema Draft-6] Test Suite Integer",
+    "test": "json-schema/draft-6/json-schema-test-suite-integer.json"
+  },
+  {
+    "name": "[JSON Schema Draft-6] Boolean Schemas",
+    "test": "json-schema/draft-6/boolean-schemas.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] GeoJSON",
+    "test": "json-schema/draft-7/geojson.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] GeoJSON Feature",
+    "test": "json-schema/draft-7/geojson-feature.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] GeoJSON Feature Collection",
+    "test": "json-schema/draft-7/geojson-feature-collection.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] GeoJSON Point",
+    "test": "json-schema/draft-7/geojson-point.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] GeoJSON Polygon",
+    "test": "json-schema/draft-7/geojson-polygon.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] SchemaStore Chrome Manifest",
+    "test": "json-schema/draft-7/schemastore-chrome-manifest.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] SchemaStore Container Structure Test",
+    "test": "json-schema/draft-7/schemastore-container-structure-test.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] SchemaStore Dependabot 2.0",
+    "test": "json-schema/draft-7/schemastore-dependabot-2.0.json",
+    "extraProperties": 2
+  },
+  {
+    "name": "[JSON Schema Draft-7] SchemaStore ESLintrc",
+    "test": "json-schema/draft-7/schemastore-eslintrc.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] SchemaStore Jekyll",
+    "test": "json-schema/draft-7/schemastore-jekyll.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] SchemaStore JSDoc",
+    "test": "json-schema/draft-7/schemastore-jsdoc.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] SchemaStore Lerna",
+    "test": "json-schema/draft-7/schemastore-lerna.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] SchemaStore Nodemon",
+    "test": "json-schema/draft-7/schemastore-nodemon.json",
+    "extraProperties": 1
+  },
+  {
+    "name": "[JSON Schema Draft-7] SchemaStore Pubspec",
+    "test": "json-schema/draft-7/schemastore-pubspec.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] Meta Schema",
+    "test": "json-schema/draft-7/meta-schema.json"
+  },
+  {
+    "name": "[JSON Schema Draft-7] Boolean Schemas",
+    "test": "json-schema/draft-7/boolean-schemas.json"
+  },
+  {
+    "name": "[JSON Schema 2019-09] Meta Schema",
+    "test": "json-schema/2019-09/meta-schema.json",
+    "extraProperties": 1
+  },
+  {
+    "name": "[JSON Schema 2019-09] Meta Schema Applicator",
+    "test": "json-schema/2019-09/meta-schema-applicator.json"
+  },
+  {
+    "name": "[JSON Schema 2019-09] Meta Schema Content",
+    "test": "json-schema/2019-09/meta-schema-content.json"
+  },
+  {
+    "name": "[JSON Schema 2019-09] Meta Schema Core",
+    "test": "json-schema/2019-09/meta-schema-core.json"
+  },
+  {
+    "name": "[JSON Schema 2019-09] Meta Schema Format",
+    "test": "json-schema/2019-09/meta-schema-format.json"
+  },
+  {
+    "name": "[JSON Schema 2019-09] Test Suite Dependent Required",
+    "test": "json-schema/2019-09/json-schema-test-suite-dependent-required.json"
+  },
+  {
+    "name": "[JSON Schema 2019-09] Test Suite Ignore Ref Sibling",
+    "test": "json-schema/2019-09/json-schema-test-suite-ignore-ref-sibling.json"
+  },
+  {
+    "name": "[JSON Schema 2019-09] Test Suite Integer",
+    "test": "json-schema/2019-09/json-schema-test-suite-integer.json"
+  },
+  {
+    "name": "[JSON Schema 2019-09] Meta Schema Meta Data",
+    "test": "json-schema/2019-09/meta-schema-meta-data.json"
+  },
+  {
+    "name": "[JSON Schema 2019-09] Meta Schema Validation",
+    "test": "json-schema/2019-09/meta-schema-validation.json"
+  },
+  {
+    "name": "[JSON Schema 2019-09] Boolean Schemas",
+    "test": "json-schema/2019-09/boolean-schemas.json"
+  },
+  {
+    "name": "[JSON Schema 2020-12] Meta Schema",
+    "test": "json-schema/2020-12/meta-schema.json",
+    "extraProperties": 1
+  },
+  {
+    "name": "[JSON Schema 2020-12] Meta Schema Applicator",
+    "test": "json-schema/2020-12/meta-schema-applicator.json"
+  },
+  {
+    "name": "[JSON Schema 2020-12] Meta Schema Content",
+    "test": "json-schema/2020-12/meta-schema-content.json"
+  },
+  {
+    "name": "[JSON Schema 2020-12] Meta Schema Core",
+    "test": "json-schema/2020-12/meta-schema-core.json"
+  },
+  {
+    "name": "[JSON Schema 2020-12] Meta Schema Format Annotation",
+    "test": "json-schema/2020-12/meta-schema-format-annotation.json"
+  },
+  {
+    "name": "[JSON Schema 2020-12] Meta Schema Format Assertion",
+    "test": "json-schema/2020-12/meta-schema-format-assertion.json"
+  },
+  {
+    "name": "[JSON Schema 2020-12] Meta Schema Unevaluated",
+    "test": "json-schema/2020-12/meta-schema-unevaluated.json"
+  },
+  {
+    "name": "[JSON Schema 2020-12] Test Suite Format Assertion True",
+    "test": "json-schema/2020-12/json-schema-test-suite-format-assertion-true.json",
+    "extraProperties": 1
+  },
+  {
+    "name": "[JSON Schema 2020-12] Test Suite Integer",
+    "test": "json-schema/2020-12/json-schema-test-suite-integer.json"
+  },
+  {
+    "name": "[JSON Schema 2020-12] Test Suite Nested Prefix Items",
+    "test": "json-schema/2020-12/json-schema-test-suite-nested-prefix-items.json"
+  },
+  {
+    "name": "[JSON Schema 2020-12] Test Suite Ref and Defs",
+    "test": "json-schema/2020-12/json-schema-test-suite-ref-and-defs.json",
+    "extraProperties": 0
+  },
+  {
+    "name": "[JSON Schema 2020-12] SchemaStore YAMLLint",
+    "test": "json-schema/2020-12/schemastore-yamllint.json",
+    "extraProperties": 0
+  },
+  {
+    "name": "[JSON Schema 2020-12] Meta Schema Meta Data",
+    "test": "json-schema/2020-12/meta-schema-meta-data.json"
+  },
+  {
+    "name": "[JSON Schema 2020-12] Meta Schema Validation",
+    "test": "json-schema/2020-12/meta-schema-validation.json"
+  },
+  {
+    "name": "[JSON Schema 2020-12] Boolean Schemas",
+    "test": "json-schema/2020-12/boolean-schemas.json"
+  }
 ]

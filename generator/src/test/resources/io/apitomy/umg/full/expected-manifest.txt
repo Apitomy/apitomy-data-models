@@ -829,6 +829,7 @@ io/apitomy/datamodels/models/io/ModelReaderFactory.java
 io/apitomy/datamodels/models/io/ModelWriter.java
 io/apitomy/datamodels/models/io/ModelWriterFactory.java
 io/apitomy/datamodels/models/jsonschema/BooleanFullSchemaFullSchemaListUnion.java
+io/apitomy/datamodels/models/jsonschema/Dependency.java
 io/apitomy/datamodels/models/jsonschema/FullSchemaListUnionValue.java
 io/apitomy/datamodels/models/jsonschema/FullSchemaListUnionValueImpl.java
 io/apitomy/datamodels/models/jsonschema/JFullSchema.java
