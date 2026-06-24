@@ -28,10 +28,13 @@ public abstract class NodeImpl implements Node {
 
 	@Override
 	public RootCapable root() {
+		if (this._parent != null) {
+			return this._parent.root();
+		}
 		if (this instanceof RootCapable && ((RootCapable) this).isRoot()) {
 			return (RootCapable) this;
 		}
-		return this._parent != null ? this._parent.root() : null;
+		return null;
 	}
 
 	@Override

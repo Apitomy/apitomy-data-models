@@ -3,7 +3,7 @@ package io.apitomy.datamodels.jsonschema.compat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
+
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -97,7 +97,6 @@ public class JsonSchemaCompatibilityTest {
         Assertions.assertTrue(JsonSchemaCompatibilityChecker.isBackwardCompatible(original, updated));
     }
 
-    @Disabled("$ref/$id anchor resolution not yet implemented — see #1042")
     @Test
     public void testAnchorRefResolution() {
         var schema = """
