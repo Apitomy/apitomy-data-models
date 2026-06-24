@@ -3,7 +3,6 @@ package io.test.synthetic.visitors;
 import io.test.synthetic.Any;
 import io.test.synthetic.MappedNode;
 import io.test.synthetic.Node;
-import io.test.synthetic.Visitable;
 import io.test.synthetic.union.EntityListUnionValue;
 import io.test.synthetic.union.EntityMapUnionValue;
 import io.test.synthetic.union.Union;
@@ -36,7 +35,7 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
 	 *
 	 * @param node
 	 */
-	protected void doTraverseNode(Visitable node) {
+	protected void doTraverseNode(Node node) {
 		node.accept(this);
 	}
 
@@ -46,7 +45,7 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
 	 * @param propertyName
 	 * @param node
 	 */
-	protected void traverseNode(String propertyName, Visitable node) {
+	protected void traverseNode(String propertyName, Node node) {
 		if (node != null) {
 			traversalContext.pushProperty(propertyName);
 			doTraverseNode(node);
@@ -132,7 +131,7 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
 	protected void traverseUnion(String propertyName, Union union) {
 		if (union != null) {
 			if (union.isEntity()) {
-				this.traverseNode(propertyName, union);
+				this.traverseNode(propertyName, (Node) union);
 			} else if (union.isEntityList()) {
 				EntityListUnionValue<? extends Node> value = (EntityListUnionValue<? extends Node>) union;
 				this.traverseList(propertyName, value.getValue());
@@ -152,8 +151,8 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
 	 */
 	@Override
 	public void traverse(Any value) {
-		if (value instanceof Visitable) {
-			doTraverseNode((Visitable) value);
+		if (value instanceof Node) {
+			doTraverseNode((Node) value);
 		} else if (value instanceof Union) {
 			traverseUnion(null, (Union) value);
 		}

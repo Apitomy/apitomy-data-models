@@ -49,6 +49,9 @@ public abstract class AbstractStage implements Stage {
     }
 
     protected boolean isUnion(PropertyModel property) {
+        if (property.getResolvedType() != null) {
+            return property.getResolvedType().isUnionType();
+        }
         return property.getType().isUnion();
     }
 
@@ -65,10 +68,18 @@ public abstract class AbstractStage implements Stage {
     }
 
     protected boolean isUnionList(PropertyModel property) {
+        if (property.getResolvedType() != null) {
+            return property.getResolvedType().isListType()
+                    && ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType().isUnionType();
+        }
         return property.getType().isList() && property.getType().getNested().iterator().next().isUnion();
     }
 
     protected boolean isUnionMap(PropertyModel property) {
+        if (property.getResolvedType() != null) {
+            return property.getResolvedType().isMapType()
+                    && ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType().isUnionType();
+        }
         return property.getType().isMap() && property.getType().getNested().iterator().next().isUnion();
     }
 
