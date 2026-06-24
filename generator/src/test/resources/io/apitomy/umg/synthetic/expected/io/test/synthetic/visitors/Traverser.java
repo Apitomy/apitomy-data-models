@@ -1,6 +1,6 @@
 package io.test.synthetic.visitors;
 
-import io.test.synthetic.Node;
+import io.test.synthetic.Any;
 
 /**
  * All data model traversers must implement this interface.
@@ -8,10 +8,10 @@ import io.test.synthetic.Node;
 public interface Traverser {
 
 	/**
-	 * Traverse a single node in a data model.
+	 * Traverse a data model starting at the given value (entity or union).
 	 * 
-	 * @param node
+	 * @param value
 	 */
-	public void traverse(Node node);
+	public void traverse(Any value);
 
 }

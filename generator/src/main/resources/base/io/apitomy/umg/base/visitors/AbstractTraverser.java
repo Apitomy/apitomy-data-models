@@ -144,14 +144,19 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
     }
 
     /**
-     * Called to traverse the data model starting at the given node and traversing
-     * down until this node and all child nodes have been visited.
+     * Called to traverse the data model starting at the given value and traversing
+     * down until this value and all child nodes have been visited.
+     * Accepts both {@link Node} (entity) and {@link Union} (union value) roots.
      *
-     * @param node
+     * @param value
      */
     @Override
-    public void traverse(Node node) {
-        node.accept(this);
+    public void traverse(Any value) {
+        if (value instanceof Visitable) {
+            doTraverseNode((Visitable) value);
+        } else if (value instanceof Union) {
+            traverseUnion(null, (Union) value);
+        }
     }
 
 }
