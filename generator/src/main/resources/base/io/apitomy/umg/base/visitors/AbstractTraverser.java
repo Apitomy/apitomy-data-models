@@ -70,7 +70,7 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
             for (Any item : clonedItems) {
                 if (item != null && item.isNode()) {
                     traversalContext.pushListIndex(index);
-                    doTraverseNode((Visitable) item);
+                    doTraverseNode((Node) item);
                     traversalContext.pop();
                 }
                 index++;
@@ -94,7 +94,7 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
                 Any value = items.get(key);
                 if (value != null && value.isNode()) {
                     this.traversalContext.pushMapIndex(key);
-                    this.doTraverseNode((Visitable) value);
+                    this.doTraverseNode((Node) value);
                     this.traversalContext.pop();
                 }
             });
