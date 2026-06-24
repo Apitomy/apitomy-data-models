@@ -134,7 +134,13 @@ public class CreateTraversersStage extends AbstractVisitorStage {
             body.addContext("propertyName", property.getName());
             body.addContext("propertyGetter", getterMethodName(property));
 
-            if (isEntity(property)) {
+            if (isUnion(property)) {
+                body.append("this.traverseUnion(\"${propertyName}\", model.${propertyGetter}());");
+            } else if (isUnionList(property)) {
+                body.append("this.traverseList(\"${propertyName}\", model.${propertyGetter}());");
+            } else if (isUnionMap(property)) {
+                body.append("this.traverseMap(\"${propertyName}\", model.${propertyGetter}());");
+            } else if (isEntity(property)) {
                 if (isStarProperty(_property)) {
                     body.append("this.traverseMappedNode(model);");
                 } else if (isRegexProperty(_property)) {
@@ -145,12 +151,6 @@ public class CreateTraversersStage extends AbstractVisitorStage {
             } else if (isEntityList(property)) {
                 body.append("this.traverseList(\"${propertyName}\", model.${propertyGetter}());");
             } else if (isEntityMap(property)) {
-                body.append("this.traverseMap(\"${propertyName}\", model.${propertyGetter}());");
-            } else if (isUnion(property)) {
-                body.append("this.traverseUnion(\"${propertyName}\", model.${propertyGetter}());");
-            } else if (isUnionList(property)) {
-                body.append("this.traverseList(\"${propertyName}\", model.${propertyGetter}());");
-            } else if (isUnionMap(property)) {
                 body.append("this.traverseMap(\"${propertyName}\", model.${propertyGetter}());");
             } else {
                 warn("Unhandled property in traverser: " + property);

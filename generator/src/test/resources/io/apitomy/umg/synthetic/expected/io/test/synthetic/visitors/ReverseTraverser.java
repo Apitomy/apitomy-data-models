@@ -2,7 +2,6 @@ package io.test.synthetic.visitors;
 
 import io.test.synthetic.Any;
 import io.test.synthetic.Node;
-import io.test.synthetic.Visitable;
 
 public class ReverseTraverser extends AllNodeVisitor implements Traverser {
 
@@ -14,8 +13,8 @@ public class ReverseTraverser extends AllNodeVisitor implements Traverser {
 
 	@Override
 	public void traverse(Any value) {
-		if (value instanceof Visitable) {
-			((Visitable) value).accept(this);
+		if (value instanceof Node) {
+			((Node) value).accept(this);
 		}
 	}
 

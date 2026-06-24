@@ -6,7 +6,8 @@ import java.util.Map;
 import io.apitomy.umg.base.Any;
 import io.apitomy.umg.base.MappedNode;
 import io.apitomy.umg.base.Node;
-import io.apitomy.umg.base.Visitable;
+
+
 import io.apitomy.umg.base.union.EntityListUnionValue;
 import io.apitomy.umg.base.union.EntityMapUnionValue;
 import io.apitomy.umg.base.union.Union;
@@ -37,7 +38,7 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
      *
      * @param node
      */
-    protected void doTraverseNode(Visitable node) {
+    protected void doTraverseNode(Node node) {
         node.accept(this);
     }
 
@@ -47,7 +48,7 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
      * @param propertyName
      * @param node
      */
-    protected void traverseNode(String propertyName, Visitable node) {
+    protected void traverseNode(String propertyName, Node node) {
         if (node != null) {
             traversalContext.pushProperty(propertyName);
             doTraverseNode(node);
@@ -132,7 +133,7 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
     protected void traverseUnion(String propertyName, Union union) {
         if (union != null) {
             if (union.isEntity()) {
-                this.traverseNode(propertyName, union);
+                this.traverseNode(propertyName, (Node) union);
             } else if (union.isEntityList()) {
                 EntityListUnionValue<? extends Node> value = (EntityListUnionValue<? extends Node>) union;
                 this.traverseList(propertyName, value.getValue());
@@ -152,8 +153,8 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
      */
     @Override
     public void traverse(Any value) {
-        if (value instanceof Visitable) {
-            doTraverseNode((Visitable) value);
+        if (value instanceof Node) {
+            doTraverseNode((Node) value);
         } else if (value instanceof Union) {
             traverseUnion(null, (Union) value);
         }
