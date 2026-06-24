@@ -1,15 +1,18 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import io.apitomy.datamodels.models.jsonschema.JFullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
+
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.*;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
 
 public class StringSchemaDiff {
 
     private final DiffContext ctx;
-    private final SchemaAccessor original;
-    private final SchemaAccessor updated;
+    private final JFullSchema original;
+    private final JFullSchema updated;
 
-    public StringSchemaDiff(DiffContext ctx, SchemaAccessor original, SchemaAccessor updated) {
+    public StringSchemaDiff(DiffContext ctx, JFullSchema original, JFullSchema updated) {
         this.ctx = ctx;
         this.original = original;
         this.updated = updated;
@@ -50,17 +53,13 @@ public class StringSchemaDiff {
                 STRING_TYPE_CONTENT_MEDIA_TYPE_CHANGED);
     }
 
-    private static String getContentEncoding(SchemaAccessor schema) {
-        var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) return d.getContentEncoding();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) return s.getContentEncoding();
+    private static String getContentEncoding(JFullSchema schema) {
+        if (schema instanceof JD7FullSchema d) return d.getContentEncoding();
         return null;
     }
 
-    private static String getContentMediaType(SchemaAccessor schema) {
-        var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) return d.getContentMediaType();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) return s.getContentMediaType();
+    private static String getContentMediaType(JFullSchema schema) {
+        if (schema instanceof JD7FullSchema d) return d.getContentMediaType();
         return null;
     }
 }
