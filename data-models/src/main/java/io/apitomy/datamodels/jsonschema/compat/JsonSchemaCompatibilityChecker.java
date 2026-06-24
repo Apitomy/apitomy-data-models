@@ -58,10 +58,7 @@ public final class JsonSchemaCompatibilityChecker {
         flagModernVersions(ctx, originalDoc);
         flagModernVersions(ctx, updatedDoc);
 
-        var originalAccessor = SchemaAccessor.wrap(originalDoc);
-        var updatedAccessor = SchemaAccessor.wrap(updatedDoc);
-
-        SchemaDiffVisitor.diffSchemas(ctx, originalAccessor, updatedAccessor);
+        SchemaDiffVisitor.diffSchemas(ctx, originalDoc, updatedDoc);
         return ctx;
     }
 

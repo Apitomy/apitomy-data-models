@@ -1,16 +1,11 @@
 package io.apitomy.datamodels.jsonschema.ref;
 
-import io.apitomy.datamodels.jsonschema.compat.SchemaAccessor;
 import io.apitomy.datamodels.models.Node;
-import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
+import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
-import io.apitomy.datamodels.models.jsonschema.modern.JMFullSchema;
 import io.apitomy.datamodels.models.jsonschema.modern.JMFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 
@@ -47,30 +42,32 @@ public class AnchorFragmentResolver implements FragmentResolver {
             return node;
         }
 
-        var accessor = SchemaAccessor.wrap(node);
+        if (!(node instanceof JFullSchema schema)) {
+            return null;
+        }
 
-        var result = searchMapProperty(getDefinitions(node), anchorName, visited);
+        var result = searchMapProperty(getDefinitions(schema), anchorName, visited);
         if (result != null) return result;
 
-        result = searchMapProperty(accessor.getProperties(), anchorName, visited);
+        result = searchMapProperty(schema.getProperties(), anchorName, visited);
         if (result != null) return result;
 
-        result = searchMapProperty(accessor.getPatternProperties(), anchorName, visited);
+        result = searchMapProperty(schema.getPatternProperties(), anchorName, visited);
         if (result != null) return result;
 
-        result = searchUnionProperty(accessor.getAdditionalProperties(), anchorName, visited);
+        result = searchUnionProperty(schema.getAdditionalProperties(), anchorName, visited);
         if (result != null) return result;
 
-        result = searchUnionProperty(accessor.getNot(), anchorName, visited);
+        result = searchUnionProperty(schema.getNot(), anchorName, visited);
         if (result != null) return result;
 
-        result = searchListProperty(accessor.getAllOf(), anchorName, visited);
+        result = searchListProperty(schema.getAllOf(), anchorName, visited);
         if (result != null) return result;
 
-        result = searchListProperty(accessor.getAnyOf(), anchorName, visited);
+        result = searchListProperty(schema.getAnyOf(), anchorName, visited);
         if (result != null) return result;
 
-        result = searchListProperty(accessor.getOneOf(), anchorName, visited);
+        result = searchListProperty(schema.getOneOf(), anchorName, visited);
         if (result != null) return result;
 
         return null;
@@ -108,9 +105,8 @@ public class AnchorFragmentResolver implements FragmentResolver {
         return null;
     }
 
-    private static Map<String, JsonSchema> getDefinitions(Node node) {
-        if (node instanceof JDFullSchema d) return d.getDefinitions() != null ? convertDefinitions(d.getDefinitions()) : null;
-        if (node instanceof JDFullSchema s) return s.getDefinitions() != null ? convertDefinitions(s.getDefinitions()) : null;
+    private static Map<String, JsonSchema> getDefinitions(JFullSchema schema) {
+        if (schema instanceof JDFullSchema d) return d.getDefinitions() != null ? convertDefinitions(d.getDefinitions()) : null;
         // TODO: modern versions use $defs
         return null;
     }
@@ -122,7 +118,6 @@ public class AnchorFragmentResolver implements FragmentResolver {
 
     private static String getAnchor(Node node) {
         if (node instanceof JMFullSchema d && d.get$anchor() != null) return d.get$anchor();
-        if (node instanceof JMFullSchema s && s.get$anchor() != null) return s.get$anchor();
 
         var dollarId = getDollarId(node);
         if (dollarId != null && dollarId.startsWith("#") && dollarId.length() > 1) {
@@ -139,17 +134,13 @@ public class AnchorFragmentResolver implements FragmentResolver {
 
     private static String getDollarId(Node node) {
         if (node instanceof JD6FullSchema d) return d.get$id();
-        if (node instanceof JD6FullSchema s) return s.get$id();
         if (node instanceof JD7FullSchema d) return d.get$id();
-        if (node instanceof JD7FullSchema s) return s.get$id();
         if (node instanceof JMFullSchema d) return d.get$id();
-        if (node instanceof JMFullSchema s) return s.get$id();
         return null;
     }
 
     private static String getLegacyId(Node node) {
         if (node instanceof JD4FullSchema d) return d.getId();
-        if (node instanceof JD4FullSchema s) return s.getId();
         return null;
     }
 }

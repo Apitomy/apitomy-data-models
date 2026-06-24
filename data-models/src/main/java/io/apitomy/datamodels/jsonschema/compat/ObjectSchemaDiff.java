@@ -1,6 +1,10 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,10 +16,10 @@ import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
 public class ObjectSchemaDiff {
 
     private final DiffContext ctx;
-    private final SchemaAccessor original;
-    private final SchemaAccessor updated;
+    private final JFullSchema original;
+    private final JFullSchema updated;
 
-    public ObjectSchemaDiff(DiffContext ctx, SchemaAccessor original, SchemaAccessor updated) {
+    public ObjectSchemaDiff(DiffContext ctx, JFullSchema original, JFullSchema updated) {
         this.ctx = ctx;
         this.original = original;
         this.updated = updated;
@@ -229,10 +233,8 @@ public class ObjectSchemaDiff {
                 OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_NONE);
     }
 
-    private static JsonSchema getPropertyNames(SchemaAccessor schema) {
-        var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) return d.getPropertyNames();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) return s.getPropertyNames();
+    private static JsonSchema getPropertyNames(JFullSchema schema) {
+        if (schema instanceof JD7FullSchema d) return d.getPropertyNames();
         return null;
     }
 
@@ -290,10 +292,8 @@ public class ObjectSchemaDiff {
         }
     }
 
-    private static Map<String, com.fasterxml.jackson.databind.JsonNode> getDependencies(SchemaAccessor schema) {
-        var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema d) return d.getDependencies();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema s) return s.getDependencies();
+    private static Map<String, JsonNode> getDependencies(JFullSchema schema) {
+        if (schema instanceof JDFullSchema d) return d.getDependencies();
         return null;
     }
 

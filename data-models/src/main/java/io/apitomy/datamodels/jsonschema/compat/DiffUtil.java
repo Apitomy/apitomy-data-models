@@ -1,7 +1,10 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
 import io.apitomy.datamodels.models.Node;
+import io.apitomy.datamodels.models.Referenceable;
+import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
+import io.apitomy.datamodels.models.union.StringStringListUnion;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -165,13 +168,13 @@ public final class DiffUtil {
      * Compare two sub-schemas for compatibility. Uses a fresh DiffContext to isolate
      * the comparison, but shares the visited set to prevent infinite recursion.
      */
-    public static boolean isSchemaCompatible(DiffContext ctx, Node original, Node updated,
+    public static boolean isSchemaCompatible(DiffContext ctx, JFullSchema original, JFullSchema updated,
                                               boolean backward) {
         var subCtx = ctx.isolated();
         if (backward) {
-            SchemaDiffVisitor.diffSchemas(subCtx, SchemaAccessor.wrap(original), SchemaAccessor.wrap(updated));
+            SchemaDiffVisitor.diffSchemas(subCtx, original, updated);
         } else {
-            SchemaDiffVisitor.diffSchemas(subCtx, SchemaAccessor.wrap(updated), SchemaAccessor.wrap(original));
+            SchemaDiffVisitor.diffSchemas(subCtx, updated, original);
         }
         return subCtx.foundAllDifferencesAreCompatible();
     }
@@ -245,5 +248,28 @@ public final class DiffUtil {
         } catch (Exception ex) {
             return null;
         }
+    }
+
+    public static String getTypeString(JFullSchema schema) {
+        StringStringListUnion type = schema.getType();
+        if (type != null && type.isString()) {
+            return type.asString();
+        }
+        return null;
+    }
+
+    public static List<String> getTypeList(JFullSchema schema) {
+        StringStringListUnion type = schema.getType();
+        if (type == null) return null;
+        if (type.isString()) return List.of(type.asString());
+        if (type.isStringList()) return type.asStringList();
+        return null;
+    }
+
+    public static String get$ref(Node node) {
+        if (node instanceof Referenceable ref) {
+            return ref.get$ref();
+        }
+        return null;
     }
 }

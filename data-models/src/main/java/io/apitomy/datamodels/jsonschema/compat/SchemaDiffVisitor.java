@@ -1,6 +1,12 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;
 
@@ -16,9 +22,9 @@ import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
 public class SchemaDiffVisitor {
 
     private final DiffContext ctx;
-    private final SchemaAccessor original;
+    private final JFullSchema original;
 
-    public SchemaDiffVisitor(DiffContext ctx, SchemaAccessor original) {
+    public SchemaDiffVisitor(DiffContext ctx, JFullSchema original) {
         this.ctx = ctx;
         this.original = original;
     }
@@ -26,7 +32,7 @@ public class SchemaDiffVisitor {
     /**
      * Entry point: compare original and updated schemas.
      */
-    public static void diffSchemas(DiffContext ctx, SchemaAccessor original, SchemaAccessor updated) {
+    public static void diffSchemas(DiffContext ctx, JFullSchema original, JFullSchema updated) {
         var resolvedOriginal = resolveIfRef(ctx, original);
         var resolvedUpdated = resolveIfRef(ctx, updated);
 
@@ -34,8 +40,8 @@ public class SchemaDiffVisitor {
         // Uses identity hash — not collision-free but sufficient for practical recursive schemas.
         // The key is removed after comparison so the same pair can be compared
         // in different sub-schema contexts (e.g., composition checking).
-        var pairKey = System.identityHashCode(resolvedOriginal.node())
-                + ":" + System.identityHashCode(resolvedUpdated.node());
+        var pairKey = System.identityHashCode(resolvedOriginal)
+                + ":" + System.identityHashCode(resolvedUpdated);
         if (ctx.visited.contains(pairKey)) {
             return;
         }
@@ -47,8 +53,8 @@ public class SchemaDiffVisitor {
         }
     }
 
-    private static SchemaAccessor resolveIfRef(DiffContext ctx, SchemaAccessor schema) {
-        var ref = schema.get$ref();
+    private static JFullSchema resolveIfRef(DiffContext ctx, JFullSchema schema) {
+        var ref = DiffUtil.get$ref(schema);
         if (ref == null) return schema;
 
         var traversal = ctx.getRefTraversal();
@@ -57,18 +63,18 @@ public class SchemaDiffVisitor {
             return schema;
         }
 
-        var resolved = traversal.resolveRef(ref, schema.node());
+        var resolved = traversal.resolveRef(ref, schema);
         if (resolved.isPresent()) {
-            return SchemaAccessor.wrap(resolved.get());
+            return (JFullSchema) resolved.get();
         }
 
         ctx.addUnsupported("Unresolvable $ref: " + ref);
         return schema;
     }
 
-    public void visit(SchemaAccessor updated) {
-        var originalType = original.getTypeString();
-        var updatedType = updated.getTypeString();
+    public void visit(JFullSchema updated) {
+        var originalType = DiffUtil.getTypeString(original);
+        var updatedType = DiffUtil.getTypeString(updated);
 
         if (originalType != null && updatedType != null && !originalType.equals(updatedType)) {
             if ("integer".equals(originalType) && "number".equals(updatedType)) {
@@ -97,7 +103,7 @@ public class SchemaDiffVisitor {
                 for (var sub : compositionList) {
                     if (sub.isFullSchema()) {
                         var subCtx = ctx.sub("compositionCheck");
-                        if (isSchemaCompatible(subCtx, original.node(), sub.asFullSchema(), true)) {
+                        if (isSchemaCompatible(subCtx, original, sub.asFullSchema(), true)) {
                             origMatchesAny = true;
                             break;
                         }
@@ -119,8 +125,8 @@ public class SchemaDiffVisitor {
 
         var effectiveType = originalType != null ? originalType : updatedType;
         if (effectiveType == null) {
-            var origTypeList = original.getTypeList();
-            var updTypeList = updated.getTypeList();
+            var origTypeList = DiffUtil.getTypeList(original);
+            var updTypeList = DiffUtil.getTypeList(updated);
             if ((origTypeList != null && origTypeList.size() > 1)
                     || (updTypeList != null && updTypeList.size() > 1)) {
                 ctx.addUnsupported("Multi-valued type field (e.g. type: [\"string\", \"number\"])");
@@ -145,8 +151,8 @@ public class SchemaDiffVisitor {
         diffReference(original, updated);
     }
 
-    private boolean isEmptyOrTrueSchema(SchemaAccessor schema) {
-        if (schema.getTypeString() != null
+    private boolean isEmptyOrTrueSchema(JFullSchema schema) {
+        if (DiffUtil.getTypeString(schema) != null
                 || schema.getAllOf() != null
                 || schema.getAnyOf() != null
                 || schema.getOneOf() != null
@@ -170,19 +176,14 @@ public class SchemaDiffVisitor {
                 || getConst(schema) != null) {
             return false;
         }
-        var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema d
+        if (schema instanceof JDFullSchema d
                 && (d.getItems() != null || d.getAdditionalItems() != null)) {
-            return false;
-        }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema s
-                && (s.getItems() != null || s.getAdditionalItems() != null)) {
             return false;
         }
         return true;
     }
 
-    private void diffAllPropertyGroups(SchemaAccessor original, SchemaAccessor updated) {
+    private void diffAllPropertyGroups(JFullSchema original, JFullSchema updated) {
         new ObjectSchemaDiff(ctx, original, updated).visit();
         new ArraySchemaDiff(ctx, original, updated).visit();
         new StringSchemaDiff(ctx, original, updated).visit();
@@ -193,7 +194,7 @@ public class SchemaDiffVisitor {
         diffReference(original, updated);
     }
 
-    private void diffCompositionKeywords(SchemaAccessor original, SchemaAccessor updated) {
+    private void diffCompositionKeywords(JFullSchema original, JFullSchema updated) {
         var origAllOf = original.getAllOf();
         var origAnyOf = original.getAnyOf();
         var origOneOf = original.getOneOf();
@@ -274,7 +275,7 @@ public class SchemaDiffVisitor {
         }
     }
 
-    private void diffNotSchema(SchemaAccessor original, SchemaAccessor updated) {
+    private void diffNotSchema(JFullSchema original, JFullSchema updated) {
         var origNot = original.getNot();
         var updNot = updated.getNot();
         if (origNot == null && updNot == null) return;
@@ -288,7 +289,7 @@ public class SchemaDiffVisitor {
                 NOT_TYPE_SCHEMA_COMPATIBLE_NONE);
     }
 
-    private void diffConditionalKeywords(SchemaAccessor original, SchemaAccessor updated) {
+    private void diffConditionalKeywords(JFullSchema original, JFullSchema updated) {
         var origIf = getConditional(original, "if");
         var updIf = getConditional(updated, "if");
         var origThen = getConditional(original, "then");
@@ -323,29 +324,25 @@ public class SchemaDiffVisitor {
                 CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_NONE);
     }
 
-    private static JsonSchema getConditional(SchemaAccessor schema, String keyword) {
-        var node = schema.node();
+    private static JsonSchema getConditional(JFullSchema schema, String keyword) {
         return switch (keyword) {
             case "if" -> {
-                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) yield d.getIf();
-                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) yield s.getIf();
+                if (schema instanceof JD7FullSchema d) yield d.getIf();
                 yield null;
             }
             case "then" -> {
-                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) yield d.getThen();
-                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) yield s.getThen();
+                if (schema instanceof JD7FullSchema d) yield d.getThen();
                 yield null;
             }
             case "else" -> {
-                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) yield d.getElse();
-                if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) yield s.getElse();
+                if (schema instanceof JD7FullSchema d) yield d.getElse();
                 yield null;
             }
             default -> null;
         };
     }
 
-    private void diffEnumConst(SchemaAccessor original, SchemaAccessor updated) {
+    private void diffEnumConst(JFullSchema original, JFullSchema updated) {
         var origEnum = original.getEnum();
         var updEnum = updated.getEnum();
         var origConst = getConst(original);
@@ -388,7 +385,7 @@ public class SchemaDiffVisitor {
         diffConst(original, updated);
     }
 
-    private void diffConst(SchemaAccessor original, SchemaAccessor updated) {
+    private void diffConst(JFullSchema original, JFullSchema updated) {
         var origConst = getConst(original);
         var updConst = getConst(updated);
         if (origConst == null && updConst == null) return;
@@ -413,29 +410,25 @@ public class SchemaDiffVisitor {
         }
     }
 
-    private static com.fasterxml.jackson.databind.JsonNode getConst(SchemaAccessor schema) {
-        var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema d) return d.getConst();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema s) return s.getConst();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) return d.getConst();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) return s.getConst();
+    private static JsonNode getConst(JFullSchema schema) {
+        if (schema instanceof JD6FullSchema d) return d.getConst();
+        if (schema instanceof JD7FullSchema d) return d.getConst();
         return null;
     }
 
-    private void diffReference(SchemaAccessor original, SchemaAccessor updated) {
-        var origRef = original.get$ref();
-        var updRef = updated.get$ref();
+    private void diffReference(JFullSchema original, JFullSchema updated) {
+        var origRef = DiffUtil.get$ref(original);
+        var updRef = DiffUtil.get$ref(updated);
 
         if (origRef == null && updRef == null) return;
 
         var traversal = ctx.getRefTraversal();
 
-        // Resolve both $ref values to their target schemas
         var origResolved = origRef != null && traversal != null
-                ? traversal.resolveRef(origRef, original.node()).map(SchemaAccessor::wrap).orElse(null)
+                ? traversal.resolveRef(origRef, original).map(n -> (JFullSchema) n).orElse(null)
                 : null;
         var updResolved = updRef != null && traversal != null
-                ? traversal.resolveRef(updRef, updated.node()).map(SchemaAccessor::wrap).orElse(null)
+                ? traversal.resolveRef(updRef, updated).map(n -> (JFullSchema) n).orElse(null)
                 : null;
 
         if (origRef != null && origResolved == null) {

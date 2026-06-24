@@ -1,7 +1,9 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
 
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.*;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
@@ -9,11 +11,11 @@ import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
 public class NumberSchemaDiff {
 
     private final DiffContext ctx;
-    private final SchemaAccessor original;
-    private final SchemaAccessor updated;
+    private final JFullSchema original;
+    private final JFullSchema updated;
     private final String effectiveType;
 
-    public NumberSchemaDiff(DiffContext ctx, SchemaAccessor original, SchemaAccessor updated,
+    public NumberSchemaDiff(DiffContext ctx, JFullSchema original, JFullSchema updated,
                                    String effectiveType) {
         this.ctx = ctx;
         this.original = original;
@@ -156,8 +158,8 @@ public class NumberSchemaDiff {
 
     private void diffIntegerRequired() {
         if (effectiveType == null) return;
-        var origType = original.getTypeString();
-        var updType = updated.getTypeString();
+        var origType = DiffUtil.getTypeString(original);
+        var updType = DiffUtil.getTypeString(updated);
         var origIsInteger = "integer".equals(origType);
         var updIsInteger = "integer".equals(updType);
         diffBooleanTransition(ctx, origIsInteger, updIsInteger, false,
@@ -166,69 +168,33 @@ public class NumberSchemaDiff {
                 NUMBER_TYPE_INTEGER_REQUIRED_UNCHANGED);
     }
 
-    // --- Draft version helpers ---
-
-    private static boolean isDraft4(SchemaAccessor schema) {
-        return schema.isInstanceOf(JD4FullSchema.class) || schema.isInstanceOf(JD4FullSchema.class);
+    private static boolean isDraft4(JFullSchema schema) {
+        return schema instanceof JD4FullSchema;
     }
 
-    private static Boolean getDraft4ExclusiveMinimum(SchemaAccessor schema) {
-        if (schema.isInstanceOf(JD4FullSchema.class)) {
-            return schema.as(JD4FullSchema.class).isExclusiveMinimum();
-        }
-        if (schema.isInstanceOf(JD4FullSchema.class)) {
-            return schema.as(JD4FullSchema.class).isExclusiveMinimum();
-        }
+    private static Boolean getDraft4ExclusiveMinimum(JFullSchema schema) {
+        if (schema instanceof JD4FullSchema d) return d.isExclusiveMinimum();
         return null;
     }
 
-    private static Boolean getDraft4ExclusiveMaximum(SchemaAccessor schema) {
-        if (schema.isInstanceOf(JD4FullSchema.class)) {
-            return schema.as(JD4FullSchema.class).isExclusiveMaximum();
-        }
-        if (schema.isInstanceOf(JD4FullSchema.class)) {
-            return schema.as(JD4FullSchema.class).isExclusiveMaximum();
-        }
+    private static Boolean getDraft4ExclusiveMaximum(JFullSchema schema) {
+        if (schema instanceof JD4FullSchema d) return d.isExclusiveMaximum();
         return null;
     }
 
-    private static Number getExclusiveMinimumAsNumber(SchemaAccessor schema) {
-        // Draft-6+ have exclusiveMinimum as Number
-        // Check via the draft-group interfaces
-        var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema d) {
-            return d.getExclusiveMinimum();
-        }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema s) {
-            return s.getExclusiveMinimum();
-        }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) {
-            return d.getExclusiveMinimum();
-        }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) {
-            return s.getExclusiveMinimum();
-        }
+    private static Number getExclusiveMinimumAsNumber(JFullSchema schema) {
+        if (schema instanceof JD6FullSchema d) return d.getExclusiveMinimum();
+        if (schema instanceof JD7FullSchema d) return d.getExclusiveMinimum();
         return null;
     }
 
-    private static Number getExclusiveMaximumAsNumber(SchemaAccessor schema) {
-        var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema d) {
-            return d.getExclusiveMaximum();
-        }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema s) {
-            return s.getExclusiveMaximum();
-        }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) {
-            return d.getExclusiveMaximum();
-        }
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) {
-            return s.getExclusiveMaximum();
-        }
+    private static Number getExclusiveMaximumAsNumber(JFullSchema schema) {
+        if (schema instanceof JD6FullSchema d) return d.getExclusiveMaximum();
+        if (schema instanceof JD7FullSchema d) return d.getExclusiveMaximum();
         return null;
     }
 
-    private static Number getEffectiveExclusiveMinimum(SchemaAccessor schema) {
+    private static Number getEffectiveExclusiveMinimum(JFullSchema schema) {
         if (isDraft4(schema)) {
             if (Boolean.TRUE.equals(getDraft4ExclusiveMinimum(schema))) {
                 return schema.getMinimum();
@@ -238,7 +204,7 @@ public class NumberSchemaDiff {
         return getExclusiveMinimumAsNumber(schema);
     }
 
-    private static Number getEffectiveExclusiveMaximum(SchemaAccessor schema) {
+    private static Number getEffectiveExclusiveMaximum(JFullSchema schema) {
         if (isDraft4(schema)) {
             if (Boolean.TRUE.equals(getDraft4ExclusiveMaximum(schema))) {
                 return schema.getMaximum();
