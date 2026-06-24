@@ -33,7 +33,7 @@ allTests.forEach(spec => {
         expect(commandsJs).not.toBeNull();
 
         // Parse/read the document
-        let document: Node = <Node><any>Library.readRoot(beforeJs);
+        let document: Document = Library.readDocument(beforeJs);
         expect(document).not.toBeNull();
 
         // Load all the commands to apply.
@@ -68,7 +68,7 @@ function assertJsonEquals(actual: any, expected: any, actualDoc: Document) {
     // If the object equality assertion passes, then the two JSON objects are strictly equivalent, though may have different
     // ordering. Round tripping the expected JSON with the same pretty printer used for the actual document allows for
     // a reasonable exact string comparison to be made. 
-    let expectedString = Library.writeNodeToString(<Node><any>Library.readRoot(expected));
+    let expectedString = Library.writeDocumentToJSONString(Library.readDocument(expected));
     let actualString = Library.writeDocumentToJSONString(actualDoc);
     expect(actualString).toEqual(expectedString);
 }
