@@ -132,10 +132,6 @@ public class VisitorUtil {
         traverser.traverse(node);
     }
 
-    public static void visitTree(Node node, Visitor visitor, TraverserDirection direction) {
-        visitTree((Any) node, visitor, direction);
-    }
-
     /**
      * Visits nodes along a specific path in the data model tree. Starting from the
      * given node, this method traverses the tree following the path segments defined
