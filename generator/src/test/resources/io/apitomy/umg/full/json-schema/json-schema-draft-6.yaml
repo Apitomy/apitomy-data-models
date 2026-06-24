@@ -17,6 +17,8 @@ traits:
 typeAliases:
   - name: JsonSchema
     type: boolean|FullSchema
+  - name: Dependency
+    type: FullSchema|[string]
 
 root:
   type: JsonSchema
@@ -97,7 +99,7 @@ entities:
       - name: maxProperties
         type: integer
       - name: dependencies
-        type: '{any}'
+        type: '{Dependency}'
       - name: propertyNames
         type: JsonSchema
     propertyOrder:
