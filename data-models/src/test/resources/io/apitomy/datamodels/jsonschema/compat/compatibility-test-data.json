@@ -3007,7 +3007,7 @@
       }
     },
     {
-      "enabled": false,
+      "enabled": true,
       "id": "References: $ref",
       "compatibility": "both",
       "original": {
@@ -3066,7 +3066,7 @@
       "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
     },
     {
-      "enabled": false,
+      "enabled": true,
       "id": "References: $ref compatibility",
       "compatibility": "backward",
       "original": {
@@ -3121,7 +3121,7 @@
       "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
     },
     {
-      "enabled": false,
+      "enabled": true,
       "id": "References: $id",
       "compatibility": "both",
       "original": {
@@ -3181,7 +3181,7 @@
       "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
     },
     {
-      "enabled": false,
+      "enabled": true,
       "id": "References: $id compatibility",
       "compatibility": "backward",
       "original": {
@@ -3238,7 +3238,7 @@
       "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
     },
     {
-      "enabled": false,
+      "enabled": true,
       "id": "References: recursive",
       "compatibility": "both",
       "original": {
