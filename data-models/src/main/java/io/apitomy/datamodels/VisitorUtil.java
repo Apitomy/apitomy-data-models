@@ -19,6 +19,7 @@ package io.apitomy.datamodels;
 import java.util.List;
 import java.util.Map;
 
+import io.apitomy.datamodels.models.Any;
 import io.apitomy.datamodels.models.MappedNode;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.Node;
@@ -56,7 +57,7 @@ import io.apitomy.datamodels.util.NodeUtil;
  */
 public class VisitorUtil {
 
-    public static void visitTree(Node node, Visitor visitor, TraverserDirection direction) {
+    public static void visitTree(Any node, Visitor visitor, TraverserDirection direction) {
         ModelType type = node.root().modelType();
         Traverser traverser = null;
         if (direction == TraverserDirection.up) {
@@ -129,6 +130,10 @@ public class VisitorUtil {
             throw new UnsupportedModelTypeException("Traverser not found for type: " + type);
         }
         traverser.traverse(node);
+    }
+
+    public static void visitTree(Node node, Visitor visitor, TraverserDirection direction) {
+        visitTree((Any) node, visitor, direction);
     }
 
     /**
