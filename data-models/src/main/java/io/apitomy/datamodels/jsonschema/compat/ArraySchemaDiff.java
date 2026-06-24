@@ -1,9 +1,14 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import io.apitomy.datamodels.models.Node;
+import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
 import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaFullSchemaListUnion;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
+
+import java.util.List;
 
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.*;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
@@ -11,10 +16,10 @@ import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
 public class ArraySchemaDiff {
 
     private final DiffContext ctx;
-    private final SchemaAccessor original;
-    private final SchemaAccessor updated;
+    private final JFullSchema original;
+    private final JFullSchema updated;
 
-    public ArraySchemaDiff(DiffContext ctx, SchemaAccessor original, SchemaAccessor updated) {
+    public ArraySchemaDiff(DiffContext ctx, JFullSchema original, JFullSchema updated) {
         this.ctx = ctx;
         this.original = original;
         this.updated = updated;
@@ -90,8 +95,11 @@ public class ArraySchemaDiff {
         }
     }
 
-    private void diffTupleItems(java.util.List<? extends io.apitomy.datamodels.models.Node> origList,
-                                java.util.List<? extends io.apitomy.datamodels.models.Node> updList) {
+    @SuppressWarnings("unchecked")
+    private void diffTupleItems(List<? extends Node> origListRaw,
+                                List<? extends Node> updListRaw) {
+        var origList = (List<JFullSchema>) origListRaw;
+        var updList = (List<JFullSchema>) updListRaw;
         var minSize = Math.min(origList.size(), updList.size());
         for (var i = 0; i < minSize; i++) {
             var subCtx = ctx.sub("items/" + i);
@@ -187,26 +195,19 @@ public class ArraySchemaDiff {
 
     // --- Version-specific accessors ---
 
-    private static BooleanFullSchemaFullSchemaListUnion getItems(SchemaAccessor schema) {
-        var node = schema.node();
-        if (node instanceof JDFullSchema d) return d.getItems();
-        if (node instanceof JDFullSchema s) return s.getItems();
+    private static BooleanFullSchemaFullSchemaListUnion getItems(JFullSchema schema) {
+        if (schema instanceof JDFullSchema d) return d.getItems();
         return null;
     }
 
-    private static JsonSchema getAdditionalItems(SchemaAccessor schema) {
-        var node = schema.node();
-        if (node instanceof JDFullSchema d) return d.getAdditionalItems();
-        if (node instanceof JDFullSchema s) return s.getAdditionalItems();
+    private static JsonSchema getAdditionalItems(JFullSchema schema) {
+        if (schema instanceof JDFullSchema d) return d.getAdditionalItems();
         return null;
     }
 
-    private static JsonSchema getContains(SchemaAccessor schema) {
-        var node = schema.node();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema d) return d.getContains();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema s) return s.getContains();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema d) return d.getContains();
-        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema s) return s.getContains();
+    private static JsonSchema getContains(JFullSchema schema) {
+        if (schema instanceof JD6FullSchema d) return d.getContains();
+        if (schema instanceof JD7FullSchema d) return d.getContains();
         return null;
     }
 }
