@@ -396,23 +396,8 @@ public class CreateWritersStage extends AbstractJavaStage {
                 handleRegexProperty(body);
             } else if (handleViaResolvedType(body)) {
                 // Handled by resolved type dispatch
-            } else if (isEntity(property)) {
-                handleEntityProperty(body);
-            } else if (isPrimitive(property)) {
-                handlePrimitiveTypeProperty(body);
-            } else if (isUnionList(propertyWithOrigin.getProperty())) {
-                handleUnionListProperty(body);
-            } else if (isUnionMap(propertyWithOrigin.getProperty())) {
-                handleUnionMapProperty(body);
-            } else if (property.getType().isList()) {
-                handleListProperty(body);
-            } else if (property.getType().isMap()) {
-                handleMapProperty(body);
-            } else if (property.getType().isUnion()) {
-                handleUnionProperty(body);
             } else {
                 warn("Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getType());
             }
         }
 
@@ -436,6 +421,23 @@ public class CreateWritersStage extends AbstractJavaStage {
             if (resolved instanceof io.apitomy.umg.models.concept.type.MapType mt
                     && mt.getValueType() instanceof io.apitomy.umg.models.concept.type.UnionType) {
                 handleResolvedUnionMapProperty(body, mt);
+                return true;
+            }
+
+            if (resolved.isEntityType()) {
+                handleEntityProperty(body);
+                return true;
+            }
+            if (resolved.isPrimitiveType()) {
+                handlePrimitiveTypeProperty(body);
+                return true;
+            }
+            if (resolved.isListType()) {
+                handleListProperty(body);
+                return true;
+            }
+            if (resolved.isMapType()) {
+                handleMapProperty(body);
                 return true;
             }
 

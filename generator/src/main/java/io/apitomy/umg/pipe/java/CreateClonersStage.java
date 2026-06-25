@@ -150,23 +150,8 @@ public class CreateClonersStage extends AbstractJavaStage {
                 handleRegexProperty(body);
             } else if (handleViaResolvedType(body)) {
                 // Handled by resolved type dispatch
-            } else if (isEntity(property)) {
-                handleEntityProperty(body);
-            } else if (isPrimitive(property)) {
-                handlePrimitiveProperty(body);
-            } else if (isUnionList(property)) {
-                handleUnionListProperty(body);
-            } else if (isUnionMap(property)) {
-                handleUnionMapProperty(body);
-            } else if (property.getType().isList()) {
-                handleListProperty(body);
-            } else if (property.getType().isMap()) {
-                handleMapProperty(body);
-            } else if (property.getType().isUnion()) {
-                handleUnionProperty(body);
             } else {
                 warn("Entity property '" + property.getName() + "' not cloned (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getType());
             }
         }
 
@@ -189,6 +174,23 @@ public class CreateClonersStage extends AbstractJavaStage {
             if (resolved instanceof io.apitomy.umg.models.concept.type.MapType mt
                     && mt.getValueType() instanceof io.apitomy.umg.models.concept.type.UnionType) {
                 handleUnionMapProperty(body);
+                return true;
+            }
+
+            if (resolved.isEntityType()) {
+                handleEntityProperty(body);
+                return true;
+            }
+            if (resolved.isPrimitiveType()) {
+                handlePrimitiveProperty(body);
+                return true;
+            }
+            if (resolved.isListType()) {
+                handleListProperty(body);
+                return true;
+            }
+            if (resolved.isMapType()) {
+                handleMapProperty(body);
                 return true;
             }
 
