@@ -16,7 +16,6 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
-import io.apitomy.umg.models.concept.PropertyType;
 import io.apitomy.umg.models.concept.type.CollectionType;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
@@ -66,36 +65,9 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
         javaEntity.addImport(List.class);
         javaEntity.addImport(ArrayList.class);
 
-        if (property.getResolvedType() != null) {
-            var jt = getJavaTypeFactory().createJavaType(property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
-            jt.addImportsTo(javaEntity);
-            mappedNodeType = jt.toJavaTypeString();
-        } else if (isPrimitiveList(property)) {
-            Class<?> listType = primitiveTypeToClass(property.getType().getNested().iterator().next());
-            javaEntity.addImport(listType);
-            mappedNodeType = "List<" + listType.getSimpleName() + ">";
-        } else if (isPrimitiveMap(property)) {
-            Class<?> mapType = primitiveTypeToClass(property.getType().getNested().iterator().next());
-            javaEntity.addImport(Map.class);
-            javaEntity.addImport(mapType);
-            mappedNodeType = "Map<String, " + mapType.getSimpleName() + ">";
-        } else if (isPrimitive(property)) {
-            Class<?> primType = primitiveTypeToClass(property.getType());
-            javaEntity.addImport(primType);
-            mappedNodeType = primType.getSimpleName();
-        } else if (isEntity(property)) {
-            JavaInterfaceSource entityType = resolveJavaEntityType(propertyWithOrigin.getOrigin().getNamespace().fullName(), property);
-            if (entityType == null) {
-                error("Java interface for entity type not found: " + property.getType());
-                return;
-            } else {
-                javaEntity.addImport(entityType);
-                mappedNodeType = entityType.getName();
-            }
-        } else {
-            error("Unhandled STAR property from entity: " + javaEntity.getCanonicalName());
-            return;
-        }
+        var jt = getJavaTypeFactory().createJavaType(property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
+        jt.addImportsTo(javaEntity);
+        mappedNodeType = jt.toJavaTypeString();
 
         // T getItem(String name)
         {
@@ -238,8 +210,8 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
         body.addContext("propertyName", propertyName);
         body.append("this.${fieldName} = value;");
         Type resolvedType = property.getResolvedType();
-        boolean isEntityType = resolvedType != null ? resolvedType.isEntityType() : isEntity(property);
-        boolean isUnionType = resolvedType != null ? resolvedType.isUnionType() : isUnion(property);
+        boolean isEntityType = resolvedType.isEntityType();
+        boolean isUnionType = resolvedType.isUnionType();
         if (isEntityType) {
             JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
             javaEntity.addImport(parentPropertyTypeSource);
@@ -333,21 +305,20 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
         String fieldName = getFieldName(property);
         String propertyName = property.getName();
 
-        Type resolvedValueType = null;
-        if (property.getResolvedType() != null && property.getResolvedType().isCollectionType()) {
-            resolvedValueType = ((CollectionType) property.getResolvedType()).getValueType();
-        }
-        PropertyType type = property.getType().getNested().iterator().next();
-        boolean isEntityValue = resolvedValueType != null ? resolvedValueType.isEntityType() : type.isEntityType();
-        boolean isUnionValue = resolvedValueType != null ? resolvedValueType.isUnionType() : type.isUnion();
-        boolean isPrimitiveValue = resolvedValueType != null ? resolvedValueType.isPrimitiveType() : type.isPrimitiveType();
+        Type resolvedType = property.getResolvedType();
+        Type resolvedValueType = resolvedType.isCollectionType()
+                ? ((CollectionType) resolvedType).getValueType()
+                : null;
+        boolean isEntityValue = resolvedValueType != null && resolvedValueType.isEntityType();
+        boolean isUnionValue = resolvedValueType != null && resolvedValueType.isUnionType();
+        boolean isPrimitiveValue = resolvedValueType != null && resolvedValueType.isPrimitiveType();
 
         BodyBuilder body = new BodyBuilder();
         body.addContext("fieldName", fieldName);
         body.addContext("propertyName", propertyName);
 
         if (isEntityValue || isPrimitiveValue || isUnionValue) {
-            if (property.getType().isMap()) {
+            if (resolvedType.isMapType()) {
                 javaEntity.addImport(LinkedHashMap.class);
 
                 body.append("if (this.${fieldName} == null) {");
@@ -440,18 +411,16 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
     @Override
     protected void createClearMethodBody(PropertyModel property, MethodSource<?> method) {
         String fieldName = getFieldName(property);
-        Type resolvedValueType = null;
-        if (property.getResolvedType() != null && property.getResolvedType().isCollectionType()) {
-            resolvedValueType = ((CollectionType) property.getResolvedType()).getValueType();
-        }
-        PropertyType nestedType = property.getType().getNested().iterator().next();
+        Type resolvedType = property.getResolvedType();
+        Type resolvedValueType = resolvedType.isCollectionType()
+                ? ((CollectionType) resolvedType).getValueType()
+                : null;
         boolean needsDetach = resolvedValueType != null
-                ? (resolvedValueType.isEntityType() || resolvedValueType.isUnionType())
-                : (nestedType.isEntityType() || nestedType.isUnion());
+                && (resolvedValueType.isEntityType() || resolvedValueType.isUnionType());
         BodyBuilder body = new BodyBuilder();
         body.addContext("fieldName", fieldName);
         if (needsDetach) {
-            String valuesExpr = property.getType().isMap()
+            String valuesExpr = resolvedType.isMapType()
                     ? "this." + fieldName + ".values()" : "this." + fieldName;
             body.addContext("valuesExpr", valuesExpr);
             body.append("if (this.${fieldName} != null) {");
@@ -474,15 +443,13 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
         BodyBuilder body = new BodyBuilder();
         body.addContext("fieldName", fieldName);
 
-        Type resolvedValueType = null;
-        if (property.getResolvedType() != null && property.getResolvedType().isCollectionType()) {
-            resolvedValueType = ((CollectionType) property.getResolvedType()).getValueType();
-        }
-        PropertyType nestedType = property.getType().getNested().iterator().next();
+        Type resolvedType = property.getResolvedType();
+        Type resolvedValueType = resolvedType.isCollectionType()
+                ? ((CollectionType) resolvedType).getValueType()
+                : null;
         boolean needsDetach = resolvedValueType != null
-                ? (resolvedValueType.isEntityType() || resolvedValueType.isUnionType())
-                : (nestedType.isEntityType() || nestedType.isUnion());
-        if (property.getType().isList()) {
+                && (resolvedValueType.isEntityType() || resolvedValueType.isUnionType());
+        if (resolvedType.isListType()) {
             body.append("if (this.${fieldName} != null) {");
             if (needsDetach) {
                 body.append("    if (value != null && this.${fieldName}.remove(value)) {");
@@ -506,21 +473,20 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
         String fieldName = getFieldName(property);
         String propertyName = property.getName();
 
-        Type resolvedValueType = null;
-        if (property.getResolvedType() != null && property.getResolvedType().isCollectionType()) {
-            resolvedValueType = ((CollectionType) property.getResolvedType()).getValueType();
-        }
-        PropertyType type = property.getType().getNested().iterator().next();
-        boolean isEntityValue = resolvedValueType != null ? resolvedValueType.isEntityType() : type.isEntityType();
-        boolean isUnionValue = resolvedValueType != null ? resolvedValueType.isUnionType() : type.isUnion();
-        boolean isPrimitiveValue = resolvedValueType != null ? resolvedValueType.isPrimitiveType() : type.isPrimitiveType();
+        Type resolvedType = property.getResolvedType();
+        Type resolvedValueType = resolvedType.isCollectionType()
+                ? ((CollectionType) resolvedType).getValueType()
+                : null;
+        boolean isEntityValue = resolvedValueType != null && resolvedValueType.isEntityType();
+        boolean isUnionValue = resolvedValueType != null && resolvedValueType.isUnionType();
+        boolean isPrimitiveValue = resolvedValueType != null && resolvedValueType.isPrimitiveType();
 
         BodyBuilder body = new BodyBuilder();
         body.addContext("fieldName", fieldName);
         body.addContext("propertyName", propertyName);
 
         if (isEntityValue || isPrimitiveValue || isUnionValue) {
-            if (property.getType().isMap()) {
+            if (resolvedType.isMapType()) {
                 JavaClassSource dataModelUtilSource = getState().getJavaIndex().lookupClass(getDataModelUtilFQCN());
                 javaEntity.addImport(dataModelUtilSource);
                 javaEntity.addImport(LinkedHashMap.class);

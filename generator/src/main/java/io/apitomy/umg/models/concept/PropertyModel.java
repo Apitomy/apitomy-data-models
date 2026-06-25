@@ -25,12 +25,6 @@ public class PropertyModel {
     private List<UnionRule> unionRules;
 
     /**
-     * @deprecated Use {@link #resolvedType} instead. Will be removed once all stages are migrated.
-     */
-    @Deprecated
-    private PropertyType type;
-
-    /**
      * The resolved type — references actual EntityModel objects, carries union rules,
      * and supports the visitor pattern. Set by CreatePropertyAndTypeModelsStage.
      */

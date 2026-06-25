@@ -37,72 +37,45 @@ public abstract class AbstractStage implements Stage {
     }
 
     protected boolean isEntityList(PropertyModel property) {
-        if (property.getResolvedType() != null) {
-            return property.getResolvedType().isListType()
-                    && ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType().isEntityType();
-        }
-        return property.getType().isList() && property.getType().getNested().iterator().next().isEntityType();
+        return property.getResolvedType().isListType()
+                && ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType().isEntityType();
     }
 
     protected boolean isEntityMap(PropertyModel property) {
-        if (property.getResolvedType() != null) {
-            return property.getResolvedType().isMapType()
-                    && ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType().isEntityType();
-        }
-        return property.getType().isMap() && property.getType().getNested().iterator().next().isEntityType();
+        return property.getResolvedType().isMapType()
+                && ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType().isEntityType();
     }
 
     protected boolean isEntity(PropertyModel property) {
-        if (property.getResolvedType() != null) {
-            return property.getResolvedType().isEntityType();
-        }
-        return property.getType().isEntityType();
+        return property.getResolvedType().isEntityType();
     }
 
     protected boolean isUnion(PropertyModel property) {
-        if (property.getResolvedType() != null) {
-            return property.getResolvedType().isUnionType();
-        }
-        return property.getType().isUnion();
+        return property.getResolvedType().isUnionType();
     }
 
     protected boolean isPrimitive(PropertyModel property) {
-        if (property.getResolvedType() != null) {
-            return property.getResolvedType().isPrimitiveType();
-        }
-        return property.getType().isPrimitiveType();
+        return property.getResolvedType().isPrimitiveType();
     }
 
     protected boolean isPrimitiveList(PropertyModel property) {
-        if (property.getResolvedType() != null) {
-            return property.getResolvedType().isListType()
-                    && ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType().isPrimitiveType();
-        }
-        return property.getType().isList() && property.getType().getNested().iterator().next().isPrimitiveType();
+        return property.getResolvedType().isListType()
+                && ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType().isPrimitiveType();
     }
 
     protected boolean isPrimitiveMap(PropertyModel property) {
-        if (property.getResolvedType() != null) {
-            return property.getResolvedType().isMapType()
-                    && ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType().isPrimitiveType();
-        }
-        return property.getType().isMap() && property.getType().getNested().iterator().next().isPrimitiveType();
+        return property.getResolvedType().isMapType()
+                && ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType().isPrimitiveType();
     }
 
     protected boolean isUnionList(PropertyModel property) {
-        if (property.getResolvedType() != null) {
-            return property.getResolvedType().isListType()
-                    && ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType().isUnionType();
-        }
-        return property.getType().isList() && property.getType().getNested().iterator().next().isUnion();
+        return property.getResolvedType().isListType()
+                && ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType().isUnionType();
     }
 
     protected boolean isUnionMap(PropertyModel property) {
-        if (property.getResolvedType() != null) {
-            return property.getResolvedType().isMapType()
-                    && ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType().isUnionType();
-        }
-        return property.getType().isMap() && property.getType().getNested().iterator().next().isUnion();
+        return property.getResolvedType().isMapType()
+                && ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType().isUnionType();
     }
 
     protected String singularize(String name) {
