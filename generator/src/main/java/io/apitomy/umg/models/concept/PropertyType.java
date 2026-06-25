@@ -53,7 +53,7 @@ public class PropertyType {
                             if ((c == '}' && current.map) || (c == ']' && current.list)) {
                                 current.nested.add(last);
                                 last = current;
-                                continue readNextChar; // TODO refactor
+                                continue readNextChar;
                             }
                             last = current;
                         }
@@ -153,12 +153,6 @@ public class PropertyType {
     private boolean map;
     private boolean union;
 
-    // Simple type == not a container
-    // TODO:
-    // Do we want to add a distinction between:
-    // - (simple) primitive type
-    // - (simple) entity type
-    // ?
     private boolean simple;
 
     public boolean isPrimitiveType() {

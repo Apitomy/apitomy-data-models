@@ -51,7 +51,6 @@ public class BodyBuilder {
 
     @Override
     public String toString() {
-        // TODO Perform string building lazily (on-demand)
         return str.toString();
     }
 

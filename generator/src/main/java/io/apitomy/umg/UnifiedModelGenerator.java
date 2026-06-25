@@ -114,7 +114,6 @@ public class UnifiedModelGenerator {
         pipe.addStage(new CreateNamespaceModelsStage());
         pipe.addStage(new CreateTraitModelsStage());
         pipe.addStage(new CreateEntityModelsStage());
-//        pipe.addStage(new CreateParentTraitsStage());
         pipe.addStage(new CreatePropertyAndTypeModelsStage());
         pipe.addStage(new CreateVisitorsStage());
         pipe.addStage(new RemoveShadedPropertyModelsStage());
