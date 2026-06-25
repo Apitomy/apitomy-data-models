@@ -1,6 +1,5 @@
 package io.apitomy.umg.pipe.java;
 
-import java.util.Collections;
 
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
@@ -11,7 +10,6 @@ import java.util.function.Predicate;
 
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
-import io.apitomy.umg.models.concept.PropertyType;
 import io.apitomy.umg.models.concept.type.CollectionType;
 import io.apitomy.umg.models.concept.type.Type;
 
@@ -39,20 +37,13 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
                 error("Regex property defined without a collection name: " + javaEntity.getCanonicalName() + "::" + property);
                 return;
             }
-            PropertyType collectionPropertyType = PropertyType.builder()
-                    .nested(Collections.singleton(property.getType()))
-                    .map(true)
+            Type collectionResolvedType = io.apitomy.umg.models.concept.type.MapType.builder()
+                    .namespace(property.getResolvedType().getNamespace())
+                    .name("{" + property.getResolvedType().getName() + "}")
+                    .valueType(property.getResolvedType())
                     .build();
-            Type collectionResolvedType = property.getResolvedType() != null
-                    ? io.apitomy.umg.models.concept.type.MapType.builder()
-                        .namespace(property.getResolvedType().getNamespace())
-                        .name("{" + property.getResolvedType().getName() + "}")
-                        .valueType(property.getResolvedType())
-                        .build()
-                    : null;
             PropertyModel collectionProperty = PropertyModel.builder()
                     .name(property.getCollection())
-                    .type(collectionPropertyType)
                     .resolvedType(collectionResolvedType)
                     .build();
             PropertyModelWithOrigin collectionPropertyWithOrigin = PropertyModelWithOrigin.builder().property(collectionProperty).origin(propertyWithOrigin.getOrigin()).build();
@@ -164,22 +155,22 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
      */
     protected void createFactoryMethod(JavaSource<?> javaEntity, PropertyModelWithOrigin propertyWithOrigin) {
         PropertyModel property = propertyWithOrigin.getProperty();
-        createFactoryMethod(javaEntity, property.getType());
+        createFactoryMethod(javaEntity, property.getResolvedType());
     }
-    protected void createFactoryMethod(JavaSource<?> javaEntity, PropertyType propertyType) {
+    protected void createFactoryMethod(JavaSource<?> javaEntity, Type type) {
         String _package = javaEntity.getPackage();
-        PropertyType type = propertyType;
-        if (type.isMap() || type.isList()) {
-            type = type.getNested().iterator().next();
+        Type effectiveType = type;
+        if (effectiveType.isMapType() || effectiveType.isListType()) {
+            effectiveType = ((io.apitomy.umg.models.concept.type.CollectionType) effectiveType).getValueType();
         }
-        String entityName = type.getSimpleType();
+        String entityName = effectiveType.getName();
         String methodName = createMethodName(entityName);
         // The name of the "create" method is based on the type, so it's possible to have
         // duplicates.  Let's not do that.
         if (!hasNamedMethod(((MethodHolderSource<?>) javaEntity), methodName)) {
-            JavaInterfaceSource entityType = resolveJavaEntityType(_package, type);
+            JavaInterfaceSource entityType = resolveJavaEntityType(_package, effectiveType);
             if (entityType == null) {
-                error("Could not resolve entity type: " + _package + "::" + type);
+                error("Could not resolve entity type: " + _package + "::" + effectiveType);
                 return;
             }
 
@@ -301,31 +292,42 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
      * Create factory methods for any entity types in the union.  If the union is, for example, "boolean|string"
      * then this will do nothing.  But if the union is "Widget|string" then a factory method for Widgets will
      * be created.
+     *
+     * Named union type aliases (e.g. "SchemaOrBoolean") are treated as opaque types and do NOT
+     * get individual factory methods for their entity variants — the old PropertyType-based code
+     * never saw them as unions (only as simple type references), so we preserve that behavior.
+     *
      * @param javaEntity
      * @param propertyWithOrigin
      */
     private void createUnionFactoryMethods(JavaSource<?> javaEntity, PropertyModelWithOrigin propertyWithOrigin) {
         PropertyModel property = propertyWithOrigin.getProperty();
-        PropertyType unionType;
+        Type resolvedType = property.getResolvedType();
+        io.apitomy.umg.models.concept.type.UnionType unionType;
 
         // Extract the union type - it might be directly a union, or wrapped in a list/map
-        if (property.getType().isUnion()) {
-            unionType = property.getType();
-        } else if ((property.getType().isList() || property.getType().isMap()) &&
-                   property.getType().getNested().iterator().next().isUnion()) {
-            unionType = property.getType().getNested().iterator().next();
+        if (resolvedType.isUnionType()) {
+            unionType = (io.apitomy.umg.models.concept.type.UnionType) resolvedType;
+        } else if (resolvedType.isCollectionType()
+                && ((io.apitomy.umg.models.concept.type.CollectionType) resolvedType).getValueType().isUnionType()) {
+            unionType = (io.apitomy.umg.models.concept.type.UnionType) ((io.apitomy.umg.models.concept.type.CollectionType) resolvedType).getValueType();
         } else {
             return;
         }
 
-        UnionPropertyType ut = new UnionPropertyType(unionType);
-        ut.getNestedTypes().forEach(nestedType -> {
-            if (nestedType.isEntityType()) {
-                createFactoryMethod(javaEntity, nestedType);
-            } else if ((nestedType.isList() || nestedType.isMap()) && nestedType.getNested().iterator().next().isEntityType()) {
-                createFactoryMethod(javaEntity, nestedType.getNested().iterator().next());
+        // Skip factory method creation for named union type aliases
+        if (unionType.getAliasName() != null) {
+            return;
+        }
+
+        for (Type variantType : unionType.getTypes()) {
+            if (variantType.isEntityType()) {
+                createFactoryMethod(javaEntity, variantType);
+            } else if (variantType.isCollectionType()
+                    && ((io.apitomy.umg.models.concept.type.CollectionType) variantType).getValueType().isEntityType()) {
+                createFactoryMethod(javaEntity, ((io.apitomy.umg.models.concept.type.CollectionType) variantType).getValueType());
             }
-        });
+        }
     }
 
     /**

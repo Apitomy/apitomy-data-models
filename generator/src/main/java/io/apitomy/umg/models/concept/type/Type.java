@@ -6,7 +6,7 @@ package io.apitomy.umg.models.concept.type;
  * Types form a tree: a {@link UnionType} contains multiple variant {@code Type}s,
  * a {@link ListType} or {@link MapType} wraps a value {@code Type}.
  * <p>
- * Unlike {@link io.apitomy.umg.models.concept.PropertyType} (which is a raw parser output),
+ * Unlike the raw parsed type representation,
  * {@code Type} instances are resolved against the concept index — entity types reference
  * actual {@link io.apitomy.umg.models.concept.EntityModel} objects.
  *

@@ -3,7 +3,6 @@ package io.apitomy.umg.pipe.java;
 import java.io.File;
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.util.Collections;
 import java.util.Random;
 import java.util.Stack;
 import java.util.UUID;
@@ -25,7 +24,6 @@ import io.apitomy.umg.beans.SpecificationVersion;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.NamespaceModel;
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyType;
 import io.apitomy.umg.pipe.AbstractStage;
 
 public class CreateTestFixturesStage extends AbstractStage {
@@ -92,18 +90,20 @@ public class CreateTestFixturesStage extends AbstractStage {
 
     private JsonNode generatePropertyValue(EntityModel entity, PropertyModel property, Stack<String> entityStack) {
         if (isStarProperty(property)) {
-            PropertyType mappedType = PropertyType.builder()
-                    .nested(Collections.singleton(property.getType()))
-                    .map(true)
+            var collectionResolvedType = io.apitomy.umg.models.concept.type.MapType.builder()
+                    .namespace(property.getResolvedType().getNamespace())
+                    .name("{" + property.getResolvedType().getName() + "}")
+                    .valueType(property.getResolvedType())
                     .build();
-            PropertyModel itemsProperty = PropertyModel.builder().name("_items").type(mappedType).build();
+            PropertyModel itemsProperty = PropertyModel.builder().name("_items").resolvedType(collectionResolvedType).build();
             return generatePropertyValue(entity, itemsProperty, entityStack);
         } else if (isRegexProperty(property)) {
-            PropertyType mappedType = PropertyType.builder()
-                    .nested(Collections.singleton(property.getType()))
-                    .map(true)
+            var collectionResolvedType = io.apitomy.umg.models.concept.type.MapType.builder()
+                    .namespace(property.getResolvedType().getNamespace())
+                    .name("{" + property.getResolvedType().getName() + "}")
+                    .valueType(property.getResolvedType())
                     .build();
-            PropertyModel itemsProperty = PropertyModel.builder().name(property.getCollection()).collection(property.getName()).type(mappedType).build();
+            PropertyModel itemsProperty = PropertyModel.builder().name(property.getCollection()).collection(property.getName()).resolvedType(collectionResolvedType).build();
             return generatePropertyValue(entity, itemsProperty, entityStack);
         } else if (isPrimitive(property)) {
             return generatePrimitiveValue(property);
@@ -112,13 +112,13 @@ public class CreateTestFixturesStage extends AbstractStage {
         } else if (isPrimitiveMap(property)) {
             return generatePrimitiveMapValue(property);
         } else if (isEntity(property)) {
-            EntityModel propertyEntity = resolveEntity(entity.getNamespace(), property.getType().getSimpleType());
+            EntityModel propertyEntity = resolveEntity(entity.getNamespace(), property.getResolvedType().getName());
             if (propertyEntity != null) {
                 return generateEntityFixture(propertyEntity, entityStack);
             }
         } else if (isEntityList(property)) {
-            PropertyType listEntityType = property.getType().getNested().iterator().next();
-            EntityModel propertyEntity = resolveEntity(entity.getNamespace(), listEntityType.getSimpleType());
+            var listType = (io.apitomy.umg.models.concept.type.ListType) property.getResolvedType();
+            EntityModel propertyEntity = resolveEntity(entity.getNamespace(), listType.getValueType().getName());
             if (propertyEntity != null) {
                 return generateListValue(() -> {
                     ObjectNode object = generateEntityFixture(propertyEntity, entityStack);
@@ -126,8 +126,8 @@ public class CreateTestFixturesStage extends AbstractStage {
                 });
             }
         } else if (isEntityMap(property)) {
-            PropertyType mapEntityType = property.getType().getNested().iterator().next();
-            EntityModel propertyEntity = resolveEntity(entity.getNamespace(), mapEntityType.getSimpleType());
+            var mapType = (io.apitomy.umg.models.concept.type.MapType) property.getResolvedType();
+            EntityModel propertyEntity = resolveEntity(entity.getNamespace(), mapType.getValueType().getName());
             if (propertyEntity != null) {
                 return generateEntityMapValue(property, propertyEntity, entityStack);
             }
@@ -142,7 +142,8 @@ public class CreateTestFixturesStage extends AbstractStage {
     }
 
     private JsonNode generatePrimitiveValue(PropertyModel property) {
-        switch (property.getType().getSimpleType()) {
+        String typeName = property.getResolvedType().getName();
+        switch (typeName) {
             case "string":
                 String val = UUID.randomUUID().toString().substring(10, 18);
                 return factory.textNode(property.getName() + "-" + val);
@@ -166,21 +167,23 @@ public class CreateTestFixturesStage extends AbstractStage {
                 array.add("three");
                 return array;
         }
-        warn("Property type not handled: " + property.getType());
+        warn("Property type not handled: " + property.getResolvedType());
         return null;
     }
 
     private JsonNode generatePrimitiveListValue(PropertyModel property) {
-        PropertyModel primitiveProperty = PropertyModel.builder().name("_tmp").type(
-                property.getType().getNested().iterator().next()).build();
+        var listType = (io.apitomy.umg.models.concept.type.ListType) property.getResolvedType();
+        PropertyModel primitiveProperty = PropertyModel.builder().name("_tmp").resolvedType(
+                listType.getValueType()).build();
         return generateListValue(() -> {
             return generatePrimitiveValue(primitiveProperty);
         });
     }
 
     private JsonNode generatePrimitiveMapValue(PropertyModel property) {
-        PropertyModel primitiveProperty = PropertyModel.builder().name("_tmp").type(
-                property.getType().getNested().iterator().next()).build();
+        var mapType = (io.apitomy.umg.models.concept.type.MapType) property.getResolvedType();
+        PropertyModel primitiveProperty = PropertyModel.builder().name("_tmp").resolvedType(
+                mapType.getValueType()).build();
         if (property.getCollection() != null) {
             RgxGen rgxGen = RgxGen.parse(extractRegex(property.getCollection()));
             return generateMapValue((index) -> {
