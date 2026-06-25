@@ -43,7 +43,18 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
                     .nested(Collections.singleton(property.getType()))
                     .map(true)
                     .build();
-            PropertyModel collectionProperty = PropertyModel.builder().name(property.getCollection()).type(collectionPropertyType).build();
+            Type collectionResolvedType = property.getResolvedType() != null
+                    ? io.apitomy.umg.models.concept.type.MapType.builder()
+                        .namespace(property.getResolvedType().getNamespace())
+                        .name("{" + property.getResolvedType().getName() + "}")
+                        .valueType(property.getResolvedType())
+                        .build()
+                    : null;
+            PropertyModel collectionProperty = PropertyModel.builder()
+                    .name(property.getCollection())
+                    .type(collectionPropertyType)
+                    .resolvedType(collectionResolvedType)
+                    .build();
             PropertyModelWithOrigin collectionPropertyWithOrigin = PropertyModelWithOrigin.builder().property(collectionProperty).origin(propertyWithOrigin.getOrigin()).build();
 
             if (isEntity(property)) {
@@ -117,31 +128,9 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
         MethodSource<?> method = ((MethodHolderSource<?>) javaEntity).addMethod().setName(getterMethodName(property)).setPublic();
         addAnnotations(method);
 
-        if (property.getResolvedType() != null) {
-            var jt = getJavaTypeFactory().createJavaType(property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
-            jt.addImportsTo(javaEntity);
-            method.setReturnType(jt.toJavaTypeString());
-        } else if (isUnion(property)) {
-            UnionPropertyType ut = new UnionPropertyType(property.getType());
-            ut.addImportsTo(javaEntity);
-            method.setReturnType(ut.toJavaTypeString());
-        } else if (isUnionList(property)) {
-            PropertyType unionType = property.getType().getNested().iterator().next();
-            UnionPropertyType ut = new UnionPropertyType(unionType);
-            ut.addImportsTo(javaEntity);
-            javaEntity.addImport(java.util.List.class);
-            method.setReturnType("List<" + ut.toJavaTypeString() + ">");
-        } else if (isUnionMap(property)) {
-            PropertyType unionType = property.getType().getNested().iterator().next();
-            UnionPropertyType ut = new UnionPropertyType(unionType);
-            ut.addImportsTo(javaEntity);
-            javaEntity.addImport(java.util.Map.class);
-            method.setReturnType("Map<String, " + ut.toJavaTypeString() + ">");
-        } else {
-            JavaType jt = new JavaType(property.getType(), propertyWithOrigin.getOrigin().getNamespace().fullName());
-            jt.addImportsTo(javaEntity);
-            method.setReturnType(jt.toJavaTypeString());
-        }
+        var jt = getJavaTypeFactory().createJavaType(property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
+        jt.addImportsTo(javaEntity);
+        method.setReturnType(jt.toJavaTypeString());
 
         createGetterBody(property, method);
     }
@@ -158,31 +147,9 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
         MethodSource<?> method = ((MethodHolderSource<?>) javaEntity).addMethod().setName(setterMethodName(property)).setReturnTypeVoid().setPublic();
         addAnnotations(method);
 
-        if (property.getResolvedType() != null) {
-            var jt = getJavaTypeFactory().createJavaType(property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
-            jt.addImportsTo(javaEntity);
-            method.addParameter(jt.toJavaTypeString(), "value");
-        } else if (isUnion(property)) {
-            UnionPropertyType ut = new UnionPropertyType(property.getType());
-            ut.addImportsTo(javaEntity);
-            method.addParameter(ut.toJavaTypeString(), "value");
-        } else if (isUnionList(property)) {
-            PropertyType unionType = property.getType().getNested().iterator().next();
-            UnionPropertyType ut = new UnionPropertyType(unionType);
-            ut.addImportsTo(javaEntity);
-            javaEntity.addImport(java.util.List.class);
-            method.addParameter("List<" + ut.toJavaTypeString() + ">", "value");
-        } else if (isUnionMap(property)) {
-            PropertyType unionType = property.getType().getNested().iterator().next();
-            UnionPropertyType ut = new UnionPropertyType(unionType);
-            ut.addImportsTo(javaEntity);
-            javaEntity.addImport(java.util.Map.class);
-            method.addParameter("Map<String, " + ut.toJavaTypeString() + ">", "value");
-        } else {
-            JavaType jt = new JavaType(property.getType(), propertyWithOrigin.getOrigin().getNamespace().fullName());
-            jt.addImportsTo(javaEntity);
-            method.addParameter(jt.toJavaTypeString(), "value");
-        }
+        var jt = getJavaTypeFactory().createJavaType(property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
+        jt.addImportsTo(javaEntity);
+        method.addParameter(jt.toJavaTypeString(), "value");
 
         createSetterBody(javaEntity, property, method);
     }
@@ -233,67 +200,22 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
     protected void createAddMethod(JavaSource<?> javaEntity, PropertyModelWithOrigin propertyWithOrigin) {
         PropertyModel property = propertyWithOrigin.getProperty();
 
-        String _package = propertyWithOrigin.getOrigin().getNamespace().fullName();
-        PropertyType type = property.getType().getNested().iterator().next();
         String methodName = addMethodName(singularize(property.getName()));
-        MethodSource<?> method;
-
-        if (property.getResolvedType() != null) {
-            var resolvedValueType = extractValueType(property.getResolvedType());
-            if (resolvedValueType != null) {
-                var jt = getJavaTypeFactory().createJavaType(resolvedValueType, propertyWithOrigin.getOrigin().getNamespace());
-                jt.addImportsTo(javaEntity);
-                method = ((MethodHolderSource<?>) javaEntity).addMethod().setPublic().setName(methodName).setReturnTypeVoid();
-                addAnnotations(method);
-                if (property.getType().isMap()) {
-                    method.addParameter("String", "name");
-                }
-                method.addParameter(jt.toJavaTypeString(), "value");
-                createAddMethodBody(javaEntity, property, method);
-                return;
-            }
-        }
-
-        if (type.isEntityType()) {
-            JavaInterfaceSource entityType = resolveJavaEntityType(_package, type);
-            if (entityType == null) {
-                error("Could not resolve entity type: " + _package + "::" + type);
-                return;
-            }
-
-            javaEntity.addImport(entityType);
-
-            method = ((MethodHolderSource<?>) javaEntity).addMethod().setPublic().setName(methodName).setReturnTypeVoid();
-            addAnnotations(method);
-            if (property.getType().isMap()) {
-                method.addParameter("String", "name");
-            }
-            method.addParameter(entityType.getName(), "value");
-        } else if (type.isPrimitiveType()) {
-            Class<?> primitiveType = primitiveTypeToClass(type);
-            javaEntity.addImport(primitiveType);
-
-            method = ((MethodHolderSource<?>) javaEntity).addMethod().setPublic().setName(methodName).setReturnTypeVoid();
-            addAnnotations(method);
-            if (property.getType().isMap()) {
-                method.addParameter("String", "name");
-            }
-            method.addParameter(primitiveType.getSimpleName(), "value");
-        } else if (type.isUnion()) {
-            JavaType jt = new JavaType(type, _package);
-            String unionJavaType = jt.toJavaTypeString();
-            jt.addImportsTo(javaEntity);
-
-            method = ((MethodHolderSource<?>) javaEntity).addMethod().setPublic().setName(methodName).setReturnTypeVoid();
-            addAnnotations(method);
-            if (property.getType().isMap()) {
-                method.addParameter("String", "name");
-            }
-            method.addParameter(unionJavaType, "value");
-        } else {
-            warn("Type not supported for 'add' method: " + methodName + " with type: " + property.getType());
+        var resolvedValueType = extractValueType(property.getResolvedType());
+        if (resolvedValueType == null) {
+            warn("Type not supported for 'add' method: " + methodName + " with type: " + property.getResolvedType());
             return;
         }
+
+        var jt = getJavaTypeFactory().createJavaType(resolvedValueType, propertyWithOrigin.getOrigin().getNamespace());
+        jt.addImportsTo(javaEntity);
+
+        MethodSource<?> method = ((MethodHolderSource<?>) javaEntity).addMethod().setPublic().setName(methodName).setReturnTypeVoid();
+        addAnnotations(method);
+        if (property.getResolvedType().isMapType()) {
+            method.addParameter("String", "name");
+        }
+        method.addParameter(jt.toJavaTypeString(), "value");
 
         createAddMethodBody(javaEntity, property, method);
     }
@@ -326,40 +248,15 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
     protected void createRemoveMethod(JavaSource<?> javaEntity, PropertyModelWithOrigin propertyWithOrigin) {
         PropertyModel property = propertyWithOrigin.getProperty();
 
-        String _package = propertyWithOrigin.getOrigin().getNamespace().fullName();
         String methodName = removeMethodName(singularize(property.getName()));
         MethodSource<?> method = ((MethodHolderSource<?>) javaEntity).addMethod().setPublic().setName(methodName).setReturnTypeVoid();
         addAnnotations(method);
 
-        if (property.getType().isList()) {
-            if (property.getResolvedType() != null) {
-                var resolvedValueType = extractValueType(property.getResolvedType());
-                if (resolvedValueType != null) {
-                    var jt = getJavaTypeFactory().createJavaType(resolvedValueType, propertyWithOrigin.getOrigin().getNamespace());
-                    jt.addImportsTo(javaEntity);
-                    method.addParameter(jt.toJavaTypeString(), "value");
-                    createRemoveMethodBody(property, method);
-                    return;
-                }
-            }
-            PropertyType type = property.getType().getNested().iterator().next();
-            if (type.isEntityType()) {
-                JavaInterfaceSource entityType = resolveJavaEntityType(_package, type);
-                if (entityType == null) {
-                    error("Could not resolve entity type: " + _package + "::" + type);
-                    return;
-                }
-                javaEntity.addImport(entityType);
-                method.addParameter(entityType.getName(), "value");
-            } else if (type.isUnion()) {
-                JavaType jt = new JavaType(type, _package);
-                String unionJavaType = jt.toJavaTypeString();
-                jt.addImportsTo(javaEntity);
-                method.addParameter(unionJavaType, "value");
-            } else {
-                error("Unsupported type for remove method: " + type);
-                return;
-            }
+        if (property.getResolvedType().isListType()) {
+            var resolvedValueType = extractValueType(property.getResolvedType());
+            var jt = getJavaTypeFactory().createJavaType(resolvedValueType, propertyWithOrigin.getOrigin().getNamespace());
+            jt.addImportsTo(javaEntity);
+            method.addParameter(jt.toJavaTypeString(), "value");
         } else {
             method.addParameter("String", "name");
         }
@@ -378,68 +275,22 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
     protected void createInsertMethod(JavaSource<?> javaEntity, PropertyModelWithOrigin propertyWithOrigin) {
         PropertyModel property = propertyWithOrigin.getProperty();
 
-        String _package = propertyWithOrigin.getOrigin().getNamespace().fullName();
-        PropertyType type = property.getType().getNested().iterator().next();
         String methodName = insertMethodName(singularize(property.getName()));
-        MethodSource<?> method;
-
-        if (property.getResolvedType() != null) {
-            var resolvedValueType = extractValueType(property.getResolvedType());
-            if (resolvedValueType != null) {
-                var jt = getJavaTypeFactory().createJavaType(resolvedValueType, propertyWithOrigin.getOrigin().getNamespace());
-                jt.addImportsTo(javaEntity);
-                method = ((MethodHolderSource<?>) javaEntity).addMethod().setPublic().setName(methodName).setReturnTypeVoid();
-                addAnnotations(method);
-                if (property.getType().isMap()) {
-                    method.addParameter("String", "name");
-                }
-                method.addParameter(jt.toJavaTypeString(), "value");
-                method.addParameter("int", "atIndex");
-                createInsertMethodBody(javaEntity, property, method);
-                return;
-            }
-        }
-
-        if (type.isEntityType()) {
-            JavaInterfaceSource entityType = resolveJavaEntityType(_package, type);
-            if (entityType == null) {
-                error("Could not resolve entity type: " + _package + "::" + type);
-                return;
-            }
-
-            javaEntity.addImport(entityType);
-
-            method = ((MethodHolderSource<?>) javaEntity).addMethod().setPublic().setName(methodName).setReturnTypeVoid();
-            addAnnotations(method);
-            if (property.getType().isMap()) {
-                method.addParameter("String", "name");
-            }
-            method.addParameter(entityType.getName(), "value");
-        } else if (type.isPrimitiveType()) {
-            Class<?> primitiveType = primitiveTypeToClass(type);
-            javaEntity.addImport(primitiveType);
-
-            method = ((MethodHolderSource<?>) javaEntity).addMethod().setPublic().setName(methodName).setReturnTypeVoid();
-            addAnnotations(method);
-            if (property.getType().isMap()) {
-                method.addParameter("String", "name");
-            }
-            method.addParameter(primitiveType.getSimpleName(), "value");
-        } else if (type.isUnion()) {
-            JavaType jt = new JavaType(type, _package);
-            String unionJavaType = jt.toJavaTypeString();
-            jt.addImportsTo(javaEntity);
-
-            method = ((MethodHolderSource<?>) javaEntity).addMethod().setPublic().setName(methodName).setReturnTypeVoid();
-            addAnnotations(method);
-            if (property.getType().isMap()) {
-                method.addParameter("String", "name");
-            }
-            method.addParameter(unionJavaType, "value");
-        } else {
-            warn("Type not supported for 'insert' method: " + methodName + " with type: " + property.getType());
+        var resolvedValueType = extractValueType(property.getResolvedType());
+        if (resolvedValueType == null) {
+            warn("Type not supported for 'insert' method: " + methodName + " with type: " + property.getResolvedType());
             return;
         }
+
+        var jt = getJavaTypeFactory().createJavaType(resolvedValueType, propertyWithOrigin.getOrigin().getNamespace());
+        jt.addImportsTo(javaEntity);
+
+        MethodSource<?> method = ((MethodHolderSource<?>) javaEntity).addMethod().setPublic().setName(methodName).setReturnTypeVoid();
+        addAnnotations(method);
+        if (property.getResolvedType().isMapType()) {
+            method.addParameter("String", "name");
+        }
+        method.addParameter(jt.toJavaTypeString(), "value");
         method.addParameter("int", "atIndex");
 
         createInsertMethodBody(javaEntity, property, method);
