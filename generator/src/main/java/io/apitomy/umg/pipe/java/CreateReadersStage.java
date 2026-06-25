@@ -24,7 +24,7 @@ import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.NamespaceModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
-import io.apitomy.umg.models.concept.PropertyType;
+import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -583,17 +583,17 @@ public class CreateReadersStage extends AbstractJavaStage {
         private void handleStarProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             if (isEntity(property)) {
-                String entityTypeName = entityModel.getNamespace().fullName() + "." + property.getType().getSimpleType();
+                String entityTypeName = entityModel.getNamespace().fullName() + "." + property.getResolvedType().getName();
                 EntityModel propertyTypeEntity = getState().getConceptIndex().lookupEntity(entityTypeName);
                 if (propertyTypeEntity == null) {
                     warn("STAR Property entity type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type: " + property.getType());
+                    warn("       property type: " + property.getResolvedType());
                     return;
                 }
                 JavaInterfaceSource propertyTypeJavaEntity = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(propertyTypeEntity));
                 if (propertyTypeJavaEntity == null) {
                     warn("STAR Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in JAVA index: " + property.getType());
+                    warn("       property type is entity but not found in JAVA index: " + property.getResolvedType());
                     return;
                 }
                 readerClassSource.addImport(propertyTypeJavaEntity);
@@ -617,12 +617,12 @@ public class CreateReadersStage extends AbstractJavaStage {
                 body.append("}");
             } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
                 readerClassSource.addImport(List.class);
-                if (property.getType().isMap()) {
+                if (property.getResolvedType().isMapType()) {
                     readerClassSource.addImport(Map.class);
                 }
 
-                body.addContext("valueType", determineValueType(property.getType()));
-                body.addContext("consumePropertyMethodName", determineConsumePropertyVariant(property.getType()));
+                body.addContext("valueType", determineValueType(property.getResolvedType()));
+                body.addContext("consumePropertyMethodName", determineConsumePropertyVariant(property.getResolvedType()));
 
                 body.append("{");
                 body.append("    List<String> propertyNames = JsonUtil.keys(json);");
@@ -633,24 +633,24 @@ public class CreateReadersStage extends AbstractJavaStage {
                 body.append("}");
             } else {
                 warn("STAR Entity property '" + property.getName() + "' not read (unhandled) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getType());
+                warn("       property type: " + property.getResolvedType());
             }
         }
 
         private void handleRegexProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             if (isEntity(property)) {
-                String entityTypeName = entityModel.getNamespace().fullName() + "." + property.getType().getSimpleType();
+                String entityTypeName = entityModel.getNamespace().fullName() + "." + property.getResolvedType().getName();
                 EntityModel propertyTypeEntity = getState().getConceptIndex().lookupEntity(entityTypeName);
                 if (propertyTypeEntity == null) {
                     warn("REGEX Property entity type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type: " + property.getType());
+                    warn("       property type: " + property.getResolvedType());
                     return;
                 }
                 JavaInterfaceSource propertyTypeJavaEntity = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(propertyTypeEntity));
                 if (propertyTypeJavaEntity == null) {
                     warn("REGEX Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in JAVA index: " + property.getType());
+                    warn("       property type is entity but not found in JAVA index: " + property.getResolvedType());
                     return;
                 }
                 readerClassSource.addImport(propertyTypeJavaEntity);
@@ -675,13 +675,13 @@ public class CreateReadersStage extends AbstractJavaStage {
                 body.append("}");
             } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
                 readerClassSource.addImport(List.class);
-                if (property.getType().isMap()) {
+                if (property.getResolvedType().isMapType()) {
                     readerClassSource.addImport(Map.class);
                 }
 
                 body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
-                body.addContext("valueType", determineValueType(property.getType()));
-                body.addContext("consumeProperty", determineConsumePropertyVariant(property.getType()));
+                body.addContext("valueType", determineValueType(property.getResolvedType()));
+                body.addContext("consumeProperty", determineConsumePropertyVariant(property.getResolvedType()));
                 body.addContext("addMethodName", addMethodName(singularize(property.getCollection())));
 
                 body.append("{");
@@ -693,17 +693,17 @@ public class CreateReadersStage extends AbstractJavaStage {
                 body.append("}");
             } else {
                 warn("REGEX Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getType());
+                warn("       property type: " + property.getResolvedType());
             }
         }
 
         private void handleEntityProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
-            String propertyTypeEntityName = entityModel.getNamespace().fullName() + "." + property.getType().getSimpleType();
+            String propertyTypeEntityName = entityModel.getNamespace().fullName() + "." + property.getResolvedType().getName();
             EntityModel propertyTypeEntity = getState().getConceptIndex().lookupEntity(propertyTypeEntityName);
             if (propertyTypeEntity == null) {
                 warn("Property entity type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getType());
+                warn("       property type: " + property.getResolvedType());
                 return;
             }
             JavaInterfaceSource propertyTypeJavaEntity = resolveJavaEntityType(entityModel.getNamespace(), property);
@@ -727,8 +727,8 @@ public class CreateReadersStage extends AbstractJavaStage {
 
         private void handlePrimitiveTypeProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
-            body.addContext("valueType", determineValueType(property.getType()));
-            body.addContext("consumeProperty", determineConsumePropertyVariant(property.getType()));
+            body.addContext("valueType", determineValueType(property.getResolvedType()));
+            body.addContext("consumeProperty", determineConsumePropertyVariant(property.getResolvedType()));
             body.addContext("propertyName", property.getName());
             body.addContext("setterMethodName", setterMethodName(property));
 
@@ -743,29 +743,29 @@ public class CreateReadersStage extends AbstractJavaStage {
             body.addContext("propertyName", property.getName());
             body.addContext("setterMethodName", setterMethodName(property));
 
-            PropertyType listValuePropertyType = property.getType().getNested().iterator().next();
-            if (listValuePropertyType.isPrimitiveType()) {
-                body.addContext("consumeMethodName", determineConsumePropertyVariant(property.getType()));
-                body.addContext("propertyValueJavaType", determineValueType(property.getType()));
+            Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
+            if (listValueType.isPrimitiveType()) {
+                body.addContext("consumeMethodName", determineConsumePropertyVariant(property.getResolvedType()));
+                body.addContext("propertyValueJavaType", determineValueType(property.getResolvedType()));
                 readerClassSource.addImport(List.class);
 
                 body.append("{");
                 body.append("    ${propertyValueJavaType} value = JsonUtil.${consumeMethodName}(json, \"${propertyName}\");");
                 body.append("    node.${setterMethodName}(value);");
                 body.append("}");
-            } else if (listValuePropertyType.isEntityType()) {
-                String entityTypeName = listValuePropertyType.getSimpleType();
+            } else if (listValueType.isEntityType()) {
+                String entityTypeName = listValueType.getName();
                 String fqEntityName = entityModel.getNamespace().fullName() + "." + entityTypeName;
                 EntityModel entityTypeModel = getState().getConceptIndex().lookupEntity(fqEntityName);
                 if (entityTypeModel == null) {
                     warn("LIST Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in index: " + property.getType());
+                    warn("       property type is entity but not found in index: " + property.getResolvedType());
                     return;
                 }
                 JavaInterfaceSource entityTypeJavaModel = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(entityTypeModel));
                 if (entityTypeJavaModel == null) {
                     warn("LIST Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in JAVA index: " + property.getType());
+                    warn("       property type is entity but not found in JAVA index: " + property.getResolvedType());
                     return;
                 }
                 readerClassSource.addImport(entityTypeJavaModel);
@@ -788,7 +788,7 @@ public class CreateReadersStage extends AbstractJavaStage {
                 body.append("}");
             } else {
                 warn("LIST Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getType());
+                warn("       property type: " + property.getResolvedType());
             }
         }
 
@@ -797,29 +797,29 @@ public class CreateReadersStage extends AbstractJavaStage {
             body.addContext("propertyName", property.getName());
             body.addContext("setterMethodName", setterMethodName(property));
 
-            PropertyType mapValuePropertyType = property.getType().getNested().iterator().next();
-            if (mapValuePropertyType.isPrimitiveType()) {
-                body.addContext("consumeMethodName", determineConsumePropertyVariant(property.getType()));
-                body.addContext("propertyValueJavaType", determineValueType(property.getType()));
+            Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
+            if (mapValueType.isPrimitiveType()) {
+                body.addContext("consumeMethodName", determineConsumePropertyVariant(property.getResolvedType()));
+                body.addContext("propertyValueJavaType", determineValueType(property.getResolvedType()));
                 readerClassSource.addImport(Map.class);
 
                 body.append("{");
                 body.append("    ${propertyValueJavaType} value = JsonUtil.${consumeMethodName}(json, \"${propertyName}\");");
                 body.append("    node.${setterMethodName}(value);");
                 body.append("}");
-            } else if (mapValuePropertyType.isEntityType()) {
-                String entityTypeName = mapValuePropertyType.getSimpleType();
+            } else if (mapValueType.isEntityType()) {
+                String entityTypeName = mapValueType.getName();
                 String fqEntityName = entityModel.getNamespace().fullName() + "." + entityTypeName;
                 EntityModel entityTypeModel = getState().getConceptIndex().lookupEntity(fqEntityName);
                 if (entityTypeModel == null) {
                     warn("MAP Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in index: " + property.getType());
+                    warn("       property type is entity but not found in index: " + property.getResolvedType());
                     return;
                 }
                 JavaInterfaceSource entityTypeJavaModel = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(entityTypeModel));
                 if (entityTypeJavaModel == null) {
                     warn("MAP Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in JAVA index: " + property.getType());
+                    warn("       property type is entity but not found in JAVA index: " + property.getResolvedType());
                     return;
                 }
                 readerClassSource.addImport(entityTypeJavaModel);
@@ -842,18 +842,19 @@ public class CreateReadersStage extends AbstractJavaStage {
                 body.append("}");
             } else {
                 warn("MAP Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getType());
+                warn("       property type: " + property.getResolvedType());
             }
         }
 
         private void handleUnionProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             NamespaceModel nsContext = propertyWithOrigin.getOrigin().getNamespace();
-            UnionPropertyType ut = new UnionPropertyType(property.getType());
+            io.apitomy.umg.models.concept.type.UnionType unionType = (io.apitomy.umg.models.concept.type.UnionType) property.getResolvedType();
+            var unionJavaType = getJavaTypeFactory().createJavaType(unionType, nsContext);
 
             readerClassSource.addImport(JsonNode.class);
 
-            body.addContext("unionJavaType", ut.toJavaTypeString());
+            body.addContext("unionJavaType", unionJavaType.toJavaTypeString());
             body.addContext("propertyName", property.getName());
             body.addContext("getterMethodName", getterMethodName(property));
             body.addContext("setterMethodName", setterMethodName(property));
@@ -862,41 +863,29 @@ public class CreateReadersStage extends AbstractJavaStage {
             body.append("    JsonNode value = JsonUtil.consumeAnyProperty(json, \"${propertyName}\");");
             body.append("    if (value != null) {");
 
-            // Sort the nested types - make sure any entity types with union rules come first.  This is
-            // also an opportunity to order any of the checks we might need.  E.g. if we need isString()
-            // checks to happen before isNumber() for some reason.  Consider this an area for future
-            // improvement.
-            List<PropertyType> sortedNestedTypes = ut.getNestedTypes().stream().sorted(new Comparator<PropertyType>() {
-                @Override
-                public int compare(PropertyType o1, PropertyType o2) {
-                    if (o1.isEntityType() && o2.isEntityType()) {
-                        UnionRule rule1 = property.getRuleFor(o1.asRawType());
-                        UnionRule rule2 = property.getRuleFor(o2.asRawType());
-                        if (rule1 != null && rule2 == null) {
-                            return -1;
-                        } else if (rule1 == null && rule2 != null) {
-                            return 1;
-                        }
+            List<Type> sortedNestedTypes = unionType.getTypes().stream().sorted((o1, o2) -> {
+                if (o1.isEntityType() && o2.isEntityType()) {
+                    UnionRule rule1 = property.getRuleFor(o1.getRawType() != null ? o1.getRawType().toString() : o1.getName());
+                    UnionRule rule2 = property.getRuleFor(o2.getRawType() != null ? o2.getRawType().toString() : o2.getName());
+                    if (rule1 != null && rule2 == null) {
+                        return -1;
+                    } else if (rule1 == null && rule2 != null) {
+                        return 1;
                     }
-                    return o1.asRawType().compareTo(o2.asRawType());
                 }
+                String name1 = o1.getRawType() != null ? o1.getRawType().toString() : o1.getName();
+                String name2 = o2.getRawType() != null ? o2.getRawType().toString() : o2.getName();
+                return name1.compareTo(name2);
             }).collect(Collectors.toUnmodifiableList());
 
-            // Now generate a block of reader code for each nested type.  Since this
-            // property can be different things, we need to figure out what it is first,
-            // and then properly read it based on that result.  This is easy for things like
-            // 'string|boolean' types.  But for 'Entity1|Entity2' types, we need to
-            // employ the configured union rules.
-            // TODO support union rules for non-entity union types (e.g. maps and lists) for currently
-            //      unsupported use cases (like '[string]|[number]').
             boolean first = true;
-            for (PropertyType nestedType : sortedNestedTypes) {
+            for (Type nestedType : sortedNestedTypes) {
                 if (!first) {
                     body.append(" else ");
                 }
                 first = false;
-                JavaType jt = new JavaType(nestedType, nsContext);
-                if (jt.isPrimitive()) {
+                var jt = getJavaTypeFactory().createJavaType(nestedType, nsContext);
+                if (nestedType.isPrimitiveType() || nestedType.isPrimitiveUnionVariantType()) {
                     String javaTypeName = jt.toJavaTypeString();
                     String isMethodName = "is" + javaTypeName;
                     String toMethodName = "to" + javaTypeName;
@@ -922,8 +911,9 @@ public class CreateReadersStage extends AbstractJavaStage {
 
                     readerClassSource.addImport(unionValueInterface);
                     readerClassSource.addImport(unionValueClass);
-                } else if (jt.isPrimitiveList()) {
-                    String nestedJavaTypeName = getTypeName(nestedType.getNested().iterator().next());
+                } else if (nestedType.isListType() && ((io.apitomy.umg.models.concept.type.ListType) nestedType).getValueType().isPrimitiveType()) {
+                    Type listItemType = ((io.apitomy.umg.models.concept.type.ListType) nestedType).getValueType();
+                    String nestedJavaTypeName = getTypeName(listItemType);
                     String unionValueName = getTypeName(nestedType);
                     String toMethodName = "to" + nestedJavaTypeName;
                     String unionValueInterfaceName = unionValueName + "UnionValue";
@@ -957,9 +947,9 @@ public class CreateReadersStage extends AbstractJavaStage {
                     readerClassSource.addImport(JsonNode.class);
                     readerClassSource.addImport(List.class);
                     readerClassSource.addImport(ArrayList.class);
-                } else if (jt.isEntity()) {
+                } else if (nestedType.isEntityType()) {
                     NamespaceModel nestedTypeEntityNS = entityModel.getNamespace();
-                    String nestedTypeEntityName = nestedTypeEntityNS.fullName() + "." + nestedType.getSimpleType();
+                    String nestedTypeEntityName = nestedTypeEntityNS.fullName() + "." + nestedType.getName();
                     EntityModel nestedTypeEntity = getState().getConceptIndex().lookupEntity(nestedTypeEntityName);
                     if (nestedTypeEntity == null) {
                         warn("Property union type with entity sub-type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
@@ -980,7 +970,8 @@ public class CreateReadersStage extends AbstractJavaStage {
                     body.addContext("readMethodName", readMethodName(nestedTypeEntity));
                     body.addContext("propertyEntityType", entityJavaSource.getName());
 
-                    UnionRule unionRule = property.getRuleFor(nestedType.asRawType());
+                    String rawTypeName = nestedType.getRawType() != null ? nestedType.getRawType().toString() : nestedType.getName();
+                    UnionRule unionRule = property.getRuleFor(rawTypeName);
                     if (unionRule == null) {
                         body.append("if (JsonUtil.isObject(value)) {");
                     } else {
@@ -999,7 +990,7 @@ public class CreateReadersStage extends AbstractJavaStage {
                     body.append("    node.${setterMethodName}(node.${createMethodName}());");
                     body.append("    ${readMethodName}(object, (${propertyEntityType}) node.${getterMethodName}());");
                     body.append("}");
-                } else if (jt.isEntityList()) {
+                } else if (nestedType.isListType() && ((io.apitomy.umg.models.concept.type.ListType) nestedType).getValueType().isEntityType()) {
                     String unionValueName = getTypeName(nestedType);
                     String unionValueInterfaceName = unionValueName + "UnionValue";
                     String unionValueClassName = unionValueInterfaceName + "Impl";
@@ -1010,8 +1001,8 @@ public class CreateReadersStage extends AbstractJavaStage {
                         return;
                     }
 
-                    PropertyType listItemType = nestedType.getNested().iterator().next();
-                    String listItemEntityName = entityModel.getNamespace().fullName() + "." + listItemType.getSimpleType();
+                    Type listItemType = ((io.apitomy.umg.models.concept.type.ListType) nestedType).getValueType();
+                    String listItemEntityName = entityModel.getNamespace().fullName() + "." + listItemType.getName();
                     EntityModel listItemEntity = getState().getConceptIndex().lookupEntity(listItemEntityName);
                     if (listItemEntity == null) {
                         warn("Property union type with entity sub-type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
@@ -1059,7 +1050,7 @@ public class CreateReadersStage extends AbstractJavaStage {
                 } else {
                     // TODO implement handling for entity maps
                     warn("UNION Entity property '" + property.getName() + "' not read (unsupported union subtype) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type: " + property.getType());
+                    warn("       property type: " + property.getResolvedType());
                     body.append("if (Boolean.TRUE) {}");
                 }
             }
@@ -1073,49 +1064,48 @@ public class CreateReadersStage extends AbstractJavaStage {
         private void handleUnionListProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             NamespaceModel nsContext = propertyWithOrigin.getOrigin().getNamespace();
-            PropertyType unionType = property.getType().getNested().iterator().next();
-            UnionPropertyType ut = new UnionPropertyType(unionType);
+            io.apitomy.umg.models.concept.type.UnionType unionType = (io.apitomy.umg.models.concept.type.UnionType) ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
+            var unionJavaType = getJavaTypeFactory().createJavaType(unionType, nsContext);
 
             readerClassSource.addImport(JsonNode.class);
             readerClassSource.addImport(List.class);
             readerClassSource.addImport(ArrayList.class);
-            ut.addImportsTo(readerClassSource);
+            unionJavaType.addImportsTo(readerClassSource);
 
             body.addContext("propertyName", property.getName());
             body.addContext("addMethodName", addMethodName(singularize(property.getName())));
-            body.addContext("unionJavaType", ut.toJavaTypeString());
+            body.addContext("unionJavaType", unionJavaType.toJavaTypeString());
 
             body.append("{");
             body.append("    List<JsonNode> array = JsonUtil.consumeAnyArrayProperty(json, \"${propertyName}\");");
             body.append("    if (array != null) {");
             body.append("        array.forEach(value -> {");
 
-            // Sort the nested types - make sure any entity types with union rules come first
-            List<PropertyType> sortedNestedTypes = ut.getNestedTypes().stream().sorted(new Comparator<PropertyType>() {
-                @Override
-                public int compare(PropertyType o1, PropertyType o2) {
-                    if (o1.isEntityType() && o2.isEntityType()) {
-                        UnionRule rule1 = property.getRuleFor(o1.asRawType());
-                        UnionRule rule2 = property.getRuleFor(o2.asRawType());
-                        if (rule1 != null && rule2 == null) {
-                            return -1;
-                        } else if (rule1 == null && rule2 != null) {
-                            return 1;
-                        }
+            List<Type> sortedNestedTypes = unionType.getTypes().stream().sorted((o1, o2) -> {
+                if (o1.isEntityType() && o2.isEntityType()) {
+                    String raw1 = o1.getRawType() != null ? o1.getRawType().toString() : o1.getName();
+                    String raw2 = o2.getRawType() != null ? o2.getRawType().toString() : o2.getName();
+                    UnionRule rule1 = property.getRuleFor(raw1);
+                    UnionRule rule2 = property.getRuleFor(raw2);
+                    if (rule1 != null && rule2 == null) {
+                        return -1;
+                    } else if (rule1 == null && rule2 != null) {
+                        return 1;
                     }
-                    return o1.asRawType().compareTo(o2.asRawType());
                 }
+                String name1 = o1.getRawType() != null ? o1.getRawType().toString() : o1.getName();
+                String name2 = o2.getRawType() != null ? o2.getRawType().toString() : o2.getName();
+                return name1.compareTo(name2);
             }).collect(Collectors.toUnmodifiableList());
 
-            // Generate a block of reader code for each nested type
             boolean first = true;
-            for (PropertyType nestedType : sortedNestedTypes) {
+            for (Type nestedType : sortedNestedTypes) {
                 if (!first) {
                     body.append(" else ");
                 }
                 first = false;
-                JavaType jt = new JavaType(nestedType, nsContext);
-                if (jt.isPrimitive()) {
+                var jt = getJavaTypeFactory().createJavaType(nestedType, nsContext);
+                if (nestedType.isPrimitiveType() || nestedType.isPrimitiveUnionVariantType()) {
                     String javaTypeName = jt.toJavaTypeString();
                     String isMethodName = "is" + javaTypeName;
                     String toMethodName = "to" + javaTypeName;
@@ -1146,9 +1136,9 @@ public class CreateReadersStage extends AbstractJavaStage {
                         readerClassSource.addImport(unionValueInterface);
                         readerClassSource.addImport(unionValueClass);
                     }
-                } else if (jt.isEntity()) {
+                } else if (nestedType.isEntityType()) {
                     NamespaceModel nestedTypeEntityNS = entityModel.getNamespace();
-                    String nestedTypeEntityName = nestedTypeEntityNS.fullName() + "." + nestedType.getSimpleType();
+                    String nestedTypeEntityName = nestedTypeEntityNS.fullName() + "." + nestedType.getName();
                     EntityModel nestedTypeEntity = getState().getConceptIndex().lookupEntity(nestedTypeEntityName);
                     if (nestedTypeEntity == null) {
                         warn("Property union list type with entity sub-type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
@@ -1167,7 +1157,8 @@ public class CreateReadersStage extends AbstractJavaStage {
                     body.addContext("readMethodName", readMethodName(nestedTypeEntity));
                     body.addContext("propertyEntityType", entityJavaSource.getName());
 
-                    UnionRule unionRule = property.getRuleFor(nestedType.asRawType());
+                    String rawTypeName = nestedType.getRawType() != null ? nestedType.getRawType().toString() : nestedType.getName();
+                    UnionRule unionRule = property.getRuleFor(rawTypeName);
                     if (unionRule == null) {
                         body.append("if (JsonUtil.isObject(value)) {");
                     } else {
@@ -1189,7 +1180,7 @@ public class CreateReadersStage extends AbstractJavaStage {
                     body.append("}");
                 } else {
                     warn("UNION LIST property '" + property.getName() + "' not read (unsupported union subtype) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type: " + property.getType());
+                    warn("       property type: " + property.getResolvedType());
                     body.append("if (Boolean.TRUE) {}");
                 }
             }
@@ -1201,17 +1192,17 @@ public class CreateReadersStage extends AbstractJavaStage {
         private void handleUnionMapProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             NamespaceModel nsContext = propertyWithOrigin.getOrigin().getNamespace();
-            PropertyType unionType = property.getType().getNested().iterator().next();
-            UnionPropertyType ut = new UnionPropertyType(unionType);
+            io.apitomy.umg.models.concept.type.UnionType unionType = (io.apitomy.umg.models.concept.type.UnionType) ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
+            var unionJavaType = getJavaTypeFactory().createJavaType(unionType, nsContext);
 
             readerClassSource.addImport(JsonNode.class);
             readerClassSource.addImport(Map.class);
             readerClassSource.addImport(List.class);
-            ut.addImportsTo(readerClassSource);
+            unionJavaType.addImportsTo(readerClassSource);
 
             body.addContext("propertyName", property.getName());
             body.addContext("addMethodName", addMethodName(singularize(property.getName())));
-            body.addContext("unionJavaType", ut.toJavaTypeString());
+            body.addContext("unionJavaType", unionJavaType.toJavaTypeString());
 
             body.append("{");
             body.append("    ObjectNode mapObject = JsonUtil.consumeObjectProperty(json, \"${propertyName}\");");
@@ -1221,32 +1212,31 @@ public class CreateReadersStage extends AbstractJavaStage {
             body.append("            JsonNode value = JsonUtil.consumeAnyProperty(mapObject, key);");
             body.append("            if (value != null) {");
 
-            // Sort the nested types - make sure any entity types with union rules come first
-            List<PropertyType> sortedNestedTypes = ut.getNestedTypes().stream().sorted(new Comparator<PropertyType>() {
-                @Override
-                public int compare(PropertyType o1, PropertyType o2) {
-                    if (o1.isEntityType() && o2.isEntityType()) {
-                        UnionRule rule1 = property.getRuleFor(o1.asRawType());
-                        UnionRule rule2 = property.getRuleFor(o2.asRawType());
-                        if (rule1 != null && rule2 == null) {
-                            return -1;
-                        } else if (rule1 == null && rule2 != null) {
-                            return 1;
-                        }
+            List<Type> sortedNestedTypes = unionType.getTypes().stream().sorted((o1, o2) -> {
+                if (o1.isEntityType() && o2.isEntityType()) {
+                    String raw1 = o1.getRawType() != null ? o1.getRawType().toString() : o1.getName();
+                    String raw2 = o2.getRawType() != null ? o2.getRawType().toString() : o2.getName();
+                    UnionRule rule1 = property.getRuleFor(raw1);
+                    UnionRule rule2 = property.getRuleFor(raw2);
+                    if (rule1 != null && rule2 == null) {
+                        return -1;
+                    } else if (rule1 == null && rule2 != null) {
+                        return 1;
                     }
-                    return o1.asRawType().compareTo(o2.asRawType());
                 }
+                String name1 = o1.getRawType() != null ? o1.getRawType().toString() : o1.getName();
+                String name2 = o2.getRawType() != null ? o2.getRawType().toString() : o2.getName();
+                return name1.compareTo(name2);
             }).collect(Collectors.toUnmodifiableList());
 
-            // Generate a block of reader code for each nested type
             boolean first = true;
-            for (PropertyType nestedType : sortedNestedTypes) {
+            for (Type nestedType : sortedNestedTypes) {
                 if (!first) {
                     body.append(" else ");
                 }
                 first = false;
-                JavaType jt = new JavaType(nestedType, nsContext);
-                if (jt.isPrimitive()) {
+                var jt = getJavaTypeFactory().createJavaType(nestedType, nsContext);
+                if (nestedType.isPrimitiveType() || nestedType.isPrimitiveUnionVariantType()) {
                     String javaTypeName = jt.toJavaTypeString();
                     String isMethodName = "is" + javaTypeName;
                     String toMethodName = "to" + javaTypeName;
@@ -1277,9 +1267,9 @@ public class CreateReadersStage extends AbstractJavaStage {
                         readerClassSource.addImport(unionValueInterface);
                         readerClassSource.addImport(unionValueClass);
                     }
-                } else if (jt.isEntity()) {
+                } else if (nestedType.isEntityType()) {
                     NamespaceModel nestedTypeEntityNS = entityModel.getNamespace();
-                    String nestedTypeEntityName = nestedTypeEntityNS.fullName() + "." + nestedType.getSimpleType();
+                    String nestedTypeEntityName = nestedTypeEntityNS.fullName() + "." + nestedType.getName();
                     EntityModel nestedTypeEntity = getState().getConceptIndex().lookupEntity(nestedTypeEntityName);
                     if (nestedTypeEntity == null) {
                         warn("Property union map type with entity sub-type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
@@ -1298,7 +1288,8 @@ public class CreateReadersStage extends AbstractJavaStage {
                             body.addContext("readMethodName", readMethodName(nestedTypeEntity));
                             body.addContext("propertyEntityType", entityJavaSource.getName());
 
-                            UnionRule unionRule = property.getRuleFor(nestedType.asRawType());
+                            String rawTypeName = nestedType.getRawType() != null ? nestedType.getRawType().toString() : nestedType.getName();
+                            UnionRule unionRule = property.getRuleFor(rawTypeName);
                             if (unionRule == null) {
                                 body.append("if (JsonUtil.isObject(value)) {");
                             } else {
@@ -1322,7 +1313,7 @@ public class CreateReadersStage extends AbstractJavaStage {
                     }
                 } else {
                     warn("UNION MAP property '" + property.getName() + "' not read (unsupported union subtype) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type: " + property.getType());
+                    warn("       property type: " + property.getResolvedType());
                     body.append("if (Boolean.TRUE) {}");
                 }
             }
@@ -1339,7 +1330,7 @@ public class CreateReadersStage extends AbstractJavaStage {
          *
          * @param type
          */
-        private String determineConsumePropertyVariant(PropertyType type) {
+        private String determineConsumePropertyVariant(Type type) {
             if (type.isEntityType()) {
                 return "consumeObjectProperty";
             }
@@ -1357,10 +1348,10 @@ public class CreateReadersStage extends AbstractJavaStage {
                 }
             }
 
-            if (type.isList()) {
-                PropertyType listType = type.getNested().iterator().next();
-                if (listType.isPrimitiveType()) {
-                    Class<?> _class = primitiveTypeToClass(listType);
+            if (type.isListType()) {
+                Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) type).getValueType();
+                if (listValueType.isPrimitiveType()) {
+                    Class<?> _class = primitiveTypeToClass(listValueType);
                     if (ObjectNode.class.equals(_class)) {
                         readerClassSource.addImport(_class);
                         return "consumeObjectArrayProperty";
@@ -1373,10 +1364,10 @@ public class CreateReadersStage extends AbstractJavaStage {
                 }
             }
 
-            if (type.isMap()) {
-                PropertyType mapType = type.getNested().iterator().next();
-                if (mapType.isPrimitiveType()) {
-                    Class<?> _class = primitiveTypeToClass(mapType);
+            if (type.isMapType()) {
+                Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) type).getValueType();
+                if (mapValueType.isPrimitiveType()) {
+                    Class<?> _class = primitiveTypeToClass(mapValueType);
                     if (ObjectNode.class.equals(_class)) {
                         readerClassSource.addImport(_class);
                         return "consumeObjectMapProperty";
@@ -1399,7 +1390,7 @@ public class CreateReadersStage extends AbstractJavaStage {
          *
          * @param type
          */
-        private String determineValueType(PropertyType type) {
+        private String determineValueType(Type type) {
             if (type.isPrimitiveType()) {
                 Class<?> _class = primitiveTypeToClass(type);
                 if (_class != null) {
@@ -1408,10 +1399,10 @@ public class CreateReadersStage extends AbstractJavaStage {
                 }
             }
 
-            if (type.isList()) {
-                PropertyType listType = type.getNested().iterator().next();
-                if (listType.isPrimitiveType()) {
-                    Class<?> _class = primitiveTypeToClass(listType);
+            if (type.isListType()) {
+                Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) type).getValueType();
+                if (listValueType.isPrimitiveType()) {
+                    Class<?> _class = primitiveTypeToClass(listValueType);
                     if (_class != null) {
                         readerClassSource.addImport(_class);
                         return "List<" + _class.getSimpleName() + ">";
@@ -1419,10 +1410,10 @@ public class CreateReadersStage extends AbstractJavaStage {
                 }
             }
 
-            if (type.isMap()) {
-                PropertyType mapType = type.getNested().iterator().next();
-                if (mapType.isPrimitiveType()) {
-                    Class<?> _class = primitiveTypeToClass(mapType);
+            if (type.isMapType()) {
+                Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) type).getValueType();
+                if (mapValueType.isPrimitiveType()) {
+                    Class<?> _class = primitiveTypeToClass(mapValueType);
                     if (_class != null) {
                         readerClassSource.addImport(_class);
                         return "Map<String, " + _class.getSimpleName() + ">";

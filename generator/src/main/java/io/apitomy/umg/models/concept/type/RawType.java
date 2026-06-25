@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * Unlike {@link Type}, this is a pure parse tree with no semantic resolution —
  * entity names are just strings, not references to {@link io.apitomy.umg.models.concept.EntityModel}.
  * <p>
- * Compared to {@link io.apitomy.umg.models.concept.PropertyType}, this uses ordered {@code List}
+ * This uses ordered {@code List}
  * instead of unordered {@code Set} for nested types, and sorts union variants alphabetically
  * for deterministic output.
  */

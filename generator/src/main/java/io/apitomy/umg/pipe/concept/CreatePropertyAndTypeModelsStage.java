@@ -3,7 +3,7 @@ package io.apitomy.umg.pipe.concept;
 import io.apitomy.umg.beans.Property;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyType;
+
 import io.apitomy.umg.models.concept.TraitModel;
 import io.apitomy.umg.models.concept.type.EntityType;
 import io.apitomy.umg.models.concept.type.ListType;
@@ -22,10 +22,9 @@ import java.util.Map;
 /**
  * Creates property models AND resolves their types into the new Type hierarchy.
  * <p>
- * This stage replaces {@link CreatePropertyModelsStage} with an extended version that:
+ * This stage creates property models and resolves their types into the {@link Type} hierarchy.
  * <ol>
- *   <li>Creates {@link PropertyModel} with parsed {@link PropertyType} (legacy, for backward compat)</li>
- *   <li>Also resolves each property's type into a {@link Type} object and sets {@link PropertyModel#setResolvedType}</li>
+ *   <li>Resolves each property's type into a {@link Type} object and sets {@link PropertyModel#setResolvedType}</li>
  *   <li>Indexes named types (type aliases) in the concept index for later reference</li>
  * </ol>
  * <p>
@@ -109,7 +108,6 @@ public class CreatePropertyAndTypeModelsStage extends AbstractStage {
 
     private PropertyModel createPropertyModel(Property property, String namespace,
                                                boolean checkShading, EntityModel entityModel) {
-        var propertyType = PropertyType.parse(property.getType());
         var rawType = RawType.parse(property.getType());
         var resolvedType = resolveType(rawType, namespace);
         if (resolvedType instanceof UnionType ut
@@ -125,7 +123,6 @@ public class CreatePropertyAndTypeModelsStage extends AbstractStage {
                 .discriminator(property.getDiscriminator())
                 .unionRules(property.getUnionRules())
                 .rawType(property.getType())
-                .type(propertyType)
                 .resolvedType(resolvedType);
 
         if (checkShading && entityModel != null) {
@@ -237,8 +234,8 @@ public class CreatePropertyAndTypeModelsStage extends AbstractStage {
     }
 
     private boolean isPropertyShaded(Property property, EntityModel entityModel) {
-        var type = PropertyType.parse(property.getType());
-        if (type != null && type.isPrimitiveType()) {
+        var rawType = RawType.parse(property.getType());
+        if (rawType != null && rawType.isPrimitiveType()) {
             return false;
         }
         var traits = entityModel.getTraits();

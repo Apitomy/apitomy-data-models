@@ -1,12 +1,10 @@
 package io.apitomy.umg.pipe.java;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.forge.roaster.model.source.Importer;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.MethodHolderSource;
@@ -17,9 +15,10 @@ import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.NamespaceModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
-import io.apitomy.umg.models.concept.PropertyType;
+
 import io.apitomy.umg.models.concept.TraitModel;
 import io.apitomy.umg.models.concept.VisitorModel;
+import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.models.java.type.JavaTypeFactory;
 import io.apitomy.umg.pipe.AbstractStage;
 
@@ -312,11 +311,11 @@ public abstract class AbstractJavaStage extends AbstractStage {
         if (name.startsWith("/")) {
             name = propertyModel.getCollection();
         }
-        return getterMethodName(name, propertyModel.getType());
+        return getterMethodName(name, propertyModel.getResolvedType());
     }
 
-    protected String getterMethodName(String propertyName, PropertyType type) {
-        boolean isBool = type.isPrimitiveType() && type.getSimpleType().equals("boolean");
+    protected String getterMethodName(String propertyName, Type type) {
+        boolean isBool = type.isPrimitiveType() && type.getName().equals("boolean");
         return (isBool ? "is" : "get") + StringUtils.capitalize(propertyName);
     }
 
@@ -324,31 +323,33 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return "set" + StringUtils.capitalize(propertyModel.getName());
     }
 
-    protected Class<?> primitiveTypeToClass(PropertyType type) {
+    protected Class<?> primitiveTypeToClass(Type type) {
         if (!type.isPrimitiveType()) {
             throw new UnsupportedOperationException("Property type not primitive: " + type);
         }
-        Class<?> rval = Util.PRIMITIVE_TYPE_MAP.get(type.getSimpleType());
+        Class<?> rval = Util.PRIMITIVE_TYPE_MAP.get(type.getName());
         if (rval == null) {
-            throw new UnsupportedOperationException("Primitive-to-class mapping not found for: " + type.getSimpleType());
+            throw new UnsupportedOperationException("Primitive-to-class mapping not found for: " + type.getName());
         }
         return rval;
     }
 
     protected JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, PropertyModel property) {
-        return resolveJavaEntityType(namespace.fullName(), property.getType());
+        var entityType = (io.apitomy.umg.models.concept.type.EntityType) property.getResolvedType();
+        return resolveJavaEntity(namespace.fullName(), entityType.getName());
     }
 
     protected JavaInterfaceSource resolveJavaEntityType(String namespace, PropertyModel property) {
-        return resolveJavaEntityType(namespace, property.getType());
+        var entityType = (io.apitomy.umg.models.concept.type.EntityType) property.getResolvedType();
+        return resolveJavaEntity(namespace, entityType.getName());
     }
 
-    protected JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, PropertyType type) {
-        return resolveJavaEntity(namespace.fullName(), type.getSimpleType());
+    protected JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, Type type) {
+        return resolveJavaEntity(namespace.fullName(), type.getName());
     }
 
-    protected JavaInterfaceSource resolveJavaEntityType(String namespace, PropertyType type) {
-        return resolveJavaEntity(namespace, type.getSimpleType());
+    protected JavaInterfaceSource resolveJavaEntityType(String namespace, Type type) {
+        return resolveJavaEntity(namespace, type.getName());
     }
 
     protected JavaInterfaceSource resolveJavaEntity(EntityModel entityModel) {
@@ -465,271 +466,31 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return getUnionTypesPackageName();
     }
 
-    public class JavaType {
-        private final PropertyType propertyType;
-        private final String namespaceContext;
-        private boolean useCommonEntityResolution;
 
-        public JavaType(PropertyType type, String namespaceContext) {
-            this.propertyType = type;
-            this.namespaceContext = namespaceContext;
-        }
 
-        public JavaType(PropertyType type, NamespaceModel namespace) {
-            this(type, namespace.fullName());
-        }
-
-        public JavaType(PropertyModelWithOrigin property) {
-            this(property.getProperty().getType(), property.getOrigin().getNamespace());
-        }
-
-        public JavaType useCommonEntityResolution() {
-            this.useCommonEntityResolution = true;
-            return this;
-        }
-
-        public boolean isEntityList() {
-            return propertyType.isList() && propertyType.getNested().iterator().next().isEntityType();
-        }
-
-        public boolean isEntityMap() {
-            return propertyType.isMap() && propertyType.getNested().iterator().next().isEntityType();
-        }
-
-        public boolean isEntity() {
-            return propertyType.isEntityType();
-        }
-
-        public boolean isUnion() {
-            return propertyType.isUnion();
-        }
-
-        public boolean isPrimitive() {
-            return propertyType.isPrimitiveType();
-        }
-
-        public boolean isPrimitiveList() {
-            return propertyType.isList() && propertyType.getNested().iterator().next().isPrimitiveType();
-        }
-
-        public boolean isPrimitiveMap() {
-            return propertyType.isMap() && propertyType.getNested().iterator().next().isPrimitiveType();
-        }
-
-        public boolean isUnionList() {
-            return propertyType.isList() && propertyType.getNested().iterator().next().isUnion();
-        }
-
-        public boolean isUnionMap() {
-            return propertyType.isMap() && propertyType.getNested().iterator().next().isUnion();
-        }
-
-        public Class<?> toClass() {
-            return toClass(propertyType);
-        }
-
-        private Class<?> toClass(PropertyType type) {
-            if (!type.isPrimitiveType()) {
-                throw new UnsupportedOperationException("Only allowed for primitive types: " + type);
-            }
-            Class<?> rval = Util.PRIMITIVE_TYPE_MAP.get(type.getSimpleType());
-            if (rval == null) {
-                throw new UnsupportedOperationException("Primitive-to-class mapping not found for: " + type.getSimpleType());
-            }
-            return rval;
-        }
-
-        public void addImportsTo(Importer<?> importer) {
-            // Handle map of list of primitives.
-            if (propertyType.isMap() && propertyType.getNested().iterator().next().isList() &&
-                    propertyType.getNested().iterator().next().getNested().iterator().next().isPrimitiveType()) {
-                PropertyType listType = propertyType.getNested().iterator().next().getNested().iterator().next();
-                Class<?> pType = primitiveTypeToClass(listType);
-                importer.addImport(pType);
-                importer.addImport(List.class);
-                importer.addImport(Map.class);
-            } else if (isPrimitiveList()) {
-                Class<?> listType = primitiveTypeToClass(propertyType.getNested().iterator().next());
-                importer.addImport(List.class);
-                importer.addImport(listType);
-            } else if (isPrimitiveMap()) {
-                Class<?> mapType = primitiveTypeToClass(propertyType.getNested().iterator().next());
-                importer.addImport(Map.class);
-                importer.addImport(mapType);
-            } else if (isPrimitive()) {
-                Class<?> returnType = primitiveTypeToClass(propertyType);
-                importer.addImport(returnType);
-            } else if (isEntity()) {
-                JavaInterfaceSource entityType = useCommonEntityResolution ?
-                        resolveCommonJavaEntity(namespaceContext, propertyType.getSimpleType()) :
-                            resolveJavaEntityType(namespaceContext, propertyType);
-                if (entityType == null) {
-                    throw new UnsupportedOperationException("Java interface for entity type not found: " + propertyType);
-                } else {
-                    importer.addImport(entityType);
-                }
-            } else if (isUnion()) {
-                UnionPropertyType ut = new UnionPropertyType(propertyType);
-                ut.addImportsTo(importer);
-            } else if (isUnionList()) {
-                PropertyType unionType = propertyType.getNested().iterator().next();
-                UnionPropertyType ut = new UnionPropertyType(unionType);
-                ut.addImportsTo(importer);
-                importer.addImport(List.class);
-            } else if (isUnionMap()) {
-                PropertyType unionType = propertyType.getNested().iterator().next();
-                UnionPropertyType ut = new UnionPropertyType(unionType);
-                ut.addImportsTo(importer);
-                importer.addImport(Map.class);
-            } else if (isEntityList()) {
-                JavaInterfaceSource listType = useCommonEntityResolution ?
-                        resolveCommonJavaEntity(namespaceContext, propertyType.getNested().iterator().next().getSimpleType()) :
-                            resolveJavaEntityType(namespaceContext, propertyType.getNested().iterator().next());
-                if (listType == null) {
-                    throw new UnsupportedOperationException("Java interface for entity type not found: " + propertyType);
-                } else {
-                    importer.addImport(List.class);
-                    importer.addImport(listType);
-                }
-            } else if (isEntityMap()) {
-                JavaInterfaceSource mapType = useCommonEntityResolution ?
-                        resolveCommonJavaEntity(namespaceContext, propertyType.getNested().iterator().next().getSimpleType()) :
-                            resolveJavaEntityType(namespaceContext, propertyType.getNested().iterator().next());
-                if (mapType == null) {
-                    throw new UnsupportedOperationException("Java interface for entity type not found: " + propertyType);
-                } else {
-                    importer.addImport(Map.class);
-                    importer.addImport(mapType);
-                }
-            } else {
-                throw new UnsupportedOperationException("Java type not supported: " + propertyType);
-            }
-        }
-
-        public String toJavaTypeString() {
-            if (propertyType.isMap() && propertyType.getNested().iterator().next().isList() &&
-                    propertyType.getNested().iterator().next().getNested().iterator().next().isPrimitiveType()) {
-                PropertyType listType = propertyType.getNested().iterator().next().getNested().iterator().next();
-                Class<?> pType = primitiveTypeToClass(listType);
-                return "Map<String, List<" + pType.getSimpleName() + ">>";
-            } else if (isPrimitiveList()) {
-                Class<?> listType = primitiveTypeToClass(propertyType.getNested().iterator().next());
-                return "List<" + listType.getSimpleName() + ">";
-            } else if (isPrimitiveMap()) {
-                Class<?> mapType = primitiveTypeToClass(propertyType.getNested().iterator().next());
-                return "Map<String, " + mapType.getSimpleName() + ">";
-            } else if (isPrimitive()) {
-                Class<?> returnType = primitiveTypeToClass(propertyType);
-                return returnType.getSimpleName();
-            } else if (isEntity()) {
-                JavaInterfaceSource entityType = useCommonEntityResolution ?
-                        resolveCommonJavaEntity(namespaceContext, propertyType.getSimpleType()) :
-                            resolveJavaEntityType(namespaceContext, propertyType);
-                if (entityType == null) {
-                    throw new UnsupportedOperationException("Java interface for entity type not found: " + propertyType);
-                } else {
-                    return entityType.getName();
-                }
-            } else if (isUnion()) {
-                UnionPropertyType ut = new UnionPropertyType(propertyType);
-                return ut.toJavaTypeString();
-            } else if (isUnionList()) {
-                PropertyType unionType = propertyType.getNested().iterator().next();
-                UnionPropertyType ut = new UnionPropertyType(unionType);
-                return "List<" + ut.toJavaTypeString() + ">";
-            } else if (isUnionMap()) {
-                PropertyType unionType = propertyType.getNested().iterator().next();
-                UnionPropertyType ut = new UnionPropertyType(unionType);
-                return "Map<String, " + ut.toJavaTypeString() + ">";
-            } else if (isEntityList()) {
-                JavaInterfaceSource listType = useCommonEntityResolution ?
-                        resolveCommonJavaEntity(namespaceContext, propertyType.getNested().iterator().next().getSimpleType()) :
-                            resolveJavaEntityType(namespaceContext, propertyType.getNested().iterator().next());
-                if (listType == null) {
-                    throw new UnsupportedOperationException("Java interface for entity type not found: " + propertyType);
-                } else {
-                    return "List<" + listType.getName() + ">";
-                }
-            } else if (isEntityMap()) {
-                JavaInterfaceSource mapType = useCommonEntityResolution ?
-                        resolveCommonJavaEntity(namespaceContext, propertyType.getNested().iterator().next().getSimpleType()) :
-                            resolveJavaEntityType(namespaceContext, propertyType.getNested().iterator().next());
-                if (mapType == null) {
-                    throw new UnsupportedOperationException("Java interface for entity type not found: " + propertyType);
-                } else {
-                    return "Map<String, " + mapType.getName() + ">";
-                }
-            } else {
-                throw new UnsupportedOperationException("Java type not supported: " + propertyType);
-            }
-        }
-    }
-
-    public static String getTypeName(PropertyType type) {
+    public static String getTypeName(Type type) {
         if (type.isEntityType()) {
-            return type.getSimpleType();
+            return type.getName();
         } else if (type.isPrimitiveType()) {
-            return StringUtils.capitalize(type.getSimpleType());
-        } else if (type.isUnion()) {
-            List<PropertyType> nestedTypes = new ArrayList<>(type.getNested());
+            return StringUtils.capitalize(type.getName());
+        } else if (type.isPrimitiveUnionVariantType()) {
+            return StringUtils.capitalize(type.getName());
+        } else if (type.isUnionType()) {
+            List<Type> nestedTypes = new ArrayList<>(((io.apitomy.umg.models.concept.type.UnionType) type).getTypes());
             return getUnionTypeName(nestedTypes);
-        } else if (type.isList()) {
-            return getTypeName(type.getNested().iterator().next()) + "List";
-        } else if (type.isMap()) {
-            return getTypeName(type.getNested().iterator().next()) + "Map";
+        } else if (type.isListType()) {
+            return getTypeName(((io.apitomy.umg.models.concept.type.ListType) type).getValueType()) + "List";
+        } else if (type.isMapType()) {
+            return getTypeName(((io.apitomy.umg.models.concept.type.MapType) type).getValueType()) + "Map";
         } else {
             throw new RuntimeException("Unsupported type in union: " + type);
         }
     }
 
-    private static String getUnionTypeName(List<PropertyType> unionNestedTypes) {
+    private static String getUnionTypeName(List<Type> unionNestedTypes) {
         return unionNestedTypes.stream().map(pt -> getTypeName(pt)).reduce((t, u) -> t + u).orElseThrow() + "Union";
     }
 
-    public class UnionPropertyType {
 
-        public UnionPropertyType(PropertyType pType) {
-            List<PropertyType> nt = new ArrayList<>(pType.getNested().size());
-            nt.addAll(pType.getNested());
-            nt.sort(new Comparator<PropertyType>() {
-                @Override
-                public int compare(PropertyType o1, PropertyType o2) {
-                    return o1.toString().compareToIgnoreCase(o2.toString());
-                }
-            });
-
-            String name = getUnionTypeName(nt);
-            this.name = name;
-            this.nestedTypes = nt;
-        }
-
-        private final String name;
-        private final List<PropertyType> nestedTypes;
-
-        public void addImportsTo(Importer<?> importer) {
-            var source = getState().getJavaIndex().lookupInterface(getUnionTypeFQN(name));
-            if (source == null) {
-                source = getState().getJavaIndex().findInterfaceBySimpleName(name);
-            }
-            if (source != null) {
-                importer.addImport(source);
-            } else {
-                importer.addImport(getUnionTypeFQN(name));
-            }
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public List<PropertyType> getNestedTypes() {
-            return nestedTypes;
-        }
-
-        public String toJavaTypeString() {
-            return name;
-        }
-
-    }
 
 }

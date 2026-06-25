@@ -79,44 +79,10 @@ public class CreateInterfaceMethodsStage extends AbstractCreateMethodsStage {
         JavaInterfaceSource mappedNodeInterface = getState().getJavaIndex().lookupInterface(mappedNodeFQN);
 
         javaEntity.addImport(mappedNodeInterface);
-        String mappedNodeInterfaceWithType;
 
-        if (property.getResolvedType() != null) {
-            var jt = getJavaTypeFactory().createJavaType(property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
-            jt.addImportsTo(javaEntity);
-            mappedNodeInterfaceWithType = mappedNodeInterface.getName() + "<" + jt.toJavaTypeString() + ">";
-        } else if (isPrimitiveList(property)) {
-            Class<?> listType = primitiveTypeToClass(property.getType().getNested().iterator().next());
-            javaEntity.addImport(List.class);
-            javaEntity.addImport(listType);
-            String mappedType = "List<" + listType.getSimpleName() + ">";
-            mappedNodeInterfaceWithType = mappedNodeInterface.getName() + "<" + mappedType + ">";
-        } else if (isPrimitiveMap(property)) {
-            Class<?> mapType = primitiveTypeToClass(property.getType().getNested().iterator().next());
-            javaEntity.addImport(Map.class);
-            javaEntity.addImport(mapType);
-            String mappedType = "Map<String, " + mapType.getSimpleName() + ">";
-            mappedNodeInterfaceWithType = mappedNodeInterface.getName() + "<" + mappedType + ">";
-        } else if (isPrimitive(property)) {
-            Class<?> primType = primitiveTypeToClass(property.getType());
-            javaEntity.addImport(primType);
-            mappedNodeInterfaceWithType = mappedNodeInterface.getName() + "<" + primType.getSimpleName()
-            + ">";
-        } else if (isEntity(property)) {
-            JavaInterfaceSource entityType = resolveJavaEntityType(
-                    propertyWithOrigin.getOrigin().getNamespace().fullName(), property);
-            if (entityType == null) {
-                error("Java interface for entity type not found: " + property.getType());
-                return;
-            } else {
-                javaEntity.addImport(entityType);
-                mappedNodeInterfaceWithType = mappedNodeInterface.getName() + "<" + entityType.getName()
-                + ">";
-            }
-        } else {
-            error("Unhandled STAR property from entity: " + javaEntity.getCanonicalName());
-            return;
-        }
+        var jt = getJavaTypeFactory().createJavaType(property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
+        jt.addImportsTo(javaEntity);
+        String mappedNodeInterfaceWithType = mappedNodeInterface.getName() + "<" + jt.toJavaTypeString() + ">";
 
         ((JavaInterfaceSource) javaEntity).addInterface(mappedNodeInterfaceWithType);
     }
