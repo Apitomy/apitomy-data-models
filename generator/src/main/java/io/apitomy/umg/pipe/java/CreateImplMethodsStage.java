@@ -2,23 +2,28 @@ package io.apitomy.umg.pipe.java;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaEnumSource;
-import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.forge.roaster.model.source.MethodHolderSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
+import io.apitomy.umg.index.concept.ConceptIndex;
+import io.apitomy.umg.index.java.JavaIndex;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
-import io.apitomy.umg.models.concept.type.CollectionType;
-import io.apitomy.umg.models.concept.type.Type;
+import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
+import io.apitomy.umg.pipe.java.method.ClearMethod;
+import io.apitomy.umg.pipe.java.method.FactoryMethod;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.ImplMethodContext;
+import io.apitomy.umg.pipe.java.method.InsertMethod;
+import io.apitomy.umg.pipe.java.method.RemoveMethod;
+import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
  * Creates methods on all entity implementation classes.  This follows the same algorithm
@@ -28,6 +33,68 @@ import io.apitomy.umg.pipe.java.method.BodyBuilder;
  * @author eric.wittmann@gmail.com
  */
 public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
+
+    private final ImplMethodContext ctx = new ImplMethodContext() {
+        @Override
+        public String getFieldName(PropertyModel property) {
+            return CreateImplMethodsStage.this.getFieldName(property);
+        }
+
+        @Override
+        public String getNodeEntityClassFQN() {
+            return CreateImplMethodsStage.this.getNodeEntityClassFQN();
+        }
+
+        @Override
+        public String getParentPropertyTypeEnumFQN() {
+            return CreateImplMethodsStage.this.getParentPropertyTypeEnumFQN();
+        }
+
+        @Override
+        public String getUnionValueInterfaceFQN() {
+            return CreateImplMethodsStage.this.getUnionValueInterfaceFQN();
+        }
+
+        @Override
+        public String getUnionTypeFQN(String name) {
+            return CreateImplMethodsStage.this.getUnionTypeFQN(name);
+        }
+
+        @Override
+        public String getDataModelUtilFQCN() {
+            return CreateImplMethodsStage.this.getDataModelUtilFQCN();
+        }
+
+        @Override
+        public String getJavaEntityClassFQN(EntityModel entity) {
+            return CreateImplMethodsStage.this.getJavaEntityClassFQN(entity);
+        }
+
+        @Override
+        public JavaClassSource lookupJavaEntityImpl(String fqn) {
+            return CreateImplMethodsStage.this.lookupJavaEntityImpl(fqn);
+        }
+
+        @Override
+        public JavaClassSource lookupJavaEntityImpl(EntityModel entity) {
+            return CreateImplMethodsStage.this.lookupJavaEntityImpl(entity);
+        }
+
+        @Override
+        public ConceptIndex getConceptIndex() {
+            return CreateImplMethodsStage.this.getState().getConceptIndex();
+        }
+
+        @Override
+        public JavaIndex getJavaIndex() {
+            return CreateImplMethodsStage.this.getState().getJavaIndex();
+        }
+
+        @Override
+        public void error(String message) {
+            CreateImplMethodsStage.this.error(message);
+        }
+    };
 
     @Override
     protected void doProcess() {
@@ -193,396 +260,43 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
 
     @Override
     protected void createGetterBody(PropertyModel property, MethodSource<?> method) {
-        String fieldName = getFieldName(property);
-        BodyBuilder body = new BodyBuilder();
-        body.addContext("fieldName", fieldName);
-        body.append("return ${fieldName};");
-        method.setBody(body.toString());
+        new GetterMethod(property, ctx).writeTo(method);
     }
 
     @Override
     protected void createSetterBody(JavaSource<?> javaEntity, PropertyModel property, MethodSource<?> method) {
-        String fieldName = getFieldName(property);
-        String propertyName = property.getName();
-
-        BodyBuilder body = new BodyBuilder();
-        body.addContext("fieldName", fieldName);
-        body.addContext("propertyName", propertyName);
-        body.append("this.${fieldName} = value;");
-        Type resolvedType = property.getResolvedType();
-        boolean isEntityType = resolvedType.isEntityType();
-        boolean isUnionType = resolvedType.isUnionType();
-        if (isEntityType) {
-            JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
-            javaEntity.addImport(parentPropertyTypeSource);
-            JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
-            javaEntity.addImport(nodeImplSource);
-
-            body.append("if (value != null) {");
-            body.append("    ((NodeImpl) value)._setParent(this);");
-            body.append("    ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
-            body.append("    ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);");
-            body.append("}");
-        } else if (isUnionType) {
-            JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
-            javaEntity.addImport(parentPropertyTypeSource);
-            JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
-            javaEntity.addImport(nodeImplSource);
-            JavaInterfaceSource unionValueSource = getState().getJavaIndex().lookupInterface(getUnionValueInterfaceFQN());
-            javaEntity.addImport(unionValueSource);
-            JavaClassSource unionValueImplSource = getState().getJavaIndex().lookupClass(getUnionTypeFQN("UnionValueImpl"));
-            javaEntity.addImport(unionValueImplSource);
-
-            javaEntity.addImport(Collection.class);
-            javaEntity.addImport(List.class);
-            javaEntity.addImport(Map.class);
-
-            body.append("if (value != null) {");
-            body.append("    if (value.isEntity()) {");
-            body.append("        ((NodeImpl) value)._setParent(this);");
-            body.append("        ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
-            body.append("        ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);");
-            body.append("    } else if (value.isEntityList()) {");
-            body.append("        ((UnionValueImpl<?>) value)._setParent(this);");
-            body.append("        ((UnionValueImpl<?>) value)._setParentPropertyName(\"${propertyName}\");");
-            body.append("        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);");
-            body.append("        List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();");
-            body.append("        for (Object entity : entityList) {");
-            body.append("            if (entity != null) {");
-            body.append("                ((NodeImpl) entity)._setParent(this);");
-            body.append("                ((NodeImpl) entity)._setParentPropertyName(\"${propertyName}\");");
-            body.append("                ((NodeImpl) entity)._setParentPropertyType(ParentPropertyType.array);");
-            body.append("            }");
-            body.append("        }");
-            body.append("    } else if (value.isEntityMap()) {");
-            body.append("        ((UnionValueImpl<?>) value)._setParent(this);");
-            body.append("        ((UnionValueImpl<?>) value)._setParentPropertyName(\"${propertyName}\");");
-            body.append("        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);");
-            body.append("        Map<String, ?> entityMap = (Map<String, ?>) ((UnionValue<?>) value).getValue();");
-            body.append("        Collection<String> keys = entityMap.keySet();");
-            body.append("        for (String key : keys) {");
-            body.append("            NodeImpl entity = (NodeImpl) entityMap.get(key);");
-            body.append("            if (entity != null) {");
-            body.append("                entity._setParent(this);");
-            body.append("                entity._setParentPropertyName(\"${propertyName}\");");
-            body.append("                entity._setParentPropertyType(ParentPropertyType.map);");
-            body.append("                entity._setMapPropertyName(key);");
-            body.append("            }");
-            body.append("        }");
-            body.append("    } else {");
-            body.append("        ((UnionValueImpl<?>) value)._setParent(this);");
-            body.append("        ((UnionValueImpl<?>) value)._setParentPropertyName(\"${propertyName}\");");
-            body.append("        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);");
-            body.append("    }");
-            body.append("}");
-        }
-        method.setBody(body.toString());
+        SetterMethod setter = new SetterMethod(javaEntity, property, ctx);
+        setter.addImportsTo(javaEntity);
+        setter.writeTo(method);
     }
 
     @Override
     protected void createFactoryMethodBody(JavaSource<?> javaEntity, String entityName, MethodSource<?> method) {
-        String entityFQN = javaEntity.getPackage() + "." + entityName;
-        EntityModel entityModel = getState().getConceptIndex().lookupEntity(entityFQN);
-        String implFQN = getJavaEntityClassFQN(entityModel);
-
-        JavaClassSource entityImpl = lookupJavaEntityImpl(implFQN);
-        if (entityImpl == null) {
-            error("Could not resolve entity type (impl): " + implFQN);
-            return;
-        }
-        javaEntity.addImport(entityImpl);
-
-        BodyBuilder body = new BodyBuilder();
-        body.addContext("implClass", entityImpl.getName());
-        body.append("${implClass} node = new ${implClass}();");
-        body.append("node._setParent(this);");
-        body.append("return node;");
-        method.setBody(body.toString());
+        new FactoryMethod(javaEntity, entityName, ctx).writeTo(method);
     }
 
     @Override
     protected void createAddMethodBody(JavaSource<?> javaEntity, PropertyModel property, MethodSource<?> method) {
-        String fieldName = getFieldName(property);
-        String propertyName = property.getName();
-
-        Type resolvedType = property.getResolvedType();
-        Type resolvedValueType = resolvedType.isCollectionType()
-                ? ((CollectionType) resolvedType).getValueType()
-                : null;
-        boolean isEntityValue = resolvedValueType != null && resolvedValueType.isEntityType();
-        boolean isUnionValue = resolvedValueType != null && resolvedValueType.isUnionType();
-        boolean isPrimitiveValue = resolvedValueType != null && resolvedValueType.isPrimitiveType();
-
-        BodyBuilder body = new BodyBuilder();
-        body.addContext("fieldName", fieldName);
-        body.addContext("propertyName", propertyName);
-
-        if (isEntityValue || isPrimitiveValue || isUnionValue) {
-            if (resolvedType.isMapType()) {
-                javaEntity.addImport(LinkedHashMap.class);
-
-                body.append("if (this.${fieldName} == null) {");
-                body.append("    this.${fieldName} = new LinkedHashMap<>();");
-                body.append("}");
-                body.append("this.${fieldName}.put(name, value);");
-                if (isEntityValue) {
-                    JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
-                    javaEntity.addImport(parentPropertyTypeSource);
-                    JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
-                    javaEntity.addImport(nodeImplSource);
-
-                    body.append("if (value != null) {");
-                    body.append("    ((NodeImpl) value)._setParent(this);");
-                    body.append("    ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("    ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);");
-                    body.append("    ((NodeImpl) value)._setMapPropertyName(name);");
-                    body.append("}");
-                } else if (isUnionValue) {
-                    JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
-                    javaEntity.addImport(parentPropertyTypeSource);
-                    JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
-                    javaEntity.addImport(nodeImplSource);
-                    JavaInterfaceSource unionValueSource = getState().getJavaIndex().lookupInterface(getUnionValueInterfaceFQN());
-                    javaEntity.addImport(unionValueSource);
-                    JavaClassSource unionValueImplSource = getState().getJavaIndex().lookupClass(getUnionTypeFQN("UnionValueImpl"));
-                    javaEntity.addImport(unionValueImplSource);
-
-                    body.append("if (value != null) {");
-                    body.append("    if (value.isEntity()) {");
-                    body.append("        ((NodeImpl) value)._setParent(this);");
-                    body.append("        ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("        ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);");
-                    body.append("        ((NodeImpl) value)._setMapPropertyName(name);");
-                    body.append("    } else {");
-                    body.append("        ((UnionValueImpl<?>) value)._setParent(this);");
-                    body.append("        ((UnionValueImpl<?>) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.map);");
-                    body.append("        ((UnionValueImpl<?>) value)._setMapPropertyName(name);");
-                    body.append("    }");
-                    body.append("}");
-                }
-            } else {
-                javaEntity.addImport(ArrayList.class);
-
-                body.append("if (this.${fieldName} == null) {");
-                body.append("    this.${fieldName} = new ArrayList<>();");
-                body.append("}");
-                body.append("this.${fieldName}.add(value);");
-                if (isEntityValue) {
-                    JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
-                    javaEntity.addImport(parentPropertyTypeSource);
-                    JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
-                    javaEntity.addImport(nodeImplSource);
-
-                    body.append("if (value != null) {");
-                    body.append("    ((NodeImpl) value)._setParent(this);");
-                    body.append("    ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("    ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);");
-                    body.append("}");
-                } else if (isUnionValue) {
-                    JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
-                    javaEntity.addImport(parentPropertyTypeSource);
-                    JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
-                    javaEntity.addImport(nodeImplSource);
-                    JavaInterfaceSource unionValueSource = getState().getJavaIndex().lookupInterface(getUnionValueInterfaceFQN());
-                    javaEntity.addImport(unionValueSource);
-
-                    JavaClassSource unionValueImplSource = getState().getJavaIndex().lookupClass(getUnionTypeFQN("UnionValueImpl"));
-                    javaEntity.addImport(unionValueImplSource);
-
-                    body.append("if (value != null) {");
-                    body.append("    if (value.isEntity()) {");
-                    body.append("        ((NodeImpl) value)._setParent(this);");
-                    body.append("        ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("        ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);");
-                    body.append("    } else {");
-                    body.append("        ((UnionValueImpl<?>) value)._setParent(this);");
-                    body.append("        ((UnionValueImpl<?>) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.array);");
-                    body.append("    }");
-                    body.append("}");
-                }
-            }
-        }
-
-        method.setBody(body.toString());
+        AddMethod add = new AddMethod(javaEntity, property, ctx);
+        add.addImportsTo(javaEntity);
+        add.writeTo(method);
     }
 
     @Override
     protected void createClearMethodBody(PropertyModel property, MethodSource<?> method) {
-        String fieldName = getFieldName(property);
-        Type resolvedType = property.getResolvedType();
-        Type resolvedValueType = resolvedType.isCollectionType()
-                ? ((CollectionType) resolvedType).getValueType()
-                : null;
-        boolean needsDetach = resolvedValueType != null
-                && (resolvedValueType.isEntityType() || resolvedValueType.isUnionType());
-        BodyBuilder body = new BodyBuilder();
-        body.addContext("fieldName", fieldName);
-        if (needsDetach) {
-            String valuesExpr = resolvedType.isMapType()
-                    ? "this." + fieldName + ".values()" : "this." + fieldName;
-            body.addContext("valuesExpr", valuesExpr);
-            body.append("if (this.${fieldName} != null) {");
-            body.append("    ${valuesExpr}.forEach(item -> {");
-            body.append("        if (item != null) item.detach();");
-            body.append("    });");
-            body.append("    this.${fieldName}.clear();");
-            body.append("}");
-        } else {
-            body.append("if (this.${fieldName} != null) {");
-            body.append("    this.${fieldName}.clear();");
-            body.append("}");
-        }
-        method.setBody(body.toString());
+        new ClearMethod(property, ctx).writeTo(method);
     }
 
     @Override
     protected void createRemoveMethodBody(PropertyModel property, MethodSource<?> method) {
-        String fieldName = getFieldName(property);
-        BodyBuilder body = new BodyBuilder();
-        body.addContext("fieldName", fieldName);
-
-        Type resolvedType = property.getResolvedType();
-        Type resolvedValueType = resolvedType.isCollectionType()
-                ? ((CollectionType) resolvedType).getValueType()
-                : null;
-        boolean needsDetach = resolvedValueType != null
-                && (resolvedValueType.isEntityType() || resolvedValueType.isUnionType());
-        if (resolvedType.isListType()) {
-            body.append("if (this.${fieldName} != null) {");
-            if (needsDetach) {
-                body.append("    if (value != null && this.${fieldName}.remove(value)) {");
-                body.append("        value.detach();");
-                body.append("    }");
-            } else {
-                body.append("    this.${fieldName}.remove(value);");
-            }
-            body.append("}");
-        } else {
-            body.append("if (this.${fieldName} != null) {");
-            body.append("    this.${fieldName}.remove(name);");
-            body.append("}");
-        }
-
-        method.setBody(body.toString());
+        new RemoveMethod(property, ctx).writeTo(method);
     }
 
     @Override
     protected void createInsertMethodBody(JavaSource<?> javaEntity, PropertyModel property, MethodSource<?> method) {
-        String fieldName = getFieldName(property);
-        String propertyName = property.getName();
-
-        Type resolvedType = property.getResolvedType();
-        Type resolvedValueType = resolvedType.isCollectionType()
-                ? ((CollectionType) resolvedType).getValueType()
-                : null;
-        boolean isEntityValue = resolvedValueType != null && resolvedValueType.isEntityType();
-        boolean isUnionValue = resolvedValueType != null && resolvedValueType.isUnionType();
-        boolean isPrimitiveValue = resolvedValueType != null && resolvedValueType.isPrimitiveType();
-
-        BodyBuilder body = new BodyBuilder();
-        body.addContext("fieldName", fieldName);
-        body.addContext("propertyName", propertyName);
-
-        if (isEntityValue || isPrimitiveValue || isUnionValue) {
-            if (resolvedType.isMapType()) {
-                JavaClassSource dataModelUtilSource = getState().getJavaIndex().lookupClass(getDataModelUtilFQCN());
-                javaEntity.addImport(dataModelUtilSource);
-                javaEntity.addImport(LinkedHashMap.class);
-
-                body.append("if (this.${fieldName} == null) {");
-                body.append("    this.${fieldName} = new LinkedHashMap<>();");
-                body.append("    this.${fieldName}.put(name, value);");
-                body.append("} else {");
-                body.append("    this.${fieldName} = DataModelUtil.insertMapEntry(this.${fieldName}, name, value, atIndex);");
-                body.append("}");
-
-                if (isEntityValue) {
-                    JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
-                    javaEntity.addImport(parentPropertyTypeSource);
-                    JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
-                    javaEntity.addImport(nodeImplSource);
-
-                    body.append("if (value != null) {");
-                    body.append("    ((NodeImpl) value)._setParent(this);");
-                    body.append("    ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("    ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);");
-                    body.append("    ((NodeImpl) value)._setMapPropertyName(name);");
-                    body.append("}");
-                } else if (isUnionValue) {
-                    JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
-                    javaEntity.addImport(parentPropertyTypeSource);
-                    JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
-                    javaEntity.addImport(nodeImplSource);
-                    JavaInterfaceSource unionValueSource = getState().getJavaIndex().lookupInterface(getUnionValueInterfaceFQN());
-                    javaEntity.addImport(unionValueSource);
-                    JavaClassSource unionValueImplSource = getState().getJavaIndex().lookupClass(getUnionTypeFQN("UnionValueImpl"));
-                    javaEntity.addImport(unionValueImplSource);
-
-                    body.append("if (value != null) {");
-                    body.append("    if (value.isEntity()) {");
-                    body.append("        ((NodeImpl) value)._setParent(this);");
-                    body.append("        ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("        ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.map);");
-                    body.append("        ((NodeImpl) value)._setMapPropertyName(name);");
-                    body.append("    } else {");
-                    body.append("        ((UnionValueImpl<?>) value)._setParent(this);");
-                    body.append("        ((UnionValueImpl<?>) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.map);");
-                    body.append("        ((UnionValueImpl<?>) value)._setMapPropertyName(name);");
-                    body.append("    }");
-                    body.append("}");
-                }
-            } else {
-                JavaClassSource dataModelUtilSource = getState().getJavaIndex().lookupClass(getDataModelUtilFQCN());
-                javaEntity.addImport(dataModelUtilSource);
-                javaEntity.addImport(ArrayList.class);
-
-                body.append("if (this.${fieldName} == null) {");
-                body.append("    this.${fieldName} = new ArrayList<>();");
-                body.append("    this.${fieldName}.add(value);");
-                body.append("} else {");
-                body.append("    this.${fieldName} = DataModelUtil.insertListEntry(this.${fieldName}, value, atIndex);");
-                body.append("}");
-                if (isEntityValue) {
-                    JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
-                    javaEntity.addImport(parentPropertyTypeSource);
-                    JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
-                    javaEntity.addImport(nodeImplSource);
-
-                    body.append("if (value != null) {");
-                    body.append("    ((NodeImpl) value)._setParent(this);");
-                    body.append("    ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("    ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);");
-                    body.append("}");
-                } else if (isUnionValue) {
-                    JavaEnumSource parentPropertyTypeSource = getState().getJavaIndex().lookupEnum(getParentPropertyTypeEnumFQN());
-                    javaEntity.addImport(parentPropertyTypeSource);
-                    JavaClassSource nodeImplSource = getState().getJavaIndex().lookupClass(getNodeEntityClassFQN());
-                    javaEntity.addImport(nodeImplSource);
-                    JavaInterfaceSource unionValueSource = getState().getJavaIndex().lookupInterface(getUnionValueInterfaceFQN());
-                    javaEntity.addImport(unionValueSource);
-
-                    JavaClassSource unionValueImplSource = getState().getJavaIndex().lookupClass(getUnionTypeFQN("UnionValueImpl"));
-                    javaEntity.addImport(unionValueImplSource);
-
-                    body.append("if (value != null) {");
-                    body.append("    if (value.isEntity()) {");
-                    body.append("        ((NodeImpl) value)._setParent(this);");
-                    body.append("        ((NodeImpl) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("        ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);");
-                    body.append("    } else {");
-                    body.append("        ((UnionValueImpl<?>) value)._setParent(this);");
-                    body.append("        ((UnionValueImpl<?>) value)._setParentPropertyName(\"${propertyName}\");");
-                    body.append("        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.array);");
-                    body.append("    }");
-                    body.append("}");
-                }
-            }
-        }
-
-        method.setBody(body.toString());
+        InsertMethod insert = new InsertMethod(javaEntity, property, ctx);
+        insert.addImportsTo(javaEntity);
+        insert.writeTo(method);
     }
 
     @Override
