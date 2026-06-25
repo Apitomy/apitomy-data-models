@@ -70,13 +70,13 @@ public class Syn2ModelCloner {
 		{
 			SchemaOrBoolean srcUnion = source.getAdditionalSchema();
 			if (srcUnion != null) {
-				if (srcUnion.isBoolean()) {
-					target.setAdditionalSchema(new BooleanUnionValueImpl(srcUnion.asBoolean()));
-				}
 				if (srcUnion.isSchema()) {
 					Syn2Schema tgtEntity = new Syn2SchemaImpl();
 					this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtEntity);
 					target.setAdditionalSchema(tgtEntity);
+				}
+				if (srcUnion.isBoolean()) {
+					target.setAdditionalSchema(new BooleanUnionValueImpl(srcUnion.asBoolean()));
 				}
 			}
 		}
@@ -174,13 +174,13 @@ public class Syn2ModelCloner {
 		{
 			BooleanSchemaUnion srcUnion = source.getDefaultValue();
 			if (srcUnion != null) {
-				if (srcUnion.isBoolean()) {
-					target.setDefaultValue(new BooleanUnionValueImpl(srcUnion.asBoolean()));
-				}
 				if (srcUnion.isSchema()) {
 					Syn2Schema tgtEntity = new Syn2SchemaImpl();
 					this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtEntity);
 					target.setDefaultValue(tgtEntity);
+				}
+				if (srcUnion.isBoolean()) {
+					target.setDefaultValue(new BooleanUnionValueImpl(srcUnion.asBoolean()));
 				}
 			}
 		}
@@ -214,9 +214,6 @@ public class Syn2ModelCloner {
 		{
 			BooleanSchemaSchemaListUnion srcUnion = source.getItems();
 			if (srcUnion != null) {
-				if (srcUnion.isBoolean()) {
-					target.setItems(new BooleanUnionValueImpl(srcUnion.asBoolean()));
-				}
 				if (srcUnion.isSchema()) {
 					Syn2Schema tgtEntity = new Syn2SchemaImpl();
 					this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtEntity);
@@ -233,6 +230,9 @@ public class Syn2ModelCloner {
 					SchemaListUnionValueImpl unionValue = new SchemaListUnionValueImpl((List) clonedList);
 					target.setItems(unionValue);
 				}
+				if (srcUnion.isBoolean()) {
+					target.setItems(new BooleanUnionValueImpl(srcUnion.asBoolean()));
+				}
 			}
 		}
 		{
@@ -240,13 +240,13 @@ public class Syn2ModelCloner {
 			if (srcMap != null && !srcMap.isEmpty()) {
 				srcMap.keySet().forEach(key -> {
 					BooleanSchemaUnion srcUnion = srcMap.get(key);
-					if (srcUnion.isBoolean()) {
-						target.addProperty(key, new BooleanUnionValueImpl(srcUnion.asBoolean()));
-					}
 					if (srcUnion.isSchema()) {
 						Syn2Schema tgtItem = new Syn2SchemaImpl();
 						this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtItem);
 						target.addProperty(key, tgtItem);
+					}
+					if (srcUnion.isBoolean()) {
+						target.addProperty(key, new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
 				});
 			}
@@ -255,13 +255,13 @@ public class Syn2ModelCloner {
 			List<BooleanSchemaUnion> srcList = source.getAllOf();
 			if (srcList != null && !srcList.isEmpty()) {
 				srcList.forEach(srcUnion -> {
-					if (srcUnion.isBoolean()) {
-						target.addAllOf(new BooleanUnionValueImpl(srcUnion.asBoolean()));
-					}
 					if (srcUnion.isSchema()) {
 						Syn2Schema tgtItem = new Syn2SchemaImpl();
 						this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtItem);
 						target.addAllOf(tgtItem);
+					}
+					if (srcUnion.isBoolean()) {
+						target.addAllOf(new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
 				});
 			}
@@ -271,13 +271,13 @@ public class Syn2ModelCloner {
 			if (srcMap != null && !srcMap.isEmpty()) {
 				srcMap.keySet().forEach(key -> {
 					BooleanSchemaUnion srcUnion = srcMap.get(key);
-					if (srcUnion.isBoolean()) {
-						target.addDefinition(key, new BooleanUnionValueImpl(srcUnion.asBoolean()));
-					}
 					if (srcUnion.isSchema()) {
 						Syn2Schema tgtItem = new Syn2SchemaImpl();
 						this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtItem);
 						target.addDefinition(key, tgtItem);
+					}
+					if (srcUnion.isBoolean()) {
+						target.addDefinition(key, new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
 				});
 			}
@@ -287,13 +287,13 @@ public class Syn2ModelCloner {
 			if (srcMap != null && !srcMap.isEmpty()) {
 				srcMap.keySet().forEach(key -> {
 					SchemaOrBoolean srcUnion = srcMap.get(key);
-					if (srcUnion.isBoolean()) {
-						target.addNestedSchema(key, new BooleanUnionValueImpl(srcUnion.asBoolean()));
-					}
 					if (srcUnion.isSchema()) {
 						Syn2Schema tgtItem = new Syn2SchemaImpl();
 						this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtItem);
 						target.addNestedSchema(key, tgtItem);
+					}
+					if (srcUnion.isBoolean()) {
+						target.addNestedSchema(key, new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
 				});
 			}
@@ -302,13 +302,13 @@ public class Syn2ModelCloner {
 			List<SchemaOrBoolean> srcList = source.getComposedSchemas();
 			if (srcList != null && !srcList.isEmpty()) {
 				srcList.forEach(srcUnion -> {
-					if (srcUnion.isBoolean()) {
-						target.addComposedSchema(new BooleanUnionValueImpl(srcUnion.asBoolean()));
-					}
 					if (srcUnion.isSchema()) {
 						Syn2Schema tgtItem = new Syn2SchemaImpl();
 						this.cloneSchema((Syn2Schema) srcUnion.asSchema(), tgtItem);
 						target.addComposedSchema(tgtItem);
+					}
+					if (srcUnion.isBoolean()) {
+						target.addComposedSchema(new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
 				});
 			}
