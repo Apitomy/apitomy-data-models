@@ -1,5 +1,6 @@
 package io.apitomy.umg.pipe.java;
 
+import io.apitomy.umg.models.concept.type.UnionVariantComparator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -492,7 +493,7 @@ public class CreateClonersStage extends AbstractJavaStage {
 
             // Sort types alphabetically to match the old UnionPropertyType behavior
             List<Type> sortedTypes = effectiveUnionType.getTypes().stream()
-                    .sorted(Comparator.comparing(t -> getTypeName(t).toLowerCase()))
+                    .sorted(UnionVariantComparator.INSTANCE)
                     .collect(java.util.stream.Collectors.toList());
             sortedTypes.forEach(nestedType -> {
                 String typeName = getTypeName(nestedType);
@@ -621,7 +622,7 @@ public class CreateClonersStage extends AbstractJavaStage {
             body.append("        srcList.forEach(srcUnion -> {");
 
             effectiveUnionType.getTypes().stream()
-                    .sorted(Comparator.comparing(t -> getTypeName(t).toLowerCase()))
+                    .sorted(UnionVariantComparator.INSTANCE)
                     .forEach(nestedType -> {
                 String typeName = getTypeName(nestedType);
                 String isMethodName = "is" + typeName;
@@ -693,7 +694,7 @@ public class CreateClonersStage extends AbstractJavaStage {
             body.append("            ${unionJavaType} srcUnion = srcMap.get(key);");
 
             effectiveUnionType.getTypes().stream()
-                    .sorted(Comparator.comparing(t -> getTypeName(t).toLowerCase()))
+                    .sorted(UnionVariantComparator.INSTANCE)
                     .forEach(nestedType -> {
                 String typeName = getTypeName(nestedType);
                 String isMethodName = "is" + typeName;

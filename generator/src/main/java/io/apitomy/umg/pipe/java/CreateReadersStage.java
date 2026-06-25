@@ -3,6 +3,7 @@ package io.apitomy.umg.pipe.java;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import io.apitomy.umg.models.concept.type.UnionVariantComparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -863,20 +864,17 @@ public class CreateReadersStage extends AbstractJavaStage {
             body.append("    JsonNode value = JsonUtil.consumeAnyProperty(json, \"${propertyName}\");");
             body.append("    if (value != null) {");
 
-            List<Type> sortedNestedTypes = unionType.getTypes().stream().sorted((o1, o2) -> {
-                if (o1.isEntityType() && o2.isEntityType()) {
-                    UnionRule rule1 = property.getRuleFor(o1.getRawType() != null ? o1.getRawType().toString() : o1.getName());
-                    UnionRule rule2 = property.getRuleFor(o2.getRawType() != null ? o2.getRawType().toString() : o2.getName());
-                    if (rule1 != null && rule2 == null) {
-                        return -1;
-                    } else if (rule1 == null && rule2 != null) {
-                        return 1;
-                    }
-                }
-                String name1 = o1.getRawType() != null ? o1.getRawType().toString() : o1.getName();
-                String name2 = o2.getRawType() != null ? o2.getRawType().toString() : o2.getName();
-                return name1.compareTo(name2);
-            }).collect(Collectors.toUnmodifiableList());
+            List<Type> sortedNestedTypes = unionType.getTypes().stream().sorted(
+                    UnionVariantComparator.INSTANCE.thenComparing((o1, o2) -> {
+                        if (o1.isEntityType() && o2.isEntityType()) {
+                            UnionRule rule1 = property.getRuleFor(o1.getRawType() != null ? o1.getRawType().toString() : o1.getName());
+                            UnionRule rule2 = property.getRuleFor(o2.getRawType() != null ? o2.getRawType().toString() : o2.getName());
+                            if (rule1 != null && rule2 == null) return -1;
+                            if (rule1 == null && rule2 != null) return 1;
+                        }
+                        return 0;
+                    })
+            ).collect(Collectors.toUnmodifiableList());
 
             boolean first = true;
             for (Type nestedType : sortedNestedTypes) {
@@ -1081,22 +1079,17 @@ public class CreateReadersStage extends AbstractJavaStage {
             body.append("    if (array != null) {");
             body.append("        array.forEach(value -> {");
 
-            List<Type> sortedNestedTypes = unionType.getTypes().stream().sorted((o1, o2) -> {
-                if (o1.isEntityType() && o2.isEntityType()) {
-                    String raw1 = o1.getRawType() != null ? o1.getRawType().toString() : o1.getName();
-                    String raw2 = o2.getRawType() != null ? o2.getRawType().toString() : o2.getName();
-                    UnionRule rule1 = property.getRuleFor(raw1);
-                    UnionRule rule2 = property.getRuleFor(raw2);
-                    if (rule1 != null && rule2 == null) {
-                        return -1;
-                    } else if (rule1 == null && rule2 != null) {
-                        return 1;
-                    }
-                }
-                String name1 = o1.getRawType() != null ? o1.getRawType().toString() : o1.getName();
-                String name2 = o2.getRawType() != null ? o2.getRawType().toString() : o2.getName();
-                return name1.compareTo(name2);
-            }).collect(Collectors.toUnmodifiableList());
+            List<Type> sortedNestedTypes = unionType.getTypes().stream().sorted(
+                    UnionVariantComparator.INSTANCE.thenComparing((o1, o2) -> {
+                        if (o1.isEntityType() && o2.isEntityType()) {
+                            UnionRule rule1 = property.getRuleFor(o1.getRawType() != null ? o1.getRawType().toString() : o1.getName());
+                            UnionRule rule2 = property.getRuleFor(o2.getRawType() != null ? o2.getRawType().toString() : o2.getName());
+                            if (rule1 != null && rule2 == null) return -1;
+                            if (rule1 == null && rule2 != null) return 1;
+                        }
+                        return 0;
+                    })
+            ).collect(Collectors.toUnmodifiableList());
 
             boolean first = true;
             for (Type nestedType : sortedNestedTypes) {
@@ -1212,22 +1205,17 @@ public class CreateReadersStage extends AbstractJavaStage {
             body.append("            JsonNode value = JsonUtil.consumeAnyProperty(mapObject, key);");
             body.append("            if (value != null) {");
 
-            List<Type> sortedNestedTypes = unionType.getTypes().stream().sorted((o1, o2) -> {
-                if (o1.isEntityType() && o2.isEntityType()) {
-                    String raw1 = o1.getRawType() != null ? o1.getRawType().toString() : o1.getName();
-                    String raw2 = o2.getRawType() != null ? o2.getRawType().toString() : o2.getName();
-                    UnionRule rule1 = property.getRuleFor(raw1);
-                    UnionRule rule2 = property.getRuleFor(raw2);
-                    if (rule1 != null && rule2 == null) {
-                        return -1;
-                    } else if (rule1 == null && rule2 != null) {
-                        return 1;
-                    }
-                }
-                String name1 = o1.getRawType() != null ? o1.getRawType().toString() : o1.getName();
-                String name2 = o2.getRawType() != null ? o2.getRawType().toString() : o2.getName();
-                return name1.compareTo(name2);
-            }).collect(Collectors.toUnmodifiableList());
+            List<Type> sortedNestedTypes = unionType.getTypes().stream().sorted(
+                    UnionVariantComparator.INSTANCE.thenComparing((o1, o2) -> {
+                        if (o1.isEntityType() && o2.isEntityType()) {
+                            UnionRule rule1 = property.getRuleFor(o1.getRawType() != null ? o1.getRawType().toString() : o1.getName());
+                            UnionRule rule2 = property.getRuleFor(o2.getRawType() != null ? o2.getRawType().toString() : o2.getName());
+                            if (rule1 != null && rule2 == null) return -1;
+                            if (rule1 == null && rule2 != null) return 1;
+                        }
+                        return 0;
+                    })
+            ).collect(Collectors.toUnmodifiableList());
 
             boolean first = true;
             for (Type nestedType : sortedNestedTypes) {
