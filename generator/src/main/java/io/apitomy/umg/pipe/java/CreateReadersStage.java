@@ -442,24 +442,9 @@ public class CreateReadersStage extends AbstractJavaStage {
             } else if (property.getName().startsWith("/")) {
                 handleRegexProperty(body);
             } else if (handleViaResolvedType(body)) {
-                // Handled by resolved type dispatch — union reader methods etc.
-            } else if (property.getType().isEntityType()) {
-                handleEntityProperty(body);
-            } else if (property.getType().isPrimitiveType()) {
-                handlePrimitiveTypeProperty(body);
-            } else if (isUnionList(propertyWithOrigin.getProperty())) {
-                handleUnionListProperty(body);
-            } else if (isUnionMap(propertyWithOrigin.getProperty())) {
-                handleUnionMapProperty(body);
-            } else if (property.getType().isList()) {
-                handleListProperty(body);
-            } else if (property.getType().isMap()) {
-                handleMapProperty(body);
-            } else if (property.getType().isUnion()) {
-                handleUnionProperty(body);
+                // Handled by resolved type dispatch
             } else {
                 warn("Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getType());
             }
         }
 
@@ -485,6 +470,30 @@ public class CreateReadersStage extends AbstractJavaStage {
             if (resolved instanceof io.apitomy.umg.models.concept.type.MapType mt
                     && mt.getValueType() instanceof io.apitomy.umg.models.concept.type.UnionType) {
                 handleResolvedUnionMapProperty(body, mt);
+                return true;
+            }
+
+            // Entity
+            if (resolved.isEntityType()) {
+                handleEntityProperty(body);
+                return true;
+            }
+
+            // Primitive
+            if (resolved.isPrimitiveType()) {
+                handlePrimitiveTypeProperty(body);
+                return true;
+            }
+
+            // List (entity or primitive)
+            if (resolved.isListType()) {
+                handleListProperty(body);
+                return true;
+            }
+
+            // Map (entity or primitive)
+            if (resolved.isMapType()) {
+                handleMapProperty(body);
                 return true;
             }
 
