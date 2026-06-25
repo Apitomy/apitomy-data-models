@@ -37,12 +37,7 @@ import lombok.Getter;
  */
 public class SpecificationIndex {
 
-    // TODO: Changing to LinkedHashSet exposes a pre-existing bug in
-    //  CreateUnionTypeValuesStage / CreateUnionValueMethodsStage where entity list union
-    //  values (e.g., [JSchema]) are not correctly resolved across different specs with
-    //  different entity naming (AsyncAPI Schema vs JSON Schema JSchema). Fix tracked
-    //  alongside the type system refactoring (G6).
-    private Collection<SpecificationModel> specifications = new HashSet<>();
+    private Collection<SpecificationModel> specifications = new LinkedHashSet<>();
 
     private Collection<SpecificationVersion> specificationVersions = new LinkedHashSet<>();
 
