@@ -37,14 +37,25 @@ public abstract class AbstractStage implements Stage {
     }
 
     protected boolean isEntityList(PropertyModel property) {
+        if (property.getResolvedType() != null) {
+            return property.getResolvedType().isListType()
+                    && ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType().isEntityType();
+        }
         return property.getType().isList() && property.getType().getNested().iterator().next().isEntityType();
     }
 
     protected boolean isEntityMap(PropertyModel property) {
+        if (property.getResolvedType() != null) {
+            return property.getResolvedType().isMapType()
+                    && ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType().isEntityType();
+        }
         return property.getType().isMap() && property.getType().getNested().iterator().next().isEntityType();
     }
 
     protected boolean isEntity(PropertyModel property) {
+        if (property.getResolvedType() != null) {
+            return property.getResolvedType().isEntityType();
+        }
         return property.getType().isEntityType();
     }
 
@@ -56,14 +67,25 @@ public abstract class AbstractStage implements Stage {
     }
 
     protected boolean isPrimitive(PropertyModel property) {
+        if (property.getResolvedType() != null) {
+            return property.getResolvedType().isPrimitiveType();
+        }
         return property.getType().isPrimitiveType();
     }
 
     protected boolean isPrimitiveList(PropertyModel property) {
+        if (property.getResolvedType() != null) {
+            return property.getResolvedType().isListType()
+                    && ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType().isPrimitiveType();
+        }
         return property.getType().isList() && property.getType().getNested().iterator().next().isPrimitiveType();
     }
 
     protected boolean isPrimitiveMap(PropertyModel property) {
+        if (property.getResolvedType() != null) {
+            return property.getResolvedType().isMapType()
+                    && ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType().isPrimitiveType();
+        }
         return property.getType().isMap() && property.getType().getNested().iterator().next().isPrimitiveType();
     }
 
