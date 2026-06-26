@@ -233,10 +233,6 @@ public class JsonUtil {
         return value;
     }
 
-    public static ObjectNode toObjectNode(JsonNode value) {
-        return (ObjectNode) value;
-    }
-
     public static boolean isBoolean(JsonNode value) {
         if (value == null) {
             return false;
