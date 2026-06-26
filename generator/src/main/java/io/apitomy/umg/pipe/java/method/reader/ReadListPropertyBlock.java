@@ -1,10 +1,8 @@
 package io.apitomy.umg.pipe.java.method.reader;
 
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
-import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.EntityModel;
@@ -14,6 +12,8 @@ import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 
 /**
  * Generates code to read a list property from JSON (primitive list or entity list).
@@ -41,9 +41,8 @@ public class ReadListPropertyBlock extends CodeBlock {
 
         Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
         if (listValueType.isPrimitiveType()) {
-            ReadPrimitivePropertyBlock helper = new ReadPrimitivePropertyBlock(propertyWithOrigin, readerClassSource, ctx);
-            body.addContext("consumeMethodName", helper.determineConsumePropertyVariant(property.getResolvedType()));
-            body.addContext("propertyValueJavaType", helper.determineValueType(property.getResolvedType()));
+            body.addContext("consumeMethodName", PrimitiveTypeHelper.determineConsumePropertyVariant(property.getResolvedType(), ctx, readerClassSource));
+            body.addContext("propertyValueJavaType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, readerClassSource));
             readerClassSource.addImport(List.class);
 
             body.append("{");
@@ -51,26 +50,16 @@ public class ReadListPropertyBlock extends CodeBlock {
             body.append("    node.${setterMethodName}(value);");
             body.append("}");
         } else if (listValueType.isEntityType()) {
-            String entityTypeName = listValueType.getName();
-            String fqEntityName = entityModel.getNamespace().fullName() + "." + entityTypeName;
-            EntityModel entityTypeModel = ctx.getConceptIndex().lookupEntity(fqEntityName);
-            if (entityTypeModel == null) {
-                ctx.warn("LIST Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                ctx.warn("       property type is entity but not found in index: " + property.getResolvedType());
+            var resolved = EntityResolver.resolveEntityInterface(property, listValueType.getName(), entityModel, ctx, "LIST");
+            if (resolved == null) {
                 return;
             }
-            JavaInterfaceSource entityTypeJavaModel = ctx.getJavaIndex().lookupInterface(ctx.getJavaEntityInterfaceFQN(entityTypeModel));
-            if (entityTypeJavaModel == null) {
-                ctx.warn("LIST Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                ctx.warn("       property type is entity but not found in JAVA index: " + property.getResolvedType());
-                return;
-            }
-            readerClassSource.addImport(entityTypeJavaModel);
+            readerClassSource.addImport(resolved.javaInterface());
             readerClassSource.addImport(List.class);
 
-            body.addContext("listValueJavaType", entityTypeJavaModel.getName());
-            body.addContext("createMethodName", ctx.createMethodName(entityTypeModel));
-            body.addContext("readMethodName", ctx.readMethodName(entityTypeModel));
+            body.addContext("listValueJavaType", resolved.javaInterface().getName());
+            body.addContext("createMethodName", ctx.createMethodName(resolved.entityModel()));
+            body.addContext("readMethodName", ctx.readMethodName(resolved.entityModel()));
             body.addContext("addMethodName", ctx.addMethodName(ctx.singularize(property.getName())));
 
             body.append("{");

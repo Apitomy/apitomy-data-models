@@ -1,7 +1,6 @@
 package io.apitomy.umg.pipe.java.method.reader;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
-import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.EntityModel;
@@ -10,6 +9,7 @@ import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.EntityResolver;
 
 /**
  * Generates code to read an entity-typed property from JSON.
@@ -32,22 +32,18 @@ public class ReadEntityPropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = propertyWithOrigin.getProperty();
-        String propertyTypeEntityName = entityModel.getNamespace().fullName() + "." + property.getResolvedType().getName();
-        EntityModel propertyTypeEntity = ctx.getConceptIndex().lookupEntity(propertyTypeEntityName);
-        if (propertyTypeEntity == null) {
-            ctx.warn("Property entity type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
-            ctx.warn("       property type: " + property.getResolvedType());
+        var resolved = EntityResolver.resolveEntityInterface(propertyWithOrigin, entityModel, ctx, "");
+        if (resolved == null) {
             return;
         }
-        JavaInterfaceSource propertyTypeJavaEntity = ctx.resolveJavaEntityType(entityModel.getNamespace(), property);
-        readerClassSource.addImport(propertyTypeJavaEntity);
+        readerClassSource.addImport(resolved.javaInterface());
 
         body.addContext("propertyName", property.getName());
         body.addContext("setterMethodName", ctx.setterMethodName(property));
-        body.addContext("createMethodName", ctx.createMethodName(propertyTypeEntity));
+        body.addContext("createMethodName", ctx.createMethodName(resolved.entityModel()));
         body.addContext("getterMethodName", ctx.getterMethodName(property));
-        body.addContext("readMethodName", ctx.readMethodName(propertyTypeEntity));
-        body.addContext("propertyEntityType", propertyTypeJavaEntity.getName());
+        body.addContext("readMethodName", ctx.readMethodName(resolved.entityModel()));
+        body.addContext("propertyEntityType", resolved.javaInterface().getName());
 
         body.append("{");
         body.append("    ObjectNode object = JsonUtil.consumeObjectProperty(json, \"${propertyName}\");");

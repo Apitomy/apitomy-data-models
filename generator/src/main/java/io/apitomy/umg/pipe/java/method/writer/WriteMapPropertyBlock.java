@@ -14,6 +14,8 @@ import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 
 /**
  * Generates code to write a map property to JSON (primitive map or entity map).
@@ -41,33 +43,23 @@ public class WriteMapPropertyBlock extends CodeBlock {
 
         Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
         if (mapValueType.isPrimitiveType()) {
-            WritePrimitivePropertyBlock helper = new WritePrimitivePropertyBlock(propertyWithOrigin, writerClassSource, ctx);
-            body.addContext("setPropertyMethodName", helper.determineSetPropertyVariant(property.getResolvedType()));
+            body.addContext("setPropertyMethodName", PrimitiveTypeHelper.determineSetPropertyVariant(property.getResolvedType(), ctx, writerClassSource));
             writerClassSource.addImport(List.class);
 
             body.append("JsonUtil.${setPropertyMethodName}(json, \"${propertyName}\", node.${getterMethodName}());");
         } else if (mapValueType.isEntityType()) {
             String entityTypeName = mapValueType.getName();
-            String fqEntityName = entityModel.getNamespace().fullName() + "." + entityTypeName;
-            EntityModel entityTypeModel = ctx.getConceptIndex().lookupEntity(fqEntityName);
-            if (entityTypeModel == null) {
-                ctx.warn("MAP Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                ctx.warn("       property type is entity but not found in index: " + property.getResolvedType());
+            var resolved = EntityResolver.resolveEntityInterface(property, entityTypeName, entityModel, ctx, "MAP");
+            if (resolved == null) {
                 return;
             }
-            JavaInterfaceSource entityTypeJavaModel = ctx.getJavaIndex().lookupInterface(ctx.getJavaEntityInterfaceFQN(entityTypeModel));
-            if (entityTypeJavaModel == null) {
-                ctx.warn("MAP Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                ctx.warn("       property type is entity but not found in JAVA index: " + property.getResolvedType());
-                return;
-            }
-            JavaInterfaceSource commonEntityTypeJavaModel = ctx.resolveCommonJavaEntity(entityTypeModel);
+            JavaInterfaceSource commonEntityTypeJavaModel = ctx.resolveCommonJavaEntity(resolved.entityModel());
 
             writerClassSource.addImport(Map.class);
-            writerClassSource.addImport(entityTypeJavaModel);
+            writerClassSource.addImport(resolved.javaInterface());
             writerClassSource.addImport(commonEntityTypeJavaModel);
 
-            body.addContext("mapValueJavaType", entityTypeJavaModel.getName());
+            body.addContext("mapValueJavaType", resolved.javaInterface().getName());
             body.addContext("writeMethodName", "write" + entityTypeName);
             body.addContext("mapValueCommonJavaType", commonEntityTypeJavaModel.getName());
 

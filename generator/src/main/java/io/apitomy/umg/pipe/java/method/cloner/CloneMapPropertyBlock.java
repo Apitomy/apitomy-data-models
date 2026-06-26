@@ -1,7 +1,6 @@
 package io.apitomy.umg.pipe.java.method.cloner;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -15,6 +14,8 @@ import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 
 /**
  * Generates code to clone a map property (primitive map or entity map).
@@ -45,7 +46,7 @@ public class CloneMapPropertyBlock extends CodeBlock {
             clonerClassSource.addImport(Map.class);
             clonerClassSource.addImport(LinkedHashMap.class);
             body.addContext("setterMethodName", ctx.setterMethodName(property));
-            body.addContext("valueType", determineValueType(mapValueType));
+            body.addContext("valueType", PrimitiveTypeHelper.determineValueType(mapValueType, ctx, clonerClassSource));
 
             body.append("{");
             body.append("    Map<String, ${valueType}> srcMap = source.${getterMethodName}();");
@@ -55,24 +56,17 @@ public class CloneMapPropertyBlock extends CodeBlock {
             body.append("}");
         } else if (mapValueType.isEntityType()) {
             String entityTypeName = mapValueType.getName();
-            String fqEntityName = entityModel.getNamespace().fullName() + "." + entityTypeName;
-            EntityModel entityTypeModel = ctx.getConceptIndex().lookupEntity(fqEntityName);
-            if (entityTypeModel == null) {
-                ctx.warn("MAP Entity property '" + property.getName() + "' not cloned for entity: " + entityModel.fullyQualifiedName());
+            var resolved = EntityResolver.resolveEntityInterface(property, entityTypeName, entityModel, ctx, "MAP");
+            if (resolved == null) {
                 return;
             }
-            JavaInterfaceSource entityTypeJavaModel = ctx.getJavaIndex().lookupInterface(ctx.getJavaEntityInterfaceFQN(entityTypeModel));
-            if (entityTypeJavaModel == null) {
-                ctx.warn("MAP Entity property '" + property.getName() + "' not cloned (java) for entity: " + entityModel.fullyQualifiedName());
-                return;
-            }
-            JavaInterfaceSource commonEntityTypeJavaModel = ctx.resolveCommonJavaEntity(entityTypeModel);
+            JavaInterfaceSource commonEntityTypeJavaModel = ctx.resolveCommonJavaEntity(resolved.entityModel());
 
             clonerClassSource.addImport(Map.class);
-            clonerClassSource.addImport(entityTypeJavaModel);
+            clonerClassSource.addImport(resolved.javaInterface());
             clonerClassSource.addImport(commonEntityTypeJavaModel);
 
-            body.addContext("entityJavaType", entityTypeJavaModel.getName());
+            body.addContext("entityJavaType", resolved.javaInterface().getName());
             body.addContext("commonEntityType", commonEntityTypeJavaModel.getName());
             body.addContext("createMethodName", "create" + entityTypeName);
             body.addContext("cloneMethodName", "clone" + entityTypeName);
@@ -93,16 +87,7 @@ public class CloneMapPropertyBlock extends CodeBlock {
         }
     }
 
-    private String determineValueType(Type type) {
-        if (type.isPrimitiveType()) {
-            Class<?> _class = ctx.primitiveTypeToClass(type);
-            if (_class != null) {
-                clonerClassSource.addImport(_class);
-                return _class.getSimpleName();
-            }
-        }
-        return "Object";
-    }
+    
 
     @Override
     public void addImportsTo(JavaSource<?> source) {
