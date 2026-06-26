@@ -62,12 +62,12 @@ public class ReadMapPropertyBlock extends CodeBlock {
 
             body.append("{");
             body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
-            body.append("    if (JsonUtil.isObject(${varName}) && JsonUtil.allValuesMatch((ObjectNode) ${varName}, \"${expectedType}\")) {");
+            body.append("    if (JsonUtil.isObject(${varName}) && JsonUtil.allValuesMatch(JsonUtil.toObject(${varName}), \"${expectedType}\")) {");
             body.append("        Map<String, ${elementValueType}> items = new LinkedHashMap<>();");
-            body.append("        List<String> _keys = JsonUtil.keys((ObjectNode) ${varName});");
+            body.append("        List<String> _keys = JsonUtil.keys(JsonUtil.toObject(${varName}));");
             body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
             body.append("            String _key = _keys.get(_i);");
-            body.append("            items.put(_key, JsonUtil.${toConversionMethod}(JsonUtil.getProperty((ObjectNode) ${varName}, _key)));");
+            body.append("            items.put(_key, JsonUtil.${toConversionMethod}(JsonUtil.getProperty(JsonUtil.toObject(${varName}), _key)));");
             body.append("        }");
             body.append("        node.${setterMethodName}(items);");
             body.append("        json.remove(\"${propertyName}\");");
@@ -93,7 +93,7 @@ public class ReadMapPropertyBlock extends CodeBlock {
             body.append("{");
             body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
             body.append("    if (JsonUtil.isObject(${varName})) {");
-            body.append("        ObjectNode _obj = (ObjectNode) ${varName};");
+            body.append("        ObjectNode _obj = JsonUtil.toObject(${varName});");
             body.append("        List<String> _keys = JsonUtil.keys(_obj);");
             body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
             body.append("            String _key = _keys.get(_i);");
@@ -101,7 +101,7 @@ public class ReadMapPropertyBlock extends CodeBlock {
             body.append("            if (JsonUtil.isObject(_val)) {");
             body.append("                ${mapValueJavaType} model = (${mapValueJavaType}) node.${createMethodName}();");
             body.append("                node.${addMethodName}(_key, model);");
-            body.append("                this.${readMethodName}((ObjectNode) _val, model);");
+            body.append("                this.${readMethodName}(JsonUtil.toObject(_val), model);");
             body.append("            }");
             body.append("        }");
             body.append("        json.remove(\"${propertyName}\");");

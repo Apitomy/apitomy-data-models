@@ -88,7 +88,7 @@ public class ReadListPropertyBlock extends CodeBlock {
             body.append("    if (JsonUtil.isArray(${varName}) && JsonUtil.allMatch(${varName}, \"object\")) {");
             body.append("        List<JsonNode> _nodes = JsonUtil.toList(${varName});");
             body.append("        for (int _i = 0; _i < _nodes.size(); _i++) {");
-            body.append("            ObjectNode object = (ObjectNode) _nodes.get(_i);");
+            body.append("            ObjectNode object = JsonUtil.toObject(_nodes.get(_i));");
             body.append("            ${listValueJavaType} model = (${listValueJavaType}) node.${createMethodName}();");
             body.append("            node.${addMethodName}(model);");
             body.append("            this.${readMethodName}(object, model);");

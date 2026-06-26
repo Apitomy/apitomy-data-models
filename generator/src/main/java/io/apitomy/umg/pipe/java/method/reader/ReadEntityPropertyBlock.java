@@ -53,7 +53,7 @@ public class ReadEntityPropertyBlock extends CodeBlock {
         body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
         body.append("    if (JsonUtil.isObject(${varName})) {");
         body.append("        node.${setterMethodName}(node.${createMethodName}());");
-        body.append("        ${readMethodName}((ObjectNode) ${varName}, (${propertyEntityType}) node.${getterMethodName}());");
+        body.append("        ${readMethodName}(JsonUtil.toObject(${varName}), (${propertyEntityType}) node.${getterMethodName}());");
         body.append("        json.remove(\"${propertyName}\");");
         body.append("    }");
         body.append("}");

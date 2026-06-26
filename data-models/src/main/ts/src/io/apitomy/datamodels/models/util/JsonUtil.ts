@@ -70,6 +70,11 @@ export class JsonUtil {
         return value;
     }
 
+    // JSweet mangled name for toJsonNode(Object) overload
+    public static toJsonNode$java_lang_Object(value: any): any {
+        return value;
+    }
+
     public static toArrayNode(list: any[]): any[] {
         if (list == null) {
             return null;
