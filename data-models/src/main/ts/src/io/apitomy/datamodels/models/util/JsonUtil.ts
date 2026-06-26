@@ -47,7 +47,7 @@ export class JsonUtil {
         return JSON.parse(JSON.stringify(json));
     }
 
-    public static collectionToList(collection: any[]): any[] {
+    public static collectionToList<T>(collection: T[]): T[] {
         if (!collection) {
             return [];
         }
