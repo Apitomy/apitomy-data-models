@@ -167,7 +167,7 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 } else if (rule != null && rule.getRuleType() == io.apitomy.umg.beans.UnionRuleType.PROPERTYVALUE) {
                     body.addContext("rulePropName", rule.getPropertyName());
                     body.addContext("rulePropValue", rule.getPropertyValue());
-                    condition = "JsonUtil.isObjectWithPropertyValue(json, \"${rulePropName}\", \"${rulePropValue}\")";
+                    condition = "JsonUtil.isObjectWithStringPropertyValue(json, \"${rulePropName}\", \"${rulePropValue}\")";
                 } else {
                     condition = "JsonUtil.isObject(json)";
                 }

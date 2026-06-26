@@ -212,10 +212,7 @@ public class JsonUtil {
     }
 
     public static boolean isJsonNode(JsonNode value) {
-        if (value == null) {
-            return false;
-        }
-        return true;
+        return value != null;
     }
 
     public static boolean isObjectNode(JsonNode value) {
@@ -283,7 +280,7 @@ public class JsonUtil {
         return false;
     }
 
-    public static boolean isObjectWithPropertyValue(JsonNode value, String propertyName, String propertyValue) {
+    public static boolean isObjectWithStringPropertyValue(JsonNode value, String propertyName, String propertyValue) {
         if (value == null) {
             return false;
         }
