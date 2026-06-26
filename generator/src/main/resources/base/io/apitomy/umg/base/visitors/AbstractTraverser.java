@@ -1,6 +1,7 @@
 package io.apitomy.umg.base.visitors;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import io.apitomy.umg.base.Any;
@@ -62,12 +63,11 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
      * @param propertyName
      * @param items
      */
-    @SuppressWarnings("unchecked")
     protected void traverseList(String propertyName, Collection<? extends Any> items) {
         if (items != null) {
             int index = 0;
             traversalContext.pushProperty(propertyName);
-            Collection<? extends Any> clonedItems = (Collection<? extends Any>) JsonUtil.cloneCollection(items);
+            List<? extends Any> clonedItems = JsonUtil.collectionToList(items);
             for (Any item : clonedItems) {
                 if (item != null && item.isNode()) {
                     traversalContext.pushListIndex(index);
@@ -86,11 +86,10 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
      * @param propertyName
      * @param items
      */
-    @SuppressWarnings("unchecked")
     protected void traverseMap(String propertyName, Map<String, ? extends Any> items) {
         if (items != null) {
             traversalContext.pushProperty(propertyName);
-            Collection<String> keys = (Collection<String>) JsonUtil.cloneCollection(items.keySet());
+            List<String> keys = JsonUtil.collectionToList(items.keySet());
             keys.forEach(key -> {
                 Any value = items.get(key);
                 if (value != null && value.isNode()) {
@@ -108,10 +107,9 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
      *
      * @param items
      */
-    @SuppressWarnings("unchecked")
     protected void traverseMappedNode(MappedNode<? extends Node> mappedNode) {
         if (mappedNode != null) {
-            Collection<String> names = (Collection<String>) JsonUtil.cloneCollection(mappedNode.getItemNames());
+            List<String> names = JsonUtil.collectionToList(mappedNode.getItemNames());
             names.forEach(name -> {
                 Node value = mappedNode.getItem(name);
                 if (value != null) {
