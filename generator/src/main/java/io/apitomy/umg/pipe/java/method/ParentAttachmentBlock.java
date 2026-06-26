@@ -41,7 +41,7 @@ public class ParentAttachmentBlock extends CodeBlock {
     }
 
     @Override
-    void appendTo(BodyBuilder body) {
+    public void appendTo(BodyBuilder body) {
         if (valueType.isEntityType()) {
             appendEntityAttachment(body);
         } else if (valueType.isUnionType()) {
