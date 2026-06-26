@@ -78,7 +78,7 @@ public class JsonUtil {
         }
     }
 
-    public static Collection<?> cloneCollection(Collection<?> collection) {
+    public static <T> List<T> collectionToList(Collection<T> collection) {
         if (collection == null) {
             return new ArrayList<>();
         }
