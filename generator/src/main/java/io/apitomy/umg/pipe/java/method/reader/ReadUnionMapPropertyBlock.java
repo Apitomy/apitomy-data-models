@@ -54,7 +54,7 @@ public class ReadUnionMapPropertyBlock extends CodeBlock {
         body.append("{");
         body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
         body.append("    if (JsonUtil.isObject(${varName})) {");
-        body.append("        ObjectNode _obj = (ObjectNode) ${varName};");
+        body.append("        ObjectNode _obj = JsonUtil.toObject(${varName});");
         body.append("        List<String> _keys = JsonUtil.keys(_obj);");
         body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
         body.append("            String _key = _keys.get(_i);");
