@@ -65,7 +65,7 @@ public class ReadListPropertyBlock extends CodeBlock {
             body.append("            items.add(JsonUtil.${toConversionMethod}(_nodes.get(_i)));");
             body.append("        }");
             body.append("        node.${setterMethodName}(items);");
-            body.append("        json.remove(\"${propertyName}\");");
+            body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
             body.append("    }");
             body.append("}");
         } else if (listValueType.isEntityType()) {
@@ -93,7 +93,7 @@ public class ReadListPropertyBlock extends CodeBlock {
             body.append("            node.${addMethodName}(model);");
             body.append("            this.${readMethodName}(object, model);");
             body.append("        }");
-            body.append("        json.remove(\"${propertyName}\");");
+            body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
             body.append("    }");
             body.append("}");
         } else {
