@@ -15,6 +15,8 @@ import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 
 /**
  * Generates code to write a list property to JSON (primitive list or entity list).
@@ -42,35 +44,24 @@ public class WriteListPropertyBlock extends CodeBlock {
 
         Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
         if (listValueType.isPrimitiveType()) {
-            WritePrimitivePropertyBlock helper = new WritePrimitivePropertyBlock(propertyWithOrigin, writerClassSource, ctx);
-            body.addContext("setPropertyMethodName", helper.determineSetPropertyVariant(property.getResolvedType()));
+            body.addContext("setPropertyMethodName", PrimitiveTypeHelper.determineSetPropertyVariant(property.getResolvedType(), ctx, writerClassSource));
 
             body.append("JsonUtil.${setPropertyMethodName}(json, \"${propertyName}\", node.${getterMethodName}());");
         } else if (listValueType.isEntityType()) {
-            String entityTypeName = listValueType.getName();
-            String fqEntityName = entityModel.getNamespace().fullName() + "." + entityTypeName;
-            EntityModel entityTypeModel = ctx.getConceptIndex().lookupEntity(fqEntityName);
-            if (entityTypeModel == null) {
-                ctx.warn("LIST Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                ctx.warn("       property type is entity but not found in index: " + property.getResolvedType());
+            var resolved = EntityResolver.resolveEntityInterface(property, listValueType.getName(), entityModel, ctx, "LIST");
+            if (resolved == null) {
                 return;
             }
-            JavaInterfaceSource entityTypeJavaModel = ctx.resolveJavaEntity(entityTypeModel);
-            if (entityTypeJavaModel == null) {
-                ctx.warn("LIST Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                ctx.warn("       property type is entity but not found in JAVA index: " + property.getResolvedType());
-                return;
-            }
-            JavaInterfaceSource commonEntityTypeJavaModel = ctx.resolveCommonJavaEntity(entityTypeModel);
+            JavaInterfaceSource commonEntityTypeJavaModel = ctx.resolveCommonJavaEntity(resolved.entityModel());
 
-            writerClassSource.addImport(entityTypeJavaModel);
+            writerClassSource.addImport(resolved.javaInterface());
             writerClassSource.addImport(commonEntityTypeJavaModel);
             writerClassSource.addImport(List.class);
             writerClassSource.addImport(ArrayNode.class);
 
             body.addContext("propertyName", property.getName());
-            body.addContext("listValueJavaType", entityTypeJavaModel.getName());
-            body.addContext("writeMethodName", WriteEntityPropertyBlock.writeMethodName(entityTypeModel));
+            body.addContext("listValueJavaType", resolved.javaInterface().getName());
+            body.addContext("writeMethodName", WriteEntityPropertyBlock.writeMethodName(resolved.entityModel()));
             body.addContext("listValueCommonJavaType", commonEntityTypeJavaModel.getName());
 
             body.append("{");

@@ -24,6 +24,8 @@ import io.apitomy.umg.models.concept.type.Type;
 import java.util.Comparator;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 import io.apitomy.umg.pipe.java.method.cloner.CloneEntityPropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.CloneListPropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.CloneMapPropertyBlock;
@@ -239,23 +241,17 @@ public class CreateClonersStage extends AbstractJavaStage implements CodeGenCont
         private void handleStarProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             if (isEntity(property)) {
-                String entityTypeName = entityModel.getNamespace().fullName() + "." + property.getResolvedType().getName();
-                EntityModel propertyTypeEntity = getState().getConceptIndex().lookupEntity(entityTypeName);
-                if (propertyTypeEntity == null) {
-                    warn("STAR Property entity type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
+                var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
+                        entityModel, CreateClonersStage.this, "STAR");
+                if (resolved == null) {
                     return;
                 }
-                JavaInterfaceSource propertyTypeJavaEntity = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(propertyTypeEntity));
-                if (propertyTypeJavaEntity == null) {
-                    warn("STAR Entity property '" + property.getName() + "' not cloned for entity: " + entityModel.fullyQualifiedName());
-                    return;
-                }
-                clonerClassSource.addImport(propertyTypeJavaEntity);
+                clonerClassSource.addImport(resolved.javaInterface());
                 clonerClassSource.addImport(List.class);
 
-                body.addContext("entityJavaType", propertyTypeJavaEntity.getName());
-                body.addContext("createMethodName", createMethodName(propertyTypeEntity));
-                body.addContext("cloneMethodName", cloneMethodName(propertyTypeEntity));
+                body.addContext("entityJavaType", resolved.javaInterface().getName());
+                body.addContext("createMethodName", createMethodName(resolved.entityModel()));
+                body.addContext("cloneMethodName", cloneMethodName(resolved.entityModel()));
 
                 body.append("{");
                 body.append("    List<String> itemNames = source.getItemNames();");
@@ -289,28 +285,22 @@ public class CreateClonersStage extends AbstractJavaStage implements CodeGenCont
         private void handleRegexProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             if (isEntity(property)) {
-                String entityTypeName = entityModel.getNamespace().fullName() + "." + property.getResolvedType().getName();
-                EntityModel propertyTypeEntity = getState().getConceptIndex().lookupEntity(entityTypeName);
-                if (propertyTypeEntity == null) {
-                    warn("REGEX Property entity type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
+                var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
+                        entityModel, CreateClonersStage.this, "REGEX");
+                if (resolved == null) {
                     return;
                 }
-                JavaInterfaceSource propertyTypeJavaEntity = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(propertyTypeEntity));
-                if (propertyTypeJavaEntity == null) {
-                    warn("REGEX Entity property '" + property.getName() + "' not cloned for entity: " + entityModel.fullyQualifiedName());
-                    return;
-                }
-                JavaInterfaceSource commonEntityTypeJavaModel = resolveCommonJavaEntity(propertyTypeEntity);
+                JavaInterfaceSource commonEntityTypeJavaModel = resolveCommonJavaEntity(resolved.entityModel());
 
-                clonerClassSource.addImport(propertyTypeJavaEntity);
+                clonerClassSource.addImport(resolved.javaInterface());
                 clonerClassSource.addImport(commonEntityTypeJavaModel);
                 clonerClassSource.addImport(Map.class);
 
-                body.addContext("entityJavaType", propertyTypeJavaEntity.getName());
+                body.addContext("entityJavaType", resolved.javaInterface().getName());
                 body.addContext("commonEntityType", commonEntityTypeJavaModel.getName());
                 body.addContext("getterMethodName", getterMethodName(property));
-                body.addContext("createMethodName", createMethodName(propertyTypeEntity));
-                body.addContext("cloneMethodName", cloneMethodName(propertyTypeEntity));
+                body.addContext("createMethodName", createMethodName(resolved.entityModel()));
+                body.addContext("cloneMethodName", cloneMethodName(resolved.entityModel()));
                 body.addContext("addMethodName", addMethodName(singularize(property.getCollection())));
 
                 body.append("{");
@@ -329,7 +319,7 @@ public class CreateClonersStage extends AbstractJavaStage implements CodeGenCont
 
                 body.addContext("getterMethodName", getterMethodName(property));
                 body.addContext("addMethodName", addMethodName(singularize(property.getCollection())));
-                body.addContext("valueType", determineValueType(property.getResolvedType()));
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateClonersStage.this, clonerClassSource));
 
                 clonerClassSource.addImport(List.class);
                 body.append("{");
@@ -366,35 +356,6 @@ public class CreateClonersStage extends AbstractJavaStage implements CodeGenCont
             new CloneUnionMapPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, CreateClonersStage.this).appendTo(body);
         }
 
-        private String determineValueType(Type type) {
-            if (type.isPrimitiveType()) {
-                Class<?> _class = primitiveTypeToClass(type);
-                if (_class != null) {
-                    clonerClassSource.addImport(_class);
-                    return _class.getSimpleName();
-                }
-            }
-            if (type.isListType()) {
-                Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) type).getValueType();
-                if (listValueType.isPrimitiveType()) {
-                    Class<?> _class = primitiveTypeToClass(listValueType);
-                    if (_class != null) {
-                        clonerClassSource.addImport(_class);
-                        return "List<" + _class.getSimpleName() + ">";
-                    }
-                }
-            }
-            if (type.isMapType()) {
-                Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) type).getValueType();
-                if (mapValueType.isPrimitiveType()) {
-                    Class<?> _class = primitiveTypeToClass(mapValueType);
-                    if (_class != null) {
-                        clonerClassSource.addImport(_class);
-                        return "Map<String, " + _class.getSimpleName() + ">";
-                    }
-                }
-            }
-            return "Object";
-        }
+
     }
 }

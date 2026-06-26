@@ -10,6 +10,7 @@ import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.EntityResolver;
 
 /**
  * Generates code to clone an entity-typed property: creates the target entity,
@@ -36,19 +37,17 @@ public class CloneEntityPropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = propertyWithOrigin.getProperty();
-        String propertyTypeEntityName = entityModel.getNamespace().fullName() + "." + property.getResolvedType().getName();
-        EntityModel propertyTypeEntity = ctx.getConceptIndex().lookupEntity(propertyTypeEntityName);
-        if (propertyTypeEntity == null) {
-            ctx.warn("Property entity type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
+        var resolved = EntityResolver.resolveEntityInterface(propertyWithOrigin, entityModel, ctx, "");
+        if (resolved == null) {
             return;
         }
-        propertyTypeJavaEntity = ctx.resolveJavaEntityType(entityModel.getNamespace(), property);
+        propertyTypeJavaEntity = resolved.javaInterface();
         clonerClassSource.addImport(propertyTypeJavaEntity);
 
         body.addContext("getterMethodName", ctx.getterMethodName(property));
         body.addContext("setterMethodName", ctx.setterMethodName(property));
-        body.addContext("createMethodName", ctx.createMethodName(propertyTypeEntity));
-        body.addContext("cloneMethodName", cloneMethodName(propertyTypeEntity));
+        body.addContext("createMethodName", ctx.createMethodName(resolved.entityModel()));
+        body.addContext("cloneMethodName", cloneMethodName(resolved.entityModel()));
         body.addContext("entityType", propertyTypeJavaEntity.getName());
 
         body.append("{");

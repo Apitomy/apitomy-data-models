@@ -2,7 +2,6 @@ package io.apitomy.umg.pipe.java.method.writer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
-import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.EntityModel;
@@ -11,6 +10,7 @@ import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.EntityResolver;
 
 /**
  * Generates code to write an entity-typed property to JSON.
@@ -33,20 +33,16 @@ public class WriteEntityPropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = propertyWithOrigin.getProperty();
-        String propertyTypeEntityName = entityModel.getNamespace().fullName() + "." + property.getResolvedType().getName();
-        EntityModel propertyTypeEntity = ctx.getConceptIndex().lookupEntity(propertyTypeEntityName);
-        if (propertyTypeEntity == null) {
-            ctx.warn("Property entity type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
-            ctx.warn("       property type: " + property.getResolvedType());
+        var resolved = EntityResolver.resolveEntityInterface(propertyWithOrigin, entityModel, ctx, "");
+        if (resolved == null) {
             return;
         }
-        JavaInterfaceSource propertyTypeJavaEntity = ctx.resolveJavaEntityType(entityModel.getNamespace(), property);
-        writerClassSource.addImport(propertyTypeJavaEntity);
+        writerClassSource.addImport(resolved.javaInterface());
 
         body.addContext("propertyName", property.getName());
         body.addContext("getterMethodName", ctx.getterMethodName(property));
-        body.addContext("writeMethodName", writeMethodName(propertyTypeEntity));
-        body.addContext("propertyTypeJavaEntity", propertyTypeJavaEntity.getName());
+        body.addContext("writeMethodName", writeMethodName(resolved.entityModel()));
+        body.addContext("propertyTypeJavaEntity", resolved.javaInterface().getName());
 
         body.append("{");
         body.append("    if (node.${getterMethodName}() != null) {");

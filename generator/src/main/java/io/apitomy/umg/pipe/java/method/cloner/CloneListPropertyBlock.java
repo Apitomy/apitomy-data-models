@@ -14,6 +14,8 @@ import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 
 /**
  * Generates code to clone a list property (primitive list or entity list).
@@ -44,7 +46,7 @@ public class CloneListPropertyBlock extends CodeBlock {
             clonerClassSource.addImport(List.class);
             clonerClassSource.addImport(ArrayList.class);
             body.addContext("setterMethodName", ctx.setterMethodName(property));
-            body.addContext("valueType", determineValueType(listValueType));
+            body.addContext("valueType", PrimitiveTypeHelper.determineValueType(listValueType, ctx, clonerClassSource));
 
             body.append("{");
             body.append("    List<${valueType}> srcList = source.${getterMethodName}();");
@@ -53,27 +55,19 @@ public class CloneListPropertyBlock extends CodeBlock {
             body.append("    }");
             body.append("}");
         } else if (listValueType.isEntityType()) {
-            String entityTypeName = listValueType.getName();
-            String fqEntityName = entityModel.getNamespace().fullName() + "." + entityTypeName;
-            EntityModel entityTypeModel = ctx.getConceptIndex().lookupEntity(fqEntityName);
-            if (entityTypeModel == null) {
-                ctx.warn("LIST Entity property '" + property.getName() + "' not cloned for entity: " + entityModel.fullyQualifiedName());
+            var resolved = EntityResolver.resolveEntityInterface(property, listValueType.getName(), entityModel, ctx, "LIST");
+            if (resolved == null) {
                 return;
             }
-            JavaInterfaceSource entityTypeJavaModel = ctx.getJavaIndex().lookupInterface(ctx.getJavaEntityInterfaceFQN(entityTypeModel));
-            if (entityTypeJavaModel == null) {
-                ctx.warn("LIST Entity property '" + property.getName() + "' not cloned (java) for entity: " + entityModel.fullyQualifiedName());
-                return;
-            }
-            JavaInterfaceSource commonEntityTypeJavaModel = ctx.resolveCommonJavaEntity(entityTypeModel);
-            clonerClassSource.addImport(entityTypeJavaModel);
+            JavaInterfaceSource commonEntityTypeJavaModel = ctx.resolveCommonJavaEntity(resolved.entityModel());
+            clonerClassSource.addImport(resolved.javaInterface());
             clonerClassSource.addImport(commonEntityTypeJavaModel);
             clonerClassSource.addImport(List.class);
 
-            body.addContext("entityJavaType", entityTypeJavaModel.getName());
+            body.addContext("entityJavaType", resolved.javaInterface().getName());
             body.addContext("commonEntityType", commonEntityTypeJavaModel.getName());
-            body.addContext("createMethodName", ctx.createMethodName(entityTypeModel));
-            body.addContext("cloneMethodName", CloneEntityPropertyBlock.cloneMethodName(entityTypeModel));
+            body.addContext("createMethodName", ctx.createMethodName(resolved.entityModel()));
+            body.addContext("cloneMethodName", CloneEntityPropertyBlock.cloneMethodName(resolved.entityModel()));
             body.addContext("addMethodName", ctx.addMethodName(ctx.singularize(property.getName())));
 
             body.append("{");
@@ -91,36 +85,7 @@ public class CloneListPropertyBlock extends CodeBlock {
         }
     }
 
-    private String determineValueType(Type type) {
-        if (type.isPrimitiveType()) {
-            Class<?> _class = ctx.primitiveTypeToClass(type);
-            if (_class != null) {
-                clonerClassSource.addImport(_class);
-                return _class.getSimpleName();
-            }
-        }
-        if (type.isListType()) {
-            Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) type).getValueType();
-            if (listValueType.isPrimitiveType()) {
-                Class<?> _class = ctx.primitiveTypeToClass(listValueType);
-                if (_class != null) {
-                    clonerClassSource.addImport(_class);
-                    return "List<" + _class.getSimpleName() + ">";
-                }
-            }
-        }
-        if (type.isMapType()) {
-            Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) type).getValueType();
-            if (mapValueType.isPrimitiveType()) {
-                Class<?> _class = ctx.primitiveTypeToClass(mapValueType);
-                if (_class != null) {
-                    clonerClassSource.addImport(_class);
-                    return "Map<String, " + _class.getSimpleName() + ">";
-                }
-            }
-        }
-        return "Object";
-    }
+    
 
     @Override
     public void addImportsTo(JavaSource<?> source) {

@@ -22,6 +22,8 @@ import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 import io.apitomy.umg.pipe.java.method.writer.WriteEntityPropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WriteListPropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WriteMapPropertyBlock;
@@ -488,25 +490,17 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
         private void handleStarProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             if (isEntity(property)) {
-                String entityTypeName = entityModel.getNamespace().fullName() + "." + property.getResolvedType().getName();
-                EntityModel propertyTypeEntity = getState().getConceptIndex().lookupEntity(entityTypeName);
-                if (propertyTypeEntity == null) {
-                    warn("STAR Property entity type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type: " + property.getResolvedType());
-                    return;
-                }
-                JavaInterfaceSource entityTypeJavaModel = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(propertyTypeEntity));
-                if (entityTypeJavaModel == null) {
-                    warn("STAR Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in JAVA index: " + property.getResolvedType());
+                var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
+                        entityModel, CreateWritersStage.this, "STAR");
+                if (resolved == null) {
                     return;
                 }
 
                 writerClassSource.addImport(List.class);
-                writerClassSource.addImport(entityTypeJavaModel);
+                writerClassSource.addImport(resolved.javaInterface());
 
-                body.addContext("writeMethodName", writeMethodName(propertyTypeEntity));
-                body.addContext("entityJavaType", entityTypeJavaModel.getName());
+                body.addContext("writeMethodName", writeMethodName(resolved.entityModel()));
+                body.addContext("entityJavaType", resolved.javaInterface().getName());
 
                 body.append("{");
                 body.append("    List<String> propertyNames = node.getItemNames();");
@@ -519,8 +513,8 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
             } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
                 writerClassSource.addImport(List.class);
 
-                body.addContext("valueType", determineValueType(property.getResolvedType()));
-                body.addContext("setPropertyMethodName", determineSetPropertyVariant(property.getResolvedType()));
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
+                body.addContext("setPropertyMethodName", PrimitiveTypeHelper.determineSetPropertyVariant(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
 
                 body.append("{");
                 body.append("    List<String> propertyNames = node.getItemNames();");
@@ -538,28 +532,20 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
         private void handleRegexProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             if (isEntity(property)) {
-                String entityTypeName = entityModel.getNamespace().fullName() + "." + property.getResolvedType().getName();
-                EntityModel propertyTypeEntity = getState().getConceptIndex().lookupEntity(entityTypeName);
-                if (propertyTypeEntity == null) {
-                    warn("REGEX Property entity type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type: " + property.getResolvedType());
+                var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
+                        entityModel, CreateWritersStage.this, "REGEX");
+                if (resolved == null) {
                     return;
                 }
-                JavaInterfaceSource entityTypeJavaModel = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(propertyTypeEntity));
-                if (entityTypeJavaModel == null) {
-                    warn("REGEX Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in JAVA index: " + property.getResolvedType());
-                    return;
-                }
-                JavaInterfaceSource commonEntityTypeJavaModel = resolveCommonJavaEntity(propertyTypeEntity);
+                JavaInterfaceSource commonEntityTypeJavaModel = resolveCommonJavaEntity(resolved.entityModel());
 
                 writerClassSource.addImport(Map.class);
-                writerClassSource.addImport(entityTypeJavaModel);
+                writerClassSource.addImport(resolved.javaInterface());
                 writerClassSource.addImport(commonEntityTypeJavaModel);
 
-                body.addContext("mapValueJavaType", entityTypeJavaModel.getName());
+                body.addContext("mapValueJavaType", resolved.javaInterface().getName());
                 body.addContext("getterMethodName", getterMethodName(property));
-                body.addContext("writeMethodName", writeMethodName(propertyTypeEntity));
+                body.addContext("writeMethodName", writeMethodName(resolved.entityModel()));
                 body.addContext("mapValueCommonJavaType", commonEntityTypeJavaModel.getName());
 
                 body.append("{");
@@ -575,9 +561,9 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
             } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
                 writerClassSource.addImport(List.class);
 
-                body.addContext("valueType", determineValueType(property.getResolvedType()));
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
                 body.addContext("getterMethodName", getterMethodName(property));
-                body.addContext("setPropertyMethodName", determineSetPropertyVariant(property.getResolvedType()));
+                body.addContext("setPropertyMethodName", PrimitiveTypeHelper.determineSetPropertyVariant(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
 
                 body.append("{");
                 body.append("    Map<String, ${valueType}> values = node.${getterMethodName}();");
@@ -610,103 +596,8 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
             new WriteMapPropertyBlock(propertyWithOrigin, entityModel, writerClassSource, CreateWritersStage.this).appendTo(body);
         }
 
-        /**
-         * Figure out which variant of "writeProperty" from "JsonUtil" we should use for
-         * this property.  The property might be a primitive type, or a list/map of primitive
-         * types.
-         *
-         * @param type
-         */
-        private String determineSetPropertyVariant(Type type) {
-            if (type.isPrimitiveType()) {
-                Class<?> _class = primitiveTypeToClass(type);
-                if (ObjectNode.class.equals(_class)) {
-                    writerClassSource.addImport(_class);
-                    return "setObjectProperty";
-                } else if (JsonNode.class.equals(_class)) {
-                    writerClassSource.addImport(_class);
-                    return "setAnyProperty";
-                } else {
-                    return "set" + _class.getSimpleName() + "Property";
-                }
-            }
 
-            if (type.isListType()) {
-                Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) type).getValueType();
-                if (listValueType.isPrimitiveType()) {
-                    Class<?> _class = primitiveTypeToClass(listValueType);
-                    if (ObjectNode.class.equals(_class)) {
-                        writerClassSource.addImport(_class);
-                        return "setObjectArrayProperty";
-                    } else if (JsonNode.class.equals(_class)) {
-                        writerClassSource.addImport(_class);
-                        return "setAnyArrayProperty";
-                    } else {
-                        return "set" + _class.getSimpleName() + "ArrayProperty";
-                    }
-                }
-            }
 
-            if (type.isMapType()) {
-                Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) type).getValueType();
-                if (mapValueType.isPrimitiveType()) {
-                    Class<?> _class = primitiveTypeToClass(mapValueType);
-                    if (ObjectNode.class.equals(_class)) {
-                        writerClassSource.addImport(_class);
-                        return "setObjectMapProperty";
-                    } else if (JsonNode.class.equals(_class)) {
-                        writerClassSource.addImport(_class);
-                        return "setAnyMapProperty";
-                    } else {
-                        return "set" + _class.getSimpleName() + "MapProperty";
-                    }
-                }
-            }
 
-            PropertyModel property = propertyWithOrigin.getProperty();
-            warn("Unable to determine value type for: " + property);
-            return "setProperty";
-        }
-
-        /**
-         * Determines the Java data type of the given property.
-         *
-         * @param type
-         */
-        private String determineValueType(Type type) {
-            if (type.isPrimitiveType()) {
-                Class<?> _class = primitiveTypeToClass(type);
-                if (_class != null) {
-                    writerClassSource.addImport(_class);
-                    return _class.getSimpleName();
-                }
-            }
-
-            if (type.isListType()) {
-                Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) type).getValueType();
-                if (listValueType.isPrimitiveType()) {
-                    Class<?> _class = primitiveTypeToClass(listValueType);
-                    if (_class != null) {
-                        writerClassSource.addImport(_class);
-                        return "List<" + _class.getSimpleName() + ">";
-                    }
-                }
-            }
-
-            if (type.isMapType()) {
-                Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) type).getValueType();
-                if (mapValueType.isPrimitiveType()) {
-                    Class<?> _class = primitiveTypeToClass(mapValueType);
-                    if (_class != null) {
-                        writerClassSource.addImport(_class);
-                        return "Map<String, " + _class.getSimpleName() + ">";
-                    }
-                }
-            }
-
-            PropertyModel property = propertyWithOrigin.getProperty();
-            warn("Unable to determine value type for: " + property);
-            return "Object";
-        }
     }
 }
