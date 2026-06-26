@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.util.TokenBuffer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,11 +26,7 @@ public class JsonUtil {
 	public static List<String> keys(ObjectNode json) {
 		List<String> rval = new ArrayList<>();
 		if (json != null) {
-			Iterator<String> fieldNames = json.fieldNames();
-			while (fieldNames.hasNext()) {
-				String fieldName = fieldNames.next();
-				rval.add(fieldName);
-			}
+			json.fieldNames().forEachRemaining(rval::add);
 		}
 		return rval;
 	}
@@ -99,12 +94,6 @@ public class JsonUtil {
 		return factory.textNode(value);
 	}
 
-	public static void setArrayProperty(ObjectNode json, String propertyName, ArrayNode value) {
-		if (value != null) {
-			json.set(propertyName, value);
-		}
-	}
-
 	public static JsonNode booleanToJsonNode(Boolean value) {
 		return value != null ? factory.booleanNode(value) : null;
 	}
@@ -133,10 +122,10 @@ public class JsonUtil {
 			return factory.booleanNode((Boolean) value);
 		}
 		if (value instanceof Integer) {
-			return factory.numberNode((Integer) value);
+			return factory.numberNode((Integer) value); // IntNode — preserves 42 (not 42.0)
 		}
 		if (value instanceof Number) {
-			return factory.numberNode(((Number) value).doubleValue());
+			return factory.numberNode(((Number) value).doubleValue()); // DoubleNode
 		}
 		return null;
 	}
@@ -207,9 +196,7 @@ public class JsonUtil {
 		if (obj == null) {
 			return false;
 		}
-		Iterator<String> fieldNames = obj.fieldNames();
-		while (fieldNames.hasNext()) {
-			String fieldName = fieldNames.next();
+		for (String fieldName : keys(obj)) {
 			JsonNode item = obj.get(fieldName);
 			if ("string".equals(expectedType)) {
 				if (!item.isTextual())
@@ -238,15 +225,6 @@ public class JsonUtil {
 
 	public static void addToArray(ArrayNode array, JsonNode value) {
 		array.add(value);
-	}
-
-	public static boolean isPropertyDefined(JsonNode json, String propertyName) {
-		if (json.isObject()) {
-			ObjectNode node = (ObjectNode) json;
-			return node.has(propertyName) && !node.get(propertyName).isNull();
-		} else {
-			return false;
-		}
 	}
 
 	public static boolean isString(JsonNode value) {
