@@ -537,7 +537,7 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
                 body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
                 body.append("        String propertyName = propertyNames.get(_i);");
                 body.append("        ${valueType} value = node.getItem(propertyName);");
-                body.append("        JsonUtil.setProperty(json, propertyName, JsonUtil.toObjectNode(value));");
+                body.append("        JsonUtil.setProperty(json, propertyName, JsonUtil.toObject(value));");
                 body.append("    }");
                 body.append("}");
             } else {
@@ -628,7 +628,7 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
                 body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
                 body.append("            String propertyName = _keys.get(_i);");
                 body.append("            ${valueType} value = values.get(propertyName);");
-                body.append("            JsonUtil.setProperty(json, propertyName, JsonUtil.toObjectNode(value));");
+                body.append("            JsonUtil.setProperty(json, propertyName, JsonUtil.toObject(value));");
                 body.append("        }");
                 body.append("    }");
                 body.append("}");
