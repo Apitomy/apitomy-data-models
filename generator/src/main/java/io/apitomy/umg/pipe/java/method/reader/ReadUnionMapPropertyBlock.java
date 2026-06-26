@@ -64,7 +64,7 @@ public class ReadUnionMapPropertyBlock extends CodeBlock {
         body.append("                if (model != null) node.${addMethodName}(_key, model);");
         body.append("            }");
         body.append("        }");
-        body.append("        json.remove(\"${propertyName}\");");
+        body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
         body.append("    }");
         body.append("}");
     }

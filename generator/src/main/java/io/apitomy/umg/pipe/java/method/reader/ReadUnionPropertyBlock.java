@@ -49,7 +49,7 @@ public class ReadUnionPropertyBlock extends CodeBlock {
         body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
         body.append("    if (JsonUtil.isJsonNode(${varName})) {");
         body.append("        node.${setterMethodName}(this.${readMethodName}(${varName}, null));");
-        body.append("        json.remove(\"${propertyName}\");");
+        body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
         body.append("    }");
         body.append("}");
     }

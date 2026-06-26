@@ -66,7 +66,7 @@ public class ReadUnionListPropertyBlock extends CodeBlock {
         body.append("            for (int _i = 0; _i < _items.size(); _i++) {");
         body.append("                node.${addMethodName}(_items.get(_i));");
         body.append("            }");
-        body.append("            json.remove(\"${propertyName}\");");
+        body.append("            JsonUtil.removeProperty(json, \"${propertyName}\");");
         body.append("        }");
         body.append("    }");
         body.append("}");
