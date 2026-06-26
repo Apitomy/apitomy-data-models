@@ -27,6 +27,16 @@ import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
+import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.reader.ReadEntityPropertyBlock;
+import io.apitomy.umg.pipe.java.method.reader.ReadListPropertyBlock;
+import io.apitomy.umg.pipe.java.method.reader.ReadMapPropertyBlock;
+import io.apitomy.umg.pipe.java.method.reader.ReadPrimitivePropertyBlock;
+import io.apitomy.umg.pipe.java.method.reader.ReadUnionPropertyBlock;
+import io.apitomy.umg.pipe.java.method.reader.ReadUnionListPropertyBlock;
+import io.apitomy.umg.pipe.java.method.reader.ReadUnionMapPropertyBlock;
+import io.apitomy.umg.index.concept.ConceptIndex;
+import io.apitomy.umg.index.java.JavaIndex;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -36,7 +46,7 @@ import lombok.Data;
  *
  * @author eric.wittmann@gmail.com
  */
-public class CreateReadersStage extends AbstractJavaStage {
+public class CreateReadersStage extends AbstractJavaStage implements CodeGenContext {
 
     @Override
     protected void doProcess() {
@@ -423,6 +433,23 @@ public class CreateReadersStage extends AbstractJavaStage {
         body.append("ReaderUtil.readExtraProperties(json, node);");
     }
 
+    // --- CodeGenContext implementation (only methods not inherited from AbstractJavaStage) ---
+
+    @Override
+    public ConceptIndex getConceptIndex() {
+        return getState().getConceptIndex();
+    }
+
+    @Override
+    public JavaIndex getJavaIndex() {
+        return getState().getJavaIndex();
+    }
+
+    @Override
+    public void warn(String message) {
+        super.warn(message);
+    }
+
     @Data
     @AllArgsConstructor
     private class CreateReadPropertySnippet {
@@ -502,83 +529,17 @@ public class CreateReadersStage extends AbstractJavaStage {
         }
 
         private void handleResolvedUnionProperty(BodyBuilder body, io.apitomy.umg.models.concept.type.Type resolved) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            var nsModel = propertyWithOrigin.getOrigin().getNamespace();
-            var jt = getJavaTypeFactory().createJavaType(resolved, nsModel);
-            String readMethodName = "read" + jt.getSimpleName();
-
-            readerClassSource.addImport(JsonNode.class);
-            jt.addImportsTo(readerClassSource);
-
-            body.addContext("propertyName", property.getName());
-            body.addContext("setterMethodName", setterMethodName(property));
-            body.addContext("readMethodName", readMethodName);
-
-            body.append("{");
-            body.append("    JsonNode value = JsonUtil.consumeAnyProperty(json, \"${propertyName}\");");
-            body.append("    if (value != null) {");
-            body.append("        node.${setterMethodName}(this.${readMethodName}(value, null));");
-            body.append("    }");
-            body.append("}");
+            new ReadUnionPropertyBlock(propertyWithOrigin, readerClassSource, CreateReadersStage.this).appendTo(body);
         }
 
         private void handleResolvedUnionListProperty(BodyBuilder body,
                 io.apitomy.umg.models.concept.type.ListType listType) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            var nsModel = propertyWithOrigin.getOrigin().getNamespace();
-            var valueJt = getJavaTypeFactory().createJavaType(listType.getValueType(), nsModel);
-            String readMethodName = "read" + valueJt.getSimpleName();
-
-            readerClassSource.addImport(JsonNode.class);
-            readerClassSource.addImport(java.util.List.class);
-            readerClassSource.addImport(java.util.ArrayList.class);
-            valueJt.addImportsTo(readerClassSource);
-
-            body.addContext("propertyName", property.getName());
-            body.addContext("addMethodName", addMethodName(singularize(property.getName())));
-            body.addContext("readMethodName", readMethodName);
-            body.addContext("unionJavaType", valueJt.toJavaTypeString());
-
-            body.append("{");
-            body.append("    List<JsonNode> array = JsonUtil.consumeAnyArrayProperty(json, \"${propertyName}\");");
-            body.append("    if (array != null) {");
-            body.append("        array.forEach(item -> {");
-            body.append("            ${unionJavaType} value = this.${readMethodName}(item, null);");
-            body.append("            if (value != null) node.${addMethodName}(value);");
-            body.append("        });");
-            body.append("    }");
-            body.append("}");
+            new ReadUnionListPropertyBlock(propertyWithOrigin, readerClassSource, CreateReadersStage.this).appendTo(body);
         }
 
         private void handleResolvedUnionMapProperty(BodyBuilder body,
                 io.apitomy.umg.models.concept.type.MapType mapType) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            var nsModel = propertyWithOrigin.getOrigin().getNamespace();
-            var valueJt = getJavaTypeFactory().createJavaType(mapType.getValueType(), nsModel);
-            String readMethodName = "read" + valueJt.getSimpleName();
-
-            readerClassSource.addImport(JsonNode.class);
-            readerClassSource.addImport(ObjectNode.class);
-            readerClassSource.addImport(java.util.List.class);
-            valueJt.addImportsTo(readerClassSource);
-
-            body.addContext("propertyName", property.getName());
-            body.addContext("addMethodName", addMethodName(singularize(property.getName())));
-            body.addContext("readMethodName", readMethodName);
-            body.addContext("unionJavaType", valueJt.toJavaTypeString());
-
-            body.append("{");
-            body.append("    ObjectNode mapObj = JsonUtil.consumeObjectProperty(json, \"${propertyName}\");");
-            body.append("    if (mapObj != null) {");
-            body.append("        JsonUtil.keys(mapObj).forEach(key -> {");
-            body.append("            JsonNode value = JsonUtil.consumeAnyProperty(mapObj, key);");
-            body.append("            if (value != null) {");
-            body.append("                ${unionJavaType} model = this.${readMethodName}(value, null);");
-            body.append("                if (model != null) node.${addMethodName}(key, model);");
-            body.append("            }");
-            body.append("        });");
-            body.append("    }");
-            body.append("}");
+            new ReadUnionMapPropertyBlock(propertyWithOrigin, readerClassSource, CreateReadersStage.this).appendTo(body);
         }
 
         private void handleStarProperty(BodyBuilder body) {
@@ -699,152 +660,19 @@ public class CreateReadersStage extends AbstractJavaStage {
         }
 
         private void handleEntityProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            String propertyTypeEntityName = entityModel.getNamespace().fullName() + "." + property.getResolvedType().getName();
-            EntityModel propertyTypeEntity = getState().getConceptIndex().lookupEntity(propertyTypeEntityName);
-            if (propertyTypeEntity == null) {
-                warn("Property entity type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getResolvedType());
-                return;
-            }
-            JavaInterfaceSource propertyTypeJavaEntity = resolveJavaEntityType(entityModel.getNamespace(), property);
-            readerClassSource.addImport(propertyTypeJavaEntity);
-
-            body.addContext("propertyName", property.getName());
-            body.addContext("setterMethodName", setterMethodName(property));
-            body.addContext("createMethodName", createMethodName(propertyTypeEntity));
-            body.addContext("getterMethodName", getterMethodName(property));
-            body.addContext("readMethodName", readMethodName(propertyTypeEntity));
-            body.addContext("propertyEntityType", propertyTypeJavaEntity.getName());
-
-            body.append("{");
-            body.append("    ObjectNode object = JsonUtil.consumeObjectProperty(json, \"${propertyName}\");");
-            body.append("    if (object != null) {");
-            body.append("        node.${setterMethodName}(node.${createMethodName}());");
-            body.append("        ${readMethodName}(object, (${propertyEntityType}) node.${getterMethodName}());");
-            body.append("    }");
-            body.append("}");
+            new ReadEntityPropertyBlock(propertyWithOrigin, entityModel, readerClassSource, CreateReadersStage.this).appendTo(body);
         }
 
         private void handlePrimitiveTypeProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            body.addContext("valueType", determineValueType(property.getResolvedType()));
-            body.addContext("consumeProperty", determineConsumePropertyVariant(property.getResolvedType()));
-            body.addContext("propertyName", property.getName());
-            body.addContext("setterMethodName", setterMethodName(property));
-
-            body.append("{");
-            body.append("    ${valueType} value = JsonUtil.${consumeProperty}(json, \"${propertyName}\");");
-            body.append("    node.${setterMethodName}(value);");
-            body.append("}");
+            new ReadPrimitivePropertyBlock(propertyWithOrigin, readerClassSource, CreateReadersStage.this).appendTo(body);
         }
 
         private void handleListProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            body.addContext("propertyName", property.getName());
-            body.addContext("setterMethodName", setterMethodName(property));
-
-            Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
-            if (listValueType.isPrimitiveType()) {
-                body.addContext("consumeMethodName", determineConsumePropertyVariant(property.getResolvedType()));
-                body.addContext("propertyValueJavaType", determineValueType(property.getResolvedType()));
-                readerClassSource.addImport(List.class);
-
-                body.append("{");
-                body.append("    ${propertyValueJavaType} value = JsonUtil.${consumeMethodName}(json, \"${propertyName}\");");
-                body.append("    node.${setterMethodName}(value);");
-                body.append("}");
-            } else if (listValueType.isEntityType()) {
-                String entityTypeName = listValueType.getName();
-                String fqEntityName = entityModel.getNamespace().fullName() + "." + entityTypeName;
-                EntityModel entityTypeModel = getState().getConceptIndex().lookupEntity(fqEntityName);
-                if (entityTypeModel == null) {
-                    warn("LIST Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in index: " + property.getResolvedType());
-                    return;
-                }
-                JavaInterfaceSource entityTypeJavaModel = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(entityTypeModel));
-                if (entityTypeJavaModel == null) {
-                    warn("LIST Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in JAVA index: " + property.getResolvedType());
-                    return;
-                }
-                readerClassSource.addImport(entityTypeJavaModel);
-                readerClassSource.addImport(List.class);
-
-                body.addContext("listValueJavaType", entityTypeJavaModel.getName());
-                body.addContext("createMethodName", createMethodName(entityTypeModel));
-                body.addContext("readMethodName", readMethodName(entityTypeModel));
-                body.addContext("addMethodName", addMethodName(singularize(property.getName())));
-
-                body.append("{");
-                body.append("    List<ObjectNode> objects = JsonUtil.consumeObjectArrayProperty(json, \"${propertyName}\");");
-                body.append("    if (objects != null) {");
-                body.append("        objects.forEach(object -> {");
-                body.append("            ${listValueJavaType} model = (${listValueJavaType}) node.${createMethodName}();");
-                body.append("            node.${addMethodName}(model);");
-                body.append("            this.${readMethodName}(object, model);");
-                body.append("        });");
-                body.append("    }");
-                body.append("}");
-            } else {
-                warn("LIST Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getResolvedType());
-            }
+            new ReadListPropertyBlock(propertyWithOrigin, entityModel, readerClassSource, CreateReadersStage.this).appendTo(body);
         }
 
         private void handleMapProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            body.addContext("propertyName", property.getName());
-            body.addContext("setterMethodName", setterMethodName(property));
-
-            Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
-            if (mapValueType.isPrimitiveType()) {
-                body.addContext("consumeMethodName", determineConsumePropertyVariant(property.getResolvedType()));
-                body.addContext("propertyValueJavaType", determineValueType(property.getResolvedType()));
-                readerClassSource.addImport(Map.class);
-
-                body.append("{");
-                body.append("    ${propertyValueJavaType} value = JsonUtil.${consumeMethodName}(json, \"${propertyName}\");");
-                body.append("    node.${setterMethodName}(value);");
-                body.append("}");
-            } else if (mapValueType.isEntityType()) {
-                String entityTypeName = mapValueType.getName();
-                String fqEntityName = entityModel.getNamespace().fullName() + "." + entityTypeName;
-                EntityModel entityTypeModel = getState().getConceptIndex().lookupEntity(fqEntityName);
-                if (entityTypeModel == null) {
-                    warn("MAP Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in index: " + property.getResolvedType());
-                    return;
-                }
-                JavaInterfaceSource entityTypeJavaModel = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(entityTypeModel));
-                if (entityTypeJavaModel == null) {
-                    warn("MAP Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in JAVA index: " + property.getResolvedType());
-                    return;
-                }
-                readerClassSource.addImport(entityTypeJavaModel);
-
-                body.addContext("mapValueJavaType", entityTypeJavaModel.getName());
-                body.addContext("createMethodName", "create" + entityTypeName);
-                body.addContext("readMethodName", "read" + entityTypeName);
-                body.addContext("addMethodName", addMethodName(singularize(property.getName())));
-
-                body.append("{");
-                body.append("    ObjectNode object = JsonUtil.consumeObjectProperty(json, \"${propertyName}\");");
-                body.append("    JsonUtil.keys(object).forEach(name -> {");
-                body.append("        ObjectNode mapValue = JsonUtil.consumeObjectProperty(object, name);");
-                body.append("        if (mapValue != null) {");
-                body.append("            ${mapValueJavaType} model = (${mapValueJavaType}) node.${createMethodName}();");
-                body.append("            node.${addMethodName}(name, model);");
-                body.append("            this.${readMethodName}(mapValue, model);");
-                body.append("        }");
-                body.append("    });");
-                body.append("}");
-            } else {
-                warn("MAP Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getResolvedType());
-            }
+            new ReadMapPropertyBlock(propertyWithOrigin, entityModel, readerClassSource, CreateReadersStage.this).appendTo(body);
         }
 
         private void handleUnionProperty(BodyBuilder body) {
