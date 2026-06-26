@@ -26,7 +26,7 @@ public abstract class AbstractJavaStage extends AbstractStage {
 
     private JavaTypeFactory javaTypeFactory;
 
-    protected JavaTypeFactory getJavaTypeFactory() {
+    public JavaTypeFactory getJavaTypeFactory() {
         if (javaTypeFactory == null) {
             javaTypeFactory = new JavaTypeFactory(
                     getState().getConceptIndex(),
@@ -135,7 +135,7 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return prefix == null ? "" : prefix;
     }
 
-    protected String getJavaEntityInterfaceFQN(EntityModel entity) {
+    public String getJavaEntityInterfaceFQN(EntityModel entity) {
         return getJavaEntityInterfacePackage(entity) + "." + getJavaEntityInterfaceName(entity);
     }
 
@@ -143,7 +143,7 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return getJavaTraitInterfacePackage(trait) + "." + getJavaTraitInterfaceName(trait);
     }
 
-    protected String getJavaEntityClassFQN(EntityModel entity) {
+    public String getJavaEntityClassFQN(EntityModel entity) {
         return getJavaEntityClassPackage(entity) + "." + getJavaEntityClassName(entity);
     }
 
@@ -190,7 +190,7 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return getState().getConfig().getRootNamespace() + ".MappedNode";
     }
 
-    protected String getNodeEntityClassFQN() {
+    public String getNodeEntityClassFQN() {
         return getState().getConfig().getRootNamespace() + ".NodeImpl";
     }
 
@@ -238,27 +238,27 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return getUnionTypesPackageName() + ".UnionValue";
     }
 
-    protected String createMethodName(EntityModel entityModel) {
+    public String createMethodName(EntityModel entityModel) {
         return createMethodName(entityModel.getName());
     }
 
-    protected String createMethodName(PropertyModel propertyModel) {
+    public String createMethodName(PropertyModel propertyModel) {
         return createMethodName(propertyModel.getName());
     }
 
-    protected String createMethodName(String entityName) {
+    public String createMethodName(String entityName) {
         return "create" + StringUtils.capitalize(entityName);
     }
 
-    protected String addMethodName(EntityModel entityModel) {
+    public String addMethodName(EntityModel entityModel) {
         return addMethodName(entityModel.getName());
     }
 
-    protected String addMethodName(PropertyModel propertyModel) {
+    public String addMethodName(PropertyModel propertyModel) {
         return addMethodName(propertyModel.getName());
     }
 
-    protected String addMethodName(String name) {
+    public String addMethodName(String name) {
         return "add" + StringUtils.capitalize(name);
     }
 
@@ -298,15 +298,15 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return "remove" + StringUtils.capitalize(name);
     }
 
-    protected String readMethodName(EntityModel entityModel) {
+    public String readMethodName(EntityModel entityModel) {
         return readMethodName(entityModel.getName());
     }
 
-    protected String readMethodName(String entityName) {
+    public String readMethodName(String entityName) {
         return "read" + StringUtils.capitalize(entityName);
     }
 
-    protected String getterMethodName(PropertyModel propertyModel) {
+    public String getterMethodName(PropertyModel propertyModel) {
         String name = propertyModel.getName();
         if (name.startsWith("/")) {
             name = propertyModel.getCollection();
@@ -314,16 +314,16 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return getterMethodName(name, propertyModel.getResolvedType());
     }
 
-    protected String getterMethodName(String propertyName, Type type) {
+    public String getterMethodName(String propertyName, Type type) {
         boolean isBool = type.isPrimitiveType() && type.getName().equals("boolean");
         return (isBool ? "is" : "get") + StringUtils.capitalize(propertyName);
     }
 
-    protected String setterMethodName(PropertyModel propertyModel) {
+    public String setterMethodName(PropertyModel propertyModel) {
         return "set" + StringUtils.capitalize(propertyModel.getName());
     }
 
-    protected Class<?> primitiveTypeToClass(Type type) {
+    public Class<?> primitiveTypeToClass(Type type) {
         if (!type.isPrimitiveType()) {
             throw new UnsupportedOperationException("Property type not primitive: " + type);
         }
@@ -334,56 +334,56 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return rval;
     }
 
-    protected JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, PropertyModel property) {
+    public JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, PropertyModel property) {
         var entityType = (io.apitomy.umg.models.concept.type.EntityType) property.getResolvedType();
         return resolveJavaEntity(namespace.fullName(), entityType.getName());
     }
 
-    protected JavaInterfaceSource resolveJavaEntityType(String namespace, PropertyModel property) {
+    public JavaInterfaceSource resolveJavaEntityType(String namespace, PropertyModel property) {
         var entityType = (io.apitomy.umg.models.concept.type.EntityType) property.getResolvedType();
         return resolveJavaEntity(namespace, entityType.getName());
     }
 
-    protected JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, Type type) {
+    public JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, Type type) {
         return resolveJavaEntity(namespace.fullName(), type.getName());
     }
 
-    protected JavaInterfaceSource resolveJavaEntityType(String namespace, Type type) {
+    public JavaInterfaceSource resolveJavaEntityType(String namespace, Type type) {
         return resolveJavaEntity(namespace, type.getName());
     }
 
-    protected JavaInterfaceSource resolveJavaEntity(EntityModel entityModel) {
+    public JavaInterfaceSource resolveJavaEntity(EntityModel entityModel) {
         return resolveJavaEntity(entityModel.getNamespace().fullName(), entityModel.getName());
     }
 
-    protected JavaClassSource resolveJavaEntityImpl(EntityModel entityModel) {
+    public JavaClassSource resolveJavaEntityImpl(EntityModel entityModel) {
         return resolveJavaEntityImpl(entityModel.getNamespace().fullName(), entityModel.getName());
     }
 
-    protected JavaInterfaceSource resolveJavaEntity(String namespace, String entityName) {
+    public JavaInterfaceSource resolveJavaEntity(String namespace, String entityName) {
         String _package = namespace;
         String prefix = getPrefix(namespace);
         String fqn = _package + "." + prefix + entityName;
         return lookupJavaEntity(fqn);
     }
 
-    protected JavaClassSource resolveJavaEntityImpl(String namespace, String entityName) {
+    public JavaClassSource resolveJavaEntityImpl(String namespace, String entityName) {
         String _package = namespace;
         String prefix = getPrefix(namespace);
         String fqn = _package + "." + prefix + entityName + "Impl";
         return lookupJavaEntityImpl(fqn);
     }
 
-    protected JavaInterfaceSource resolveCommonJavaEntity(EntityModel entityModel) {
+    public JavaInterfaceSource resolveCommonJavaEntity(EntityModel entityModel) {
         return resolveCommonJavaEntity(entityModel.getNamespace().fullName(), entityModel.getName());
     }
 
-    protected JavaInterfaceSource resolveCommonJavaEntity(NamespaceModel namespace, String entityName) {
+    public JavaInterfaceSource resolveCommonJavaEntity(NamespaceModel namespace, String entityName) {
         EntityModel commonEntity = getState().getConceptIndex().lookupCommonEntity(namespace.fullName(), entityName);
         return lookupJavaEntity(commonEntity);
     }
 
-    protected JavaInterfaceSource resolveCommonJavaEntity(String namespace, String entityName) {
+    public JavaInterfaceSource resolveCommonJavaEntity(String namespace, String entityName) {
         EntityModel commonEntity = getState().getConceptIndex().lookupCommonEntity(namespace, entityName);
         return lookupJavaEntity(commonEntity);
     }
@@ -409,11 +409,11 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return getState().getJavaIndex().lookupInterface(getJavaTraitInterfaceFQN(trait));
     }
 
-    protected JavaClassSource lookupJavaEntityImpl(EntityModel entity) {
+    public JavaClassSource lookupJavaEntityImpl(EntityModel entity) {
         return lookupJavaEntityImpl(getJavaEntityClassFQN(entity));
     }
 
-    protected JavaClassSource lookupJavaEntityImpl(String fullyQualifiedName) {
+    public JavaClassSource lookupJavaEntityImpl(String fullyQualifiedName) {
         return getState().getJavaIndex().lookupClass(fullyQualifiedName);
     }
 
@@ -434,11 +434,11 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return getState().getConfig().getRootNamespace() + ".union";
     }
 
-    protected String getUnionTypeFQN(String name) {
+    public String getUnionTypeFQN(String name) {
         return getUnionTypesPackageName() + "." + name;
     }
 
-    protected String getUnionTypeFQN(String name, String namespace) {
+    public String getUnionTypeFQN(String name, String namespace) {
         String pkg = namespace != null ? namespace : getUnionTypesPackageName();
         return pkg + "." + name;
     }

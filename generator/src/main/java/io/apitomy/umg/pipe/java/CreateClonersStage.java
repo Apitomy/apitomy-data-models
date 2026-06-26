@@ -23,15 +23,26 @@ import io.apitomy.umg.models.concept.type.Type;
 
 import java.util.Comparator;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
+import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.cloner.CloneEntityPropertyBlock;
+import io.apitomy.umg.pipe.java.method.cloner.CloneListPropertyBlock;
+import io.apitomy.umg.pipe.java.method.cloner.CloneMapPropertyBlock;
+import io.apitomy.umg.pipe.java.method.cloner.ClonePrimitivePropertyBlock;
+import io.apitomy.umg.pipe.java.method.cloner.CloneUnionPropertyBlock;
+import io.apitomy.umg.pipe.java.method.cloner.CloneUnionListPropertyBlock;
+import io.apitomy.umg.pipe.java.method.cloner.CloneUnionMapPropertyBlock;
+import io.apitomy.umg.index.concept.ConceptIndex;
+import io.apitomy.umg.index.java.JavaIndex;
+import io.apitomy.umg.models.java.type.JavaTypeFactory;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
  * Creates the deep-copy cloner classes. There is a bespoke cloner for each specification
  * version. Each cloner can clone any node in the tree by walking the source node and
- * copying property values directly into a new target node — avoiding JSON serialization.
+ * copying property values directly into a new target node -- avoiding JSON serialization.
  */
-public class CreateClonersStage extends AbstractJavaStage {
+public class CreateClonersStage extends AbstractJavaStage implements CodeGenContext {
 
     @Override
     protected void doProcess() {
@@ -133,9 +144,26 @@ public class CreateClonersStage extends AbstractJavaStage {
         return "clone" + entityModel.getName();
     }
 
-    @Data
+    // --- CodeGenContext implementation (only methods not inherited from AbstractJavaStage) ---
+
+    @Override
+    public ConceptIndex getConceptIndex() {
+        return getState().getConceptIndex();
+    }
+
+    @Override
+    public JavaIndex getJavaIndex() {
+        return getState().getJavaIndex();
+    }
+
+    @Override
+    public void warn(String message) {
+        super.warn(message);
+    }
+
     @AllArgsConstructor
     private class CreateCloneProperty {
+
         PropertyModelWithOrigin propertyWithOrigin;
         EntityModel entityModel;
         JavaInterfaceSource javaEntity;
@@ -201,35 +229,11 @@ public class CreateClonersStage extends AbstractJavaStage {
         }
 
         private void handlePrimitiveProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            body.addContext("getterMethodName", getterMethodName(property));
-            body.addContext("setterMethodName", setterMethodName(property));
-            body.append("target.${setterMethodName}(source.${getterMethodName}());");
+            new ClonePrimitivePropertyBlock(propertyWithOrigin, CreateClonersStage.this).appendTo(body);
         }
 
         private void handleEntityProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            String propertyTypeEntityName = entityModel.getNamespace().fullName() + "." + property.getResolvedType().getName();
-            EntityModel propertyTypeEntity = getState().getConceptIndex().lookupEntity(propertyTypeEntityName);
-            if (propertyTypeEntity == null) {
-                warn("Property entity type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
-                return;
-            }
-            JavaInterfaceSource propertyTypeJavaEntity = resolveJavaEntityType(entityModel.getNamespace(), property);
-            clonerClassSource.addImport(propertyTypeJavaEntity);
-
-            body.addContext("getterMethodName", getterMethodName(property));
-            body.addContext("setterMethodName", setterMethodName(property));
-            body.addContext("createMethodName", createMethodName(propertyTypeEntity));
-            body.addContext("cloneMethodName", cloneMethodName(propertyTypeEntity));
-            body.addContext("entityType", propertyTypeJavaEntity.getName());
-
-            body.append("{");
-            body.append("    if (source.${getterMethodName}() != null) {");
-            body.append("        target.${setterMethodName}(target.${createMethodName}());");
-            body.append("        this.${cloneMethodName}((${entityType}) source.${getterMethodName}(), (${entityType}) target.${getterMethodName}());");
-            body.append("    }");
-            body.append("}");
+            new CloneEntityPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, CreateClonersStage.this).appendTo(body);
         }
 
         private void handleStarProperty(BodyBuilder body) {
@@ -343,416 +347,23 @@ public class CreateClonersStage extends AbstractJavaStage {
         }
 
         private void handleListProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
-
-            body.addContext("getterMethodName", getterMethodName(property));
-
-            if (listValueType.isPrimitiveType()) {
-                clonerClassSource.addImport(List.class);
-                clonerClassSource.addImport(ArrayList.class);
-                body.addContext("setterMethodName", setterMethodName(property));
-                body.addContext("valueType", determineValueType(listValueType));
-
-                body.append("{");
-                body.append("    List<${valueType}> srcList = source.${getterMethodName}();");
-                body.append("    if (srcList != null) {");
-                body.append("        target.${setterMethodName}(new ArrayList<>(srcList));");
-                body.append("    }");
-                body.append("}");
-            } else if (listValueType.isEntityType()) {
-                String entityTypeName = listValueType.getName();
-                String fqEntityName = entityModel.getNamespace().fullName() + "." + entityTypeName;
-                EntityModel entityTypeModel = getState().getConceptIndex().lookupEntity(fqEntityName);
-                if (entityTypeModel == null) {
-                    warn("LIST Entity property '" + property.getName() + "' not cloned for entity: " + entityModel.fullyQualifiedName());
-                    return;
-                }
-                JavaInterfaceSource entityTypeJavaModel = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(entityTypeModel));
-                if (entityTypeJavaModel == null) {
-                    warn("LIST Entity property '" + property.getName() + "' not cloned (java) for entity: " + entityModel.fullyQualifiedName());
-                    return;
-                }
-                JavaInterfaceSource commonEntityTypeJavaModel = resolveCommonJavaEntity(entityTypeModel);
-                clonerClassSource.addImport(entityTypeJavaModel);
-                clonerClassSource.addImport(commonEntityTypeJavaModel);
-                clonerClassSource.addImport(List.class);
-
-                body.addContext("entityJavaType", entityTypeJavaModel.getName());
-                body.addContext("commonEntityType", commonEntityTypeJavaModel.getName());
-                body.addContext("createMethodName", createMethodName(entityTypeModel));
-                body.addContext("cloneMethodName", cloneMethodName(entityTypeModel));
-                body.addContext("addMethodName", addMethodName(singularize(property.getName())));
-
-                body.append("{");
-                body.append("    List<? extends ${commonEntityType}> srcList = source.${getterMethodName}();");
-                body.append("    if (srcList != null && !srcList.isEmpty()) {");
-                body.append("        srcList.forEach(srcItem -> {");
-                body.append("            ${entityJavaType} tgtItem = (${entityJavaType}) target.${createMethodName}();");
-                body.append("            this.${cloneMethodName}((${entityJavaType}) srcItem, tgtItem);");
-                body.append("            target.${addMethodName}(tgtItem);");
-                body.append("        });");
-                body.append("    }");
-                body.append("}");
-            } else {
-                warn("LIST Entity property '" + property.getName() + "' not cloned (unsupported) for entity: " + entityModel.fullyQualifiedName());
-            }
+            new CloneListPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, CreateClonersStage.this).appendTo(body);
         }
 
         private void handleMapProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
-
-            body.addContext("getterMethodName", getterMethodName(property));
-
-            if (mapValueType.isPrimitiveType()) {
-                clonerClassSource.addImport(Map.class);
-                clonerClassSource.addImport(LinkedHashMap.class);
-                body.addContext("setterMethodName", setterMethodName(property));
-                body.addContext("valueType", determineValueType(mapValueType));
-
-                body.append("{");
-                body.append("    Map<String, ${valueType}> srcMap = source.${getterMethodName}();");
-                body.append("    if (srcMap != null && !srcMap.isEmpty()) {");
-                body.append("        target.${setterMethodName}(new LinkedHashMap<>(srcMap));");
-                body.append("    }");
-                body.append("}");
-            } else if (mapValueType.isEntityType()) {
-                String entityTypeName = mapValueType.getName();
-                String fqEntityName = entityModel.getNamespace().fullName() + "." + entityTypeName;
-                EntityModel entityTypeModel = getState().getConceptIndex().lookupEntity(fqEntityName);
-                if (entityTypeModel == null) {
-                    warn("MAP Entity property '" + property.getName() + "' not cloned for entity: " + entityModel.fullyQualifiedName());
-                    return;
-                }
-                JavaInterfaceSource entityTypeJavaModel = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(entityTypeModel));
-                if (entityTypeJavaModel == null) {
-                    warn("MAP Entity property '" + property.getName() + "' not cloned (java) for entity: " + entityModel.fullyQualifiedName());
-                    return;
-                }
-                JavaInterfaceSource commonEntityTypeJavaModel = resolveCommonJavaEntity(entityTypeModel);
-
-                clonerClassSource.addImport(Map.class);
-                clonerClassSource.addImport(entityTypeJavaModel);
-                clonerClassSource.addImport(commonEntityTypeJavaModel);
-
-                body.addContext("entityJavaType", entityTypeJavaModel.getName());
-                body.addContext("commonEntityType", commonEntityTypeJavaModel.getName());
-                body.addContext("createMethodName", "create" + entityTypeName);
-                body.addContext("cloneMethodName", "clone" + entityTypeName);
-                body.addContext("addMethodName", addMethodName(singularize(property.getName())));
-
-                body.append("{");
-                body.append("    Map<String, ? extends ${commonEntityType}> srcMap = source.${getterMethodName}();");
-                body.append("    if (srcMap != null && !srcMap.isEmpty()) {");
-                body.append("        srcMap.keySet().forEach(name -> {");
-                body.append("            ${entityJavaType} tgtItem = (${entityJavaType}) target.${createMethodName}();");
-                body.append("            this.${cloneMethodName}((${entityJavaType}) srcMap.get(name), tgtItem);");
-                body.append("            target.${addMethodName}(name, tgtItem);");
-                body.append("        });");
-                body.append("    }");
-                body.append("}");
-            } else {
-                warn("MAP Entity property '" + property.getName() + "' not cloned (unsupported) for entity: " + entityModel.fullyQualifiedName());
-            }
-        }
-
-        private io.apitomy.umg.models.concept.type.UnionType getEffectiveUnionType(PropertyModel property) {
-            Type resolved = property.getResolvedType();
-            if (resolved.isUnionType()) {
-                return (io.apitomy.umg.models.concept.type.UnionType) resolved;
-            }
-            if (resolved.isCollectionType()) {
-                Type valueType = ((io.apitomy.umg.models.concept.type.CollectionType) resolved).getValueType();
-                if (valueType.isUnionType()) {
-                    return (io.apitomy.umg.models.concept.type.UnionType) valueType;
-                }
-            }
-            throw new IllegalStateException("Could not extract union type from: " + resolved);
-        }
-
-        private String getUnionJavaTypeName(PropertyModel property, io.apitomy.umg.models.concept.type.UnionType unionType) {
-            var nsModel = propertyWithOrigin.getOrigin().getNamespace();
-            var jt = getJavaTypeFactory().createJavaType(unionType, nsModel);
-            jt.addImportsTo(clonerClassSource);
-            return jt.getSimpleName();
+            new CloneMapPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, CreateClonersStage.this).appendTo(body);
         }
 
         private void handleUnionProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            NamespaceModel nsContext = propertyWithOrigin.getOrigin().getNamespace();
-            io.apitomy.umg.models.concept.type.UnionType effectiveUnionType = getEffectiveUnionType(property);
-
-            body.addContext("unionJavaType", getUnionJavaTypeName(property, effectiveUnionType));
-            body.addContext("getterMethodName", getterMethodName(property));
-            body.addContext("setterMethodName", setterMethodName(property));
-
-            body.append("{");
-            body.append("    ${unionJavaType} srcUnion = source.${getterMethodName}();");
-            body.append("    if (srcUnion != null) {");
-
-            // Sort types alphabetically to match the old UnionPropertyType behavior
-            List<Type> sortedTypes = effectiveUnionType.getTypes().stream()
-                    .sorted(UnionVariantComparator.INSTANCE)
-                    .collect(java.util.stream.Collectors.toList());
-            sortedTypes.forEach(nestedType -> {
-                String typeName = getTypeName(nestedType);
-                String isMethodName = "is" + typeName;
-                String asMethodName = "as" + typeName;
-
-                body.addContext("isMethodName", isMethodName);
-                body.addContext("asMethodName", asMethodName);
-
-                body.append("        if (srcUnion.${isMethodName}()) {");
-
-                if (nestedType.isPrimitiveType() || nestedType.isPrimitiveUnionVariantType()) {
-                    String unionValueInterfaceFQN = getUnionTypeFQN(typeName + "UnionValue");
-                    String unionValueClassFQN = unionValueInterfaceFQN + "Impl";
-                    JavaInterfaceSource unionValueInterface = getState().getJavaIndex().lookupInterface(unionValueInterfaceFQN);
-                    JavaClassSource unionValueClass = getState().getJavaIndex().lookupClass(unionValueClassFQN);
-                    if (unionValueInterface != null && unionValueClass != null) {
-                        clonerClassSource.addImport(unionValueInterface);
-                        clonerClassSource.addImport(unionValueClass);
-                        body.addContext("unionValueInterfaceName", unionValueInterface.getName());
-                        body.addContext("unionValueClassName", unionValueClass.getName());
-                        body.append("            target.${setterMethodName}(new ${unionValueClassName}(srcUnion.${asMethodName}()));");
-                    }
-                } else if (nestedType.isListType() && ((io.apitomy.umg.models.concept.type.ListType) nestedType).getValueType().isPrimitiveType()) {
-                    String unionValueName = getTypeName(nestedType);
-                    String unionValueInterfaceFQN = getUnionTypeFQN(unionValueName + "UnionValue");
-                    String unionValueClassFQN = unionValueInterfaceFQN + "Impl";
-                    JavaInterfaceSource unionValueInterface = getState().getJavaIndex().lookupInterface(unionValueInterfaceFQN);
-                    JavaClassSource unionValueClass = getState().getJavaIndex().lookupClass(unionValueClassFQN);
-                    if (unionValueInterface != null && unionValueClass != null) {
-                        clonerClassSource.addImport(unionValueInterface);
-                        clonerClassSource.addImport(unionValueClass);
-                        clonerClassSource.addImport(ArrayList.class);
-                        body.addContext("unionValueInterfaceName", unionValueInterface.getName());
-                        body.addContext("unionValueClassName", unionValueClass.getName());
-                        body.append("            target.${setterMethodName}(new ${unionValueClassName}(new ArrayList<>(srcUnion.${asMethodName}())));");
-                    }
-                } else if (nestedType.isEntityType()) {
-                    NamespaceModel nestedTypeEntityNS = entityModel.getNamespace();
-                    String nestedTypeEntityName = nestedTypeEntityNS.fullName() + "." + nestedType.getName();
-                    EntityModel nestedTypeEntity = getState().getConceptIndex().lookupEntity(nestedTypeEntityName);
-                    if (nestedTypeEntity != null) {
-                        JavaInterfaceSource entityJavaSource = resolveJavaEntityType(nestedTypeEntityNS, nestedType);
-                        JavaClassSource entityImplSource = lookupJavaEntityImpl(getJavaEntityClassFQN(nestedTypeEntity));
-                        if (entityJavaSource != null && entityImplSource != null) {
-                            clonerClassSource.addImport(entityJavaSource);
-                            clonerClassSource.addImport(entityImplSource);
-                            body.addContext("entityType", entityJavaSource.getName());
-                            body.addContext("entityImplType", entityImplSource.getName());
-                            body.addContext("cloneMethodName", cloneMethodName(nestedTypeEntity));
-                            body.append("            ${entityType} tgtEntity = new ${entityImplType}();");
-                            body.append("            this.${cloneMethodName}((${entityType}) srcUnion.${asMethodName}(), tgtEntity);");
-                            body.append("            target.${setterMethodName}(tgtEntity);");
-                        }
-                    }
-                } else if (nestedType.isListType() && ((io.apitomy.umg.models.concept.type.ListType) nestedType).getValueType().isEntityType()) {
-                    Type listItemType = ((io.apitomy.umg.models.concept.type.ListType) nestedType).getValueType();
-                    String listItemEntityName = entityModel.getNamespace().fullName() + "." + listItemType.getName();
-                    EntityModel listItemEntity = getState().getConceptIndex().lookupEntity(listItemEntityName);
-                    if (listItemEntity != null) {
-                        JavaInterfaceSource listItemEntitySource = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(listItemEntity));
-                        if (listItemEntitySource != null) {
-                            String unionValueName = getTypeName(nestedType);
-                            String unionValueInterfaceFQN = getUnionTypeFQN(unionValueName + "UnionValue");
-                            String unionValueClassFQN = unionValueInterfaceFQN + "Impl";
-                            JavaInterfaceSource unionValueInterface = getState().getJavaIndex().lookupInterface(unionValueInterfaceFQN);
-                            JavaClassSource unionValueClass = getState().getJavaIndex().lookupClass(unionValueClassFQN);
-                            if (unionValueInterface == null) {
-                                unionValueInterface = getState().getJavaIndex().findInterfaceBySimpleName(unionValueName + "UnionValue");
-                            }
-                            if (unionValueClass == null) {
-                                unionValueClass = getState().getJavaIndex().findClassBySimpleName(unionValueName + "UnionValueImpl");
-                            }
-                            if (unionValueInterface != null && unionValueClass != null) {
-                                clonerClassSource.addImport(listItemEntitySource);
-                                clonerClassSource.addImport(unionValueInterface);
-                                clonerClassSource.addImport(unionValueClass);
-                                clonerClassSource.addImport(List.class);
-                                clonerClassSource.addImport(ArrayList.class);
-                                body.addContext("listItemType", listItemEntitySource.getName());
-                                body.addContext("createMethodName", createMethodName(listItemEntity));
-                                body.addContext("cloneMethodName", cloneMethodName(listItemEntity));
-                                body.addContext("unionValueClassName", unionValueClass.getName());
-                                body.append("            List<${listItemType}> clonedList = new ArrayList<>();");
-                                body.append("            srcUnion.${asMethodName}().forEach(srcItem -> {");
-                                body.append("                ${listItemType} tgtItem = (${listItemType}) target.${createMethodName}();");
-                                body.append("                this.${cloneMethodName}((${listItemType}) srcItem, tgtItem);");
-                                body.append("                clonedList.add(tgtItem);");
-                                body.append("            });");
-                                body.append("            @SuppressWarnings({ \"unchecked\", \"rawtypes\" })");
-                                body.append("            ${unionValueClassName} unionValue = new ${unionValueClassName}((List) clonedList);");
-                                body.append("            target.${setterMethodName}(unionValue);");
-                            }
-                        }
-                    }
-                } else {
-                    warn("UNION property '" + property.getName() + "' nested type not cloned (unsupported): " + nestedType);
-                }
-
-                body.append("        }");
-            });
-
-            body.append("    }");
-            body.append("}");
-
-            var unionJavaType = getJavaTypeFactory().createJavaType(effectiveUnionType, nsContext);
-            unionJavaType.addImportsTo(clonerClassSource);
+            new CloneUnionPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, CreateClonersStage.this).appendTo(body);
         }
 
         private void handleUnionListProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            NamespaceModel nsContext = propertyWithOrigin.getOrigin().getNamespace();
-            io.apitomy.umg.models.concept.type.UnionType effectiveUnionType = (io.apitomy.umg.models.concept.type.UnionType) ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
-
-            clonerClassSource.addImport(List.class);
-
-            var unionJavaType = getJavaTypeFactory().createJavaType(effectiveUnionType, nsContext);
-            unionJavaType.addImportsTo(clonerClassSource);
-            body.addContext("unionJavaType", unionJavaType.getSimpleName());
-            body.addContext("getterMethodName", getterMethodName(property));
-            body.addContext("addMethodName", addMethodName(singularize(property.getName())));
-
-            body.append("{");
-            body.append("    List<${unionJavaType}> srcList = source.${getterMethodName}();");
-            body.append("    if (srcList != null && !srcList.isEmpty()) {");
-            body.append("        srcList.forEach(srcUnion -> {");
-
-            effectiveUnionType.getTypes().stream()
-                    .sorted(UnionVariantComparator.INSTANCE)
-                    .forEach(nestedType -> {
-                String typeName = getTypeName(nestedType);
-                String isMethodName = "is" + typeName;
-                String asMethodName = "as" + typeName;
-
-                body.addContext("isMethodName", isMethodName);
-                body.addContext("asMethodName", asMethodName);
-
-                body.append("            if (srcUnion.${isMethodName}()) {");
-
-                if (nestedType.isPrimitiveType() || nestedType.isPrimitiveUnionVariantType()) {
-                    String unionValueInterfaceFQN = getUnionTypeFQN(typeName + "UnionValue");
-                    String unionValueClassFQN = unionValueInterfaceFQN + "Impl";
-                    JavaInterfaceSource unionValueInterface = getState().getJavaIndex().lookupInterface(unionValueInterfaceFQN);
-                    JavaClassSource unionValueClass = getState().getJavaIndex().lookupClass(unionValueClassFQN);
-                    if (unionValueInterface != null && unionValueClass != null) {
-                        clonerClassSource.addImport(unionValueInterface);
-                        clonerClassSource.addImport(unionValueClass);
-                        body.addContext("unionValueClassName", unionValueClass.getName());
-                        body.append("                target.${addMethodName}(new ${unionValueClassName}(srcUnion.${asMethodName}()));");
-                    }
-                } else if (nestedType.isEntityType()) {
-                    NamespaceModel nestedTypeEntityNS = entityModel.getNamespace();
-                    String nestedTypeEntityName = nestedTypeEntityNS.fullName() + "." + nestedType.getName();
-                    EntityModel nestedTypeEntity = getState().getConceptIndex().lookupEntity(nestedTypeEntityName);
-                    if (nestedTypeEntity != null) {
-                        JavaInterfaceSource entityJavaSource = resolveJavaEntityType(nestedTypeEntityNS, nestedType);
-                        JavaClassSource entityImplSource = lookupJavaEntityImpl(getJavaEntityClassFQN(nestedTypeEntity));
-                        if (entityJavaSource != null && entityImplSource != null) {
-                            clonerClassSource.addImport(entityJavaSource);
-                            clonerClassSource.addImport(entityImplSource);
-                            body.addContext("entityType", entityJavaSource.getName());
-                            body.addContext("entityImplType", entityImplSource.getName());
-                            body.addContext("cloneMethodName", cloneMethodName(nestedTypeEntity));
-                            body.append("                ${entityType} tgtItem = new ${entityImplType}();");
-                            body.append("                this.${cloneMethodName}((${entityType}) srcUnion.${asMethodName}(), tgtItem);");
-                            body.append("                target.${addMethodName}(tgtItem);");
-                        }
-                    }
-                } else {
-                    warn("UNION LIST property '" + property.getName() + "' nested type not cloned (unsupported): " + nestedType);
-                }
-
-                body.append("            }");
-            });
-
-            body.append("        });");
-            body.append("    }");
-            body.append("}");
+            new CloneUnionListPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, CreateClonersStage.this).appendTo(body);
         }
 
         private void handleUnionMapProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            NamespaceModel nsContext = propertyWithOrigin.getOrigin().getNamespace();
-            io.apitomy.umg.models.concept.type.UnionType effectiveUnionType = (io.apitomy.umg.models.concept.type.UnionType) ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
-
-            clonerClassSource.addImport(Map.class);
-
-            var unionJavaType = getJavaTypeFactory().createJavaType(effectiveUnionType, nsContext);
-            unionJavaType.addImportsTo(clonerClassSource);
-            body.addContext("unionJavaType", unionJavaType.getSimpleName());
-            body.addContext("getterMethodName", getterMethodName(property));
-            body.addContext("addMethodName", addMethodName(singularize(property.getName())));
-
-            body.append("{");
-            body.append("    Map<String, ${unionJavaType}> srcMap = source.${getterMethodName}();");
-            body.append("    if (srcMap != null && !srcMap.isEmpty()) {");
-            body.append("        srcMap.keySet().forEach(key -> {");
-            body.append("            ${unionJavaType} srcUnion = srcMap.get(key);");
-
-            effectiveUnionType.getTypes().stream()
-                    .sorted(UnionVariantComparator.INSTANCE)
-                    .forEach(nestedType -> {
-                String typeName = getTypeName(nestedType);
-                String isMethodName = "is" + typeName;
-                String asMethodName = "as" + typeName;
-
-                body.addContext("isMethodName", isMethodName);
-                body.addContext("asMethodName", asMethodName);
-
-                body.append("            if (srcUnion.${isMethodName}()) {");
-
-                if (nestedType.isPrimitiveType() || nestedType.isPrimitiveUnionVariantType()) {
-                    String unionValueInterfaceFQN = getUnionTypeFQN(typeName + "UnionValue");
-                    String unionValueClassFQN = unionValueInterfaceFQN + "Impl";
-                    JavaInterfaceSource unionValueInterface = getState().getJavaIndex().lookupInterface(unionValueInterfaceFQN);
-                    JavaClassSource unionValueClass = getState().getJavaIndex().lookupClass(unionValueClassFQN);
-                    if (unionValueInterface != null && unionValueClass != null) {
-                        clonerClassSource.addImport(unionValueInterface);
-                        clonerClassSource.addImport(unionValueClass);
-                        body.addContext("unionValueClassName", unionValueClass.getName());
-                        body.append("                target.${addMethodName}(key, new ${unionValueClassName}(srcUnion.${asMethodName}()));");
-                    }
-                } else if (nestedType.isEntityType()) {
-                    NamespaceModel nestedTypeEntityNS = entityModel.getNamespace();
-                    String nestedTypeEntityName = nestedTypeEntityNS.fullName() + "." + nestedType.getName();
-                    EntityModel nestedTypeEntity = getState().getConceptIndex().lookupEntity(nestedTypeEntityName);
-                    if (nestedTypeEntity != null) {
-                        JavaInterfaceSource entityJavaSource = resolveJavaEntityType(nestedTypeEntityNS, nestedType);
-                        JavaClassSource entityImplSource = lookupJavaEntityImpl(getJavaEntityClassFQN(nestedTypeEntity));
-                        if (entityJavaSource != null && entityImplSource != null) {
-                            clonerClassSource.addImport(entityJavaSource);
-                            clonerClassSource.addImport(entityImplSource);
-                            body.addContext("entityType", entityJavaSource.getName());
-                            body.addContext("entityImplType", entityImplSource.getName());
-                            body.addContext("cloneMethodName", cloneMethodName(nestedTypeEntity));
-                            body.append("                ${entityType} tgtItem = new ${entityImplType}();");
-                            body.append("                this.${cloneMethodName}((${entityType}) srcUnion.${asMethodName}(), tgtItem);");
-                            body.append("                target.${addMethodName}(key, tgtItem);");
-                        }
-                    }
-                } else if (nestedType.isListType()) {
-                    String unionValueClassFQN = getUnionTypeFQN(typeName + "UnionValueImpl");
-                    JavaClassSource unionValueClass = getState().getJavaIndex().lookupClass(unionValueClassFQN);
-                    if (unionValueClass != null) {
-                        clonerClassSource.addImport(unionValueClass);
-                        clonerClassSource.addImport(java.util.ArrayList.class);
-                        body.addContext("unionValueClassName", unionValueClass.getName());
-                        body.append("                target.${addMethodName}(key, new ${unionValueClassName}(new java.util.ArrayList<>(srcUnion.${asMethodName}())));");
-                    }
-                } else {
-                    warn("UNION MAP property '" + property.getName() + "' nested type not cloned (unsupported): " + nestedType);
-                }
-
-                body.append("            }");
-            });
-
-            body.append("        });");
-            body.append("    }");
-            body.append("}");
+            new CloneUnionMapPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, CreateClonersStage.this).appendTo(body);
         }
 
         private String determineValueType(Type type) {

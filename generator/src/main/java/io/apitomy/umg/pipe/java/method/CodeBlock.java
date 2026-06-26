@@ -10,7 +10,7 @@ public abstract class CodeBlock implements CanAddImports {
     /**
      * Appends this code block's statements to the given body builder.
      */
-    abstract void appendTo(BodyBuilder body);
+    public abstract void appendTo(BodyBuilder body);
 
     @Override
     public void addImportsTo(JavaSource<?> source) {
