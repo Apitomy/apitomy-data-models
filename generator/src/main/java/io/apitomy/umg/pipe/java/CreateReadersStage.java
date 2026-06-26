@@ -570,7 +570,7 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 body.append("            ${entityJavaType} model = (${entityJavaType}) node.${createMethodName}();");
                 body.append("            node.${addMethodName}(name, model);");
                 body.append("            this.${readMethodName}((ObjectNode) _val, model);");
-                body.append("            json.remove(name);");
+                body.append("            JsonUtil.removeProperty(json, name);");
                 body.append("        }");
                 body.append("    }");
                 body.append("}");
@@ -588,7 +588,7 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
                 body.append("        if (JsonUtil.${isCheckMethod}(_val)) {");
                 body.append("            node.addItem(name, JsonUtil.${toConversionMethod}(_val));");
-                body.append("            json.remove(name);");
+                body.append("            JsonUtil.removeProperty(json, name);");
                 body.append("        }");
                 body.append("    }");
                 body.append("}");
@@ -617,7 +617,7 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 body.append("                items.add(JsonUtil.${toConversionMethod}(_nodes.get(_j)));");
                 body.append("            }");
                 body.append("            node.addItem(name, items);");
-                body.append("            json.remove(name);");
+                body.append("            JsonUtil.removeProperty(json, name);");
                 body.append("        }");
                 body.append("    }");
                 body.append("}");
@@ -648,7 +648,7 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 body.append("                items.put(_key, JsonUtil.${toConversionMethod}(JsonUtil.getProperty((ObjectNode) _val, _key)));");
                 body.append("            }");
                 body.append("            node.addItem(name, items);");
-                body.append("            json.remove(name);");
+                body.append("            JsonUtil.removeProperty(json, name);");
                 body.append("        }");
                 body.append("    }");
                 body.append("}");
@@ -685,7 +685,7 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 body.append("            ${entityJavaType} model = (${entityJavaType}) node.${createMethodName}();");
                 body.append("            node.${addMethodName}(name, model);");
                 body.append("            this.${readMethodName}((ObjectNode) _val, model);");
-                body.append("            json.remove(name);");
+                body.append("            JsonUtil.removeProperty(json, name);");
                 body.append("        }");
                 body.append("    }");
                 body.append("}");
@@ -705,7 +705,7 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
                 body.append("        if (JsonUtil.${isCheckMethod}(_val)) {");
                 body.append("            node.${addMethodName}(name, JsonUtil.${toConversionMethod}(_val));");
-                body.append("            json.remove(name);");
+                body.append("            JsonUtil.removeProperty(json, name);");
                 body.append("        }");
                 body.append("    }");
                 body.append("}");
@@ -736,7 +736,7 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 body.append("                items.add(JsonUtil.${toConversionMethod}(_nodes.get(_j)));");
                 body.append("            }");
                 body.append("            node.${addMethodName}(name, items);");
-                body.append("            json.remove(name);");
+                body.append("            JsonUtil.removeProperty(json, name);");
                 body.append("        }");
                 body.append("    }");
                 body.append("}");
@@ -769,7 +769,7 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 body.append("                items.put(_key, JsonUtil.${toConversionMethod}(JsonUtil.getProperty((ObjectNode) _val, _key)));");
                 body.append("            }");
                 body.append("            node.${addMethodName}(name, items);");
-                body.append("            json.remove(name);");
+                body.append("            JsonUtil.removeProperty(json, name);");
                 body.append("        }");
                 body.append("    }");
                 body.append("}");

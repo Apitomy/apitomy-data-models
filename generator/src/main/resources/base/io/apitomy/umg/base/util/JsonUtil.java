@@ -85,6 +85,12 @@ public class JsonUtil {
         return new ArrayList<>(collection);
     }
 
+    public static void removeProperty(ObjectNode json, String propertyName) {
+        if (json != null) {
+            json.remove(propertyName);
+        }
+    }
+
     public static ObjectNode objectNode() {
         return factory.objectNode();
     }

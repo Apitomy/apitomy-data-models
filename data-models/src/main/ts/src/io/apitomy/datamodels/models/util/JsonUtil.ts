@@ -39,6 +39,12 @@ export class JsonUtil {
         return JSON.stringify(json);
     }
 
+    public static removeProperty(json: any, propertyName: string): void {
+        if (json != null && typeof json === "object") {
+            delete json[propertyName];
+        }
+    }
+
     public static parseJSON(jsonString: string): any {
         return JSON.parse(jsonString);
     }
@@ -70,8 +76,12 @@ export class JsonUtil {
         return value;
     }
 
-    // JSweet mangled name for toJsonNode(Object) overload
+    // JSweet mangled names for toJsonNode overloads
     public static toJsonNode$java_lang_Object(value: any): any {
+        return value;
+    }
+
+    public static toJsonNode$com_fasterxml_jackson_databind_JsonNode(value: any): any {
         return value;
     }
 
