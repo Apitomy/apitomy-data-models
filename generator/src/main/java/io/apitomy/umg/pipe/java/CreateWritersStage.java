@@ -504,24 +504,52 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
 
                 body.append("{");
                 body.append("    List<String> propertyNames = node.getItemNames();");
-                body.append("    propertyNames.forEach(propertyName -> {");
+                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
+                body.append("        String propertyName = propertyNames.get(_i);");
                 body.append("        ObjectNode object = JsonUtil.objectNode();");
                 body.append("        this.${writeMethodName}((${entityJavaType}) node.getItem(propertyName), object);");
-                body.append("        JsonUtil.setObjectProperty(json, propertyName, object);");
-                body.append("    });");
+                body.append("        JsonUtil.setProperty(json, propertyName, object);");
+                body.append("    }");
                 body.append("}");
-            } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
+            } else if (isPrimitive(property)) {
                 writerClassSource.addImport(List.class);
 
                 body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
-                body.addContext("setPropertyMethodName", PrimitiveTypeHelper.determineSetPropertyVariant(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
 
                 body.append("{");
                 body.append("    List<String> propertyNames = node.getItemNames();");
-                body.append("    propertyNames.forEach(propertyName -> {");
+                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
+                body.append("        String propertyName = propertyNames.get(_i);");
                 body.append("        ${valueType} value = node.getItem(propertyName);");
-                body.append("        JsonUtil.${setPropertyMethodName}(json, propertyName, value);");
-                body.append("    });");
+                body.append("        JsonUtil.setProperty(json, propertyName, JsonUtil.toJsonNode(value));");
+                body.append("    }");
+                body.append("}");
+            } else if (isPrimitiveList(property)) {
+                writerClassSource.addImport(List.class);
+
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
+
+                body.append("{");
+                body.append("    List<String> propertyNames = node.getItemNames();");
+                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
+                body.append("        String propertyName = propertyNames.get(_i);");
+                body.append("        ${valueType} value = node.getItem(propertyName);");
+                body.append("        JsonUtil.setProperty(json, propertyName, JsonUtil.toArrayNode(value));");
+                body.append("    }");
+                body.append("}");
+            } else if (isPrimitiveMap(property)) {
+                writerClassSource.addImport(List.class);
+                writerClassSource.addImport(Map.class);
+
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
+
+                body.append("{");
+                body.append("    List<String> propertyNames = node.getItemNames();");
+                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
+                body.append("        String propertyName = propertyNames.get(_i);");
+                body.append("        ${valueType} value = node.getItem(propertyName);");
+                body.append("        JsonUtil.setProperty(json, propertyName, JsonUtil.toObjectNode(value));");
+                body.append("    }");
                 body.append("}");
             } else {
                 warn("STAR Entity property '" + property.getName() + "' not written (unhandled) for entity: " + entityModel.fullyQualifiedName());
@@ -540,6 +568,7 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
                 JavaInterfaceSource commonEntityTypeJavaModel = resolveCommonJavaEntity(resolved.entityModel());
 
                 writerClassSource.addImport(Map.class);
+                writerClassSource.addImport(List.class);
                 writerClassSource.addImport(resolved.javaInterface());
                 writerClassSource.addImport(commonEntityTypeJavaModel);
 
@@ -551,27 +580,67 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
                 body.append("{");
                 body.append("    Map<String, ? extends ${mapValueCommonJavaType}> models = node.${getterMethodName}();");
                 body.append("    if (models != null && !models.isEmpty()) {");
-                body.append("        models.keySet().forEach(propertyName -> {");
+                body.append("        List<String> _keys = new java.util.ArrayList<>(models.keySet());");
+                body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
+                body.append("            String propertyName = _keys.get(_i);");
                 body.append("            ObjectNode object = JsonUtil.objectNode();");
                 body.append("            this.${writeMethodName}((${mapValueJavaType}) models.get(propertyName), object);");
-                body.append("            JsonUtil.setObjectProperty(json, propertyName, object);");
-                body.append("        });");
+                body.append("            JsonUtil.setProperty(json, propertyName, object);");
+                body.append("        }");
                 body.append("    }");
                 body.append("}");
-            } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
+            } else if (isPrimitive(property)) {
                 writerClassSource.addImport(List.class);
+                writerClassSource.addImport(Map.class);
 
                 body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
                 body.addContext("getterMethodName", getterMethodName(property));
-                body.addContext("setPropertyMethodName", PrimitiveTypeHelper.determineSetPropertyVariant(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
 
                 body.append("{");
                 body.append("    Map<String, ${valueType}> values = node.${getterMethodName}();");
                 body.append("    if (values != null && !values.isEmpty()) {");
-                body.append("        values.keySet().forEach(propertyName -> {");
+                body.append("        List<String> _keys = new java.util.ArrayList<>(values.keySet());");
+                body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
+                body.append("            String propertyName = _keys.get(_i);");
                 body.append("            ${valueType} value = values.get(propertyName);");
-                body.append("            JsonUtil.${setPropertyMethodName}(json, propertyName, value);");
-                body.append("        });");
+                body.append("            JsonUtil.setProperty(json, propertyName, JsonUtil.toJsonNode(value));");
+                body.append("        }");
+                body.append("    }");
+                body.append("}");
+            } else if (isPrimitiveList(property)) {
+                writerClassSource.addImport(List.class);
+                writerClassSource.addImport(Map.class);
+
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
+                body.addContext("getterMethodName", getterMethodName(property));
+
+                body.append("{");
+                body.append("    Map<String, ${valueType}> values = node.${getterMethodName}();");
+                body.append("    if (values != null && !values.isEmpty()) {");
+                body.append("        List<String> _keys = new java.util.ArrayList<>(values.keySet());");
+                body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
+                body.append("            String propertyName = _keys.get(_i);");
+                body.append("            ${valueType} value = values.get(propertyName);");
+                body.append("            JsonUtil.setProperty(json, propertyName, JsonUtil.toArrayNode(value));");
+                body.append("        }");
+                body.append("    }");
+                body.append("}");
+            } else if (isPrimitiveMap(property)) {
+                writerClassSource.addImport(List.class);
+                writerClassSource.addImport(Map.class);
+
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
+                body.addContext("getterMethodName", getterMethodName(property));
+
+                body.append("{");
+                body.append("    Map<String, ${valueType}> values = node.${getterMethodName}();");
+                body.append("    if (values != null && !values.isEmpty()) {");
+                body.append("        List<String> _keys = new java.util.ArrayList<>(values.keySet());");
+                body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
+                body.append("            String propertyName = _keys.get(_i);");
+                body.append("            ${valueType} value = values.get(propertyName);");
+                body.append("            JsonUtil.setProperty(json, propertyName, JsonUtil.toObjectNode(value));");
+                body.append("        }");
                 body.append("    }");
                 body.append("}");
             } else {

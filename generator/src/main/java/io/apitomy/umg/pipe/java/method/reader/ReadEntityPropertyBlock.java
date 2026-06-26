@@ -1,5 +1,7 @@
 package io.apitomy.umg.pipe.java.method.reader;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
@@ -37,6 +39,7 @@ public class ReadEntityPropertyBlock extends CodeBlock {
             return;
         }
         readerClassSource.addImport(resolved.javaInterface());
+        readerClassSource.addImport(JsonNode.class);
 
         body.addContext("propertyName", property.getName());
         body.addContext("setterMethodName", ctx.setterMethodName(property));
@@ -44,12 +47,14 @@ public class ReadEntityPropertyBlock extends CodeBlock {
         body.addContext("getterMethodName", ctx.getterMethodName(property));
         body.addContext("readMethodName", ctx.readMethodName(resolved.entityModel()));
         body.addContext("propertyEntityType", resolved.javaInterface().getName());
+        body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
 
         body.append("{");
-        body.append("    ObjectNode object = JsonUtil.consumeObjectProperty(json, \"${propertyName}\");");
-        body.append("    if (object != null) {");
+        body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
+        body.append("    if (JsonUtil.isObject(${varName})) {");
         body.append("        node.${setterMethodName}(node.${createMethodName}());");
-        body.append("        ${readMethodName}(object, (${propertyEntityType}) node.${getterMethodName}());");
+        body.append("        ${readMethodName}((ObjectNode) ${varName}, (${propertyEntityType}) node.${getterMethodName}());");
+        body.append("        json.remove(\"${propertyName}\");");
         body.append("    }");
         body.append("}");
     }

@@ -29,11 +29,15 @@ public class WritePrimitivePropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = propertyWithOrigin.getProperty();
-        body.addContext("setPropertyMethodName", PrimitiveTypeHelper.determineSetPropertyVariant(property.getResolvedType(), ctx, writerClassSource));
         body.addContext("propertyName", property.getName());
         body.addContext("getterMethodName", ctx.getterMethodName(property));
 
-        body.append("JsonUtil.${setPropertyMethodName}(json, \"${propertyName}\", node.${getterMethodName}());");
+        if (PrimitiveTypeHelper.isJsonNodeType(property.getResolvedType(), ctx)) {
+            // ObjectNode and JsonNode are already JsonNode subtypes, use setProperty directly
+            body.append("JsonUtil.setProperty(json, \"${propertyName}\", node.${getterMethodName}());");
+        } else {
+            body.append("JsonUtil.setProperty(json, \"${propertyName}\", JsonUtil.toJsonNode(node.${getterMethodName}()));");
+        }
     }
 
     @Override

@@ -49,13 +49,25 @@ public class ReadUnionListPropertyBlock extends CodeBlock {
         body.addContext("readMethodName", readMethodName);
         body.addContext("unionJavaType", valueJt.toJavaTypeString());
 
+        body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
+
         body.append("{");
-        body.append("    List<JsonNode> array = JsonUtil.consumeAnyArrayProperty(json, \"${propertyName}\");");
-        body.append("    if (array != null) {");
-        body.append("        array.forEach(item -> {");
-        body.append("            ${unionJavaType} value = this.${readMethodName}(item, null);");
-        body.append("            if (value != null) node.${addMethodName}(value);");
-        body.append("        });");
+        body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
+        body.append("    if (JsonUtil.isArray(${varName})) {");
+        body.append("        List<JsonNode> _nodes = JsonUtil.toList(${varName});");
+        body.append("        List<${unionJavaType}> _items = new ArrayList<>();");
+        body.append("        boolean _valid = true;");
+        body.append("        for (int _i = 0; _i < _nodes.size(); _i++) {");
+        body.append("            ${unionJavaType} _result = this.${readMethodName}(_nodes.get(_i), null);");
+        body.append("            if (_result == null) { _valid = false; break; }");
+        body.append("            _items.add(_result);");
+        body.append("        }");
+        body.append("        if (_valid) {");
+        body.append("            for (int _i = 0; _i < _items.size(); _i++) {");
+        body.append("                node.${addMethodName}(_items.get(_i));");
+        body.append("            }");
+        body.append("            json.remove(\"${propertyName}\");");
+        body.append("        }");
         body.append("    }");
         body.append("}");
     }

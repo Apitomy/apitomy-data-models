@@ -1,5 +1,7 @@
 package io.apitomy.umg.pipe.java.method.reader;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
@@ -29,14 +31,23 @@ public class ReadPrimitivePropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = propertyWithOrigin.getProperty();
-        body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, readerClassSource));
-        body.addContext("consumeProperty", PrimitiveTypeHelper.determineConsumePropertyVariant(property.getResolvedType(), ctx, readerClassSource));
         body.addContext("propertyName", property.getName());
         body.addContext("setterMethodName", ctx.setterMethodName(property));
+        body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
+
+        readerClassSource.addImport(JsonNode.class);
+
+        String isCheckMethod = PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), ctx, readerClassSource);
+        String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), ctx, readerClassSource);
+        body.addContext("isCheckMethod", isCheckMethod);
+        body.addContext("toConversionMethod", toConversionMethod);
 
         body.append("{");
-        body.append("    ${valueType} value = JsonUtil.${consumeProperty}(json, \"${propertyName}\");");
-        body.append("    node.${setterMethodName}(value);");
+        body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
+        body.append("    if (JsonUtil.${isCheckMethod}(${varName})) {");
+        body.append("        node.${setterMethodName}(JsonUtil.${toConversionMethod}(${varName}));");
+        body.append("        json.remove(\"${propertyName}\");");
+        body.append("    }");
         body.append("}");
     }
 

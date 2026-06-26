@@ -8,10 +8,15 @@ public class ReaderUtil {
 
 	public static final void readExtraProperties(ObjectNode json, Node node) {
 		if (json != null) {
-			JsonUtil.keys(json).forEach(key -> {
-				JsonNode value = JsonUtil.consumeAnyProperty(json, key);
-				node.addExtraProperty(key, value);
-			});
+			java.util.List<String> _keys = JsonUtil.keys(json);
+			for (int _i = 0; _i < _keys.size(); _i++) {
+				String key = _keys.get(_i);
+				JsonNode value = JsonUtil.getProperty(json, key);
+				if (JsonUtil.isJsonNode(value)) {
+					node.addExtraProperty(key, value);
+					json.remove(key);
+				}
+			}
 		}
 	}
 

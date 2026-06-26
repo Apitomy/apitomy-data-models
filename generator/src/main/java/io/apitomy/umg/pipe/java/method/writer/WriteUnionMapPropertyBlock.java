@@ -59,9 +59,9 @@ public class WriteUnionMapPropertyBlock extends CodeBlock {
         body.append("        Collection<String> keys = items.keySet();");
         body.append("        keys.forEach(key -> {");
         body.append("            JsonNode value = this.${writeMethodName}(items.get(key));");
-        body.append("            if (value != null) JsonUtil.setAnyProperty(mapJson, key, value);");
+        body.append("            if (value != null) JsonUtil.setProperty(mapJson, key, value);");
         body.append("        });");
-        body.append("        JsonUtil.setObjectProperty(json, \"${propertyName}\", mapJson);");
+        body.append("        JsonUtil.setProperty(json, \"${propertyName}\", mapJson);");
         body.append("    }");
         body.append("}");
     }

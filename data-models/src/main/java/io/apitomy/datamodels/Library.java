@@ -103,7 +103,7 @@ public class Library {
         String versionProp = ModelTypeUtil.getVersionPropertyName(type);
         String version = ModelTypeUtil.getVersion(type);
         if (versionProp != null) {
-            JsonUtil.setStringProperty(json, versionProp, version);
+            JsonUtil.setProperty(json, versionProp, JsonUtil.toJsonNode(version));
         }
         return reader.readRoot(json);
     }

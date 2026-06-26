@@ -43,10 +43,7 @@ public class WriteMapPropertyBlock extends CodeBlock {
 
         Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
         if (mapValueType.isPrimitiveType()) {
-            body.addContext("setPropertyMethodName", PrimitiveTypeHelper.determineSetPropertyVariant(property.getResolvedType(), ctx, writerClassSource));
-            writerClassSource.addImport(List.class);
-
-            body.append("JsonUtil.${setPropertyMethodName}(json, \"${propertyName}\", node.${getterMethodName}());");
+            body.append("JsonUtil.setProperty(json, \"${propertyName}\", JsonUtil.toObjectNode(node.${getterMethodName}()));");
         } else if (mapValueType.isEntityType()) {
             String entityTypeName = mapValueType.getName();
             var resolved = EntityResolver.resolveEntityInterface(property, entityTypeName, entityModel, ctx, "MAP");
@@ -70,9 +67,9 @@ public class WriteMapPropertyBlock extends CodeBlock {
             body.append("        models.keySet().forEach(jsonName -> {");
             body.append("            ObjectNode jsonValue = JsonUtil.objectNode();");
             body.append("            this.${writeMethodName}((${mapValueJavaType}) models.get(jsonName), jsonValue);");
-            body.append("            JsonUtil.setObjectProperty(object, jsonName, jsonValue);");
+            body.append("            JsonUtil.setProperty(object, jsonName, jsonValue);");
             body.append("        });");
-            body.append("        JsonUtil.setObjectProperty(json, \"${propertyName}\", object);");
+            body.append("        JsonUtil.setProperty(json, \"${propertyName}\", object);");
             body.append("    }");
             body.append("}");
         } else {
