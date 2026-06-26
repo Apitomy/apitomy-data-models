@@ -40,7 +40,7 @@ public class Syn2ModelReader implements ModelReader {
 			JsonNode _info = JsonUtil.getProperty(json, "info");
 			if (JsonUtil.isObject(_info)) {
 				node.setInfo(node.createInfo());
-				readInfo((ObjectNode) _info, (Syn2Info) node.getInfo());
+				readInfo(JsonUtil.toObject(_info), (Syn2Info) node.getInfo());
 				json.remove("info");
 			}
 		}
@@ -49,7 +49,7 @@ public class Syn2ModelReader implements ModelReader {
 			if (JsonUtil.isArray(_items) && JsonUtil.allMatch(_items, "object")) {
 				List<JsonNode> _nodes = JsonUtil.toList(_items);
 				for (int _i = 0; _i < _nodes.size(); _i++) {
-					ObjectNode object = (ObjectNode) _nodes.get(_i);
+					ObjectNode object = JsonUtil.toObject(_nodes.get(_i));
 					Syn2Item model = (Syn2Item) node.createItem();
 					node.addItem(model);
 					this.readItem(object, model);
@@ -71,12 +71,12 @@ public class Syn2ModelReader implements ModelReader {
 		}
 		{
 			JsonNode _metadata = JsonUtil.getProperty(json, "metadata");
-			if (JsonUtil.isObject(_metadata) && JsonUtil.allValuesMatch((ObjectNode) _metadata, "string")) {
+			if (JsonUtil.isObject(_metadata) && JsonUtil.allValuesMatch(JsonUtil.toObject(_metadata), "string")) {
 				Map<String, String> items = new LinkedHashMap<>();
-				List<String> _keys = JsonUtil.keys((ObjectNode) _metadata);
+				List<String> _keys = JsonUtil.keys(JsonUtil.toObject(_metadata));
 				for (int _i = 0; _i < _keys.size(); _i++) {
 					String _key = _keys.get(_i);
-					items.put(_key, JsonUtil.toString(JsonUtil.getProperty((ObjectNode) _metadata, _key)));
+					items.put(_key, JsonUtil.toString(JsonUtil.getProperty(JsonUtil.toObject(_metadata), _key)));
 				}
 				node.setMetadata(items);
 				json.remove("metadata");
@@ -85,7 +85,7 @@ public class Syn2ModelReader implements ModelReader {
 		{
 			JsonNode _webhooks = JsonUtil.getProperty(json, "webhooks");
 			if (JsonUtil.isObject(_webhooks)) {
-				ObjectNode _obj = (ObjectNode) _webhooks;
+				ObjectNode _obj = JsonUtil.toObject(_webhooks);
 				List<String> _keys = JsonUtil.keys(_obj);
 				for (int _i = 0; _i < _keys.size(); _i++) {
 					String _key = _keys.get(_i);
@@ -93,7 +93,7 @@ public class Syn2ModelReader implements ModelReader {
 					if (JsonUtil.isObject(_val)) {
 						Syn2PathItem model = (Syn2PathItem) node.createPathItem();
 						node.addWebhook(_key, model);
-						this.readPathItem((ObjectNode) _val, model);
+						this.readPathItem(JsonUtil.toObject(_val), model);
 					}
 				}
 				json.remove("webhooks");
@@ -132,7 +132,7 @@ public class Syn2ModelReader implements ModelReader {
 			JsonNode _contact = JsonUtil.getProperty(json, "contact");
 			if (JsonUtil.isObject(_contact)) {
 				node.setContact(node.createContact());
-				readContact((ObjectNode) _contact, (Syn2Contact) node.getContact());
+				readContact(JsonUtil.toObject(_contact), (Syn2Contact) node.getContact());
 				json.remove("contact");
 			}
 		}
@@ -243,7 +243,7 @@ public class Syn2ModelReader implements ModelReader {
 			JsonNode _schema = JsonUtil.getProperty(json, "schema");
 			if (JsonUtil.isObject(_schema)) {
 				node.setSchema(node.createSchema());
-				readSchema((ObjectNode) _schema, (Syn2Schema) node.getSchema());
+				readSchema(JsonUtil.toObject(_schema), (Syn2Schema) node.getSchema());
 				json.remove("schema");
 			}
 		}
@@ -319,7 +319,7 @@ public class Syn2ModelReader implements ModelReader {
 		{
 			JsonNode _properties = JsonUtil.getProperty(json, "properties");
 			if (JsonUtil.isObject(_properties)) {
-				ObjectNode _obj = (ObjectNode) _properties;
+				ObjectNode _obj = JsonUtil.toObject(_properties);
 				List<String> _keys = JsonUtil.keys(_obj);
 				for (int _i = 0; _i < _keys.size(); _i++) {
 					String _key = _keys.get(_i);
@@ -358,7 +358,7 @@ public class Syn2ModelReader implements ModelReader {
 		{
 			JsonNode _definitions = JsonUtil.getProperty(json, "definitions");
 			if (JsonUtil.isObject(_definitions)) {
-				ObjectNode _obj = (ObjectNode) _definitions;
+				ObjectNode _obj = JsonUtil.toObject(_definitions);
 				List<String> _keys = JsonUtil.keys(_obj);
 				for (int _i = 0; _i < _keys.size(); _i++) {
 					String _key = _keys.get(_i);
@@ -375,7 +375,7 @@ public class Syn2ModelReader implements ModelReader {
 		{
 			JsonNode _nestedSchemas = JsonUtil.getProperty(json, "nestedSchemas");
 			if (JsonUtil.isObject(_nestedSchemas)) {
-				ObjectNode _obj = (ObjectNode) _nestedSchemas;
+				ObjectNode _obj = JsonUtil.toObject(_nestedSchemas);
 				List<String> _keys = JsonUtil.keys(_obj);
 				for (int _i = 0; _i < _keys.size(); _i++) {
 					String _key = _keys.get(_i);
@@ -498,7 +498,7 @@ public class Syn2ModelReader implements ModelReader {
 			JsonNode _get = JsonUtil.getProperty(json, "get");
 			if (JsonUtil.isObject(_get)) {
 				node.setGet(node.createOperation());
-				readOperation((ObjectNode) _get, (Syn2Operation) node.getGet());
+				readOperation(JsonUtil.toObject(_get), (Syn2Operation) node.getGet());
 				json.remove("get");
 			}
 		}
@@ -506,7 +506,7 @@ public class Syn2ModelReader implements ModelReader {
 			JsonNode _put = JsonUtil.getProperty(json, "put");
 			if (JsonUtil.isObject(_put)) {
 				node.setPut(node.createOperation());
-				readOperation((ObjectNode) _put, (Syn2Operation) node.getPut());
+				readOperation(JsonUtil.toObject(_put), (Syn2Operation) node.getPut());
 				json.remove("put");
 			}
 		}
@@ -514,7 +514,7 @@ public class Syn2ModelReader implements ModelReader {
 			JsonNode _post = JsonUtil.getProperty(json, "post");
 			if (JsonUtil.isObject(_post)) {
 				node.setPost(node.createOperation());
-				readOperation((ObjectNode) _post, (Syn2Operation) node.getPost());
+				readOperation(JsonUtil.toObject(_post), (Syn2Operation) node.getPost());
 				json.remove("post");
 			}
 		}
@@ -522,7 +522,7 @@ public class Syn2ModelReader implements ModelReader {
 			JsonNode _delete = JsonUtil.getProperty(json, "delete");
 			if (JsonUtil.isObject(_delete)) {
 				node.setDelete(node.createOperation());
-				readOperation((ObjectNode) _delete, (Syn2Operation) node.getDelete());
+				readOperation(JsonUtil.toObject(_delete), (Syn2Operation) node.getDelete());
 				json.remove("delete");
 			}
 		}
@@ -572,7 +572,7 @@ public class Syn2ModelReader implements ModelReader {
 			if (JsonUtil.isArray(_parameters) && JsonUtil.allMatch(_parameters, "object")) {
 				List<JsonNode> _nodes = JsonUtil.toList(_parameters);
 				for (int _i = 0; _i < _nodes.size(); _i++) {
-					ObjectNode object = (ObjectNode) _nodes.get(_i);
+					ObjectNode object = JsonUtil.toObject(_nodes.get(_i));
 					Syn2Item model = (Syn2Item) node.createItem();
 					node.addParameter(model);
 					this.readItem(object, model);
