@@ -347,7 +347,7 @@ public class Syn1ModelWriter implements ModelWriter {
 			return jsonValue;
 		}
 		if (union.isBoolean()) {
-			return JsonUtil.booleanToJsonNode(union.asBoolean());
+			return JsonUtil.toJsonNode(union.asBoolean());
 		}
 		return null;
 	}
@@ -370,7 +370,7 @@ public class Syn1ModelWriter implements ModelWriter {
 			return array;
 		}
 		if (union.isBoolean()) {
-			return JsonUtil.booleanToJsonNode(union.asBoolean());
+			return JsonUtil.toJsonNode(union.asBoolean());
 		}
 		return null;
 	}
@@ -384,7 +384,7 @@ public class Syn1ModelWriter implements ModelWriter {
 			return jsonValue;
 		}
 		if (union.isBoolean()) {
-			return JsonUtil.booleanToJsonNode(union.asBoolean());
+			return JsonUtil.toJsonNode(union.asBoolean());
 		}
 		return null;
 	}

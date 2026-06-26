@@ -161,14 +161,8 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
                     body.append("    return union.${asMethod}();");
                     body.append("}");
                 } else {
-                    String toJsonMethod;
-                    if (Boolean.class.equals(javaClass)) toJsonMethod = "booleanToJsonNode";
-                    else if (String.class.equals(javaClass)) toJsonMethod = "stringToJsonNode";
-                    else toJsonMethod = "numberToJsonNode";
-
-                    body.addContext("toJsonMethod", toJsonMethod);
                     body.append("if (union.${isMethod}()) {");
-                    body.append("    return JsonUtil.${toJsonMethod}(union.${asMethod}());");
+                    body.append("    return JsonUtil.toJsonNode(union.${asMethod}());");
                     body.append("}");
                 }
             } else if (variantType instanceof io.apitomy.umg.models.concept.type.ListType listType) {
@@ -205,12 +199,7 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
                     writerClassSource.addImport(javaClass);
                     body.addContext("primType", javaClass.getSimpleName());
 
-                    String addExpr;
-                    if (Boolean.class.equals(javaClass)) addExpr = "array.add((Boolean) item)";
-                    else if (String.class.equals(javaClass)) addExpr = "array.add((String) item)";
-                    else addExpr = "array.add(JsonUtil.numberToJsonNode((Number) item))";
-
-                    body.addContext("addExpr", addExpr);
+                    body.addContext("addExpr", "array.add(JsonUtil.toJsonNode(item))");
                     body.append("if (union.${isMethod}()) {");
                     body.append("    ArrayNode array = JsonUtil.arrayNode();");
                     body.append("    for (Object item : (java.util.List<?>) union.${asMethod}()) {");
