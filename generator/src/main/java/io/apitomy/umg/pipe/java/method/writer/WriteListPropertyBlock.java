@@ -44,9 +44,7 @@ public class WriteListPropertyBlock extends CodeBlock {
 
         Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
         if (listValueType.isPrimitiveType()) {
-            body.addContext("setPropertyMethodName", PrimitiveTypeHelper.determineSetPropertyVariant(property.getResolvedType(), ctx, writerClassSource));
-
-            body.append("JsonUtil.${setPropertyMethodName}(json, \"${propertyName}\", node.${getterMethodName}());");
+            body.append("JsonUtil.setProperty(json, \"${propertyName}\", JsonUtil.toArrayNode(node.${getterMethodName}()));");
         } else if (listValueType.isEntityType()) {
             var resolved = EntityResolver.resolveEntityInterface(property, listValueType.getName(), entityModel, ctx, "LIST");
             if (resolved == null) {
@@ -73,7 +71,7 @@ public class WriteListPropertyBlock extends CodeBlock {
             body.append("            this.${writeMethodName}((${listValueJavaType}) model, object);");
             body.append("            JsonUtil.addToArray(array, object);");
             body.append("        });");
-            body.append("        JsonUtil.setAnyProperty(json, \"${propertyName}\", array);");
+            body.append("        JsonUtil.setProperty(json, \"${propertyName}\", array);");
             body.append("    }");
             body.append("}");
         } else {
