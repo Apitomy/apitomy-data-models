@@ -21,6 +21,16 @@ import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
+import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.writer.WriteEntityPropertyBlock;
+import io.apitomy.umg.pipe.java.method.writer.WriteListPropertyBlock;
+import io.apitomy.umg.pipe.java.method.writer.WriteMapPropertyBlock;
+import io.apitomy.umg.pipe.java.method.writer.WritePrimitivePropertyBlock;
+import io.apitomy.umg.pipe.java.method.writer.WriteUnionPropertyBlock;
+import io.apitomy.umg.pipe.java.method.writer.WriteUnionListPropertyBlock;
+import io.apitomy.umg.pipe.java.method.writer.WriteUnionMapPropertyBlock;
+import io.apitomy.umg.index.concept.ConceptIndex;
+import io.apitomy.umg.index.java.JavaIndex;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -30,7 +40,7 @@ import lombok.Data;
  *
  * @author eric.wittmann@gmail.com
  */
-public class CreateWritersStage extends AbstractJavaStage {
+public class CreateWritersStage extends AbstractJavaStage implements CodeGenContext {
 
     @Override
     protected void doProcess() {
@@ -375,6 +385,23 @@ public class CreateWritersStage extends AbstractJavaStage {
         return "write" + StringUtils.capitalize(entityName);
     }
 
+    // --- CodeGenContext implementation (only methods not inherited from AbstractJavaStage) ---
+
+    @Override
+    public ConceptIndex getConceptIndex() {
+        return getState().getConceptIndex();
+    }
+
+    @Override
+    public JavaIndex getJavaIndex() {
+        return getState().getJavaIndex();
+    }
+
+    @Override
+    public void warn(String message) {
+        super.warn(message);
+    }
+
     @Data
     @AllArgsConstructor
     private class CreateWriteProperty {
@@ -445,85 +472,17 @@ public class CreateWritersStage extends AbstractJavaStage {
         }
 
         private void handleResolvedUnionProperty(BodyBuilder body, io.apitomy.umg.models.concept.type.Type resolved) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            var nsModel = propertyWithOrigin.getOrigin().getNamespace();
-            var jt = getJavaTypeFactory().createJavaType(resolved, nsModel);
-            String writeMethodName = "write" + jt.getSimpleName();
-
-            jt.addImportsTo(writerClassSource);
-            writerClassSource.addImport(JsonNode.class);
-
-            body.addContext("propertyName", property.getName());
-            body.addContext("getterMethodName", getterMethodName(property));
-            body.addContext("writeMethodName", writeMethodName);
-
-            body.append("{");
-            body.append("    JsonNode value = this.${writeMethodName}(node.${getterMethodName}());");
-            body.append("    if (value != null) JsonUtil.setAnyProperty(json, \"${propertyName}\", value);");
-            body.append("}");
+            new WriteUnionPropertyBlock(propertyWithOrigin, writerClassSource, CreateWritersStage.this).appendTo(body);
         }
 
         private void handleResolvedUnionListProperty(BodyBuilder body,
                 io.apitomy.umg.models.concept.type.ListType listType) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            var nsModel = propertyWithOrigin.getOrigin().getNamespace();
-            var valueJt = getJavaTypeFactory().createJavaType(listType.getValueType(), nsModel);
-            String writeMethodName = "write" + valueJt.getSimpleName();
-
-            valueJt.addImportsTo(writerClassSource);
-            writerClassSource.addImport(JsonNode.class);
-            writerClassSource.addImport(ArrayNode.class);
-            writerClassSource.addImport(List.class);
-
-            body.addContext("propertyName", property.getName());
-            body.addContext("getterMethodName", getterMethodName(property));
-            body.addContext("writeMethodName", writeMethodName);
-            body.addContext("unionJavaType", valueJt.toJavaTypeString());
-
-            body.append("{");
-            body.append("    List<${unionJavaType}> items = node.${getterMethodName}();");
-            body.append("    if (items != null && !items.isEmpty()) {");
-            body.append("        ArrayNode array = JsonUtil.arrayNode();");
-            body.append("        items.forEach(item -> {");
-            body.append("            JsonNode value = this.${writeMethodName}(item);");
-            body.append("            if (value != null) array.add(value);");
-            body.append("        });");
-            body.append("        JsonUtil.setAnyProperty(json, \"${propertyName}\", array);");
-            body.append("    }");
-            body.append("}");
+            new WriteUnionListPropertyBlock(propertyWithOrigin, writerClassSource, CreateWritersStage.this).appendTo(body);
         }
 
         private void handleResolvedUnionMapProperty(BodyBuilder body,
                 io.apitomy.umg.models.concept.type.MapType mapType) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            var nsModel = propertyWithOrigin.getOrigin().getNamespace();
-            var valueJt = getJavaTypeFactory().createJavaType(mapType.getValueType(), nsModel);
-            String writeMethodName = "write" + valueJt.getSimpleName();
-
-            valueJt.addImportsTo(writerClassSource);
-            writerClassSource.addImport(JsonNode.class);
-            writerClassSource.addImport(ObjectNode.class);
-            writerClassSource.addImport(Map.class);
-
-            body.addContext("propertyName", property.getName());
-            body.addContext("getterMethodName", getterMethodName(property));
-            body.addContext("writeMethodName", writeMethodName);
-            body.addContext("unionJavaType", valueJt.toJavaTypeString());
-
-            writerClassSource.addImport(Collection.class);
-
-            body.append("{");
-            body.append("    Map<String, ${unionJavaType}> items = node.${getterMethodName}();");
-            body.append("    if (items != null && !items.isEmpty()) {");
-            body.append("        ObjectNode mapJson = JsonUtil.objectNode();");
-            body.append("        Collection<String> keys = items.keySet();");
-            body.append("        keys.forEach(key -> {");
-            body.append("            JsonNode value = this.${writeMethodName}(items.get(key));");
-            body.append("            if (value != null) JsonUtil.setAnyProperty(mapJson, key, value);");
-            body.append("        });");
-            body.append("        JsonUtil.setObjectProperty(json, \"${propertyName}\", mapJson);");
-            body.append("    }");
-            body.append("}");
+            new WriteUnionMapPropertyBlock(propertyWithOrigin, writerClassSource, CreateWritersStage.this).appendTo(body);
         }
 
         private void handleStarProperty(BodyBuilder body) {
@@ -636,147 +595,19 @@ public class CreateWritersStage extends AbstractJavaStage {
         }
 
         private void handleEntityProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            String propertyTypeEntityName = entityModel.getNamespace().fullName() + "." + property.getResolvedType().getName();
-            EntityModel propertyTypeEntity = getState().getConceptIndex().lookupEntity(propertyTypeEntityName);
-            if (propertyTypeEntity == null) {
-                warn("Property entity type not found for property: '" + property.getName() + "' of entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getResolvedType());
-                return;
-            }
-            JavaInterfaceSource propertyTypeJavaEntity = resolveJavaEntityType(entityModel.getNamespace(), property);
-            writerClassSource.addImport(propertyTypeJavaEntity);
-
-            body.addContext("propertyName", property.getName());
-            body.addContext("getterMethodName", getterMethodName(property));
-            body.addContext("writeMethodName", writeMethodName(propertyTypeEntity));
-            body.addContext("propertyTypeJavaEntity", propertyTypeJavaEntity.getName());
-
-            body.append("{");
-            body.append("    if (node.${getterMethodName}() != null) {");
-            body.append("        ObjectNode object = JsonUtil.objectNode();");
-            body.append("        this.${writeMethodName}((${propertyTypeJavaEntity}) node.${getterMethodName}(), object);");
-            body.append("        JsonUtil.setObjectProperty(json, \"${propertyName}\", object);");
-            body.append("    }");
-            body.append("}");
+            new WriteEntityPropertyBlock(propertyWithOrigin, entityModel, writerClassSource, CreateWritersStage.this).appendTo(body);
         }
 
         private void handlePrimitiveTypeProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            body.addContext("setPropertyMethodName", determineSetPropertyVariant(property.getResolvedType()));
-            body.addContext("propertyName", property.getName());
-            body.addContext("getterMethodName", getterMethodName(property));
-
-            body.append("JsonUtil.${setPropertyMethodName}(json, \"${propertyName}\", node.${getterMethodName}());");
+            new WritePrimitivePropertyBlock(propertyWithOrigin, writerClassSource, CreateWritersStage.this).appendTo(body);
         }
 
         private void handleListProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            body.addContext("propertyName", property.getName());
-            body.addContext("getterMethodName", getterMethodName(property));
-
-            Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
-            if (listValueType.isPrimitiveType()) {
-                body.addContext("setPropertyMethodName", determineSetPropertyVariant(property.getResolvedType()));
-
-                body.append("JsonUtil.${setPropertyMethodName}(json, \"${propertyName}\", node.${getterMethodName}());");
-            } else if (listValueType.isEntityType()) {
-                String entityTypeName = listValueType.getName();
-                String fqEntityName = entityModel.getNamespace().fullName() + "." + entityTypeName;
-                EntityModel entityTypeModel = getState().getConceptIndex().lookupEntity(fqEntityName);
-                if (entityTypeModel == null) {
-                    warn("LIST Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in index: " + property.getResolvedType());
-                    return;
-                }
-                JavaInterfaceSource entityTypeJavaModel = resolveJavaEntity(entityTypeModel);
-                if (entityTypeJavaModel == null) {
-                    warn("LIST Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in JAVA index: " + property.getResolvedType());
-                    return;
-                }
-                JavaInterfaceSource commonEntityTypeJavaModel = resolveCommonJavaEntity(entityTypeModel);
-
-                writerClassSource.addImport(entityTypeJavaModel);
-                writerClassSource.addImport(commonEntityTypeJavaModel);
-                writerClassSource.addImport(List.class);
-                writerClassSource.addImport(ArrayNode.class);
-
-                body.addContext("propertyName", property.getName());
-                body.addContext("listValueJavaType", entityTypeJavaModel.getName());
-                body.addContext("writeMethodName", writeMethodName(entityTypeModel));
-                body.addContext("listValueCommonJavaType", commonEntityTypeJavaModel.getName());
-
-                body.append("{");
-                body.append("    List<? extends ${listValueCommonJavaType}> models = node.${getterMethodName}();");
-                body.append("    if (models != null && !models.isEmpty()) {");
-                body.append("        ArrayNode array = JsonUtil.arrayNode();");
-                body.append("        models.forEach(model -> {");
-                body.append("            ObjectNode object = JsonUtil.objectNode();");
-                body.append("            this.${writeMethodName}((${listValueJavaType}) model, object);");
-                body.append("            JsonUtil.addToArray(array, object);");
-                body.append("        });");
-                body.append("        JsonUtil.setAnyProperty(json, \"${propertyName}\", array);");
-                body.append("    }");
-                body.append("}");
-            } else {
-                warn("LIST Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getResolvedType());
-            }
+            new WriteListPropertyBlock(propertyWithOrigin, entityModel, writerClassSource, CreateWritersStage.this).appendTo(body);
         }
 
         private void handleMapProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            body.addContext("propertyName", property.getName());
-            body.addContext("getterMethodName", getterMethodName(property));
-
-            Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
-            if (mapValueType.isPrimitiveType()) {
-                body.addContext("setPropertyMethodName", determineSetPropertyVariant(property.getResolvedType()));
-                writerClassSource.addImport(List.class);
-
-                body.append("JsonUtil.${setPropertyMethodName}(json, \"${propertyName}\", node.${getterMethodName}());");
-            } else if (mapValueType.isEntityType()) {
-                String entityTypeName = mapValueType.getName();
-                String fqEntityName = entityModel.getNamespace().fullName() + "." + entityTypeName;
-                EntityModel entityTypeModel = getState().getConceptIndex().lookupEntity(fqEntityName);
-                if (entityTypeModel == null) {
-                    warn("MAP Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in index: " + property.getResolvedType());
-                    return;
-                }
-                JavaInterfaceSource entityTypeJavaModel = getState().getJavaIndex().lookupInterface(getJavaEntityInterfaceFQN(entityTypeModel));
-                if (entityTypeJavaModel == null) {
-                    warn("MAP Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                    warn("       property type is entity but not found in JAVA index: " + property.getResolvedType());
-                    return;
-                }
-                JavaInterfaceSource commonEntityTypeJavaModel = resolveCommonJavaEntity(entityTypeModel);
-
-                writerClassSource.addImport(Map.class);
-                writerClassSource.addImport(entityTypeJavaModel);
-                writerClassSource.addImport(commonEntityTypeJavaModel);
-
-                body.addContext("mapValueJavaType", entityTypeJavaModel.getName());
-                body.addContext("writeMethodName", "write" + entityTypeName);
-                body.addContext("mapValueCommonJavaType", commonEntityTypeJavaModel.getName());
-
-                body.append("{");
-                body.append("    Map<String, ? extends ${mapValueCommonJavaType}> models = node.${getterMethodName}();");
-                body.append("    if (models != null && !models.isEmpty()) {");
-                body.append("        ObjectNode object = JsonUtil.objectNode();");
-                body.append("        models.keySet().forEach(jsonName -> {");
-                body.append("            ObjectNode jsonValue = JsonUtil.objectNode();");
-                body.append("            this.${writeMethodName}((${mapValueJavaType}) models.get(jsonName), jsonValue);");
-                body.append("            JsonUtil.setObjectProperty(object, jsonName, jsonValue);");
-                body.append("        });");
-                body.append("        JsonUtil.setObjectProperty(json, \"${propertyName}\", object);");
-                body.append("    }");
-                body.append("}");
-            } else {
-                warn("MAP Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getResolvedType());
-            }
+            new WriteMapPropertyBlock(propertyWithOrigin, entityModel, writerClassSource, CreateWritersStage.this).appendTo(body);
         }
 
         private void handleUnionProperty(BodyBuilder body) {
