@@ -113,7 +113,7 @@ public class Syn2ModelReader implements ModelReader {
 				JsonNode _val = JsonUtil.getProperty(json, name);
 				if (JsonUtil.isJsonNode(_val)) {
 					node.addExtension(name, JsonUtil.toJsonNode(_val));
-					json.remove(name);
+					JsonUtil.removeProperty(json, name);
 				}
 			}
 		}
@@ -157,7 +157,7 @@ public class Syn2ModelReader implements ModelReader {
 				JsonNode _val = JsonUtil.getProperty(json, name);
 				if (JsonUtil.isJsonNode(_val)) {
 					node.addExtension(name, JsonUtil.toJsonNode(_val));
-					json.remove(name);
+					JsonUtil.removeProperty(json, name);
 				}
 			}
 		}
@@ -287,7 +287,7 @@ public class Syn2ModelReader implements ModelReader {
 				JsonNode _val = JsonUtil.getProperty(json, name);
 				if (JsonUtil.isJsonNode(_val)) {
 					node.addExtension(name, JsonUtil.toJsonNode(_val));
-					json.remove(name);
+					JsonUtil.removeProperty(json, name);
 				}
 			}
 		}
@@ -444,7 +444,7 @@ public class Syn2ModelReader implements ModelReader {
 				JsonNode _val = JsonUtil.getProperty(json, name);
 				if (JsonUtil.isJsonNode(_val)) {
 					node.addExtension(name, JsonUtil.toJsonNode(_val));
-					json.remove(name);
+					JsonUtil.removeProperty(json, name);
 				}
 			}
 		}
@@ -461,7 +461,7 @@ public class Syn2ModelReader implements ModelReader {
 					Syn2PathItem model = (Syn2PathItem) node.createPathItem();
 					node.addItem(name, model);
 					this.readPathItem((ObjectNode) _val, model);
-					json.remove(name);
+					JsonUtil.removeProperty(json, name);
 				}
 			}
 		}
@@ -472,7 +472,7 @@ public class Syn2ModelReader implements ModelReader {
 				JsonNode _val = JsonUtil.getProperty(json, name);
 				if (JsonUtil.isJsonNode(_val)) {
 					node.addExtension(name, JsonUtil.toJsonNode(_val));
-					json.remove(name);
+					JsonUtil.removeProperty(json, name);
 				}
 			}
 		}
@@ -533,7 +533,7 @@ public class Syn2ModelReader implements ModelReader {
 				JsonNode _val = JsonUtil.getProperty(json, name);
 				if (JsonUtil.isJsonNode(_val)) {
 					node.addExtension(name, JsonUtil.toJsonNode(_val));
-					json.remove(name);
+					JsonUtil.removeProperty(json, name);
 				}
 			}
 		}
@@ -587,7 +587,7 @@ public class Syn2ModelReader implements ModelReader {
 				JsonNode _val = JsonUtil.getProperty(json, name);
 				if (JsonUtil.isJsonNode(_val)) {
 					node.addExtension(name, JsonUtil.toJsonNode(_val));
-					json.remove(name);
+					JsonUtil.removeProperty(json, name);
 				}
 			}
 		}
