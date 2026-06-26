@@ -1,6 +1,9 @@
 package io.apitomy.umg.pipe.java.method.reader;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
@@ -41,13 +44,29 @@ public class ReadListPropertyBlock extends CodeBlock {
 
         Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
         if (listValueType.isPrimitiveType()) {
-            body.addContext("consumeMethodName", PrimitiveTypeHelper.determineConsumePropertyVariant(property.getResolvedType(), ctx, readerClassSource));
-            body.addContext("propertyValueJavaType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, readerClassSource));
+            readerClassSource.addImport(JsonNode.class);
             readerClassSource.addImport(List.class);
+            readerClassSource.addImport(ArrayList.class);
+
+            String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(listValueType, ctx);
+            String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(listValueType, ctx, readerClassSource);
+            String elementValueType = PrimitiveTypeHelper.determineValueType(listValueType, ctx, readerClassSource);
+            body.addContext("expectedType", expectedType);
+            body.addContext("toConversionMethod", toConversionMethod);
+            body.addContext("elementValueType", elementValueType);
+            body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
 
             body.append("{");
-            body.append("    ${propertyValueJavaType} value = JsonUtil.${consumeMethodName}(json, \"${propertyName}\");");
-            body.append("    node.${setterMethodName}(value);");
+            body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
+            body.append("    if (JsonUtil.isArray(${varName}) && JsonUtil.allMatch(${varName}, \"${expectedType}\")) {");
+            body.append("        List<${elementValueType}> items = new ArrayList<>();");
+            body.append("        List<JsonNode> _nodes = JsonUtil.toList(${varName});");
+            body.append("        for (int _i = 0; _i < _nodes.size(); _i++) {");
+            body.append("            items.add(JsonUtil.${toConversionMethod}(_nodes.get(_i)));");
+            body.append("        }");
+            body.append("        node.${setterMethodName}(items);");
+            body.append("        json.remove(\"${propertyName}\");");
+            body.append("    }");
             body.append("}");
         } else if (listValueType.isEntityType()) {
             var resolved = EntityResolver.resolveEntityInterface(property, listValueType.getName(), entityModel, ctx, "LIST");
@@ -55,21 +74,26 @@ public class ReadListPropertyBlock extends CodeBlock {
                 return;
             }
             readerClassSource.addImport(resolved.javaInterface());
+            readerClassSource.addImport(JsonNode.class);
             readerClassSource.addImport(List.class);
 
             body.addContext("listValueJavaType", resolved.javaInterface().getName());
             body.addContext("createMethodName", ctx.createMethodName(resolved.entityModel()));
             body.addContext("readMethodName", ctx.readMethodName(resolved.entityModel()));
             body.addContext("addMethodName", ctx.addMethodName(ctx.singularize(property.getName())));
+            body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
 
             body.append("{");
-            body.append("    List<ObjectNode> objects = JsonUtil.consumeObjectArrayProperty(json, \"${propertyName}\");");
-            body.append("    if (objects != null) {");
-            body.append("        objects.forEach(object -> {");
+            body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
+            body.append("    if (JsonUtil.isArray(${varName}) && JsonUtil.allMatch(${varName}, \"object\")) {");
+            body.append("        List<JsonNode> _nodes = JsonUtil.toList(${varName});");
+            body.append("        for (int _i = 0; _i < _nodes.size(); _i++) {");
+            body.append("            ObjectNode object = (ObjectNode) _nodes.get(_i);");
             body.append("            ${listValueJavaType} model = (${listValueJavaType}) node.${createMethodName}();");
             body.append("            node.${addMethodName}(model);");
             body.append("            this.${readMethodName}(object, model);");
-            body.append("        });");
+            body.append("        }");
+            body.append("        json.remove(\"${propertyName}\");");
             body.append("    }");
             body.append("}");
         } else {

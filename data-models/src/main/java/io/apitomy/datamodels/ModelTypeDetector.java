@@ -1,5 +1,6 @@
 package io.apitomy.datamodels;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.apitomy.datamodels.models.ModelType;
@@ -7,6 +8,14 @@ import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.util.JsonUtil;
 
 public class ModelTypeDetector {
+
+    private static String getStringProp(ObjectNode json, String name) {
+        JsonNode node = JsonUtil.getProperty(json, name);
+        if (JsonUtil.isString(node)) {
+            return JsonUtil.toString(node);
+        }
+        return null;
+    }
 
     /**
      * Called to discover what type of model the given JSON data represents.  This method
@@ -23,9 +32,9 @@ public class ModelTypeDetector {
      * @param json
      */
     public static ModelType discoverModelType(ObjectNode json) {
-        String asyncapi = JsonUtil.getStringProperty(json, "asyncapi");
-        String openapi = JsonUtil.getStringProperty(json, "openapi");
-        String swagger = JsonUtil.getStringProperty(json, "swagger");
+        String asyncapi = getStringProp(json, "asyncapi");
+        String openapi = getStringProp(json, "openapi");
+        String swagger = getStringProp(json, "swagger");
         if (asyncapi != null) {
             if (asyncapi.startsWith("2.0")) {
                 return ModelType.ASYNCAPI20;
@@ -70,7 +79,7 @@ public class ModelTypeDetector {
             }
         }
 
-        String openrpc = JsonUtil.getStringProperty(json, "openrpc");
+        String openrpc = getStringProp(json, "openrpc");
         if (openrpc != null) {
             if (openrpc.startsWith("1.3")) {
                 return ModelType.OPENRPC13;
@@ -81,7 +90,7 @@ public class ModelTypeDetector {
             }
         }
 
-        String schema = JsonUtil.getStringProperty(json, "$schema");
+        String schema = getStringProp(json, "$schema");
         if (schema != null) {
             if (schema.contains("draft-04")) {
                 return ModelType.JD4;

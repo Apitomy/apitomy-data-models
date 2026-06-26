@@ -48,7 +48,7 @@ public class WriteEntityPropertyBlock extends CodeBlock {
         body.append("    if (node.${getterMethodName}() != null) {");
         body.append("        ObjectNode object = JsonUtil.objectNode();");
         body.append("        this.${writeMethodName}((${propertyTypeJavaEntity}) node.${getterMethodName}(), object);");
-        body.append("        JsonUtil.setObjectProperty(json, \"${propertyName}\", object);");
+        body.append("        JsonUtil.setProperty(json, \"${propertyName}\", object);");
         body.append("    }");
         body.append("}");
     }

@@ -22,6 +22,7 @@ import io.test.synthetic.v2.Syn2Paths;
 import io.test.synthetic.v2.Syn2Schema;
 import io.test.synthetic.v2.Syn2SchemaImpl;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,263 +30,423 @@ public class Syn2ModelReader implements ModelReader {
 
 	public void readDocument(ObjectNode json, Syn2Document node) {
 		{
-			String value = JsonUtil.consumeStringProperty(json, "version");
-			node.setVersion(value);
-		}
-		{
-			ObjectNode object = JsonUtil.consumeObjectProperty(json, "info");
-			if (object != null) {
-				node.setInfo(node.createInfo());
-				readInfo(object, (Syn2Info) node.getInfo());
+			JsonNode _version = JsonUtil.getProperty(json, "version");
+			if (JsonUtil.isString(_version)) {
+				node.setVersion(JsonUtil.toString(_version));
+				json.remove("version");
 			}
 		}
 		{
-			List<ObjectNode> objects = JsonUtil.consumeObjectArrayProperty(json, "items");
-			if (objects != null) {
-				objects.forEach(object -> {
+			JsonNode _info = JsonUtil.getProperty(json, "info");
+			if (JsonUtil.isObject(_info)) {
+				node.setInfo(node.createInfo());
+				readInfo((ObjectNode) _info, (Syn2Info) node.getInfo());
+				json.remove("info");
+			}
+		}
+		{
+			JsonNode _items = JsonUtil.getProperty(json, "items");
+			if (JsonUtil.isArray(_items) && JsonUtil.allMatch(_items, "object")) {
+				List<JsonNode> _nodes = JsonUtil.toList(_items);
+				for (int _i = 0; _i < _nodes.size(); _i++) {
+					ObjectNode object = (ObjectNode) _nodes.get(_i);
 					Syn2Item model = (Syn2Item) node.createItem();
 					node.addItem(model);
 					this.readItem(object, model);
-				});
+				}
+				json.remove("items");
 			}
 		}
 		{
-			List<String> value = JsonUtil.consumeStringArrayProperty(json, "tags");
-			node.setTags(value);
-		}
-		{
-			Map<String, String> value = JsonUtil.consumeStringMapProperty(json, "metadata");
-			node.setMetadata(value);
-		}
-		{
-			ObjectNode object = JsonUtil.consumeObjectProperty(json, "webhooks");
-			JsonUtil.keys(object).forEach(name -> {
-				ObjectNode mapValue = JsonUtil.consumeObjectProperty(object, name);
-				if (mapValue != null) {
-					Syn2PathItem model = (Syn2PathItem) node.createPathItem();
-					node.addWebhook(name, model);
-					this.readPathItem(mapValue, model);
+			JsonNode _tags = JsonUtil.getProperty(json, "tags");
+			if (JsonUtil.isArray(_tags) && JsonUtil.allMatch(_tags, "string")) {
+				List<String> items = new ArrayList<>();
+				List<JsonNode> _nodes = JsonUtil.toList(_tags);
+				for (int _i = 0; _i < _nodes.size(); _i++) {
+					items.add(JsonUtil.toString(_nodes.get(_i)));
 				}
-			});
+				node.setTags(items);
+				json.remove("tags");
+			}
 		}
 		{
-			JsonNode value = JsonUtil.consumeAnyProperty(json, "additionalSchema");
-			if (value != null) {
-				node.setAdditionalSchema(this.readSchemaOrBoolean(value, null));
+			JsonNode _metadata = JsonUtil.getProperty(json, "metadata");
+			if (JsonUtil.isObject(_metadata) && JsonUtil.allValuesMatch((ObjectNode) _metadata, "string")) {
+				Map<String, String> items = new LinkedHashMap<>();
+				List<String> _keys = JsonUtil.keys((ObjectNode) _metadata);
+				for (int _i = 0; _i < _keys.size(); _i++) {
+					String _key = _keys.get(_i);
+					items.put(_key, JsonUtil.toString(JsonUtil.getProperty((ObjectNode) _metadata, _key)));
+				}
+				node.setMetadata(items);
+				json.remove("metadata");
+			}
+		}
+		{
+			JsonNode _webhooks = JsonUtil.getProperty(json, "webhooks");
+			if (JsonUtil.isObject(_webhooks)) {
+				ObjectNode _obj = (ObjectNode) _webhooks;
+				List<String> _keys = JsonUtil.keys(_obj);
+				for (int _i = 0; _i < _keys.size(); _i++) {
+					String _key = _keys.get(_i);
+					JsonNode _val = JsonUtil.getProperty(_obj, _key);
+					if (JsonUtil.isObject(_val)) {
+						Syn2PathItem model = (Syn2PathItem) node.createPathItem();
+						node.addWebhook(_key, model);
+						this.readPathItem((ObjectNode) _val, model);
+					}
+				}
+				json.remove("webhooks");
+			}
+		}
+		{
+			JsonNode _additionalSchema = JsonUtil.getProperty(json, "additionalSchema");
+			if (JsonUtil.isJsonNode(_additionalSchema)) {
+				node.setAdditionalSchema(this.readSchemaOrBoolean(_additionalSchema, null));
+				json.remove("additionalSchema");
 			}
 		}
 		{
 			List<String> propertyNames = JsonUtil.matchingKeys("^x-.+$", json);
-			propertyNames.forEach(name -> {
-				JsonNode value = JsonUtil.consumeAnyProperty(json, name);
-				node.addExtension(name, value);
-			});
+			for (int _i = 0; _i < propertyNames.size(); _i++) {
+				String name = propertyNames.get(_i);
+				JsonNode _val = JsonUtil.getProperty(json, name);
+				if (JsonUtil.isJsonNode(_val)) {
+					node.addExtension(name, JsonUtil.toJsonNode(_val));
+					json.remove(name);
+				}
+			}
 		}
 		ReaderUtil.readExtraProperties(json, node);
 	}
 
 	public void readInfo(ObjectNode json, Syn2Info node) {
 		{
-			String value = JsonUtil.consumeStringProperty(json, "name");
-			node.setName(value);
-		}
-		{
-			ObjectNode object = JsonUtil.consumeObjectProperty(json, "contact");
-			if (object != null) {
-				node.setContact(node.createContact());
-				readContact(object, (Syn2Contact) node.getContact());
+			JsonNode _name = JsonUtil.getProperty(json, "name");
+			if (JsonUtil.isString(_name)) {
+				node.setName(JsonUtil.toString(_name));
+				json.remove("name");
 			}
 		}
 		{
-			String value = JsonUtil.consumeStringProperty(json, "version");
-			node.setVersion(value);
+			JsonNode _contact = JsonUtil.getProperty(json, "contact");
+			if (JsonUtil.isObject(_contact)) {
+				node.setContact(node.createContact());
+				readContact((ObjectNode) _contact, (Syn2Contact) node.getContact());
+				json.remove("contact");
+			}
 		}
 		{
-			String value = JsonUtil.consumeStringProperty(json, "license");
-			node.setLicense(value);
+			JsonNode _version = JsonUtil.getProperty(json, "version");
+			if (JsonUtil.isString(_version)) {
+				node.setVersion(JsonUtil.toString(_version));
+				json.remove("version");
+			}
+		}
+		{
+			JsonNode _license = JsonUtil.getProperty(json, "license");
+			if (JsonUtil.isString(_license)) {
+				node.setLicense(JsonUtil.toString(_license));
+				json.remove("license");
+			}
 		}
 		{
 			List<String> propertyNames = JsonUtil.matchingKeys("^x-.+$", json);
-			propertyNames.forEach(name -> {
-				JsonNode value = JsonUtil.consumeAnyProperty(json, name);
-				node.addExtension(name, value);
-			});
+			for (int _i = 0; _i < propertyNames.size(); _i++) {
+				String name = propertyNames.get(_i);
+				JsonNode _val = JsonUtil.getProperty(json, name);
+				if (JsonUtil.isJsonNode(_val)) {
+					node.addExtension(name, JsonUtil.toJsonNode(_val));
+					json.remove(name);
+				}
+			}
 		}
 		ReaderUtil.readExtraProperties(json, node);
 	}
 
 	public void readContact(ObjectNode json, Syn2Contact node) {
 		{
-			String value = JsonUtil.consumeStringProperty(json, "name");
-			node.setName(value);
+			JsonNode _name = JsonUtil.getProperty(json, "name");
+			if (JsonUtil.isString(_name)) {
+				node.setName(JsonUtil.toString(_name));
+				json.remove("name");
+			}
 		}
 		{
-			String value = JsonUtil.consumeStringProperty(json, "email");
-			node.setEmail(value);
+			JsonNode _email = JsonUtil.getProperty(json, "email");
+			if (JsonUtil.isString(_email)) {
+				node.setEmail(JsonUtil.toString(_email));
+				json.remove("email");
+			}
 		}
 		{
-			String value = JsonUtil.consumeStringProperty(json, "url");
-			node.setUrl(value);
+			JsonNode _url = JsonUtil.getProperty(json, "url");
+			if (JsonUtil.isString(_url)) {
+				node.setUrl(JsonUtil.toString(_url));
+				json.remove("url");
+			}
 		}
 		ReaderUtil.readExtraProperties(json, node);
 	}
 
 	public void readItem(ObjectNode json, Syn2Item node) {
 		{
-			String value = JsonUtil.consumeStringProperty(json, "$ref");
-			node.set$ref(value);
+			JsonNode __ref = JsonUtil.getProperty(json, "$ref");
+			if (JsonUtil.isString(__ref)) {
+				node.set$ref(JsonUtil.toString(__ref));
+				json.remove("$ref");
+			}
 		}
 		{
-			String value = JsonUtil.consumeStringProperty(json, "description");
-			node.setDescription(value);
+			JsonNode _description = JsonUtil.getProperty(json, "description");
+			if (JsonUtil.isString(_description)) {
+				node.setDescription(JsonUtil.toString(_description));
+				json.remove("description");
+			}
 		}
 		{
-			Boolean value = JsonUtil.consumeBooleanProperty(json, "required");
-			node.setRequired(value);
+			JsonNode _required = JsonUtil.getProperty(json, "required");
+			if (JsonUtil.isBoolean(_required)) {
+				node.setRequired(JsonUtil.toBoolean(_required));
+				json.remove("required");
+			}
 		}
 		{
-			Integer value = JsonUtil.consumeIntegerProperty(json, "order");
-			node.setOrder(value);
+			JsonNode _order = JsonUtil.getProperty(json, "order");
+			if (JsonUtil.isNumber(_order)) {
+				node.setOrder(JsonUtil.toInteger(_order));
+				json.remove("order");
+			}
 		}
 		{
-			Number value = JsonUtil.consumeNumberProperty(json, "weight");
-			node.setWeight(value);
+			JsonNode _weight = JsonUtil.getProperty(json, "weight");
+			if (JsonUtil.isNumber(_weight)) {
+				node.setWeight(JsonUtil.toNumber(_weight));
+				json.remove("weight");
+			}
 		}
 		{
-			JsonNode value = JsonUtil.consumeAnyProperty(json, "extra");
-			node.setExtra(value);
+			JsonNode _extra = JsonUtil.getProperty(json, "extra");
+			if (JsonUtil.isJsonNode(_extra)) {
+				node.setExtra(JsonUtil.toJsonNode(_extra));
+				json.remove("extra");
+			}
 		}
 		{
-			ObjectNode value = JsonUtil.consumeObjectProperty(json, "raw");
-			node.setRaw(value);
+			JsonNode _raw = JsonUtil.getProperty(json, "raw");
+			if (JsonUtil.isObject(_raw)) {
+				node.setRaw(JsonUtil.toObject(_raw));
+				json.remove("raw");
+			}
 		}
 		{
-			ObjectNode object = JsonUtil.consumeObjectProperty(json, "schema");
-			if (object != null) {
+			JsonNode _schema = JsonUtil.getProperty(json, "schema");
+			if (JsonUtil.isObject(_schema)) {
 				node.setSchema(node.createSchema());
-				readSchema(object, (Syn2Schema) node.getSchema());
+				readSchema((ObjectNode) _schema, (Syn2Schema) node.getSchema());
+				json.remove("schema");
 			}
 		}
 		{
-			List<JsonNode> value = JsonUtil.consumeAnyArrayProperty(json, "examples");
-			node.setExamples(value);
-		}
-		{
-			JsonNode value = JsonUtil.consumeAnyProperty(json, "defaultValue");
-			if (value != null) {
-				node.setDefaultValue(this.readBooleanSchemaUnion(value, null));
+			JsonNode _examples = JsonUtil.getProperty(json, "examples");
+			if (JsonUtil.isArray(_examples) && JsonUtil.allMatch(_examples, "any")) {
+				List<JsonNode> items = new ArrayList<>();
+				List<JsonNode> _nodes = JsonUtil.toList(_examples);
+				for (int _i = 0; _i < _nodes.size(); _i++) {
+					items.add(JsonUtil.toJsonNode(_nodes.get(_i)));
+				}
+				node.setExamples(items);
+				json.remove("examples");
 			}
 		}
 		{
-			String value = JsonUtil.consumeStringProperty(json, "title");
-			node.setTitle(value);
+			JsonNode _defaultValue = JsonUtil.getProperty(json, "defaultValue");
+			if (JsonUtil.isJsonNode(_defaultValue)) {
+				node.setDefaultValue(this.readBooleanSchemaUnion(_defaultValue, null));
+				json.remove("defaultValue");
+			}
 		}
 		{
-			Boolean value = JsonUtil.consumeBooleanProperty(json, "deprecated");
-			node.setDeprecated(value);
+			JsonNode _title = JsonUtil.getProperty(json, "title");
+			if (JsonUtil.isString(_title)) {
+				node.setTitle(JsonUtil.toString(_title));
+				json.remove("title");
+			}
+		}
+		{
+			JsonNode _deprecated = JsonUtil.getProperty(json, "deprecated");
+			if (JsonUtil.isBoolean(_deprecated)) {
+				node.setDeprecated(JsonUtil.toBoolean(_deprecated));
+				json.remove("deprecated");
+			}
 		}
 		{
 			List<String> propertyNames = JsonUtil.matchingKeys("^x-.+$", json);
-			propertyNames.forEach(name -> {
-				JsonNode value = JsonUtil.consumeAnyProperty(json, name);
-				node.addExtension(name, value);
-			});
+			for (int _i = 0; _i < propertyNames.size(); _i++) {
+				String name = propertyNames.get(_i);
+				JsonNode _val = JsonUtil.getProperty(json, name);
+				if (JsonUtil.isJsonNode(_val)) {
+					node.addExtension(name, JsonUtil.toJsonNode(_val));
+					json.remove(name);
+				}
+			}
 		}
 		ReaderUtil.readExtraProperties(json, node);
 	}
 
 	public void readSchema(ObjectNode json, Syn2Schema node) {
 		{
-			String value = JsonUtil.consumeStringProperty(json, "$ref");
-			node.set$ref(value);
-		}
-		{
-			String value = JsonUtil.consumeStringProperty(json, "type");
-			node.setType(value);
-		}
-		{
-			JsonNode value = JsonUtil.consumeAnyProperty(json, "items");
-			if (value != null) {
-				node.setItems(this.readBooleanSchemaSchemaListUnion(value, null));
+			JsonNode __ref = JsonUtil.getProperty(json, "$ref");
+			if (JsonUtil.isString(__ref)) {
+				node.set$ref(JsonUtil.toString(__ref));
+				json.remove("$ref");
 			}
 		}
 		{
-			ObjectNode mapObj = JsonUtil.consumeObjectProperty(json, "properties");
-			if (mapObj != null) {
-				JsonUtil.keys(mapObj).forEach(key -> {
-					JsonNode value = JsonUtil.consumeAnyProperty(mapObj, key);
-					if (value != null) {
-						BooleanSchemaUnion model = this.readBooleanSchemaUnion(value, null);
+			JsonNode _type = JsonUtil.getProperty(json, "type");
+			if (JsonUtil.isString(_type)) {
+				node.setType(JsonUtil.toString(_type));
+				json.remove("type");
+			}
+		}
+		{
+			JsonNode _items = JsonUtil.getProperty(json, "items");
+			if (JsonUtil.isJsonNode(_items)) {
+				node.setItems(this.readBooleanSchemaSchemaListUnion(_items, null));
+				json.remove("items");
+			}
+		}
+		{
+			JsonNode _properties = JsonUtil.getProperty(json, "properties");
+			if (JsonUtil.isObject(_properties)) {
+				ObjectNode _obj = (ObjectNode) _properties;
+				List<String> _keys = JsonUtil.keys(_obj);
+				for (int _i = 0; _i < _keys.size(); _i++) {
+					String _key = _keys.get(_i);
+					JsonNode _val = JsonUtil.getProperty(_obj, _key);
+					if (JsonUtil.isJsonNode(_val)) {
+						BooleanSchemaUnion model = this.readBooleanSchemaUnion(_val, null);
 						if (model != null)
-							node.addProperty(key, model);
+							node.addProperty(_key, model);
 					}
-				});
+				}
+				json.remove("properties");
 			}
 		}
 		{
-			List<JsonNode> array = JsonUtil.consumeAnyArrayProperty(json, "allOf");
-			if (array != null) {
-				array.forEach(item -> {
-					BooleanSchemaUnion value = this.readBooleanSchemaUnion(item, null);
-					if (value != null)
-						node.addAllOf(value);
-				});
+			JsonNode _allOf = JsonUtil.getProperty(json, "allOf");
+			if (JsonUtil.isArray(_allOf)) {
+				List<JsonNode> _nodes = JsonUtil.toList(_allOf);
+				List<BooleanSchemaUnion> _items = new ArrayList<>();
+				boolean _valid = true;
+				for (int _i = 0; _i < _nodes.size(); _i++) {
+					BooleanSchemaUnion _result = this.readBooleanSchemaUnion(_nodes.get(_i), null);
+					if (_result == null) {
+						_valid = false;
+						break;
+					}
+					_items.add(_result);
+				}
+				if (_valid) {
+					for (int _i = 0; _i < _items.size(); _i++) {
+						node.addAllOf(_items.get(_i));
+					}
+					json.remove("allOf");
+				}
 			}
 		}
 		{
-			ObjectNode mapObj = JsonUtil.consumeObjectProperty(json, "definitions");
-			if (mapObj != null) {
-				JsonUtil.keys(mapObj).forEach(key -> {
-					JsonNode value = JsonUtil.consumeAnyProperty(mapObj, key);
-					if (value != null) {
-						BooleanSchemaUnion model = this.readBooleanSchemaUnion(value, null);
+			JsonNode _definitions = JsonUtil.getProperty(json, "definitions");
+			if (JsonUtil.isObject(_definitions)) {
+				ObjectNode _obj = (ObjectNode) _definitions;
+				List<String> _keys = JsonUtil.keys(_obj);
+				for (int _i = 0; _i < _keys.size(); _i++) {
+					String _key = _keys.get(_i);
+					JsonNode _val = JsonUtil.getProperty(_obj, _key);
+					if (JsonUtil.isJsonNode(_val)) {
+						BooleanSchemaUnion model = this.readBooleanSchemaUnion(_val, null);
 						if (model != null)
-							node.addDefinition(key, model);
+							node.addDefinition(_key, model);
 					}
-				});
+				}
+				json.remove("definitions");
 			}
 		}
 		{
-			ObjectNode mapObj = JsonUtil.consumeObjectProperty(json, "nestedSchemas");
-			if (mapObj != null) {
-				JsonUtil.keys(mapObj).forEach(key -> {
-					JsonNode value = JsonUtil.consumeAnyProperty(mapObj, key);
-					if (value != null) {
-						SchemaOrBoolean model = this.readSchemaOrBoolean(value, null);
+			JsonNode _nestedSchemas = JsonUtil.getProperty(json, "nestedSchemas");
+			if (JsonUtil.isObject(_nestedSchemas)) {
+				ObjectNode _obj = (ObjectNode) _nestedSchemas;
+				List<String> _keys = JsonUtil.keys(_obj);
+				for (int _i = 0; _i < _keys.size(); _i++) {
+					String _key = _keys.get(_i);
+					JsonNode _val = JsonUtil.getProperty(_obj, _key);
+					if (JsonUtil.isJsonNode(_val)) {
+						SchemaOrBoolean model = this.readSchemaOrBoolean(_val, null);
 						if (model != null)
-							node.addNestedSchema(key, model);
+							node.addNestedSchema(_key, model);
 					}
-				});
+				}
+				json.remove("nestedSchemas");
 			}
 		}
 		{
-			List<JsonNode> array = JsonUtil.consumeAnyArrayProperty(json, "composedSchemas");
-			if (array != null) {
-				array.forEach(item -> {
-					SchemaOrBoolean value = this.readSchemaOrBoolean(item, null);
-					if (value != null)
-						node.addComposedSchema(value);
-				});
+			JsonNode _composedSchemas = JsonUtil.getProperty(json, "composedSchemas");
+			if (JsonUtil.isArray(_composedSchemas)) {
+				List<JsonNode> _nodes = JsonUtil.toList(_composedSchemas);
+				List<SchemaOrBoolean> _items = new ArrayList<>();
+				boolean _valid = true;
+				for (int _i = 0; _i < _nodes.size(); _i++) {
+					SchemaOrBoolean _result = this.readSchemaOrBoolean(_nodes.get(_i), null);
+					if (_result == null) {
+						_valid = false;
+						break;
+					}
+					_items.add(_result);
+				}
+				if (_valid) {
+					for (int _i = 0; _i < _items.size(); _i++) {
+						node.addComposedSchema(_items.get(_i));
+					}
+					json.remove("composedSchemas");
+				}
 			}
 		}
 		{
-			Integer value = JsonUtil.consumeIntegerProperty(json, "minLength");
-			node.setMinLength(value);
+			JsonNode _minLength = JsonUtil.getProperty(json, "minLength");
+			if (JsonUtil.isNumber(_minLength)) {
+				node.setMinLength(JsonUtil.toInteger(_minLength));
+				json.remove("minLength");
+			}
 		}
 		{
-			Integer value = JsonUtil.consumeIntegerProperty(json, "maxLength");
-			node.setMaxLength(value);
+			JsonNode _maxLength = JsonUtil.getProperty(json, "maxLength");
+			if (JsonUtil.isNumber(_maxLength)) {
+				node.setMaxLength(JsonUtil.toInteger(_maxLength));
+				json.remove("maxLength");
+			}
 		}
 		{
-			List<JsonNode> value = JsonUtil.consumeAnyArrayProperty(json, "enum");
-			node.setEnum(value);
+			JsonNode _enum = JsonUtil.getProperty(json, "enum");
+			if (JsonUtil.isArray(_enum) && JsonUtil.allMatch(_enum, "any")) {
+				List<JsonNode> items = new ArrayList<>();
+				List<JsonNode> _nodes = JsonUtil.toList(_enum);
+				for (int _i = 0; _i < _nodes.size(); _i++) {
+					items.add(JsonUtil.toJsonNode(_nodes.get(_i)));
+				}
+				node.setEnum(items);
+				json.remove("enum");
+			}
 		}
 		{
 			List<String> propertyNames = JsonUtil.matchingKeys("^x-.+$", json);
-			propertyNames.forEach(name -> {
-				JsonNode value = JsonUtil.consumeAnyProperty(json, name);
-				node.addExtension(name, value);
-			});
+			for (int _i = 0; _i < propertyNames.size(); _i++) {
+				String name = propertyNames.get(_i);
+				JsonNode _val = JsonUtil.getProperty(json, name);
+				if (JsonUtil.isJsonNode(_val)) {
+					node.addExtension(name, JsonUtil.toJsonNode(_val));
+					json.remove(name);
+				}
+			}
 		}
 		ReaderUtil.readExtraProperties(json, node);
 	}
@@ -293,101 +454,142 @@ public class Syn2ModelReader implements ModelReader {
 	public void readPaths(ObjectNode json, Syn2Paths node) {
 		{
 			List<String> propertyNames = JsonUtil.keys(json);
-			propertyNames.forEach(name -> {
-				ObjectNode object = JsonUtil.consumeObjectProperty(json, name);
-				if (object != null) {
+			for (int _i = 0; _i < propertyNames.size(); _i++) {
+				String name = propertyNames.get(_i);
+				JsonNode _val = JsonUtil.getProperty(json, name);
+				if (JsonUtil.isObject(_val)) {
 					Syn2PathItem model = (Syn2PathItem) node.createPathItem();
 					node.addItem(name, model);
-					this.readPathItem(object, model);
+					this.readPathItem((ObjectNode) _val, model);
+					json.remove(name);
 				}
-			});
+			}
 		}
 		{
 			List<String> propertyNames = JsonUtil.matchingKeys("^x-.+$", json);
-			propertyNames.forEach(name -> {
-				JsonNode value = JsonUtil.consumeAnyProperty(json, name);
-				node.addExtension(name, value);
-			});
+			for (int _i = 0; _i < propertyNames.size(); _i++) {
+				String name = propertyNames.get(_i);
+				JsonNode _val = JsonUtil.getProperty(json, name);
+				if (JsonUtil.isJsonNode(_val)) {
+					node.addExtension(name, JsonUtil.toJsonNode(_val));
+					json.remove(name);
+				}
+			}
 		}
 		ReaderUtil.readExtraProperties(json, node);
 	}
 
 	public void readPathItem(ObjectNode json, Syn2PathItem node) {
 		{
-			String value = JsonUtil.consumeStringProperty(json, "$ref");
-			node.set$ref(value);
+			JsonNode __ref = JsonUtil.getProperty(json, "$ref");
+			if (JsonUtil.isString(__ref)) {
+				node.set$ref(JsonUtil.toString(__ref));
+				json.remove("$ref");
+			}
 		}
 		{
-			String value = JsonUtil.consumeStringProperty(json, "summary");
-			node.setSummary(value);
+			JsonNode _summary = JsonUtil.getProperty(json, "summary");
+			if (JsonUtil.isString(_summary)) {
+				node.setSummary(JsonUtil.toString(_summary));
+				json.remove("summary");
+			}
 		}
 		{
-			ObjectNode object = JsonUtil.consumeObjectProperty(json, "get");
-			if (object != null) {
+			JsonNode _get = JsonUtil.getProperty(json, "get");
+			if (JsonUtil.isObject(_get)) {
 				node.setGet(node.createOperation());
-				readOperation(object, (Syn2Operation) node.getGet());
+				readOperation((ObjectNode) _get, (Syn2Operation) node.getGet());
+				json.remove("get");
 			}
 		}
 		{
-			ObjectNode object = JsonUtil.consumeObjectProperty(json, "put");
-			if (object != null) {
+			JsonNode _put = JsonUtil.getProperty(json, "put");
+			if (JsonUtil.isObject(_put)) {
 				node.setPut(node.createOperation());
-				readOperation(object, (Syn2Operation) node.getPut());
+				readOperation((ObjectNode) _put, (Syn2Operation) node.getPut());
+				json.remove("put");
 			}
 		}
 		{
-			ObjectNode object = JsonUtil.consumeObjectProperty(json, "post");
-			if (object != null) {
+			JsonNode _post = JsonUtil.getProperty(json, "post");
+			if (JsonUtil.isObject(_post)) {
 				node.setPost(node.createOperation());
-				readOperation(object, (Syn2Operation) node.getPost());
+				readOperation((ObjectNode) _post, (Syn2Operation) node.getPost());
+				json.remove("post");
 			}
 		}
 		{
-			ObjectNode object = JsonUtil.consumeObjectProperty(json, "delete");
-			if (object != null) {
+			JsonNode _delete = JsonUtil.getProperty(json, "delete");
+			if (JsonUtil.isObject(_delete)) {
 				node.setDelete(node.createOperation());
-				readOperation(object, (Syn2Operation) node.getDelete());
+				readOperation((ObjectNode) _delete, (Syn2Operation) node.getDelete());
+				json.remove("delete");
 			}
 		}
 		{
 			List<String> propertyNames = JsonUtil.matchingKeys("^x-.+$", json);
-			propertyNames.forEach(name -> {
-				JsonNode value = JsonUtil.consumeAnyProperty(json, name);
-				node.addExtension(name, value);
-			});
+			for (int _i = 0; _i < propertyNames.size(); _i++) {
+				String name = propertyNames.get(_i);
+				JsonNode _val = JsonUtil.getProperty(json, name);
+				if (JsonUtil.isJsonNode(_val)) {
+					node.addExtension(name, JsonUtil.toJsonNode(_val));
+					json.remove(name);
+				}
+			}
 		}
 		ReaderUtil.readExtraProperties(json, node);
 	}
 
 	public void readOperation(ObjectNode json, Syn2Operation node) {
 		{
-			String value = JsonUtil.consumeStringProperty(json, "operationId");
-			node.setOperationId(value);
+			JsonNode _operationId = JsonUtil.getProperty(json, "operationId");
+			if (JsonUtil.isString(_operationId)) {
+				node.setOperationId(JsonUtil.toString(_operationId));
+				json.remove("operationId");
+			}
 		}
 		{
-			String value = JsonUtil.consumeStringProperty(json, "summary");
-			node.setSummary(value);
+			JsonNode _summary = JsonUtil.getProperty(json, "summary");
+			if (JsonUtil.isString(_summary)) {
+				node.setSummary(JsonUtil.toString(_summary));
+				json.remove("summary");
+			}
 		}
 		{
-			List<String> value = JsonUtil.consumeStringArrayProperty(json, "tags");
-			node.setTags(value);
+			JsonNode _tags = JsonUtil.getProperty(json, "tags");
+			if (JsonUtil.isArray(_tags) && JsonUtil.allMatch(_tags, "string")) {
+				List<String> items = new ArrayList<>();
+				List<JsonNode> _nodes = JsonUtil.toList(_tags);
+				for (int _i = 0; _i < _nodes.size(); _i++) {
+					items.add(JsonUtil.toString(_nodes.get(_i)));
+				}
+				node.setTags(items);
+				json.remove("tags");
+			}
 		}
 		{
-			List<ObjectNode> objects = JsonUtil.consumeObjectArrayProperty(json, "parameters");
-			if (objects != null) {
-				objects.forEach(object -> {
+			JsonNode _parameters = JsonUtil.getProperty(json, "parameters");
+			if (JsonUtil.isArray(_parameters) && JsonUtil.allMatch(_parameters, "object")) {
+				List<JsonNode> _nodes = JsonUtil.toList(_parameters);
+				for (int _i = 0; _i < _nodes.size(); _i++) {
+					ObjectNode object = (ObjectNode) _nodes.get(_i);
 					Syn2Item model = (Syn2Item) node.createItem();
 					node.addParameter(model);
 					this.readItem(object, model);
-				});
+				}
+				json.remove("parameters");
 			}
 		}
 		{
 			List<String> propertyNames = JsonUtil.matchingKeys("^x-.+$", json);
-			propertyNames.forEach(name -> {
-				JsonNode value = JsonUtil.consumeAnyProperty(json, name);
-				node.addExtension(name, value);
-			});
+			for (int _i = 0; _i < propertyNames.size(); _i++) {
+				String name = propertyNames.get(_i);
+				JsonNode _val = JsonUtil.getProperty(json, name);
+				if (JsonUtil.isJsonNode(_val)) {
+					node.addExtension(name, JsonUtil.toJsonNode(_val));
+					json.remove(name);
+				}
+			}
 		}
 		ReaderUtil.readExtraProperties(json, node);
 	}

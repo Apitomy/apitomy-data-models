@@ -30,12 +30,12 @@ public class Syn2ModelWriter implements ModelWriter {
 		if (node == null) {
 			return;
 		}
-		JsonUtil.setStringProperty(json, "version", node.getVersion());
+		JsonUtil.setProperty(json, "version", JsonUtil.toJsonNode(node.getVersion()));
 		{
 			if (node.getInfo() != null) {
 				ObjectNode object = JsonUtil.objectNode();
 				this.writeInfo((Syn2Info) node.getInfo(), object);
-				JsonUtil.setObjectProperty(json, "info", object);
+				JsonUtil.setProperty(json, "info", object);
 			}
 		}
 		{
@@ -47,11 +47,11 @@ public class Syn2ModelWriter implements ModelWriter {
 					this.writeItem((Syn2Item) model, object);
 					JsonUtil.addToArray(array, object);
 				});
-				JsonUtil.setAnyProperty(json, "items", array);
+				JsonUtil.setProperty(json, "items", array);
 			}
 		}
-		JsonUtil.setStringArrayProperty(json, "tags", node.getTags());
-		JsonUtil.setStringMapProperty(json, "metadata", node.getMetadata());
+		JsonUtil.setProperty(json, "tags", JsonUtil.toArrayNode(node.getTags()));
+		JsonUtil.setProperty(json, "metadata", JsonUtil.toObjectNode(node.getMetadata()));
 		{
 			Map<String, ? extends SynPathItem> models = node.getWebhooks();
 			if (models != null && !models.isEmpty()) {
@@ -59,23 +59,25 @@ public class Syn2ModelWriter implements ModelWriter {
 				models.keySet().forEach(jsonName -> {
 					ObjectNode jsonValue = JsonUtil.objectNode();
 					this.writePathItem((Syn2PathItem) models.get(jsonName), jsonValue);
-					JsonUtil.setObjectProperty(object, jsonName, jsonValue);
+					JsonUtil.setProperty(object, jsonName, jsonValue);
 				});
-				JsonUtil.setObjectProperty(json, "webhooks", object);
+				JsonUtil.setProperty(json, "webhooks", object);
 			}
 		}
 		{
 			JsonNode value = this.writeSchemaOrBoolean(node.getAdditionalSchema());
 			if (value != null)
-				JsonUtil.setAnyProperty(json, "additionalSchema", value);
+				JsonUtil.setProperty(json, "additionalSchema", value);
 		}
 		{
 			Map<String, JsonNode> values = node.getExtensions();
 			if (values != null && !values.isEmpty()) {
-				values.keySet().forEach(propertyName -> {
+				List<String> _keys = new java.util.ArrayList<>(values.keySet());
+				for (int _i = 0; _i < _keys.size(); _i++) {
+					String propertyName = _keys.get(_i);
 					JsonNode value = values.get(propertyName);
-					JsonUtil.setAnyProperty(json, propertyName, value);
-				});
+					JsonUtil.setProperty(json, propertyName, JsonUtil.toJsonNode(value));
+				}
 			}
 		}
 		WriterUtil.writeExtraProperties(node, json);
@@ -85,23 +87,25 @@ public class Syn2ModelWriter implements ModelWriter {
 		if (node == null) {
 			return;
 		}
-		JsonUtil.setStringProperty(json, "name", node.getName());
+		JsonUtil.setProperty(json, "name", JsonUtil.toJsonNode(node.getName()));
 		{
 			if (node.getContact() != null) {
 				ObjectNode object = JsonUtil.objectNode();
 				this.writeContact((Syn2Contact) node.getContact(), object);
-				JsonUtil.setObjectProperty(json, "contact", object);
+				JsonUtil.setProperty(json, "contact", object);
 			}
 		}
-		JsonUtil.setStringProperty(json, "version", node.getVersion());
-		JsonUtil.setStringProperty(json, "license", node.getLicense());
+		JsonUtil.setProperty(json, "version", JsonUtil.toJsonNode(node.getVersion()));
+		JsonUtil.setProperty(json, "license", JsonUtil.toJsonNode(node.getLicense()));
 		{
 			Map<String, JsonNode> values = node.getExtensions();
 			if (values != null && !values.isEmpty()) {
-				values.keySet().forEach(propertyName -> {
+				List<String> _keys = new java.util.ArrayList<>(values.keySet());
+				for (int _i = 0; _i < _keys.size(); _i++) {
+					String propertyName = _keys.get(_i);
 					JsonNode value = values.get(propertyName);
-					JsonUtil.setAnyProperty(json, propertyName, value);
-				});
+					JsonUtil.setProperty(json, propertyName, JsonUtil.toJsonNode(value));
+				}
 			}
 		}
 		WriterUtil.writeExtraProperties(node, json);
@@ -111,9 +115,9 @@ public class Syn2ModelWriter implements ModelWriter {
 		if (node == null) {
 			return;
 		}
-		JsonUtil.setStringProperty(json, "name", node.getName());
-		JsonUtil.setStringProperty(json, "email", node.getEmail());
-		JsonUtil.setStringProperty(json, "url", node.getUrl());
+		JsonUtil.setProperty(json, "name", JsonUtil.toJsonNode(node.getName()));
+		JsonUtil.setProperty(json, "email", JsonUtil.toJsonNode(node.getEmail()));
+		JsonUtil.setProperty(json, "url", JsonUtil.toJsonNode(node.getUrl()));
 		WriterUtil.writeExtraProperties(node, json);
 	}
 
@@ -121,35 +125,37 @@ public class Syn2ModelWriter implements ModelWriter {
 		if (node == null) {
 			return;
 		}
-		JsonUtil.setStringProperty(json, "$ref", node.get$ref());
-		JsonUtil.setStringProperty(json, "description", node.getDescription());
-		JsonUtil.setBooleanProperty(json, "required", node.isRequired());
-		JsonUtil.setIntegerProperty(json, "order", node.getOrder());
-		JsonUtil.setNumberProperty(json, "weight", node.getWeight());
-		JsonUtil.setAnyProperty(json, "extra", node.getExtra());
-		JsonUtil.setObjectProperty(json, "raw", node.getRaw());
+		JsonUtil.setProperty(json, "$ref", JsonUtil.toJsonNode(node.get$ref()));
+		JsonUtil.setProperty(json, "description", JsonUtil.toJsonNode(node.getDescription()));
+		JsonUtil.setProperty(json, "required", JsonUtil.toJsonNode(node.isRequired()));
+		JsonUtil.setProperty(json, "order", JsonUtil.toJsonNode(node.getOrder()));
+		JsonUtil.setProperty(json, "weight", JsonUtil.toJsonNode(node.getWeight()));
+		JsonUtil.setProperty(json, "extra", node.getExtra());
+		JsonUtil.setProperty(json, "raw", node.getRaw());
 		{
 			if (node.getSchema() != null) {
 				ObjectNode object = JsonUtil.objectNode();
 				this.writeSchema((Syn2Schema) node.getSchema(), object);
-				JsonUtil.setObjectProperty(json, "schema", object);
+				JsonUtil.setProperty(json, "schema", object);
 			}
 		}
-		JsonUtil.setAnyArrayProperty(json, "examples", node.getExamples());
+		JsonUtil.setProperty(json, "examples", JsonUtil.toArrayNode(node.getExamples()));
 		{
 			JsonNode value = this.writeBooleanSchemaUnion(node.getDefaultValue());
 			if (value != null)
-				JsonUtil.setAnyProperty(json, "defaultValue", value);
+				JsonUtil.setProperty(json, "defaultValue", value);
 		}
-		JsonUtil.setStringProperty(json, "title", node.getTitle());
-		JsonUtil.setBooleanProperty(json, "deprecated", node.isDeprecated());
+		JsonUtil.setProperty(json, "title", JsonUtil.toJsonNode(node.getTitle()));
+		JsonUtil.setProperty(json, "deprecated", JsonUtil.toJsonNode(node.isDeprecated()));
 		{
 			Map<String, JsonNode> values = node.getExtensions();
 			if (values != null && !values.isEmpty()) {
-				values.keySet().forEach(propertyName -> {
+				List<String> _keys = new java.util.ArrayList<>(values.keySet());
+				for (int _i = 0; _i < _keys.size(); _i++) {
+					String propertyName = _keys.get(_i);
 					JsonNode value = values.get(propertyName);
-					JsonUtil.setAnyProperty(json, propertyName, value);
-				});
+					JsonUtil.setProperty(json, propertyName, JsonUtil.toJsonNode(value));
+				}
 			}
 		}
 		WriterUtil.writeExtraProperties(node, json);
@@ -159,12 +165,12 @@ public class Syn2ModelWriter implements ModelWriter {
 		if (node == null) {
 			return;
 		}
-		JsonUtil.setStringProperty(json, "$ref", node.get$ref());
-		JsonUtil.setStringProperty(json, "type", node.getType());
+		JsonUtil.setProperty(json, "$ref", JsonUtil.toJsonNode(node.get$ref()));
+		JsonUtil.setProperty(json, "type", JsonUtil.toJsonNode(node.getType()));
 		{
 			JsonNode value = this.writeBooleanSchemaSchemaListUnion(node.getItems());
 			if (value != null)
-				JsonUtil.setAnyProperty(json, "items", value);
+				JsonUtil.setProperty(json, "items", value);
 		}
 		{
 			Map<String, BooleanSchemaUnion> items = node.getProperties();
@@ -174,9 +180,9 @@ public class Syn2ModelWriter implements ModelWriter {
 				keys.forEach(key -> {
 					JsonNode value = this.writeBooleanSchemaUnion(items.get(key));
 					if (value != null)
-						JsonUtil.setAnyProperty(mapJson, key, value);
+						JsonUtil.setProperty(mapJson, key, value);
 				});
-				JsonUtil.setObjectProperty(json, "properties", mapJson);
+				JsonUtil.setProperty(json, "properties", mapJson);
 			}
 		}
 		{
@@ -188,7 +194,7 @@ public class Syn2ModelWriter implements ModelWriter {
 					if (value != null)
 						array.add(value);
 				});
-				JsonUtil.setAnyProperty(json, "allOf", array);
+				JsonUtil.setProperty(json, "allOf", array);
 			}
 		}
 		{
@@ -199,9 +205,9 @@ public class Syn2ModelWriter implements ModelWriter {
 				keys.forEach(key -> {
 					JsonNode value = this.writeBooleanSchemaUnion(items.get(key));
 					if (value != null)
-						JsonUtil.setAnyProperty(mapJson, key, value);
+						JsonUtil.setProperty(mapJson, key, value);
 				});
-				JsonUtil.setObjectProperty(json, "definitions", mapJson);
+				JsonUtil.setProperty(json, "definitions", mapJson);
 			}
 		}
 		{
@@ -212,9 +218,9 @@ public class Syn2ModelWriter implements ModelWriter {
 				keys.forEach(key -> {
 					JsonNode value = this.writeSchemaOrBoolean(items.get(key));
 					if (value != null)
-						JsonUtil.setAnyProperty(mapJson, key, value);
+						JsonUtil.setProperty(mapJson, key, value);
 				});
-				JsonUtil.setObjectProperty(json, "nestedSchemas", mapJson);
+				JsonUtil.setProperty(json, "nestedSchemas", mapJson);
 			}
 		}
 		{
@@ -226,19 +232,21 @@ public class Syn2ModelWriter implements ModelWriter {
 					if (value != null)
 						array.add(value);
 				});
-				JsonUtil.setAnyProperty(json, "composedSchemas", array);
+				JsonUtil.setProperty(json, "composedSchemas", array);
 			}
 		}
-		JsonUtil.setIntegerProperty(json, "minLength", node.getMinLength());
-		JsonUtil.setIntegerProperty(json, "maxLength", node.getMaxLength());
-		JsonUtil.setAnyArrayProperty(json, "enum", node.getEnum());
+		JsonUtil.setProperty(json, "minLength", JsonUtil.toJsonNode(node.getMinLength()));
+		JsonUtil.setProperty(json, "maxLength", JsonUtil.toJsonNode(node.getMaxLength()));
+		JsonUtil.setProperty(json, "enum", JsonUtil.toArrayNode(node.getEnum()));
 		{
 			Map<String, JsonNode> values = node.getExtensions();
 			if (values != null && !values.isEmpty()) {
-				values.keySet().forEach(propertyName -> {
+				List<String> _keys = new java.util.ArrayList<>(values.keySet());
+				for (int _i = 0; _i < _keys.size(); _i++) {
+					String propertyName = _keys.get(_i);
 					JsonNode value = values.get(propertyName);
-					JsonUtil.setAnyProperty(json, propertyName, value);
-				});
+					JsonUtil.setProperty(json, propertyName, JsonUtil.toJsonNode(value));
+				}
 			}
 		}
 		WriterUtil.writeExtraProperties(node, json);
@@ -250,19 +258,22 @@ public class Syn2ModelWriter implements ModelWriter {
 		}
 		{
 			List<String> propertyNames = node.getItemNames();
-			propertyNames.forEach(propertyName -> {
+			for (int _i = 0; _i < propertyNames.size(); _i++) {
+				String propertyName = propertyNames.get(_i);
 				ObjectNode object = JsonUtil.objectNode();
 				this.writePathItem((Syn2PathItem) node.getItem(propertyName), object);
-				JsonUtil.setObjectProperty(json, propertyName, object);
-			});
+				JsonUtil.setProperty(json, propertyName, object);
+			}
 		}
 		{
 			Map<String, JsonNode> values = node.getExtensions();
 			if (values != null && !values.isEmpty()) {
-				values.keySet().forEach(propertyName -> {
+				List<String> _keys = new java.util.ArrayList<>(values.keySet());
+				for (int _i = 0; _i < _keys.size(); _i++) {
+					String propertyName = _keys.get(_i);
 					JsonNode value = values.get(propertyName);
-					JsonUtil.setAnyProperty(json, propertyName, value);
-				});
+					JsonUtil.setProperty(json, propertyName, JsonUtil.toJsonNode(value));
+				}
 			}
 		}
 		WriterUtil.writeExtraProperties(node, json);
@@ -272,43 +283,45 @@ public class Syn2ModelWriter implements ModelWriter {
 		if (node == null) {
 			return;
 		}
-		JsonUtil.setStringProperty(json, "$ref", node.get$ref());
-		JsonUtil.setStringProperty(json, "summary", node.getSummary());
+		JsonUtil.setProperty(json, "$ref", JsonUtil.toJsonNode(node.get$ref()));
+		JsonUtil.setProperty(json, "summary", JsonUtil.toJsonNode(node.getSummary()));
 		{
 			if (node.getGet() != null) {
 				ObjectNode object = JsonUtil.objectNode();
 				this.writeOperation((Syn2Operation) node.getGet(), object);
-				JsonUtil.setObjectProperty(json, "get", object);
+				JsonUtil.setProperty(json, "get", object);
 			}
 		}
 		{
 			if (node.getPut() != null) {
 				ObjectNode object = JsonUtil.objectNode();
 				this.writeOperation((Syn2Operation) node.getPut(), object);
-				JsonUtil.setObjectProperty(json, "put", object);
+				JsonUtil.setProperty(json, "put", object);
 			}
 		}
 		{
 			if (node.getPost() != null) {
 				ObjectNode object = JsonUtil.objectNode();
 				this.writeOperation((Syn2Operation) node.getPost(), object);
-				JsonUtil.setObjectProperty(json, "post", object);
+				JsonUtil.setProperty(json, "post", object);
 			}
 		}
 		{
 			if (node.getDelete() != null) {
 				ObjectNode object = JsonUtil.objectNode();
 				this.writeOperation((Syn2Operation) node.getDelete(), object);
-				JsonUtil.setObjectProperty(json, "delete", object);
+				JsonUtil.setProperty(json, "delete", object);
 			}
 		}
 		{
 			Map<String, JsonNode> values = node.getExtensions();
 			if (values != null && !values.isEmpty()) {
-				values.keySet().forEach(propertyName -> {
+				List<String> _keys = new java.util.ArrayList<>(values.keySet());
+				for (int _i = 0; _i < _keys.size(); _i++) {
+					String propertyName = _keys.get(_i);
 					JsonNode value = values.get(propertyName);
-					JsonUtil.setAnyProperty(json, propertyName, value);
-				});
+					JsonUtil.setProperty(json, propertyName, JsonUtil.toJsonNode(value));
+				}
 			}
 		}
 		WriterUtil.writeExtraProperties(node, json);
@@ -318,9 +331,9 @@ public class Syn2ModelWriter implements ModelWriter {
 		if (node == null) {
 			return;
 		}
-		JsonUtil.setStringProperty(json, "operationId", node.getOperationId());
-		JsonUtil.setStringProperty(json, "summary", node.getSummary());
-		JsonUtil.setStringArrayProperty(json, "tags", node.getTags());
+		JsonUtil.setProperty(json, "operationId", JsonUtil.toJsonNode(node.getOperationId()));
+		JsonUtil.setProperty(json, "summary", JsonUtil.toJsonNode(node.getSummary()));
+		JsonUtil.setProperty(json, "tags", JsonUtil.toArrayNode(node.getTags()));
 		{
 			List<? extends SynItem> models = node.getParameters();
 			if (models != null && !models.isEmpty()) {
@@ -330,16 +343,18 @@ public class Syn2ModelWriter implements ModelWriter {
 					this.writeItem((Syn2Item) model, object);
 					JsonUtil.addToArray(array, object);
 				});
-				JsonUtil.setAnyProperty(json, "parameters", array);
+				JsonUtil.setProperty(json, "parameters", array);
 			}
 		}
 		{
 			Map<String, JsonNode> values = node.getExtensions();
 			if (values != null && !values.isEmpty()) {
-				values.keySet().forEach(propertyName -> {
+				List<String> _keys = new java.util.ArrayList<>(values.keySet());
+				for (int _i = 0; _i < _keys.size(); _i++) {
+					String propertyName = _keys.get(_i);
 					JsonNode value = values.get(propertyName);
-					JsonUtil.setAnyProperty(json, propertyName, value);
-				});
+					JsonUtil.setProperty(json, propertyName, JsonUtil.toJsonNode(value));
+				}
 			}
 		}
 		WriterUtil.writeExtraProperties(node, json);
