@@ -78,7 +78,7 @@ public abstract class AbstractStage implements Stage {
                 && ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType().isUnionType();
     }
 
-    protected String singularize(String name) {
+    public String singularize(String name) {
         return inflector.singularize(name);
     }
 
