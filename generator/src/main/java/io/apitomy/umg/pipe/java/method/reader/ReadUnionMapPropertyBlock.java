@@ -49,16 +49,22 @@ public class ReadUnionMapPropertyBlock extends CodeBlock {
         body.addContext("readMethodName", readMethodName);
         body.addContext("unionJavaType", valueJt.toJavaTypeString());
 
+        body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
+
         body.append("{");
-        body.append("    ObjectNode mapObj = JsonUtil.consumeObjectProperty(json, \"${propertyName}\");");
-        body.append("    if (mapObj != null) {");
-        body.append("        JsonUtil.keys(mapObj).forEach(key -> {");
-        body.append("            JsonNode value = JsonUtil.consumeAnyProperty(mapObj, key);");
-        body.append("            if (value != null) {");
-        body.append("                ${unionJavaType} model = this.${readMethodName}(value, null);");
-        body.append("                if (model != null) node.${addMethodName}(key, model);");
+        body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
+        body.append("    if (JsonUtil.isObject(${varName})) {");
+        body.append("        ObjectNode _obj = (ObjectNode) ${varName};");
+        body.append("        List<String> _keys = JsonUtil.keys(_obj);");
+        body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
+        body.append("            String _key = _keys.get(_i);");
+        body.append("            JsonNode _val = JsonUtil.getProperty(_obj, _key);");
+        body.append("            if (JsonUtil.isJsonNode(_val)) {");
+        body.append("                ${unionJavaType} model = this.${readMethodName}(_val, null);");
+        body.append("                if (model != null) node.${addMethodName}(_key, model);");
         body.append("            }");
-        body.append("        });");
+        body.append("        }");
+        body.append("        json.remove(\"${propertyName}\");");
         body.append("    }");
         body.append("}");
     }

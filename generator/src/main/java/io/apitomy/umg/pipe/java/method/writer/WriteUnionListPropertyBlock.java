@@ -57,7 +57,7 @@ public class WriteUnionListPropertyBlock extends CodeBlock {
         body.append("            JsonNode value = this.${writeMethodName}(item);");
         body.append("            if (value != null) array.add(value);");
         body.append("        });");
-        body.append("        JsonUtil.setAnyProperty(json, \"${propertyName}\", array);");
+        body.append("        JsonUtil.setProperty(json, \"${propertyName}\", array);");
         body.append("    }");
         body.append("}");
     }

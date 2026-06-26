@@ -55,6 +55,14 @@ import java.util.Map;
  */
 public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
 
+    private static String getStringProp(ObjectNode json, String name) {
+        JsonNode node = JsonUtil.getProperty(json, name);
+        if (JsonUtil.isString(node)) {
+            return JsonUtil.toString(node);
+        }
+        return null;
+    }
+
     public AsyncApi3NodeImporter(Document doc, Node nodeWithUnresolvedRef, String ref, boolean shouldInline) {
         super(doc, nodeWithUnresolvedRef, ref, shouldInline);
     }
@@ -451,7 +459,7 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
     private boolean isAvroSchema(Schema schemaNode) {
         try {
             ObjectNode json = Library.writeNode(schemaNode);
-            String type = JsonUtil.getStringProperty(json, "type");
+            String type = getStringProp(json, "type");
 
             // Avro schemas have "type": "record", "enum", "fixed", etc.
             // JSON Schema has "type": "object", "array", "string", etc.
@@ -476,7 +484,7 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
     private String extractAvroSchemaName(Schema schemaNode) {
         try {
             ObjectNode json = Library.writeNode(schemaNode);
-            String name = JsonUtil.getStringProperty(json, "name");
+            String name = getStringProp(json, "name");
 
             if (!NodeUtil.isNullOrUndefined(name)) {
                 return name;
@@ -498,7 +506,7 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
         try {
             // Protobuf schemas have an "x-text-content" property with the .proto file text
             ObjectNode json = Library.writeNode(schemaNode);
-            String protoContent = JsonUtil.getStringProperty(json, "x-text-content");
+            String protoContent = getStringProp(json, "x-text-content");
             return !NodeUtil.isNullOrUndefined(protoContent);
         } catch (Exception e) {
             // If we can't determine, assume it's JSON Schema
@@ -516,7 +524,7 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
     private String extractProtobufSchemaName(Schema schemaNode) {
         try {
             ObjectNode json = Library.writeNode(schemaNode);
-            String protoContent = JsonUtil.getStringProperty(json, "x-text-content");
+            String protoContent = getStringProp(json, "x-text-content");
 
             if (!NodeUtil.isNullOrUndefined(protoContent)) {
                 // Simple regex to extract message name from "message MessageName {"
@@ -544,7 +552,7 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
     private String extractProtobufContent(Schema schemaNode) {
         try {
             ObjectNode json = Library.writeNode(schemaNode);
-            String protoContent = JsonUtil.getStringProperty(json, "x-text-content");
+            String protoContent = getStringProp(json, "x-text-content");
             if (!NodeUtil.isNullOrUndefined(protoContent)) {
                 return protoContent;
             }
@@ -619,7 +627,7 @@ public class AsyncApi3NodeImporter extends ReferencedNodeImporter {
     private String extractAvroNameFromJson(JsonNode jsonNode) {
         try {
             if (JsonUtil.isObject(jsonNode)) {
-                String name = JsonUtil.getStringProperty((ObjectNode) jsonNode, "name");
+                String name = getStringProp((ObjectNode) jsonNode, "name");
                 if (!NodeUtil.isNullOrUndefined(name)) {
                     return name;
                 }

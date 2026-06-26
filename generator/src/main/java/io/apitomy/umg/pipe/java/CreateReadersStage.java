@@ -554,6 +554,7 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 }
                 readerClassSource.addImport(resolved.javaInterface());
                 readerClassSource.addImport(List.class);
+                readerClassSource.addImport(JsonNode.class);
 
                 body.addContext("entityJavaType", resolved.javaInterface().getName());
                 body.addContext("createMethodName", createMethodName(resolved.entityModel()));
@@ -562,30 +563,94 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
 
                 body.append("{");
                 body.append("    List<String> propertyNames = JsonUtil.keys(json);");
-                body.append("    propertyNames.forEach(name -> {");
-                body.append("        ObjectNode object = JsonUtil.consumeObjectProperty(json, name);");
-                body.append("        if (object != null) {");
+                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
+                body.append("        String name = propertyNames.get(_i);");
+                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
+                body.append("        if (JsonUtil.isObject(_val)) {");
                 body.append("            ${entityJavaType} model = (${entityJavaType}) node.${createMethodName}();");
                 body.append("            node.${addMethodName}(name, model);");
-                body.append("            this.${readMethodName}(object, model);");
+                body.append("            this.${readMethodName}((ObjectNode) _val, model);");
+                body.append("            json.remove(name);");
                 body.append("        }");
-                body.append("    });");
+                body.append("    }");
                 body.append("}");
-            } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
+            } else if (isPrimitive(property)) {
                 readerClassSource.addImport(List.class);
-                if (property.getResolvedType().isMapType()) {
-                    readerClassSource.addImport(Map.class);
-                }
+                readerClassSource.addImport(JsonNode.class);
 
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateReadersStage.this, readerClassSource));
-                body.addContext("consumePropertyMethodName", PrimitiveTypeHelper.determineConsumePropertyVariant(property.getResolvedType(), CreateReadersStage.this, readerClassSource));
+                body.addContext("isCheckMethod", PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), CreateReadersStage.this, readerClassSource));
+                body.addContext("toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), CreateReadersStage.this, readerClassSource));
 
                 body.append("{");
                 body.append("    List<String> propertyNames = JsonUtil.keys(json);");
-                body.append("    propertyNames.forEach(name -> {");
-                body.append("        ${valueType} value = JsonUtil.${consumePropertyMethodName}(json, name);");
-                body.append("        node.addItem(name, value);");
-                body.append("    });");
+                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
+                body.append("        String name = propertyNames.get(_i);");
+                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
+                body.append("        if (JsonUtil.${isCheckMethod}(_val)) {");
+                body.append("            node.addItem(name, JsonUtil.${toConversionMethod}(_val));");
+                body.append("            json.remove(name);");
+                body.append("        }");
+                body.append("    }");
+                body.append("}");
+            } else if (isPrimitiveList(property)) {
+                readerClassSource.addImport(List.class);
+                readerClassSource.addImport(ArrayList.class);
+                readerClassSource.addImport(JsonNode.class);
+
+                Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
+                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(listValueType, CreateReadersStage.this);
+                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(listValueType, CreateReadersStage.this, readerClassSource);
+                String elementValueType = PrimitiveTypeHelper.determineValueType(listValueType, CreateReadersStage.this, readerClassSource);
+                body.addContext("expectedType", expectedType);
+                body.addContext("toConversionMethod", toConversionMethod);
+                body.addContext("elementValueType", elementValueType);
+
+                body.append("{");
+                body.append("    List<String> propertyNames = JsonUtil.keys(json);");
+                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
+                body.append("        String name = propertyNames.get(_i);");
+                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
+                body.append("        if (JsonUtil.isArray(_val) && JsonUtil.allMatch(_val, \"${expectedType}\")) {");
+                body.append("            List<${elementValueType}> items = new ArrayList<>();");
+                body.append("            List<JsonNode> _nodes = JsonUtil.toList(_val);");
+                body.append("            for (int _j = 0; _j < _nodes.size(); _j++) {");
+                body.append("                items.add(JsonUtil.${toConversionMethod}(_nodes.get(_j)));");
+                body.append("            }");
+                body.append("            node.addItem(name, items);");
+                body.append("            json.remove(name);");
+                body.append("        }");
+                body.append("    }");
+                body.append("}");
+            } else if (isPrimitiveMap(property)) {
+                readerClassSource.addImport(List.class);
+                readerClassSource.addImport(JsonNode.class);
+                readerClassSource.addImport(Map.class);
+                readerClassSource.addImport(java.util.LinkedHashMap.class);
+
+                Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
+                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, CreateReadersStage.this);
+                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(mapValueType, CreateReadersStage.this, readerClassSource);
+                String elementValueType = PrimitiveTypeHelper.determineValueType(mapValueType, CreateReadersStage.this, readerClassSource);
+                body.addContext("expectedType", expectedType);
+                body.addContext("toConversionMethod", toConversionMethod);
+                body.addContext("elementValueType", elementValueType);
+
+                body.append("{");
+                body.append("    List<String> propertyNames = JsonUtil.keys(json);");
+                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
+                body.append("        String name = propertyNames.get(_i);");
+                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
+                body.append("        if (JsonUtil.isObject(_val) && JsonUtil.allValuesMatch((ObjectNode) _val, \"${expectedType}\")) {");
+                body.append("            Map<String, ${elementValueType}> items = new LinkedHashMap<>();");
+                body.append("            List<String> _keys = JsonUtil.keys((ObjectNode) _val);");
+                body.append("            for (int _j = 0; _j < _keys.size(); _j++) {");
+                body.append("                String _key = _keys.get(_j);");
+                body.append("                items.put(_key, JsonUtil.${toConversionMethod}(JsonUtil.getProperty((ObjectNode) _val, _key)));");
+                body.append("            }");
+                body.append("            node.addItem(name, items);");
+                body.append("            json.remove(name);");
+                body.append("        }");
+                body.append("    }");
                 body.append("}");
             } else {
                 warn("STAR Entity property '" + property.getName() + "' not read (unhandled) for entity: " + entityModel.fullyQualifiedName());
@@ -603,6 +668,7 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 }
                 readerClassSource.addImport(resolved.javaInterface());
                 readerClassSource.addImport(List.class);
+                readerClassSource.addImport(JsonNode.class);
 
                 body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
                 body.addContext("entityJavaType", resolved.javaInterface().getName());
@@ -612,32 +678,100 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
 
                 body.append("{");
                 body.append("    List<String> propertyNames = JsonUtil.matchingKeys(\"${propertyRegex}\", json);");
-                body.append("    propertyNames.forEach(name -> {");
-                body.append("        ObjectNode object = JsonUtil.consumeObjectProperty(json, name);");
-                body.append("        if (object != null) {");
+                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
+                body.append("        String name = propertyNames.get(_i);");
+                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
+                body.append("        if (JsonUtil.isObject(_val)) {");
                 body.append("            ${entityJavaType} model = (${entityJavaType}) node.${createMethodName}();");
                 body.append("            node.${addMethodName}(name, model);");
-                body.append("            this.${readMethodName}(object, model);");
+                body.append("            this.${readMethodName}((ObjectNode) _val, model);");
+                body.append("            json.remove(name);");
                 body.append("        }");
-                body.append("    });");
+                body.append("    }");
                 body.append("}");
-            } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
+            } else if (isPrimitive(property)) {
                 readerClassSource.addImport(List.class);
-                if (property.getResolvedType().isMapType()) {
-                    readerClassSource.addImport(Map.class);
-                }
+                readerClassSource.addImport(JsonNode.class);
 
                 body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateReadersStage.this, readerClassSource));
-                body.addContext("consumeProperty", PrimitiveTypeHelper.determineConsumePropertyVariant(property.getResolvedType(), CreateReadersStage.this, readerClassSource));
+                body.addContext("isCheckMethod", PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), CreateReadersStage.this, readerClassSource));
+                body.addContext("toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), CreateReadersStage.this, readerClassSource));
                 body.addContext("addMethodName", addMethodName(singularize(property.getCollection())));
 
                 body.append("{");
                 body.append("    List<String> propertyNames = JsonUtil.matchingKeys(\"${propertyRegex}\", json);");
-                body.append("    propertyNames.forEach(name -> {");
-                body.append("        ${valueType} value = JsonUtil.${consumeProperty}(json, name);");
-                body.append("        node.${addMethodName}(name, value);");
-                body.append("    });");
+                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
+                body.append("        String name = propertyNames.get(_i);");
+                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
+                body.append("        if (JsonUtil.${isCheckMethod}(_val)) {");
+                body.append("            node.${addMethodName}(name, JsonUtil.${toConversionMethod}(_val));");
+                body.append("            json.remove(name);");
+                body.append("        }");
+                body.append("    }");
+                body.append("}");
+            } else if (isPrimitiveList(property)) {
+                readerClassSource.addImport(List.class);
+                readerClassSource.addImport(ArrayList.class);
+                readerClassSource.addImport(JsonNode.class);
+
+                Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
+                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(listValueType, CreateReadersStage.this);
+                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(listValueType, CreateReadersStage.this, readerClassSource);
+                String elementValueType = PrimitiveTypeHelper.determineValueType(listValueType, CreateReadersStage.this, readerClassSource);
+                body.addContext("expectedType", expectedType);
+                body.addContext("toConversionMethod", toConversionMethod);
+                body.addContext("elementValueType", elementValueType);
+                body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
+                body.addContext("addMethodName", addMethodName(singularize(property.getCollection())));
+
+                body.append("{");
+                body.append("    List<String> propertyNames = JsonUtil.matchingKeys(\"${propertyRegex}\", json);");
+                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
+                body.append("        String name = propertyNames.get(_i);");
+                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
+                body.append("        if (JsonUtil.isArray(_val) && JsonUtil.allMatch(_val, \"${expectedType}\")) {");
+                body.append("            List<${elementValueType}> items = new ArrayList<>();");
+                body.append("            List<JsonNode> _nodes = JsonUtil.toList(_val);");
+                body.append("            for (int _j = 0; _j < _nodes.size(); _j++) {");
+                body.append("                items.add(JsonUtil.${toConversionMethod}(_nodes.get(_j)));");
+                body.append("            }");
+                body.append("            node.${addMethodName}(name, items);");
+                body.append("            json.remove(name);");
+                body.append("        }");
+                body.append("    }");
+                body.append("}");
+            } else if (isPrimitiveMap(property)) {
+                readerClassSource.addImport(List.class);
+                readerClassSource.addImport(JsonNode.class);
+                readerClassSource.addImport(Map.class);
+                readerClassSource.addImport(java.util.LinkedHashMap.class);
+
+                Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
+                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, CreateReadersStage.this);
+                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(mapValueType, CreateReadersStage.this, readerClassSource);
+                String elementValueType = PrimitiveTypeHelper.determineValueType(mapValueType, CreateReadersStage.this, readerClassSource);
+                body.addContext("expectedType", expectedType);
+                body.addContext("toConversionMethod", toConversionMethod);
+                body.addContext("elementValueType", elementValueType);
+                body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
+                body.addContext("addMethodName", addMethodName(singularize(property.getCollection())));
+
+                body.append("{");
+                body.append("    List<String> propertyNames = JsonUtil.matchingKeys(\"${propertyRegex}\", json);");
+                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
+                body.append("        String name = propertyNames.get(_i);");
+                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
+                body.append("        if (JsonUtil.isObject(_val) && JsonUtil.allValuesMatch((ObjectNode) _val, \"${expectedType}\")) {");
+                body.append("            Map<String, ${elementValueType}> items = new LinkedHashMap<>();");
+                body.append("            List<String> _keys = JsonUtil.keys((ObjectNode) _val);");
+                body.append("            for (int _j = 0; _j < _keys.size(); _j++) {");
+                body.append("                String _key = _keys.get(_j);");
+                body.append("                items.put(_key, JsonUtil.${toConversionMethod}(JsonUtil.getProperty((ObjectNode) _val, _key)));");
+                body.append("            }");
+                body.append("            node.${addMethodName}(name, items);");
+                body.append("            json.remove(name);");
+                body.append("        }");
+                body.append("    }");
                 body.append("}");
             } else {
                 warn("REGEX Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
