@@ -70,7 +70,7 @@ public class ReadMapPropertyBlock extends CodeBlock {
             body.append("            items.put(_key, JsonUtil.${toConversionMethod}(JsonUtil.getProperty(JsonUtil.toObject(${varName}), _key)));");
             body.append("        }");
             body.append("        node.${setterMethodName}(items);");
-            body.append("        json.remove(\"${propertyName}\");");
+            body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
             body.append("    }");
             body.append("}");
         } else if (mapValueType.isEntityType()) {
@@ -104,7 +104,7 @@ public class ReadMapPropertyBlock extends CodeBlock {
             body.append("                this.${readMethodName}(JsonUtil.toObject(_val), model);");
             body.append("            }");
             body.append("        }");
-            body.append("        json.remove(\"${propertyName}\");");
+            body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
             body.append("    }");
             body.append("}");
         } else {

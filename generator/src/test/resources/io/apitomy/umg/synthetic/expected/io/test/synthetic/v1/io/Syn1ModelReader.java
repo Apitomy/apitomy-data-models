@@ -33,7 +33,7 @@ public class Syn1ModelReader implements ModelReader {
 			JsonNode _version = JsonUtil.getProperty(json, "version");
 			if (JsonUtil.isString(_version)) {
 				node.setVersion(JsonUtil.toString(_version));
-				json.remove("version");
+				JsonUtil.removeProperty(json, "version");
 			}
 		}
 		{
@@ -41,7 +41,7 @@ public class Syn1ModelReader implements ModelReader {
 			if (JsonUtil.isObject(_info)) {
 				node.setInfo(node.createInfo());
 				readInfo(JsonUtil.toObject(_info), (Syn1Info) node.getInfo());
-				json.remove("info");
+				JsonUtil.removeProperty(json, "info");
 			}
 		}
 		{
@@ -54,7 +54,7 @@ public class Syn1ModelReader implements ModelReader {
 					node.addItem(model);
 					this.readItem(object, model);
 				}
-				json.remove("items");
+				JsonUtil.removeProperty(json, "items");
 			}
 		}
 		{
@@ -66,7 +66,7 @@ public class Syn1ModelReader implements ModelReader {
 					items.add(JsonUtil.toString(_nodes.get(_i)));
 				}
 				node.setTags(items);
-				json.remove("tags");
+				JsonUtil.removeProperty(json, "tags");
 			}
 		}
 		{
@@ -79,14 +79,14 @@ public class Syn1ModelReader implements ModelReader {
 					items.put(_key, JsonUtil.toString(JsonUtil.getProperty(JsonUtil.toObject(_metadata), _key)));
 				}
 				node.setMetadata(items);
-				json.remove("metadata");
+				JsonUtil.removeProperty(json, "metadata");
 			}
 		}
 		{
 			JsonNode _additionalSchema = JsonUtil.getProperty(json, "additionalSchema");
 			if (JsonUtil.isJsonNode(_additionalSchema)) {
 				node.setAdditionalSchema(this.readSchemaOrBoolean(_additionalSchema, null));
-				json.remove("additionalSchema");
+				JsonUtil.removeProperty(json, "additionalSchema");
 			}
 		}
 		{
@@ -108,7 +108,7 @@ public class Syn1ModelReader implements ModelReader {
 			JsonNode _name = JsonUtil.getProperty(json, "name");
 			if (JsonUtil.isString(_name)) {
 				node.setName(JsonUtil.toString(_name));
-				json.remove("name");
+				JsonUtil.removeProperty(json, "name");
 			}
 		}
 		{
@@ -116,14 +116,14 @@ public class Syn1ModelReader implements ModelReader {
 			if (JsonUtil.isObject(_contact)) {
 				node.setContact(node.createContact());
 				readContact(JsonUtil.toObject(_contact), (Syn1Contact) node.getContact());
-				json.remove("contact");
+				JsonUtil.removeProperty(json, "contact");
 			}
 		}
 		{
 			JsonNode _version = JsonUtil.getProperty(json, "version");
 			if (JsonUtil.isString(_version)) {
 				node.setVersion(JsonUtil.toString(_version));
-				json.remove("version");
+				JsonUtil.removeProperty(json, "version");
 			}
 		}
 		{
@@ -145,21 +145,21 @@ public class Syn1ModelReader implements ModelReader {
 			JsonNode _name = JsonUtil.getProperty(json, "name");
 			if (JsonUtil.isString(_name)) {
 				node.setName(JsonUtil.toString(_name));
-				json.remove("name");
+				JsonUtil.removeProperty(json, "name");
 			}
 		}
 		{
 			JsonNode _email = JsonUtil.getProperty(json, "email");
 			if (JsonUtil.isString(_email)) {
 				node.setEmail(JsonUtil.toString(_email));
-				json.remove("email");
+				JsonUtil.removeProperty(json, "email");
 			}
 		}
 		{
 			JsonNode _url = JsonUtil.getProperty(json, "url");
 			if (JsonUtil.isString(_url)) {
 				node.setUrl(JsonUtil.toString(_url));
-				json.remove("url");
+				JsonUtil.removeProperty(json, "url");
 			}
 		}
 		ReaderUtil.readExtraProperties(json, node);
@@ -170,49 +170,49 @@ public class Syn1ModelReader implements ModelReader {
 			JsonNode __ref = JsonUtil.getProperty(json, "$ref");
 			if (JsonUtil.isString(__ref)) {
 				node.set$ref(JsonUtil.toString(__ref));
-				json.remove("$ref");
+				JsonUtil.removeProperty(json, "$ref");
 			}
 		}
 		{
 			JsonNode _description = JsonUtil.getProperty(json, "description");
 			if (JsonUtil.isString(_description)) {
 				node.setDescription(JsonUtil.toString(_description));
-				json.remove("description");
+				JsonUtil.removeProperty(json, "description");
 			}
 		}
 		{
 			JsonNode _required = JsonUtil.getProperty(json, "required");
 			if (JsonUtil.isBoolean(_required)) {
 				node.setRequired(JsonUtil.toBoolean(_required));
-				json.remove("required");
+				JsonUtil.removeProperty(json, "required");
 			}
 		}
 		{
 			JsonNode _order = JsonUtil.getProperty(json, "order");
 			if (JsonUtil.isNumber(_order)) {
 				node.setOrder(JsonUtil.toInteger(_order));
-				json.remove("order");
+				JsonUtil.removeProperty(json, "order");
 			}
 		}
 		{
 			JsonNode _weight = JsonUtil.getProperty(json, "weight");
 			if (JsonUtil.isNumber(_weight)) {
 				node.setWeight(JsonUtil.toNumber(_weight));
-				json.remove("weight");
+				JsonUtil.removeProperty(json, "weight");
 			}
 		}
 		{
 			JsonNode _extra = JsonUtil.getProperty(json, "extra");
 			if (JsonUtil.isJsonNode(_extra)) {
 				node.setExtra(JsonUtil.toJsonNode(_extra));
-				json.remove("extra");
+				JsonUtil.removeProperty(json, "extra");
 			}
 		}
 		{
 			JsonNode _raw = JsonUtil.getProperty(json, "raw");
 			if (JsonUtil.isObject(_raw)) {
 				node.setRaw(JsonUtil.toObject(_raw));
-				json.remove("raw");
+				JsonUtil.removeProperty(json, "raw");
 			}
 		}
 		{
@@ -220,7 +220,7 @@ public class Syn1ModelReader implements ModelReader {
 			if (JsonUtil.isObject(_schema)) {
 				node.setSchema(node.createSchema());
 				readSchema(JsonUtil.toObject(_schema), (Syn1Schema) node.getSchema());
-				json.remove("schema");
+				JsonUtil.removeProperty(json, "schema");
 			}
 		}
 		{
@@ -232,21 +232,21 @@ public class Syn1ModelReader implements ModelReader {
 					items.add(JsonUtil.toJsonNode(_nodes.get(_i)));
 				}
 				node.setExamples(items);
-				json.remove("examples");
+				JsonUtil.removeProperty(json, "examples");
 			}
 		}
 		{
 			JsonNode _defaultValue = JsonUtil.getProperty(json, "defaultValue");
 			if (JsonUtil.isJsonNode(_defaultValue)) {
 				node.setDefaultValue(this.readBooleanSchemaUnion(_defaultValue, null));
-				json.remove("defaultValue");
+				JsonUtil.removeProperty(json, "defaultValue");
 			}
 		}
 		{
 			JsonNode _title = JsonUtil.getProperty(json, "title");
 			if (JsonUtil.isString(_title)) {
 				node.setTitle(JsonUtil.toString(_title));
-				json.remove("title");
+				JsonUtil.removeProperty(json, "title");
 			}
 		}
 		{
@@ -268,21 +268,21 @@ public class Syn1ModelReader implements ModelReader {
 			JsonNode __ref = JsonUtil.getProperty(json, "$ref");
 			if (JsonUtil.isString(__ref)) {
 				node.set$ref(JsonUtil.toString(__ref));
-				json.remove("$ref");
+				JsonUtil.removeProperty(json, "$ref");
 			}
 		}
 		{
 			JsonNode _type = JsonUtil.getProperty(json, "type");
 			if (JsonUtil.isString(_type)) {
 				node.setType(JsonUtil.toString(_type));
-				json.remove("type");
+				JsonUtil.removeProperty(json, "type");
 			}
 		}
 		{
 			JsonNode _items = JsonUtil.getProperty(json, "items");
 			if (JsonUtil.isJsonNode(_items)) {
 				node.setItems(this.readBooleanSchemaSchemaListUnion(_items, null));
-				json.remove("items");
+				JsonUtil.removeProperty(json, "items");
 			}
 		}
 		{
@@ -299,7 +299,7 @@ public class Syn1ModelReader implements ModelReader {
 							node.addProperty(_key, model);
 					}
 				}
-				json.remove("properties");
+				JsonUtil.removeProperty(json, "properties");
 			}
 		}
 		{
@@ -320,7 +320,7 @@ public class Syn1ModelReader implements ModelReader {
 					for (int _i = 0; _i < _items.size(); _i++) {
 						node.addAllOf(_items.get(_i));
 					}
-					json.remove("allOf");
+					JsonUtil.removeProperty(json, "allOf");
 				}
 			}
 		}
@@ -338,7 +338,7 @@ public class Syn1ModelReader implements ModelReader {
 							node.addDefinition(_key, model);
 					}
 				}
-				json.remove("definitions");
+				JsonUtil.removeProperty(json, "definitions");
 			}
 		}
 		{
@@ -355,7 +355,7 @@ public class Syn1ModelReader implements ModelReader {
 							node.addNestedSchema(_key, model);
 					}
 				}
-				json.remove("nestedSchemas");
+				JsonUtil.removeProperty(json, "nestedSchemas");
 			}
 		}
 		{
@@ -376,7 +376,7 @@ public class Syn1ModelReader implements ModelReader {
 					for (int _i = 0; _i < _items.size(); _i++) {
 						node.addComposedSchema(_items.get(_i));
 					}
-					json.remove("composedSchemas");
+					JsonUtil.removeProperty(json, "composedSchemas");
 				}
 			}
 		}
@@ -384,14 +384,14 @@ public class Syn1ModelReader implements ModelReader {
 			JsonNode _minLength = JsonUtil.getProperty(json, "minLength");
 			if (JsonUtil.isNumber(_minLength)) {
 				node.setMinLength(JsonUtil.toInteger(_minLength));
-				json.remove("minLength");
+				JsonUtil.removeProperty(json, "minLength");
 			}
 		}
 		{
 			JsonNode _maxLength = JsonUtil.getProperty(json, "maxLength");
 			if (JsonUtil.isNumber(_maxLength)) {
 				node.setMaxLength(JsonUtil.toInteger(_maxLength));
-				json.remove("maxLength");
+				JsonUtil.removeProperty(json, "maxLength");
 			}
 		}
 		{
@@ -403,7 +403,7 @@ public class Syn1ModelReader implements ModelReader {
 					items.add(JsonUtil.toJsonNode(_nodes.get(_i)));
 				}
 				node.setEnum(items);
-				json.remove("enum");
+				JsonUtil.removeProperty(json, "enum");
 			}
 		}
 		{
@@ -453,14 +453,14 @@ public class Syn1ModelReader implements ModelReader {
 			JsonNode __ref = JsonUtil.getProperty(json, "$ref");
 			if (JsonUtil.isString(__ref)) {
 				node.set$ref(JsonUtil.toString(__ref));
-				json.remove("$ref");
+				JsonUtil.removeProperty(json, "$ref");
 			}
 		}
 		{
 			JsonNode _summary = JsonUtil.getProperty(json, "summary");
 			if (JsonUtil.isString(_summary)) {
 				node.setSummary(JsonUtil.toString(_summary));
-				json.remove("summary");
+				JsonUtil.removeProperty(json, "summary");
 			}
 		}
 		{
@@ -468,7 +468,7 @@ public class Syn1ModelReader implements ModelReader {
 			if (JsonUtil.isObject(_get)) {
 				node.setGet(node.createOperation());
 				readOperation(JsonUtil.toObject(_get), (Syn1Operation) node.getGet());
-				json.remove("get");
+				JsonUtil.removeProperty(json, "get");
 			}
 		}
 		{
@@ -476,7 +476,7 @@ public class Syn1ModelReader implements ModelReader {
 			if (JsonUtil.isObject(_put)) {
 				node.setPut(node.createOperation());
 				readOperation(JsonUtil.toObject(_put), (Syn1Operation) node.getPut());
-				json.remove("put");
+				JsonUtil.removeProperty(json, "put");
 			}
 		}
 		{
@@ -484,7 +484,7 @@ public class Syn1ModelReader implements ModelReader {
 			if (JsonUtil.isObject(_post)) {
 				node.setPost(node.createOperation());
 				readOperation(JsonUtil.toObject(_post), (Syn1Operation) node.getPost());
-				json.remove("post");
+				JsonUtil.removeProperty(json, "post");
 			}
 		}
 		{
@@ -506,14 +506,14 @@ public class Syn1ModelReader implements ModelReader {
 			JsonNode _operationId = JsonUtil.getProperty(json, "operationId");
 			if (JsonUtil.isString(_operationId)) {
 				node.setOperationId(JsonUtil.toString(_operationId));
-				json.remove("operationId");
+				JsonUtil.removeProperty(json, "operationId");
 			}
 		}
 		{
 			JsonNode _summary = JsonUtil.getProperty(json, "summary");
 			if (JsonUtil.isString(_summary)) {
 				node.setSummary(JsonUtil.toString(_summary));
-				json.remove("summary");
+				JsonUtil.removeProperty(json, "summary");
 			}
 		}
 		{
@@ -525,7 +525,7 @@ public class Syn1ModelReader implements ModelReader {
 					items.add(JsonUtil.toString(_nodes.get(_i)));
 				}
 				node.setTags(items);
-				json.remove("tags");
+				JsonUtil.removeProperty(json, "tags");
 			}
 		}
 		{
@@ -538,7 +538,7 @@ public class Syn1ModelReader implements ModelReader {
 					node.addParameter(model);
 					this.readItem(object, model);
 				}
-				json.remove("parameters");
+				JsonUtil.removeProperty(json, "parameters");
 			}
 		}
 		{
