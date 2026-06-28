@@ -23,7 +23,11 @@ import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.UnionAsMethod;
+import io.apitomy.umg.pipe.java.method.UnionIsMethod;
+import io.apitomy.umg.pipe.java.method.WriterMethod;
 import io.apitomy.umg.pipe.java.method.writer.WriteEntityPropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WriteListPropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WriteMapPropertyBlock;
@@ -114,7 +118,7 @@ public class CreateWritersStage extends AbstractJavaStage {
         var nsModel = getState().getConceptIndex().lookupNamespace(namespace);
         var jt = getJavaTypeFactory().createJavaType(unionType, nsModel);
         String unionTypeName = jt.getSimpleName();
-        String methodName = "write" + unionTypeName;
+        String methodName = WriterMethod.methodName(unionTypeName);
 
         if (hasMethod(writerClassSource, methodName)) {
             return;
@@ -145,8 +149,8 @@ public class CreateWritersStage extends AbstractJavaStage {
                 JavaInterfaceSource entitySource = lookupJavaEntity(entity);
                 writerClassSource.addImport(entitySource);
 
-                body.addContext("isMethod", "is" + typeName);
-                body.addContext("asMethod", "as" + typeName);
+                body.addContext("isMethod", UnionIsMethod.methodName(typeName));
+                body.addContext("asMethod", UnionAsMethod.methodName(typeName));
                 body.addContext("entityType", entitySource.getName());
                 body.addContext("writeMethodName", writeMethodName(entity));
 
@@ -160,8 +164,8 @@ public class CreateWritersStage extends AbstractJavaStage {
                 Class<?> javaClass = Util.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
                 if (javaClass == null) continue;
 
-                body.addContext("isMethod", "is" + typeName);
-                body.addContext("asMethod", "as" + typeName);
+                body.addContext("isMethod", UnionIsMethod.methodName(typeName));
+                body.addContext("asMethod", UnionAsMethod.methodName(typeName));
 
                 if (JsonNode.class.isAssignableFrom(javaClass)) {
                     body.append("if (union.${isMethod}()) {");
@@ -175,8 +179,8 @@ public class CreateWritersStage extends AbstractJavaStage {
             } else if (variantType instanceof io.apitomy.umg.models.concept.type.ListType listType) {
                 String typeName = io.apitomy.umg.models.java.type.JavaTypeFactory.getUnionComponentName(variantType);
 
-                body.addContext("isMethod", "is" + typeName);
-                body.addContext("asMethod", "as" + typeName);
+                body.addContext("isMethod", UnionIsMethod.methodName(typeName));
+                body.addContext("asMethod", UnionAsMethod.methodName(typeName));
 
                 writerClassSource.addImport(ArrayNode.class);
 
@@ -253,7 +257,7 @@ public class CreateWritersStage extends AbstractJavaStage {
         var namespace = specVersion.getNamespace();
         var nsModel = getState().getConceptIndex().lookupNamespace(namespace);
         var jt = getJavaTypeFactory().createJavaType(unionType, nsModel);
-        String writeMethodName = "write" + jt.getSimpleName();
+        String writeMethodName = WriterMethod.methodName(jt.getSimpleName());
         jt.addImportsTo(writerClassSource);
 
         MethodSource<JavaClassSource> writeRootMethodSource = writerClassSource.addMethod()
@@ -380,7 +384,7 @@ public class CreateWritersStage extends AbstractJavaStage {
     }
 
     private static String writeMethodName(String entityName) {
-        return "write" + StringUtils.capitalize(entityName);
+        return WriterMethod.methodName(entityName);
     }
 
     @Data
@@ -552,7 +556,7 @@ public class CreateWritersStage extends AbstractJavaStage {
                 writerClassSource.addImport(commonEntityTypeJavaModel);
 
                 body.addContext("mapValueJavaType", resolved.javaInterface().getName());
-                body.addContext("getterMethodName", getterMethodName(property));
+                body.addContext("getterMethodName", GetterMethod.methodName(property));
                 body.addContext("writeMethodName", writeMethodName(resolved.entityModel()));
                 body.addContext("mapValueCommonJavaType", commonEntityTypeJavaModel.getName());
 
@@ -573,7 +577,7 @@ public class CreateWritersStage extends AbstractJavaStage {
                 writerClassSource.addImport(Map.class);
 
                 body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
-                body.addContext("getterMethodName", getterMethodName(property));
+                body.addContext("getterMethodName", GetterMethod.methodName(property));
 
                 body.append("{");
                 body.append("    Map<String, ${valueType}> values = node.${getterMethodName}();");
@@ -591,7 +595,7 @@ public class CreateWritersStage extends AbstractJavaStage {
                 writerClassSource.addImport(Map.class);
 
                 body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
-                body.addContext("getterMethodName", getterMethodName(property));
+                body.addContext("getterMethodName", GetterMethod.methodName(property));
 
                 body.append("{");
                 body.append("    Map<String, ${valueType}> values = node.${getterMethodName}();");
@@ -609,7 +613,7 @@ public class CreateWritersStage extends AbstractJavaStage {
                 writerClassSource.addImport(Map.class);
 
                 body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
-                body.addContext("getterMethodName", getterMethodName(property));
+                body.addContext("getterMethodName", GetterMethod.methodName(property));
 
                 body.append("{");
                 body.append("    Map<String, ${valueType}> values = node.${getterMethodName}();");

@@ -14,9 +14,13 @@ import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.models.concept.type.UnionVariantComparator;
+import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.UnionAsMethod;
+import io.apitomy.umg.pipe.java.method.UnionIsMethod;
 
 /**
  * Generates code to clone a map of union values.
@@ -48,8 +52,8 @@ public class CloneUnionMapPropertyBlock extends CodeBlock {
         unionJavaType.addImportsTo(clonerClassSource);
         body.addContext(Map.of(
                 "unionJavaType", unionJavaType.getSimpleName(),
-                "getterMethodName", ctx.getterMethodName(property),
-                "addMethodName", ctx.addMethodName(ctx.singularize(property.getName()))
+                "getterMethodName", GetterMethod.methodName(property),
+                "addMethodName", AddMethod.methodName(ctx.singularize(property.getName()))
         ));
 
         body.append("{");
@@ -62,8 +66,8 @@ public class CloneUnionMapPropertyBlock extends CodeBlock {
                 .sorted(UnionVariantComparator.INSTANCE)
                 .forEach(nestedType -> {
             String typeName = AbstractJavaStage.getTypeName(nestedType);
-            String isMethodName = "is" + typeName;
-            String asMethodName = "as" + typeName;
+            String isMethodName = UnionIsMethod.methodName(typeName);
+            String asMethodName = UnionAsMethod.methodName(typeName);
 
             body.addContext("isMethodName", isMethodName);
             body.addContext("asMethodName", asMethodName);

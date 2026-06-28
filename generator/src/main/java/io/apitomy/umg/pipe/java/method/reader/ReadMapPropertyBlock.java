@@ -14,11 +14,15 @@ import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
+import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.FactoryMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.ReaderMethod;
+import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
  * Generates code to read a map property from JSON (primitive map or entity map).
@@ -54,7 +58,7 @@ public class ReadMapPropertyBlock extends CodeBlock {
             String elementValueType = PrimitiveTypeHelper.determineValueType(mapValueType, ctx, readerClassSource);
             body.addContext(Map.of(
                     "propertyName", property.getName(),
-                    "setterMethodName", ctx.setterMethodName(property),
+                    "setterMethodName", SetterMethod.methodName(property),
                     "expectedType", expectedType,
                     "toConversionMethod", toConversionMethod,
                     "elementValueType", elementValueType,
@@ -89,11 +93,11 @@ public class ReadMapPropertyBlock extends CodeBlock {
 
             body.addContext(Map.of(
                     "propertyName", property.getName(),
-                    "setterMethodName", ctx.setterMethodName(property),
+                    "setterMethodName", SetterMethod.methodName(property),
                     "mapValueJavaType", resolved.javaInterface().getName(),
-                    "createMethodName", "create" + entityTypeName,
-                    "readMethodName", "read" + entityTypeName,
-                    "addMethodName", ctx.addMethodName(ctx.singularize(property.getName())),
+                    "createMethodName", FactoryMethod.methodName(entityTypeName),
+                    "readMethodName", ReaderMethod.methodName(entityTypeName),
+                    "addMethodName", AddMethod.methodName(ctx.singularize(property.getName())),
                     "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
             ));
 
