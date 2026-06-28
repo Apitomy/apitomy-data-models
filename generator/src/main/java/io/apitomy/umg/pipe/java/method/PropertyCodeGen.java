@@ -66,4 +66,12 @@ public class PropertyCodeGen {
     public String getFieldName() {
         return ctx.getFieldName(getProperty());
     }
+
+    public String getGetterName() {
+        return GetterMethod.methodName(getProperty());
+    }
+
+    public String getSetterName() {
+        return SetterMethod.methodName(getProperty());
+    }
 }
