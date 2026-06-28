@@ -13,11 +13,11 @@ public class FactoryMethod implements CanAddImports {
 
     private final JavaSource<?> javaEntity;
     private final String entityName;
-    private final ImplMethodContext ctx;
+    private final CodeGenContext ctx;
 
     private JavaClassSource entityImpl;
 
-    public FactoryMethod(JavaSource<?> javaEntity, String entityName, ImplMethodContext ctx) {
+    public FactoryMethod(JavaSource<?> javaEntity, String entityName, CodeGenContext ctx) {
         this.javaEntity = javaEntity;
         this.entityName = entityName;
         this.ctx = ctx;
