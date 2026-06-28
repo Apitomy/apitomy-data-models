@@ -60,19 +60,21 @@ public class ReadMapPropertyBlock extends CodeBlock {
             body.addContext("elementValueType", elementValueType);
             body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
 
-            body.append("{");
-            body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
-            body.append("    if (JsonUtil.isObject(${varName}) && JsonUtil.allValuesMatch(JsonUtil.toObject(${varName}), \"${expectedType}\")) {");
-            body.append("        Map<String, ${elementValueType}> items = new LinkedHashMap<>();");
-            body.append("        List<String> _keys = JsonUtil.keys(JsonUtil.toObject(${varName}));");
-            body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
-            body.append("            String _key = _keys.get(_i);");
-            body.append("            items.put(_key, JsonUtil.${toConversionMethod}(JsonUtil.getProperty(JsonUtil.toObject(${varName}), _key)));");
-            body.append("        }");
-            body.append("        node.${setterMethodName}(items);");
-            body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
-            body.append("    }");
-            body.append("}");
+            body.appendBlock("""
+{
+    JsonNode ${varName} = JsonUtil.getProperty(json, "${propertyName}");
+    if (JsonUtil.isObject(${varName}) && JsonUtil.allValuesMatch(JsonUtil.toObject(${varName}), "${expectedType}")) {
+        Map<String, ${elementValueType}> items = new LinkedHashMap<>();
+        List<String> _keys = JsonUtil.keys(JsonUtil.toObject(${varName}));
+        for (int _i = 0; _i < _keys.size(); _i++) {
+            String _key = _keys.get(_i);
+            items.put(_key, JsonUtil.${toConversionMethod}(JsonUtil.getProperty(JsonUtil.toObject(${varName}), _key)));
+        }
+        node.${setterMethodName}(items);
+        JsonUtil.removeProperty(json, "${propertyName}");
+    }
+}
+""");
         } else if (mapValueType.isEntityType()) {
             String entityTypeName = mapValueType.getName();
             var resolved = EntityResolver.resolveEntityInterface(property, entityTypeName, entityModel, ctx, "MAP");
@@ -90,23 +92,25 @@ public class ReadMapPropertyBlock extends CodeBlock {
             body.addContext("addMethodName", ctx.addMethodName(ctx.singularize(property.getName())));
             body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
 
-            body.append("{");
-            body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
-            body.append("    if (JsonUtil.isObject(${varName})) {");
-            body.append("        ObjectNode _obj = JsonUtil.toObject(${varName});");
-            body.append("        List<String> _keys = JsonUtil.keys(_obj);");
-            body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
-            body.append("            String _key = _keys.get(_i);");
-            body.append("            JsonNode _val = JsonUtil.getProperty(_obj, _key);");
-            body.append("            if (JsonUtil.isObject(_val)) {");
-            body.append("                ${mapValueJavaType} model = (${mapValueJavaType}) node.${createMethodName}();");
-            body.append("                node.${addMethodName}(_key, model);");
-            body.append("                this.${readMethodName}(JsonUtil.toObject(_val), model);");
-            body.append("            }");
-            body.append("        }");
-            body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
-            body.append("    }");
-            body.append("}");
+            body.appendBlock("""
+{
+    JsonNode ${varName} = JsonUtil.getProperty(json, "${propertyName}");
+    if (JsonUtil.isObject(${varName})) {
+        ObjectNode _obj = JsonUtil.toObject(${varName});
+        List<String> _keys = JsonUtil.keys(_obj);
+        for (int _i = 0; _i < _keys.size(); _i++) {
+            String _key = _keys.get(_i);
+            JsonNode _val = JsonUtil.getProperty(_obj, _key);
+            if (JsonUtil.isObject(_val)) {
+                ${mapValueJavaType} model = (${mapValueJavaType}) node.${createMethodName}();
+                node.${addMethodName}(_key, model);
+                this.${readMethodName}(JsonUtil.toObject(_val), model);
+            }
+        }
+        JsonUtil.removeProperty(json, "${propertyName}");
+    }
+}
+""");
         } else {
             ctx.warn("MAP Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
             ctx.warn("       property type: " + property.getResolvedType());

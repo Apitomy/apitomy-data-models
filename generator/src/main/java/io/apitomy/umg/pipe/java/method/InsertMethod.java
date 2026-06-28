@@ -59,29 +59,31 @@ public class InsertMethod implements CanAddImports {
         body.addContext("propertyName", propertyName);
 
         if (isEntityValue || isPrimitiveValue || isUnionValue) {
-            if (resolvedType.isMapType()) {
+            body.ifElse(resolvedType.isMapType(), () -> {
                 JavaClassSource dataModelUtilSource = ctx.getJavaIndex().lookupClass(ctx.getDataModelUtilFQCN());
                 javaEntity.addImport(dataModelUtilSource);
                 javaEntity.addImport(LinkedHashMap.class);
-
-                body.append("if (this.${fieldName} == null) {");
-                body.append("    this.${fieldName} = new LinkedHashMap<>();");
-                body.append("    this.${fieldName}.put(name, value);");
-                body.append("} else {");
-                body.append("    this.${fieldName} = DataModelUtil.insertMapEntry(this.${fieldName}, name, value, atIndex);");
-                body.append("}");
-            } else {
+                return """
+if (this.${fieldName} == null) {
+    this.${fieldName} = new LinkedHashMap<>();
+    this.${fieldName}.put(name, value);
+} else {
+    this.${fieldName} = DataModelUtil.insertMapEntry(this.${fieldName}, name, value, atIndex);
+}
+""";
+            }, () -> {
                 JavaClassSource dataModelUtilSource = ctx.getJavaIndex().lookupClass(ctx.getDataModelUtilFQCN());
                 javaEntity.addImport(dataModelUtilSource);
                 javaEntity.addImport(ArrayList.class);
-
-                body.append("if (this.${fieldName} == null) {");
-                body.append("    this.${fieldName} = new ArrayList<>();");
-                body.append("    this.${fieldName}.add(value);");
-                body.append("} else {");
-                body.append("    this.${fieldName} = DataModelUtil.insertListEntry(this.${fieldName}, value, atIndex);");
-                body.append("}");
-            }
+                return """
+if (this.${fieldName} == null) {
+    this.${fieldName} = new ArrayList<>();
+    this.${fieldName}.add(value);
+} else {
+    this.${fieldName} = DataModelUtil.insertListEntry(this.${fieldName}, value, atIndex);
+}
+""";
+            });
 
             if (parentBlock != null) {
                 parentBlock.appendTo(body);
