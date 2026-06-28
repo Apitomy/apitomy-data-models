@@ -39,6 +39,8 @@ import io.apitomy.umg.pipe.java.method.reader.ReadEntityPropertyBlock;
 import io.apitomy.umg.pipe.java.method.reader.ReadListPropertyBlock;
 import io.apitomy.umg.pipe.java.method.reader.ReadMapPropertyBlock;
 import io.apitomy.umg.pipe.java.method.reader.ReadPrimitivePropertyBlock;
+import io.apitomy.umg.pipe.java.method.reader.ReadRegexPropertyBlock;
+import io.apitomy.umg.pipe.java.method.reader.ReadStarPropertyBlock;
 import io.apitomy.umg.pipe.java.method.reader.ReadUnionPropertyBlock;
 import io.apitomy.umg.pipe.java.method.reader.ReadUnionListPropertyBlock;
 import io.apitomy.umg.pipe.java.method.reader.ReadUnionMapPropertyBlock;
@@ -543,238 +545,13 @@ public class CreateReadersStage extends AbstractJavaStage {
         }
 
         private void handleStarProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            if (isEntity(property)) {
-                var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
-                        entityModel, ctx, "STAR");
-                if (resolved == null) {
-                    return;
-                }
-                readerClassSource.addImport(resolved.javaInterface());
-                readerClassSource.addImport(List.class);
-                readerClassSource.addImport(JsonNode.class);
-
-                body.addContext("entityJavaType", resolved.javaInterface().getName());
-                body.addContext("createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()));
-                body.addContext("readMethodName", ReaderMethod.methodName(resolved.entityModel().getName()));
-                body.addContext("addMethodName", "addItem");
-
-                body.append("{");
-                body.append("    List<String> propertyNames = JsonUtil.keys(json);");
-                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
-                body.append("        String name = propertyNames.get(_i);");
-                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
-                body.append("        if (JsonUtil.isObject(_val)) {");
-                body.append("            ${entityJavaType} model = (${entityJavaType}) node.${createMethodName}();");
-                body.append("            node.${addMethodName}(name, model);");
-                body.append("            this.${readMethodName}((ObjectNode) _val, model);");
-                body.append("            JsonUtil.removeProperty(json, name);");
-                body.append("        }");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitive(property)) {
-                readerClassSource.addImport(List.class);
-                readerClassSource.addImport(JsonNode.class);
-
-                body.addContext("isCheckMethod", PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), ctx, readerClassSource));
-                body.addContext("toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), ctx, readerClassSource));
-
-                body.append("{");
-                body.append("    List<String> propertyNames = JsonUtil.keys(json);");
-                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
-                body.append("        String name = propertyNames.get(_i);");
-                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
-                body.append("        if (JsonUtil.${isCheckMethod}(_val)) {");
-                body.append("            node.addItem(name, JsonUtil.${toConversionMethod}(_val));");
-                body.append("            JsonUtil.removeProperty(json, name);");
-                body.append("        }");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitiveList(property)) {
-                readerClassSource.addImport(List.class);
-                readerClassSource.addImport(ArrayList.class);
-                readerClassSource.addImport(JsonNode.class);
-
-                Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
-                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(listValueType, ctx);
-                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(listValueType, ctx, readerClassSource);
-                String elementValueType = PrimitiveTypeHelper.determineValueType(listValueType, ctx, readerClassSource);
-                body.addContext("expectedType", expectedType);
-                body.addContext("toConversionMethod", toConversionMethod);
-                body.addContext("elementValueType", elementValueType);
-
-                body.append("{");
-                body.append("    List<String> propertyNames = JsonUtil.keys(json);");
-                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
-                body.append("        String name = propertyNames.get(_i);");
-                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
-                body.append("        if (JsonUtil.isArray(_val) && JsonUtil.allMatch(_val, \"${expectedType}\")) {");
-                body.append("            List<${elementValueType}> items = new ArrayList<>();");
-                body.append("            List<JsonNode> _nodes = JsonUtil.toList(_val);");
-                body.append("            for (int _j = 0; _j < _nodes.size(); _j++) {");
-                body.append("                items.add(JsonUtil.${toConversionMethod}(_nodes.get(_j)));");
-                body.append("            }");
-                body.append("            node.addItem(name, items);");
-                body.append("            JsonUtil.removeProperty(json, name);");
-                body.append("        }");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitiveMap(property)) {
-                readerClassSource.addImport(List.class);
-                readerClassSource.addImport(JsonNode.class);
-                readerClassSource.addImport(Map.class);
-                readerClassSource.addImport(java.util.LinkedHashMap.class);
-
-                Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
-                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, ctx);
-                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(mapValueType, ctx, readerClassSource);
-                String elementValueType = PrimitiveTypeHelper.determineValueType(mapValueType, ctx, readerClassSource);
-                body.addContext("expectedType", expectedType);
-                body.addContext("toConversionMethod", toConversionMethod);
-                body.addContext("elementValueType", elementValueType);
-
-                body.append("{");
-                body.append("    List<String> propertyNames = JsonUtil.keys(json);");
-                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
-                body.append("        String name = propertyNames.get(_i);");
-                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
-                body.append("        if (JsonUtil.isObject(_val) && JsonUtil.allValuesMatch((ObjectNode) _val, \"${expectedType}\")) {");
-                body.append("            Map<String, ${elementValueType}> items = new LinkedHashMap<>();");
-                body.append("            List<String> _keys = JsonUtil.keys((ObjectNode) _val);");
-                body.append("            for (int _j = 0; _j < _keys.size(); _j++) {");
-                body.append("                String _key = _keys.get(_j);");
-                body.append("                items.put(_key, JsonUtil.${toConversionMethod}(JsonUtil.getProperty((ObjectNode) _val, _key)));");
-                body.append("            }");
-                body.append("            node.addItem(name, items);");
-                body.append("            JsonUtil.removeProperty(json, name);");
-                body.append("        }");
-                body.append("    }");
-                body.append("}");
-            } else {
-                warn("STAR Entity property '" + property.getName() + "' not read (unhandled) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getResolvedType());
-            }
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new ReadStarPropertyBlock(prop, readerClassSource).appendTo(body);
         }
 
         private void handleRegexProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            if (isEntity(property)) {
-                var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
-                        entityModel, ctx, "REGEX");
-                if (resolved == null) {
-                    return;
-                }
-                readerClassSource.addImport(resolved.javaInterface());
-                readerClassSource.addImport(List.class);
-                readerClassSource.addImport(JsonNode.class);
-
-                body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
-                body.addContext("entityJavaType", resolved.javaInterface().getName());
-                body.addContext("createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()));
-                body.addContext("readMethodName", ReaderMethod.methodName(resolved.entityModel().getName()));
-                body.addContext("addMethodName", AddMethod.methodName(singularize(property.getCollection())));
-
-                body.append("{");
-                body.append("    List<String> propertyNames = JsonUtil.matchingKeys(\"${propertyRegex}\", json);");
-                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
-                body.append("        String name = propertyNames.get(_i);");
-                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
-                body.append("        if (JsonUtil.isObject(_val)) {");
-                body.append("            ${entityJavaType} model = (${entityJavaType}) node.${createMethodName}();");
-                body.append("            node.${addMethodName}(name, model);");
-                body.append("            this.${readMethodName}((ObjectNode) _val, model);");
-                body.append("            JsonUtil.removeProperty(json, name);");
-                body.append("        }");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitive(property)) {
-                readerClassSource.addImport(List.class);
-                readerClassSource.addImport(JsonNode.class);
-
-                body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
-                body.addContext("isCheckMethod", PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), ctx, readerClassSource));
-                body.addContext("toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), ctx, readerClassSource));
-                body.addContext("addMethodName", AddMethod.methodName(singularize(property.getCollection())));
-
-                body.append("{");
-                body.append("    List<String> propertyNames = JsonUtil.matchingKeys(\"${propertyRegex}\", json);");
-                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
-                body.append("        String name = propertyNames.get(_i);");
-                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
-                body.append("        if (JsonUtil.${isCheckMethod}(_val)) {");
-                body.append("            node.${addMethodName}(name, JsonUtil.${toConversionMethod}(_val));");
-                body.append("            JsonUtil.removeProperty(json, name);");
-                body.append("        }");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitiveList(property)) {
-                readerClassSource.addImport(List.class);
-                readerClassSource.addImport(ArrayList.class);
-                readerClassSource.addImport(JsonNode.class);
-
-                Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
-                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(listValueType, ctx);
-                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(listValueType, ctx, readerClassSource);
-                String elementValueType = PrimitiveTypeHelper.determineValueType(listValueType, ctx, readerClassSource);
-                body.addContext("expectedType", expectedType);
-                body.addContext("toConversionMethod", toConversionMethod);
-                body.addContext("elementValueType", elementValueType);
-                body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
-                body.addContext("addMethodName", AddMethod.methodName(singularize(property.getCollection())));
-
-                body.append("{");
-                body.append("    List<String> propertyNames = JsonUtil.matchingKeys(\"${propertyRegex}\", json);");
-                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
-                body.append("        String name = propertyNames.get(_i);");
-                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
-                body.append("        if (JsonUtil.isArray(_val) && JsonUtil.allMatch(_val, \"${expectedType}\")) {");
-                body.append("            List<${elementValueType}> items = new ArrayList<>();");
-                body.append("            List<JsonNode> _nodes = JsonUtil.toList(_val);");
-                body.append("            for (int _j = 0; _j < _nodes.size(); _j++) {");
-                body.append("                items.add(JsonUtil.${toConversionMethod}(_nodes.get(_j)));");
-                body.append("            }");
-                body.append("            node.${addMethodName}(name, items);");
-                body.append("            JsonUtil.removeProperty(json, name);");
-                body.append("        }");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitiveMap(property)) {
-                readerClassSource.addImport(List.class);
-                readerClassSource.addImport(JsonNode.class);
-                readerClassSource.addImport(Map.class);
-                readerClassSource.addImport(java.util.LinkedHashMap.class);
-
-                Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
-                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, ctx);
-                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(mapValueType, ctx, readerClassSource);
-                String elementValueType = PrimitiveTypeHelper.determineValueType(mapValueType, ctx, readerClassSource);
-                body.addContext("expectedType", expectedType);
-                body.addContext("toConversionMethod", toConversionMethod);
-                body.addContext("elementValueType", elementValueType);
-                body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
-                body.addContext("addMethodName", AddMethod.methodName(singularize(property.getCollection())));
-
-                body.append("{");
-                body.append("    List<String> propertyNames = JsonUtil.matchingKeys(\"${propertyRegex}\", json);");
-                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
-                body.append("        String name = propertyNames.get(_i);");
-                body.append("        JsonNode _val = JsonUtil.getProperty(json, name);");
-                body.append("        if (JsonUtil.isObject(_val) && JsonUtil.allValuesMatch((ObjectNode) _val, \"${expectedType}\")) {");
-                body.append("            Map<String, ${elementValueType}> items = new LinkedHashMap<>();");
-                body.append("            List<String> _keys = JsonUtil.keys((ObjectNode) _val);");
-                body.append("            for (int _j = 0; _j < _keys.size(); _j++) {");
-                body.append("                String _key = _keys.get(_j);");
-                body.append("                items.put(_key, JsonUtil.${toConversionMethod}(JsonUtil.getProperty((ObjectNode) _val, _key)));");
-                body.append("            }");
-                body.append("            node.${addMethodName}(name, items);");
-                body.append("            JsonUtil.removeProperty(json, name);");
-                body.append("        }");
-                body.append("    }");
-                body.append("}");
-            } else {
-                warn("REGEX Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getResolvedType());
-            }
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new ReadRegexPropertyBlock(prop, readerClassSource).appendTo(body);
         }
 
         private void handleEntityProperty(BodyBuilder body) {
@@ -797,11 +574,5 @@ public class CreateReadersStage extends AbstractJavaStage {
             new ReadMapPropertyBlock(prop, readerClassSource).appendTo(body);
         }
 
-
-
-
-        private String encodeRegex(String regex) {
-            return regex.replace("\\", "\\\\");
-        }
     }
 }
