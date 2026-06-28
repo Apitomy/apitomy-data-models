@@ -7,15 +7,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
-import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.ReaderMethod;
 import io.apitomy.umg.pipe.java.method.SetterMethod;
 
@@ -24,23 +22,18 @@ import io.apitomy.umg.pipe.java.method.SetterMethod;
  */
 public class ReadEntityPropertyBlock extends CodeBlock {
 
-    private final PropertyModelWithOrigin propertyWithOrigin;
-    private final EntityModel entityModel;
+    private final PropertyCodeGen prop;
     private final JavaClassSource readerClassSource;
-    private final CodeGenContext ctx;
 
-    public ReadEntityPropertyBlock(PropertyModelWithOrigin propertyWithOrigin, EntityModel entityModel,
-            JavaClassSource readerClassSource, CodeGenContext ctx) {
-        this.propertyWithOrigin = propertyWithOrigin;
-        this.entityModel = entityModel;
+    public ReadEntityPropertyBlock(PropertyCodeGen prop, JavaClassSource readerClassSource) {
+        this.prop = prop;
         this.readerClassSource = readerClassSource;
-        this.ctx = ctx;
     }
 
     @Override
     public void appendTo(BodyBuilder body) {
-        PropertyModel property = propertyWithOrigin.getProperty();
-        var resolved = EntityResolver.resolveEntityInterface(propertyWithOrigin, entityModel, ctx, "");
+        PropertyModel property = prop.getProperty();
+        var resolved = EntityResolver.resolveEntityInterface(prop.getPropertyWithOrigin(), prop.getOwningEntity(), prop.getCtx(), "");
         if (resolved == null) {
             return;
         }
