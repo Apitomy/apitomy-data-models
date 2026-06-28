@@ -8,12 +8,11 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.WriterMethod;
 
 /**
@@ -21,23 +20,20 @@ import io.apitomy.umg.pipe.java.method.WriterMethod;
  */
 public class WriteUnionPropertyBlock extends CodeBlock {
 
-    private final PropertyModelWithOrigin propertyWithOrigin;
+    private final PropertyCodeGen prop;
     private final JavaClassSource writerClassSource;
-    private final CodeGenContext ctx;
 
-    public WriteUnionPropertyBlock(PropertyModelWithOrigin propertyWithOrigin,
-            JavaClassSource writerClassSource, CodeGenContext ctx) {
-        this.propertyWithOrigin = propertyWithOrigin;
+    public WriteUnionPropertyBlock(PropertyCodeGen prop, JavaClassSource writerClassSource) {
+        this.prop = prop;
         this.writerClassSource = writerClassSource;
-        this.ctx = ctx;
     }
 
     @Override
     public void appendTo(BodyBuilder body) {
-        PropertyModel property = propertyWithOrigin.getProperty();
+        PropertyModel property = prop.getProperty();
         Type resolved = property.getResolvedType();
-        var nsModel = propertyWithOrigin.getOrigin().getNamespace();
-        var jt = ctx.getJavaTypeFactory().createJavaType(resolved, nsModel);
+        var nsModel = prop.getPropertyWithOrigin().getOrigin().getNamespace();
+        var jt = prop.getCtx().getJavaTypeFactory().createJavaType(resolved, nsModel);
         String writeMethodName = WriterMethod.methodName(jt.getSimpleName());
 
         jt.addImportsTo(writerClassSource);

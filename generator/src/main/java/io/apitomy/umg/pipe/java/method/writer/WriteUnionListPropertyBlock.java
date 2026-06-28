@@ -10,11 +10,10 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.WriterMethod;
 
 /**
@@ -22,24 +21,21 @@ import io.apitomy.umg.pipe.java.method.WriterMethod;
  */
 public class WriteUnionListPropertyBlock extends CodeBlock {
 
-    private final PropertyModelWithOrigin propertyWithOrigin;
+    private final PropertyCodeGen prop;
     private final JavaClassSource writerClassSource;
-    private final CodeGenContext ctx;
 
-    public WriteUnionListPropertyBlock(PropertyModelWithOrigin propertyWithOrigin,
-            JavaClassSource writerClassSource, CodeGenContext ctx) {
-        this.propertyWithOrigin = propertyWithOrigin;
+    public WriteUnionListPropertyBlock(PropertyCodeGen prop, JavaClassSource writerClassSource) {
+        this.prop = prop;
         this.writerClassSource = writerClassSource;
-        this.ctx = ctx;
     }
 
     @Override
     public void appendTo(BodyBuilder body) {
-        PropertyModel property = propertyWithOrigin.getProperty();
+        PropertyModel property = prop.getProperty();
         io.apitomy.umg.models.concept.type.ListType listType =
                 (io.apitomy.umg.models.concept.type.ListType) property.getResolvedType();
-        var nsModel = propertyWithOrigin.getOrigin().getNamespace();
-        var valueJt = ctx.getJavaTypeFactory().createJavaType(listType.getValueType(), nsModel);
+        var nsModel = prop.getPropertyWithOrigin().getOrigin().getNamespace();
+        var valueJt = prop.getCtx().getJavaTypeFactory().createJavaType(listType.getValueType(), nsModel);
         String writeMethodName = WriterMethod.methodName(valueJt.getSimpleName());
 
         valueJt.addImportsTo(writerClassSource);

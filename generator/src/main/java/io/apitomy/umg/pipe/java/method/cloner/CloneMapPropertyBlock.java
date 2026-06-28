@@ -7,19 +7,17 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
-import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.ClonerMethod;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
@@ -27,22 +25,17 @@ import io.apitomy.umg.pipe.java.method.SetterMethod;
  */
 public class CloneMapPropertyBlock extends CodeBlock {
 
-    private final PropertyModelWithOrigin propertyWithOrigin;
-    private final EntityModel entityModel;
+    private final PropertyCodeGen prop;
     private final JavaClassSource clonerClassSource;
-    private final CodeGenContext ctx;
 
-    public CloneMapPropertyBlock(PropertyModelWithOrigin propertyWithOrigin, EntityModel entityModel,
-            JavaClassSource clonerClassSource, CodeGenContext ctx) {
-        this.propertyWithOrigin = propertyWithOrigin;
-        this.entityModel = entityModel;
+    public CloneMapPropertyBlock(PropertyCodeGen prop, JavaClassSource clonerClassSource) {
+        this.prop = prop;
         this.clonerClassSource = clonerClassSource;
-        this.ctx = ctx;
     }
 
     @Override
     public void appendTo(BodyBuilder body) {
-        PropertyModel property = propertyWithOrigin.getProperty();
+        PropertyModel property = prop.getProperty();
         Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
 
         if (mapValueType.isPrimitiveType()) {
@@ -51,7 +44,7 @@ public class CloneMapPropertyBlock extends CodeBlock {
             body.addContext(Map.of(
                     "getterMethodName", GetterMethod.methodName(property),
                     "setterMethodName", SetterMethod.methodName(property),
-                    "valueType", PrimitiveTypeHelper.determineValueType(mapValueType, ctx, clonerClassSource)
+                    "valueType", PrimitiveTypeHelper.determineValueType(mapValueType, prop.getCtx(), clonerClassSource)
             ));
 
             body.appendBlock("""
@@ -64,11 +57,11 @@ public class CloneMapPropertyBlock extends CodeBlock {
                     """);
         } else if (mapValueType.isEntityType()) {
             String entityTypeName = mapValueType.getName();
-            var resolved = EntityResolver.resolveEntityInterface(property, entityTypeName, entityModel, ctx, "MAP");
+            var resolved = EntityResolver.resolveEntityInterface(property, entityTypeName, prop.getOwningEntity(), prop.getCtx(), "MAP");
             if (resolved == null) {
                 return;
             }
-            JavaInterfaceSource commonEntityTypeJavaModel = ctx.resolveCommonJavaEntity(resolved.entityModel());
+            JavaInterfaceSource commonEntityTypeJavaModel = prop.getCtx().resolveCommonJavaEntity(resolved.entityModel());
 
             clonerClassSource.addImport(Map.class);
             clonerClassSource.addImport(resolved.javaInterface());
@@ -80,7 +73,7 @@ public class CloneMapPropertyBlock extends CodeBlock {
                     "commonEntityType", commonEntityTypeJavaModel.getName(),
                     "createMethodName", FactoryMethod.methodName(entityTypeName),
                     "cloneMethodName", ClonerMethod.methodName(entityTypeName),
-                    "addMethodName", AddMethod.methodName(ctx.singularize(property.getName()))
+                    "addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getName()))
             ));
 
             body.appendBlock("""
@@ -96,11 +89,11 @@ public class CloneMapPropertyBlock extends CodeBlock {
                     }
                     """);
         } else {
-            ctx.warn("MAP Entity property '" + property.getName() + "' not cloned (unsupported) for entity: " + entityModel.fullyQualifiedName());
+            prop.getCtx().warn("MAP Entity property '" + property.getName() + "' not cloned (unsupported) for entity: " + prop.getOwningEntity().fullyQualifiedName());
         }
     }
 
-    
+
 
     @Override
     public void addImportsTo(JavaSource<?> source) {

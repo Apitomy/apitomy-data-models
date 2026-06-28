@@ -10,11 +10,10 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.ReaderMethod;
 
 /**
@@ -22,24 +21,21 @@ import io.apitomy.umg.pipe.java.method.ReaderMethod;
  */
 public class ReadUnionMapPropertyBlock extends CodeBlock {
 
-    private final PropertyModelWithOrigin propertyWithOrigin;
+    private final PropertyCodeGen prop;
     private final JavaClassSource readerClassSource;
-    private final CodeGenContext ctx;
 
-    public ReadUnionMapPropertyBlock(PropertyModelWithOrigin propertyWithOrigin,
-            JavaClassSource readerClassSource, CodeGenContext ctx) {
-        this.propertyWithOrigin = propertyWithOrigin;
+    public ReadUnionMapPropertyBlock(PropertyCodeGen prop, JavaClassSource readerClassSource) {
+        this.prop = prop;
         this.readerClassSource = readerClassSource;
-        this.ctx = ctx;
     }
 
     @Override
     public void appendTo(BodyBuilder body) {
-        PropertyModel property = propertyWithOrigin.getProperty();
+        PropertyModel property = prop.getProperty();
         io.apitomy.umg.models.concept.type.MapType mapType =
                 (io.apitomy.umg.models.concept.type.MapType) property.getResolvedType();
-        var nsModel = propertyWithOrigin.getOrigin().getNamespace();
-        var valueJt = ctx.getJavaTypeFactory().createJavaType(mapType.getValueType(), nsModel);
+        var nsModel = prop.getPropertyWithOrigin().getOrigin().getNamespace();
+        var valueJt = prop.getCtx().getJavaTypeFactory().createJavaType(mapType.getValueType(), nsModel);
         String readMethodName = ReaderMethod.methodName(valueJt.getSimpleName());
 
         readerClassSource.addImport(JsonNode.class);
@@ -49,7 +45,7 @@ public class ReadUnionMapPropertyBlock extends CodeBlock {
 
         body.addContext(Map.of(
                 "propertyName", property.getName(),
-                "addMethodName", AddMethod.methodName(ctx.singularize(property.getName())),
+                "addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getName())),
                 "readMethodName", readMethodName,
                 "unionJavaType", valueJt.toJavaTypeString(),
                 "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")

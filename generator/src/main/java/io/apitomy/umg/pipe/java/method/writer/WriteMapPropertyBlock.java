@@ -1,22 +1,19 @@
 package io.apitomy.umg.pipe.java.method.writer;
 
-import java.util.List;
 import java.util.Map;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
-import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.WriterMethod;
 
 /**
@@ -24,22 +21,17 @@ import io.apitomy.umg.pipe.java.method.WriterMethod;
  */
 public class WriteMapPropertyBlock extends CodeBlock {
 
-    private final PropertyModelWithOrigin propertyWithOrigin;
-    private final EntityModel entityModel;
+    private final PropertyCodeGen prop;
     private final JavaClassSource writerClassSource;
-    private final CodeGenContext ctx;
 
-    public WriteMapPropertyBlock(PropertyModelWithOrigin propertyWithOrigin, EntityModel entityModel,
-            JavaClassSource writerClassSource, CodeGenContext ctx) {
-        this.propertyWithOrigin = propertyWithOrigin;
-        this.entityModel = entityModel;
+    public WriteMapPropertyBlock(PropertyCodeGen prop, JavaClassSource writerClassSource) {
+        this.prop = prop;
         this.writerClassSource = writerClassSource;
-        this.ctx = ctx;
     }
 
     @Override
     public void appendTo(BodyBuilder body) {
-        PropertyModel property = propertyWithOrigin.getProperty();
+        PropertyModel property = prop.getProperty();
         body.addContext("propertyName", property.getName());
         body.addContext("getterMethodName", GetterMethod.methodName(property));
 
@@ -48,11 +40,11 @@ public class WriteMapPropertyBlock extends CodeBlock {
             body.append("JsonUtil.setProperty(json, \"${propertyName}\", JsonUtil.toObjectNode(node.${getterMethodName}()));");
         } else if (mapValueType.isEntityType()) {
             String entityTypeName = mapValueType.getName();
-            var resolved = EntityResolver.resolveEntityInterface(property, entityTypeName, entityModel, ctx, "MAP");
+            var resolved = EntityResolver.resolveEntityInterface(property, entityTypeName, prop.getOwningEntity(), prop.getCtx(), "MAP");
             if (resolved == null) {
                 return;
             }
-            JavaInterfaceSource commonEntityTypeJavaModel = ctx.resolveCommonJavaEntity(resolved.entityModel());
+            JavaInterfaceSource commonEntityTypeJavaModel = prop.getCtx().resolveCommonJavaEntity(resolved.entityModel());
 
             writerClassSource.addImport(Map.class);
             writerClassSource.addImport(resolved.javaInterface());
@@ -81,8 +73,8 @@ public class WriteMapPropertyBlock extends CodeBlock {
                     }
                     """);
         } else {
-            ctx.warn("MAP Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-            ctx.warn("       property type: " + property.getResolvedType());
+            prop.getCtx().warn("MAP Entity property '" + property.getName() + "' not written (unsupported) for entity: " + prop.getOwningEntity().fullyQualifiedName());
+            prop.getCtx().warn("       property type: " + property.getResolvedType());
         }
     }
 
