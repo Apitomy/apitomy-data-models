@@ -15,7 +15,7 @@ public class ReaderUtil {
                 JsonNode value = JsonUtil.getProperty(json, key);
                 if (JsonUtil.isJsonNode(value)) {
                     node.addExtraProperty(key, value);
-                    json.remove(key);
+                    JsonUtil.removeProperty(json, key);
                 }
             }
         }
