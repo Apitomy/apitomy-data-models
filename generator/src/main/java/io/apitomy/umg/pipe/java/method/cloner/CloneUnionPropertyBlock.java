@@ -20,6 +20,11 @@ import io.apitomy.umg.models.concept.type.UnionVariantComparator;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.FactoryMethod;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.SetterMethod;
+import io.apitomy.umg.pipe.java.method.UnionAsMethod;
+import io.apitomy.umg.pipe.java.method.UnionIsMethod;
 
 /**
  * Generates code to clone a union-typed property by dispatching on each variant type.
@@ -47,8 +52,8 @@ public class CloneUnionPropertyBlock extends CodeBlock {
 
         body.addContext(Map.of(
                 "unionJavaType", getUnionJavaTypeName(property, effectiveUnionType),
-                "getterMethodName", ctx.getterMethodName(property),
-                "setterMethodName", ctx.setterMethodName(property)
+                "getterMethodName", GetterMethod.methodName(property),
+                "setterMethodName", SetterMethod.methodName(property)
         ));
 
         body.appendBlock("""
@@ -63,8 +68,8 @@ public class CloneUnionPropertyBlock extends CodeBlock {
                 .collect(Collectors.toList());
         body.forEach(sortedTypes, (loopCtx, nestedType, isFirst) -> {
             String typeName = AbstractJavaStage.getTypeName(nestedType);
-            String isMethodName = "is" + typeName;
-            String asMethodName = "as" + typeName;
+            String isMethodName = UnionIsMethod.methodName(typeName);
+            String asMethodName = UnionAsMethod.methodName(typeName);
 
             loopCtx.set("isMethodName", isMethodName);
             loopCtx.set("asMethodName", asMethodName);
@@ -150,7 +155,7 @@ public class CloneUnionPropertyBlock extends CodeBlock {
                             clonerClassSource.addImport(List.class);
                             clonerClassSource.addImport(ArrayList.class);
                             loopCtx.set("listItemType", listItemEntitySource.getName());
-                            loopCtx.set("createMethodName", ctx.createMethodName(listItemEntity));
+                            loopCtx.set("createMethodName", FactoryMethod.methodName(listItemEntity.getName()));
                             loopCtx.set("cloneMethodName", CloneEntityPropertyBlock.cloneMethodName(listItemEntity));
                             loopCtx.set("unionValueClassName", unionValueClass.getName());
                             return """

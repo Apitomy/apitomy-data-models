@@ -11,11 +11,16 @@ import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
+import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
+import io.apitomy.umg.pipe.java.method.ClonerMethod;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.FactoryMethod;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
  * Generates code to clone a map property (primitive map or entity map).
@@ -44,8 +49,8 @@ public class CloneMapPropertyBlock extends CodeBlock {
             clonerClassSource.addImport(Map.class);
             clonerClassSource.addImport(LinkedHashMap.class);
             body.addContext(Map.of(
-                    "getterMethodName", ctx.getterMethodName(property),
-                    "setterMethodName", ctx.setterMethodName(property),
+                    "getterMethodName", GetterMethod.methodName(property),
+                    "setterMethodName", SetterMethod.methodName(property),
                     "valueType", PrimitiveTypeHelper.determineValueType(mapValueType, ctx, clonerClassSource)
             ));
 
@@ -70,12 +75,12 @@ public class CloneMapPropertyBlock extends CodeBlock {
             clonerClassSource.addImport(commonEntityTypeJavaModel);
 
             body.addContext(Map.of(
-                    "getterMethodName", ctx.getterMethodName(property),
+                    "getterMethodName", GetterMethod.methodName(property),
                     "entityJavaType", resolved.javaInterface().getName(),
                     "commonEntityType", commonEntityTypeJavaModel.getName(),
-                    "createMethodName", "create" + entityTypeName,
-                    "cloneMethodName", "clone" + entityTypeName,
-                    "addMethodName", ctx.addMethodName(ctx.singularize(property.getName()))
+                    "createMethodName", FactoryMethod.methodName(entityTypeName),
+                    "cloneMethodName", ClonerMethod.methodName(entityTypeName),
+                    "addMethodName", AddMethod.methodName(ctx.singularize(property.getName()))
             ));
 
             body.appendBlock("""

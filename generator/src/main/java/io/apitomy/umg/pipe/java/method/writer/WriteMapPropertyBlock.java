@@ -15,7 +15,9 @@ import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.WriterMethod;
 
 /**
  * Generates code to write a map property to JSON (primitive map or entity map).
@@ -39,7 +41,7 @@ public class WriteMapPropertyBlock extends CodeBlock {
     public void appendTo(BodyBuilder body) {
         PropertyModel property = propertyWithOrigin.getProperty();
         body.addContext("propertyName", property.getName());
-        body.addContext("getterMethodName", ctx.getterMethodName(property));
+        body.addContext("getterMethodName", GetterMethod.methodName(property));
 
         Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
         if (mapValueType.isPrimitiveType()) {
@@ -58,9 +60,9 @@ public class WriteMapPropertyBlock extends CodeBlock {
 
             body.addContext(Map.of(
                     "propertyName", property.getName(),
-                    "getterMethodName", ctx.getterMethodName(property),
+                    "getterMethodName", GetterMethod.methodName(property),
                     "mapValueJavaType", resolved.javaInterface().getName(),
-                    "writeMethodName", "write" + entityTypeName,
+                    "writeMethodName", WriterMethod.methodName(entityTypeName),
                     "mapValueCommonJavaType", commonEntityTypeJavaModel.getName()
             ));
 

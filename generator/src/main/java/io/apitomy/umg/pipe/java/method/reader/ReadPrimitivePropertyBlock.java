@@ -13,6 +13,7 @@ import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
  * Generates code to read a primitive-typed property from JSON.
@@ -39,7 +40,7 @@ public class ReadPrimitivePropertyBlock extends CodeBlock {
         String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), ctx, readerClassSource);
         body.addContext(Map.of(
                 "propertyName", property.getName(),
-                "setterMethodName", ctx.setterMethodName(property),
+                "setterMethodName", SetterMethod.methodName(property),
                 "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"),
                 "isCheckMethod", isCheckMethod,
                 "toConversionMethod", toConversionMethod

@@ -3,6 +3,7 @@ package io.apitomy.umg.pipe.java.method;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
@@ -15,7 +16,7 @@ import io.apitomy.umg.models.concept.type.Type;
  * Generates an "insert" method body: initialize collection if null, insert at index
  * using DataModelUtil, then attach parent for entity/union types.
  */
-public class InsertMethod implements CanAddImports {
+public class InsertMethod implements Method {
 
     private final PropertyModel property;
     private final JavaSource<?> javaEntity;
@@ -40,6 +41,18 @@ public class InsertMethod implements CanAddImports {
         } else {
             this.parentBlock = null;
         }
+    }
+
+    /**
+     * Returns the insert method name for the given (singularized) name.
+     */
+    public static String methodName(String singularName) {
+        return "insert" + StringUtils.capitalize(singularName);
+    }
+
+    @Override
+    public String getName() {
+        return methodName(ctx.singularize(property.getName()));
     }
 
     public void writeTo(MethodSource<?> method) {

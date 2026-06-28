@@ -22,9 +22,13 @@ import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
 
 import java.util.Comparator;
+import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
+import io.apitomy.umg.pipe.java.method.ClonerMethod;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.FactoryMethod;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 import io.apitomy.umg.pipe.java.method.cloner.CloneEntityPropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.CloneListPropertyBlock;
@@ -150,7 +154,7 @@ public class CreateClonersStage extends AbstractJavaStage {
     }
 
     private static String cloneMethodName(EntityModel entityModel) {
-        return "clone" + entityModel.getName();
+        return ClonerMethod.methodName(entityModel.getName());
     }
 
     @AllArgsConstructor
@@ -240,7 +244,7 @@ public class CreateClonersStage extends AbstractJavaStage {
                 clonerClassSource.addImport(List.class);
 
                 body.addContext("entityJavaType", resolved.javaInterface().getName());
-                body.addContext("createMethodName", createMethodName(resolved.entityModel()));
+                body.addContext("createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()));
                 body.addContext("cloneMethodName", cloneMethodName(resolved.entityModel()));
 
                 body.append("{");
@@ -288,10 +292,10 @@ public class CreateClonersStage extends AbstractJavaStage {
 
                 body.addContext("entityJavaType", resolved.javaInterface().getName());
                 body.addContext("commonEntityType", commonEntityTypeJavaModel.getName());
-                body.addContext("getterMethodName", getterMethodName(property));
-                body.addContext("createMethodName", createMethodName(resolved.entityModel()));
+                body.addContext("getterMethodName", GetterMethod.methodName(property));
+                body.addContext("createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()));
                 body.addContext("cloneMethodName", cloneMethodName(resolved.entityModel()));
-                body.addContext("addMethodName", addMethodName(singularize(property.getCollection())));
+                body.addContext("addMethodName", AddMethod.methodName(singularize(property.getCollection())));
 
                 body.append("{");
                 body.append("    Map<String, ? extends ${commonEntityType}> srcMap = source.${getterMethodName}();");
@@ -307,8 +311,8 @@ public class CreateClonersStage extends AbstractJavaStage {
             } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
                 clonerClassSource.addImport(Map.class);
 
-                body.addContext("getterMethodName", getterMethodName(property));
-                body.addContext("addMethodName", addMethodName(singularize(property.getCollection())));
+                body.addContext("getterMethodName", GetterMethod.methodName(property));
+                body.addContext("addMethodName", AddMethod.methodName(singularize(property.getCollection())));
                 body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, clonerClassSource));
 
                 clonerClassSource.addImport(List.class);
