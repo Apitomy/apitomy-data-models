@@ -48,23 +48,23 @@ public class CloneUnionPropertyBlock extends CodeBlock {
         body.addContext("getterMethodName", ctx.getterMethodName(property));
         body.addContext("setterMethodName", ctx.setterMethodName(property));
 
-        body.append("{");
-        body.append("    ${unionJavaType} srcUnion = source.${getterMethodName}();");
-        body.append("    if (srcUnion != null) {");
+        body.appendBlock("""
+{
+    ${unionJavaType} srcUnion = source.${getterMethodName}();
+    if (srcUnion != null) {
+""");
 
         // Sort types alphabetically to match the old UnionPropertyType behavior
         List<Type> sortedTypes = effectiveUnionType.getTypes().stream()
                 .sorted(UnionVariantComparator.INSTANCE)
                 .collect(Collectors.toList());
-        sortedTypes.forEach(nestedType -> {
+        body.forEach(sortedTypes, (loopCtx, nestedType, isFirst) -> {
             String typeName = AbstractJavaStage.getTypeName(nestedType);
             String isMethodName = "is" + typeName;
             String asMethodName = "as" + typeName;
 
-            body.addContext("isMethodName", isMethodName);
-            body.addContext("asMethodName", asMethodName);
-
-            body.append("        if (srcUnion.${isMethodName}()) {");
+            loopCtx.set("isMethodName", isMethodName);
+            loopCtx.set("asMethodName", asMethodName);
 
             if (nestedType.isPrimitiveType() || nestedType.isPrimitiveUnionVariantType()) {
                 String unionValueInterfaceFQN = ctx.getUnionTypeFQN(typeName + "UnionValue");
@@ -74,9 +74,13 @@ public class CloneUnionPropertyBlock extends CodeBlock {
                 if (unionValueInterface != null && unionValueClass != null) {
                     clonerClassSource.addImport(unionValueInterface);
                     clonerClassSource.addImport(unionValueClass);
-                    body.addContext("unionValueInterfaceName", unionValueInterface.getName());
-                    body.addContext("unionValueClassName", unionValueClass.getName());
-                    body.append("            target.${setterMethodName}(new ${unionValueClassName}(srcUnion.${asMethodName}()));");
+                    loopCtx.set("unionValueInterfaceName", unionValueInterface.getName());
+                    loopCtx.set("unionValueClassName", unionValueClass.getName());
+                    return """
+        if (srcUnion.${isMethodName}()) {
+            target.${setterMethodName}(new ${unionValueClassName}(srcUnion.${asMethodName}()));
+        }
+""";
                 }
             } else if (nestedType.isListType() && ((io.apitomy.umg.models.concept.type.ListType) nestedType).getValueType().isPrimitiveType()) {
                 String unionValueName = AbstractJavaStage.getTypeName(nestedType);
@@ -88,9 +92,13 @@ public class CloneUnionPropertyBlock extends CodeBlock {
                     clonerClassSource.addImport(unionValueInterface);
                     clonerClassSource.addImport(unionValueClass);
                     clonerClassSource.addImport(ArrayList.class);
-                    body.addContext("unionValueInterfaceName", unionValueInterface.getName());
-                    body.addContext("unionValueClassName", unionValueClass.getName());
-                    body.append("            target.${setterMethodName}(new ${unionValueClassName}(new ArrayList<>(srcUnion.${asMethodName}())));");
+                    loopCtx.set("unionValueInterfaceName", unionValueInterface.getName());
+                    loopCtx.set("unionValueClassName", unionValueClass.getName());
+                    return """
+        if (srcUnion.${isMethodName}()) {
+            target.${setterMethodName}(new ${unionValueClassName}(new ArrayList<>(srcUnion.${asMethodName}())));
+        }
+""";
                 }
             } else if (nestedType.isEntityType()) {
                 NamespaceModel nestedTypeEntityNS = entityModel.getNamespace();
@@ -102,12 +110,16 @@ public class CloneUnionPropertyBlock extends CodeBlock {
                     if (entityJavaSource != null && entityImplSource != null) {
                         clonerClassSource.addImport(entityJavaSource);
                         clonerClassSource.addImport(entityImplSource);
-                        body.addContext("entityType", entityJavaSource.getName());
-                        body.addContext("entityImplType", entityImplSource.getName());
-                        body.addContext("cloneMethodName", CloneEntityPropertyBlock.cloneMethodName(nestedTypeEntity));
-                        body.append("            ${entityType} tgtEntity = new ${entityImplType}();");
-                        body.append("            this.${cloneMethodName}((${entityType}) srcUnion.${asMethodName}(), tgtEntity);");
-                        body.append("            target.${setterMethodName}(tgtEntity);");
+                        loopCtx.set("entityType", entityJavaSource.getName());
+                        loopCtx.set("entityImplType", entityImplSource.getName());
+                        loopCtx.set("cloneMethodName", CloneEntityPropertyBlock.cloneMethodName(nestedTypeEntity));
+                        return """
+        if (srcUnion.${isMethodName}()) {
+            ${entityType} tgtEntity = new ${entityImplType}();
+            this.${cloneMethodName}((${entityType}) srcUnion.${asMethodName}(), tgtEntity);
+            target.${setterMethodName}(tgtEntity);
+        }
+""";
                     }
                 }
             } else if (nestedType.isListType() && ((io.apitomy.umg.models.concept.type.ListType) nestedType).getValueType().isEntityType()) {
@@ -134,19 +146,23 @@ public class CloneUnionPropertyBlock extends CodeBlock {
                             clonerClassSource.addImport(unionValueClass);
                             clonerClassSource.addImport(List.class);
                             clonerClassSource.addImport(ArrayList.class);
-                            body.addContext("listItemType", listItemEntitySource.getName());
-                            body.addContext("createMethodName", ctx.createMethodName(listItemEntity));
-                            body.addContext("cloneMethodName", CloneEntityPropertyBlock.cloneMethodName(listItemEntity));
-                            body.addContext("unionValueClassName", unionValueClass.getName());
-                            body.append("            List<${listItemType}> clonedList = new ArrayList<>();");
-                            body.append("            srcUnion.${asMethodName}().forEach(srcItem -> {");
-                            body.append("                ${listItemType} tgtItem = (${listItemType}) target.${createMethodName}();");
-                            body.append("                this.${cloneMethodName}((${listItemType}) srcItem, tgtItem);");
-                            body.append("                clonedList.add(tgtItem);");
-                            body.append("            });");
-                            body.append("            @SuppressWarnings({ \"unchecked\", \"rawtypes\" })");
-                            body.append("            ${unionValueClassName} unionValue = new ${unionValueClassName}((List) clonedList);");
-                            body.append("            target.${setterMethodName}(unionValue);");
+                            loopCtx.set("listItemType", listItemEntitySource.getName());
+                            loopCtx.set("createMethodName", ctx.createMethodName(listItemEntity));
+                            loopCtx.set("cloneMethodName", CloneEntityPropertyBlock.cloneMethodName(listItemEntity));
+                            loopCtx.set("unionValueClassName", unionValueClass.getName());
+                            return """
+        if (srcUnion.${isMethodName}()) {
+            List<${listItemType}> clonedList = new ArrayList<>();
+            srcUnion.${asMethodName}().forEach(srcItem -> {
+                ${listItemType} tgtItem = (${listItemType}) target.${createMethodName}();
+                this.${cloneMethodName}((${listItemType}) srcItem, tgtItem);
+                clonedList.add(tgtItem);
+            });
+            @SuppressWarnings({ "unchecked", "rawtypes" })
+            ${unionValueClassName} unionValue = new ${unionValueClassName}((List) clonedList);
+            target.${setterMethodName}(unionValue);
+        }
+""";
                         }
                     }
                 }
@@ -154,11 +170,13 @@ public class CloneUnionPropertyBlock extends CodeBlock {
                 ctx.warn("UNION property '" + property.getName() + "' nested type not cloned (unsupported): " + nestedType);
             }
 
-            body.append("        }");
+            return "";
         });
 
-        body.append("    }");
-        body.append("}");
+        body.appendBlock("""
+    }
+}
+""");
 
         var unionJavaType = ctx.getJavaTypeFactory().createJavaType(effectiveUnionType, nsContext);
         unionJavaType.addImportsTo(clonerClassSource);

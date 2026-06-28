@@ -42,13 +42,15 @@ public class ReadPrimitivePropertyBlock extends CodeBlock {
         body.addContext("isCheckMethod", isCheckMethod);
         body.addContext("toConversionMethod", toConversionMethod);
 
-        body.append("{");
-        body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
-        body.append("    if (JsonUtil.${isCheckMethod}(${varName})) {");
-        body.append("        node.${setterMethodName}(JsonUtil.${toConversionMethod}(${varName}));");
-        body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
-        body.append("    }");
-        body.append("}");
+        body.appendBlock("""
+{
+    JsonNode ${varName} = JsonUtil.getProperty(json, "${propertyName}");
+    if (JsonUtil.${isCheckMethod}(${varName})) {
+        node.${setterMethodName}(JsonUtil.${toConversionMethod}(${varName}));
+        JsonUtil.removeProperty(json, "${propertyName}");
+    }
+}
+""");
     }
 
     @Override
