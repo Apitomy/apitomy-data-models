@@ -15,10 +15,8 @@ import io.apitomy.umg.pipe.java.method.ClonerMethod;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
-import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
-import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
  * Generates code to clone a map property (primitive map or entity map).
@@ -42,8 +40,8 @@ public class CloneMapPropertyBlock extends CodeBlock {
             clonerClassSource.addImport(Map.class);
             clonerClassSource.addImport(LinkedHashMap.class);
             body.addContext(Map.of(
-                    "getterMethodName", GetterMethod.methodName(property),
-                    "setterMethodName", SetterMethod.methodName(property),
+                    "getterMethodName", prop.getGetterName(),
+                    "setterMethodName", prop.getSetterName(),
                     "valueType", PrimitiveTypeHelper.determineValueType(mapValueType, prop.getCtx(), clonerClassSource)
             ));
 
@@ -68,7 +66,7 @@ public class CloneMapPropertyBlock extends CodeBlock {
             clonerClassSource.addImport(commonEntityTypeJavaModel);
 
             body.addContext(Map.of(
-                    "getterMethodName", GetterMethod.methodName(property),
+                    "getterMethodName", prop.getGetterName(),
                     "entityJavaType", resolved.javaInterface().getName(),
                     "commonEntityType", commonEntityTypeJavaModel.getName(),
                     "createMethodName", FactoryMethod.methodName(entityTypeName),

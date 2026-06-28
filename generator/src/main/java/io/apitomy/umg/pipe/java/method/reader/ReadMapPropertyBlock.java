@@ -20,7 +20,6 @@ import io.apitomy.umg.pipe.java.method.FactoryMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.ReaderMethod;
-import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
  * Generates code to read a map property from JSON (primitive map or entity map).
@@ -51,7 +50,7 @@ public class ReadMapPropertyBlock extends CodeBlock {
             String elementValueType = PrimitiveTypeHelper.determineValueType(mapValueType, prop.getCtx(), readerClassSource);
             body.addContext(Map.of(
                     "propertyName", property.getName(),
-                    "setterMethodName", SetterMethod.methodName(property),
+                    "setterMethodName", prop.getSetterName(),
                     "expectedType", expectedType,
                     "toConversionMethod", toConversionMethod,
                     "elementValueType", elementValueType,
@@ -86,7 +85,7 @@ public class ReadMapPropertyBlock extends CodeBlock {
 
             body.addContext(Map.of(
                     "propertyName", property.getName(),
-                    "setterMethodName", SetterMethod.methodName(property),
+                    "setterMethodName", prop.getSetterName(),
                     "mapValueJavaType", resolved.javaInterface().getName(),
                     "createMethodName", FactoryMethod.methodName(entityTypeName),
                     "readMethodName", ReaderMethod.methodName(entityTypeName),

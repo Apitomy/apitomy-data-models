@@ -19,7 +19,6 @@ import io.apitomy.umg.pipe.java.method.FactoryMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.ReaderMethod;
-import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
  * Generates code to read a list property from JSON (primitive list or entity list).
@@ -48,7 +47,7 @@ public class ReadListPropertyBlock extends CodeBlock {
             String elementValueType = PrimitiveTypeHelper.determineValueType(listValueType, prop.getCtx(), readerClassSource);
             body.addContext(Map.of(
                     "propertyName", property.getName(),
-                    "setterMethodName", SetterMethod.methodName(property),
+                    "setterMethodName", prop.getSetterName(),
                     "expectedType", expectedType,
                     "toConversionMethod", toConversionMethod,
                     "elementValueType", elementValueType,
@@ -80,7 +79,7 @@ public class ReadListPropertyBlock extends CodeBlock {
 
             body.addContext(Map.of(
                     "propertyName", property.getName(),
-                    "setterMethodName", SetterMethod.methodName(property),
+                    "setterMethodName", prop.getSetterName(),
                     "listValueJavaType", resolved.javaInterface().getName(),
                     "createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()),
                     "readMethodName", ReaderMethod.methodName(resolved.entityModel().getName()),
