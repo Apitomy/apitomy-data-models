@@ -74,19 +74,19 @@ public class AddMethod implements Method {
             body.ifElse(resolvedType.isMapType(), () -> {
                 javaEntity.addImport(LinkedHashMap.class);
                 return """
-if (this.${fieldName} == null) {
-    this.${fieldName} = new LinkedHashMap<>();
-}
-this.${fieldName}.put(name, value);
-""";
+                    if (this.${fieldName} == null) {
+                        this.${fieldName} = new LinkedHashMap<>();
+                    }
+                    this.${fieldName}.put(name, value);
+                    """;
             }, () -> {
                 javaEntity.addImport(ArrayList.class);
                 return """
-if (this.${fieldName} == null) {
-    this.${fieldName} = new ArrayList<>();
-}
-this.${fieldName}.add(value);
-""";
+                    if (this.${fieldName} == null) {
+                        this.${fieldName} = new ArrayList<>();
+                    }
+                    this.${fieldName}.add(value);
+                    """;
             });
 
             if (parentBlock != null) {
