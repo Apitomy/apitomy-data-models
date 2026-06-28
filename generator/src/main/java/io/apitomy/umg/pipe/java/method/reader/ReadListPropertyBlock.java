@@ -56,18 +56,20 @@ public class ReadListPropertyBlock extends CodeBlock {
             body.addContext("elementValueType", elementValueType);
             body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
 
-            body.append("{");
-            body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
-            body.append("    if (JsonUtil.isArray(${varName}) && JsonUtil.allMatch(${varName}, \"${expectedType}\")) {");
-            body.append("        List<${elementValueType}> items = new ArrayList<>();");
-            body.append("        List<JsonNode> _nodes = JsonUtil.toList(${varName});");
-            body.append("        for (int _i = 0; _i < _nodes.size(); _i++) {");
-            body.append("            items.add(JsonUtil.${toConversionMethod}(_nodes.get(_i)));");
-            body.append("        }");
-            body.append("        node.${setterMethodName}(items);");
-            body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
-            body.append("    }");
-            body.append("}");
+            body.appendBlock("""
+{
+    JsonNode ${varName} = JsonUtil.getProperty(json, "${propertyName}");
+    if (JsonUtil.isArray(${varName}) && JsonUtil.allMatch(${varName}, "${expectedType}")) {
+        List<${elementValueType}> items = new ArrayList<>();
+        List<JsonNode> _nodes = JsonUtil.toList(${varName});
+        for (int _i = 0; _i < _nodes.size(); _i++) {
+            items.add(JsonUtil.${toConversionMethod}(_nodes.get(_i)));
+        }
+        node.${setterMethodName}(items);
+        JsonUtil.removeProperty(json, "${propertyName}");
+    }
+}
+""");
         } else if (listValueType.isEntityType()) {
             var resolved = EntityResolver.resolveEntityInterface(property, listValueType.getName(), entityModel, ctx, "LIST");
             if (resolved == null) {
@@ -83,19 +85,21 @@ public class ReadListPropertyBlock extends CodeBlock {
             body.addContext("addMethodName", ctx.addMethodName(ctx.singularize(property.getName())));
             body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
 
-            body.append("{");
-            body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
-            body.append("    if (JsonUtil.isArray(${varName}) && JsonUtil.allMatch(${varName}, \"object\")) {");
-            body.append("        List<JsonNode> _nodes = JsonUtil.toList(${varName});");
-            body.append("        for (int _i = 0; _i < _nodes.size(); _i++) {");
-            body.append("            ObjectNode object = JsonUtil.toObject(_nodes.get(_i));");
-            body.append("            ${listValueJavaType} model = (${listValueJavaType}) node.${createMethodName}();");
-            body.append("            node.${addMethodName}(model);");
-            body.append("            this.${readMethodName}(object, model);");
-            body.append("        }");
-            body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
-            body.append("    }");
-            body.append("}");
+            body.appendBlock("""
+{
+    JsonNode ${varName} = JsonUtil.getProperty(json, "${propertyName}");
+    if (JsonUtil.isArray(${varName}) && JsonUtil.allMatch(${varName}, "object")) {
+        List<JsonNode> _nodes = JsonUtil.toList(${varName});
+        for (int _i = 0; _i < _nodes.size(); _i++) {
+            ObjectNode object = JsonUtil.toObject(_nodes.get(_i));
+            ${listValueJavaType} model = (${listValueJavaType}) node.${createMethodName}();
+            node.${addMethodName}(model);
+            this.${readMethodName}(object, model);
+        }
+        JsonUtil.removeProperty(json, "${propertyName}");
+    }
+}
+""");
         } else {
             ctx.warn("LIST Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
             ctx.warn("       property type: " + property.getResolvedType());

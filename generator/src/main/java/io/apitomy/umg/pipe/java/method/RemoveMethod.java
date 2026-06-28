@@ -32,21 +32,27 @@ public class RemoveMethod implements CanAddImports {
         boolean needsDetach = resolvedValueType != null
                 && (resolvedValueType.isEntityType() || resolvedValueType.isUnionType());
 
-        if (resolvedType.isListType()) {
-            body.append("if (this.${fieldName} != null) {");
+        body.ifElse(resolvedType.isListType(), () -> {
             if (needsDetach) {
-                body.append("    if (value != null && this.${fieldName}.remove(value)) {");
-                body.append("        value.detach();");
-                body.append("    }");
+                return """
+if (this.${fieldName} != null) {
+    if (value != null && this.${fieldName}.remove(value)) {
+        value.detach();
+    }
+}
+""";
             } else {
-                body.append("    this.${fieldName}.remove(value);");
+                return """
+if (this.${fieldName} != null) {
+    this.${fieldName}.remove(value);
+}
+""";
             }
-            body.append("}");
-        } else {
-            body.append("if (this.${fieldName} != null) {");
-            body.append("    this.${fieldName}.remove(name);");
-            body.append("}");
-        }
+        }, () -> """
+if (this.${fieldName} != null) {
+    this.${fieldName}.remove(name);
+}
+""");
 
         method.setBody(body.toString());
     }

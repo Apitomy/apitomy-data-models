@@ -32,21 +32,23 @@ public class ClearMethod implements CanAddImports {
         BodyBuilder body = new BodyBuilder();
         body.addContext("fieldName", fieldName);
 
-        if (needsDetach) {
+        body.ifElse(needsDetach, () -> {
             String valuesExpr = resolvedType.isMapType()
                     ? "this." + fieldName + ".values()" : "this." + fieldName;
             body.addContext("valuesExpr", valuesExpr);
-            body.append("if (this.${fieldName} != null) {");
-            body.append("    ${valuesExpr}.forEach(item -> {");
-            body.append("        if (item != null) item.detach();");
-            body.append("    });");
-            body.append("    this.${fieldName}.clear();");
-            body.append("}");
-        } else {
-            body.append("if (this.${fieldName} != null) {");
-            body.append("    this.${fieldName}.clear();");
-            body.append("}");
-        }
+            return """
+if (this.${fieldName} != null) {
+    ${valuesExpr}.forEach(item -> {
+        if (item != null) item.detach();
+    });
+    this.${fieldName}.clear();
+}
+""";
+        }, () -> """
+if (this.${fieldName} != null) {
+    this.${fieldName}.clear();
+}
+""");
 
         method.setBody(body.toString());
     }

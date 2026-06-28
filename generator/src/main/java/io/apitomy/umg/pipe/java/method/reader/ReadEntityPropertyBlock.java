@@ -49,14 +49,16 @@ public class ReadEntityPropertyBlock extends CodeBlock {
         body.addContext("propertyEntityType", resolved.javaInterface().getName());
         body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
 
-        body.append("{");
-        body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
-        body.append("    if (JsonUtil.isObject(${varName})) {");
-        body.append("        node.${setterMethodName}(node.${createMethodName}());");
-        body.append("        ${readMethodName}(JsonUtil.toObject(${varName}), (${propertyEntityType}) node.${getterMethodName}());");
-        body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
-        body.append("    }");
-        body.append("}");
+        body.appendBlock("""
+{
+    JsonNode ${varName} = JsonUtil.getProperty(json, "${propertyName}");
+    if (JsonUtil.isObject(${varName})) {
+        node.${setterMethodName}(node.${createMethodName}());
+        ${readMethodName}(JsonUtil.toObject(${varName}), (${propertyEntityType}) node.${getterMethodName}());
+        JsonUtil.removeProperty(json, "${propertyName}");
+    }
+}
+""");
     }
 
     @Override

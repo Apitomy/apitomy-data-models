@@ -33,6 +33,10 @@ public class BodyBuilder {
         context.clear();
     }
 
+    public void addContext(Map<String, String> values) {
+        values.forEach(this::addContext);
+    }
+
     public BodyBuilder a(String line) {
         append(line);
         return this;

@@ -32,12 +32,10 @@ public class WritePrimitivePropertyBlock extends CodeBlock {
         body.addContext("propertyName", property.getName());
         body.addContext("getterMethodName", ctx.getterMethodName(property));
 
-        if (PrimitiveTypeHelper.isJsonNodeType(property.getResolvedType(), ctx)) {
-            // ObjectNode and JsonNode are already JsonNode subtypes, use setProperty directly
-            body.append("JsonUtil.setProperty(json, \"${propertyName}\", node.${getterMethodName}());");
-        } else {
-            body.append("JsonUtil.setProperty(json, \"${propertyName}\", JsonUtil.toJsonNode(node.${getterMethodName}()));");
-        }
+        body.ifElse(PrimitiveTypeHelper.isJsonNodeType(property.getResolvedType(), ctx),
+                // ObjectNode and JsonNode are already JsonNode subtypes, use setProperty directly
+                () -> "JsonUtil.setProperty(json, \"${propertyName}\", node.${getterMethodName}());",
+                () -> "JsonUtil.setProperty(json, \"${propertyName}\", JsonUtil.toJsonNode(node.${getterMethodName}()));");
     }
 
     @Override

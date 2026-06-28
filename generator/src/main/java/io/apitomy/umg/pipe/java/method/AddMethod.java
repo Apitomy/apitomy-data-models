@@ -58,21 +58,23 @@ public class AddMethod implements CanAddImports {
         body.addContext("propertyName", propertyName);
 
         if (isEntityValue || isPrimitiveValue || isUnionValue) {
-            if (resolvedType.isMapType()) {
+            body.ifElse(resolvedType.isMapType(), () -> {
                 javaEntity.addImport(LinkedHashMap.class);
-
-                body.append("if (this.${fieldName} == null) {");
-                body.append("    this.${fieldName} = new LinkedHashMap<>();");
-                body.append("}");
-                body.append("this.${fieldName}.put(name, value);");
-            } else {
+                return """
+if (this.${fieldName} == null) {
+    this.${fieldName} = new LinkedHashMap<>();
+}
+this.${fieldName}.put(name, value);
+""";
+            }, () -> {
                 javaEntity.addImport(ArrayList.class);
-
-                body.append("if (this.${fieldName} == null) {");
-                body.append("    this.${fieldName} = new ArrayList<>();");
-                body.append("}");
-                body.append("this.${fieldName}.add(value);");
-            }
+                return """
+if (this.${fieldName} == null) {
+    this.${fieldName} = new ArrayList<>();
+}
+this.${fieldName}.add(value);
+""";
+            });
 
             if (parentBlock != null) {
                 parentBlock.appendTo(body);

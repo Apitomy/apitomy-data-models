@@ -44,13 +44,15 @@ public class WriteEntityPropertyBlock extends CodeBlock {
         body.addContext("writeMethodName", writeMethodName(resolved.entityModel()));
         body.addContext("propertyTypeJavaEntity", resolved.javaInterface().getName());
 
-        body.append("{");
-        body.append("    if (node.${getterMethodName}() != null) {");
-        body.append("        ObjectNode object = JsonUtil.objectNode();");
-        body.append("        this.${writeMethodName}((${propertyTypeJavaEntity}) node.${getterMethodName}(), object);");
-        body.append("        JsonUtil.setProperty(json, \"${propertyName}\", object);");
-        body.append("    }");
-        body.append("}");
+        body.appendBlock("""
+{
+    if (node.${getterMethodName}() != null) {
+        ObjectNode object = JsonUtil.objectNode();
+        this.${writeMethodName}((${propertyTypeJavaEntity}) node.${getterMethodName}(), object);
+        JsonUtil.setProperty(json, "${propertyName}", object);
+    }
+}
+""");
     }
 
     static String writeMethodName(EntityModel entityModel) {
