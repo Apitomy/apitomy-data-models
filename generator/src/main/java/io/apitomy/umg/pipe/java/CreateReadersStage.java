@@ -17,7 +17,6 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import io.apitomy.umg.pipe.java.Util;
 import io.apitomy.umg.beans.SpecificationVersion;
 
 import io.apitomy.umg.models.concept.EntityModel;

@@ -20,7 +20,7 @@ import io.apitomy.umg.models.concept.type.PrimitiveUnionVariantType;
 import io.apitomy.umg.models.concept.type.UnionType;
 import io.apitomy.umg.models.java.type.JavaType;
 import io.apitomy.umg.models.java.type.JavaTypeFactory;
-import io.apitomy.umg.pipe.java.Util;
+
 
 /**
  * Naming class for writer methods: {@code write${EntityName}}.
@@ -49,6 +49,12 @@ public class WriterMethod implements Method {
     @Override
     public void addImportsTo(JavaSource<?> source) {
         // No imports needed for the naming-only use case
+    }
+
+    @Override
+    public void writeTo(JavaSource<?> target) {
+        throw new UnsupportedOperationException(
+                "WriterMethod requires additional context; use writeTo(JavaClassSource, SpecificationVersion, UnionType, CodeGenContext) instead");
     }
 
     /**
@@ -104,7 +110,7 @@ public class WriterMethod implements Method {
                 body.append("}");
             } else if (variantType instanceof PrimitiveUnionVariantType puv) {
                 String typeName = JavaTypeFactory.getUnionComponentName(variantType);
-                Class<?> javaClass = Util.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
+                Class<?> javaClass = PrimitiveTypeHelper.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
                 if (javaClass == null) continue;
 
                 body.addContext("isMethod", UnionIsMethod.methodName(typeName));
@@ -147,7 +153,7 @@ public class WriterMethod implements Method {
                     body.append("    return array;");
                     body.append("}");
                 } else if (listType.getValueType() instanceof PrimitiveType primType) {
-                    Class<?> javaClass = Util.PRIMITIVE_TYPE_MAP.get(primType.name().toLowerCase());
+                    Class<?> javaClass = PrimitiveTypeHelper.PRIMITIVE_TYPE_MAP.get(primType.name().toLowerCase());
                     if (javaClass == null) continue;
 
                     writerClassSource.addImport(javaClass);
