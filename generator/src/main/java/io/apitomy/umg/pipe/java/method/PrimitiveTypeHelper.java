@@ -1,12 +1,15 @@
 package io.apitomy.umg.pipe.java.method;
 
+import static java.util.Map.entry;
+
+import java.util.Map;
+
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.apitomy.umg.models.concept.type.Type;
-import io.apitomy.umg.pipe.java.Util;
 
 /**
  * Shared helpers for mapping concept-model {@link Type}s to Java type names
@@ -14,6 +17,14 @@ import io.apitomy.umg.pipe.java.Util;
  * Extracted from duplicated code across reader, writer, and cloner blocks.
  */
 public final class PrimitiveTypeHelper {
+
+    public static final Map<String, Class<?>> PRIMITIVE_TYPE_MAP = Map.ofEntries(
+            entry("string", String.class),
+            entry("boolean", Boolean.class),
+            entry("number", Number.class),
+            entry("integer", Integer.class),
+            entry("object", ObjectNode.class),
+            entry("any", JsonNode.class));
 
     private PrimitiveTypeHelper() {
     }
@@ -29,7 +40,7 @@ public final class PrimitiveTypeHelper {
         if (!type.isPrimitiveType()) {
             throw new UnsupportedOperationException("Property type not primitive: " + type);
         }
-        Class<?> rval = Util.PRIMITIVE_TYPE_MAP.get(type.getName());
+        Class<?> rval = PRIMITIVE_TYPE_MAP.get(type.getName());
         if (rval == null) {
             throw new UnsupportedOperationException("Primitive-to-class mapping not found for: " + type.getName());
         }

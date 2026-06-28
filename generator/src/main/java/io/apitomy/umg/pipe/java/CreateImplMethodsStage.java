@@ -13,15 +13,7 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
-import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
-import io.apitomy.umg.pipe.java.method.ClearMethod;
-import io.apitomy.umg.pipe.java.method.CodeGenContext;
-import io.apitomy.umg.pipe.java.method.FactoryMethod;
-import io.apitomy.umg.pipe.java.method.GetterMethod;
-import io.apitomy.umg.pipe.java.method.InsertMethod;
-import io.apitomy.umg.pipe.java.method.RemoveMethod;
-import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
  * Creates methods on all entity implementation classes.  This follows the same algorithm
@@ -32,17 +24,9 @@ import io.apitomy.umg.pipe.java.method.SetterMethod;
  */
 public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
 
-    private CodeGenContext ctx;
-
     @Override
     protected void doProcess() {
-        ctx = new CodeGenContext(
-                getState().getConceptIndex(),
-                getState().getJavaIndex(),
-                getJavaTypeFactory(),
-                getState().getConfig().getRootNamespace(),
-                getState().getSpecIndex(),
-                getClass().getSimpleName());
+        initContext();
         getState().getConceptIndex().findEntities("").stream().filter(entity -> entity.isLeaf()).forEach(entity -> {
             createEntityImplMethods(entity);
         });
@@ -201,52 +185,6 @@ public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
             body.append("this._items.clear();");
             method.setBody(body.toString());
         }
-    }
-
-    @Override
-    protected void createGetterBody(PropertyModel property, MethodSource<?> method) {
-        new GetterMethod(property, ctx).writeTo(method);
-    }
-
-    @Override
-    protected void createSetterBody(JavaSource<?> javaEntity, PropertyModel property, MethodSource<?> method) {
-        SetterMethod setter = new SetterMethod(javaEntity, property, ctx);
-        setter.addImportsTo(javaEntity);
-        setter.writeTo(method);
-    }
-
-    @Override
-    protected void createFactoryMethodBody(JavaSource<?> javaEntity, String entityName, MethodSource<?> method) {
-        new FactoryMethod(javaEntity, entityName, ctx).writeTo(method);
-    }
-
-    @Override
-    protected void createAddMethodBody(JavaSource<?> javaEntity, PropertyModel property, MethodSource<?> method) {
-        AddMethod add = new AddMethod(javaEntity, property, ctx);
-        add.addImportsTo(javaEntity);
-        add.writeTo(method);
-    }
-
-    @Override
-    protected void createClearMethodBody(PropertyModel property, MethodSource<?> method) {
-        new ClearMethod(property, ctx).writeTo(method);
-    }
-
-    @Override
-    protected void createRemoveMethodBody(PropertyModel property, MethodSource<?> method) {
-        new RemoveMethod(property, ctx).writeTo(method);
-    }
-
-    @Override
-    protected void createInsertMethodBody(JavaSource<?> javaEntity, PropertyModel property, MethodSource<?> method) {
-        InsertMethod insert = new InsertMethod(javaEntity, property, ctx);
-        insert.addImportsTo(javaEntity);
-        insert.writeTo(method);
-    }
-
-    @Override
-    protected void addAnnotations(MethodSource<?> method) {
-        method.addAnnotation(Override.class);
     }
 
 }

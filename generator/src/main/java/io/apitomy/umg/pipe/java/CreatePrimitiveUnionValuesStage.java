@@ -1,6 +1,7 @@
 package io.apitomy.umg.pipe.java;
 
 import io.apitomy.umg.models.concept.type.PrimitiveUnionVariantType;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -26,7 +27,7 @@ public class CreatePrimitiveUnionValuesStage extends AbstractJavaStage {
 
     private void createPrimitiveUnionValue(PrimitiveUnionVariantType puv) {
         String typeName = StringUtils.capitalize(puv.getType().name().toLowerCase());
-        Class<?> javaClass = Util.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
+        Class<?> javaClass = PrimitiveTypeHelper.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
         if (javaClass == null) return;
 
         String _package = getUnionTypesPackageName();
