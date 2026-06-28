@@ -41,9 +41,6 @@ public class ReadMapPropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = propertyWithOrigin.getProperty();
-        body.addContext("propertyName", property.getName());
-        body.addContext("setterMethodName", ctx.setterMethodName(property));
-
         Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
         if (mapValueType.isPrimitiveType()) {
             readerClassSource.addImport(JsonNode.class);
@@ -55,10 +52,14 @@ public class ReadMapPropertyBlock extends CodeBlock {
             String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, ctx);
             String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(mapValueType, ctx, readerClassSource);
             String elementValueType = PrimitiveTypeHelper.determineValueType(mapValueType, ctx, readerClassSource);
-            body.addContext("expectedType", expectedType);
-            body.addContext("toConversionMethod", toConversionMethod);
-            body.addContext("elementValueType", elementValueType);
-            body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
+            body.addContext(Map.of(
+                    "propertyName", property.getName(),
+                    "setterMethodName", ctx.setterMethodName(property),
+                    "expectedType", expectedType,
+                    "toConversionMethod", toConversionMethod,
+                    "elementValueType", elementValueType,
+                    "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
+            ));
 
             body.appendBlock("""
 {
@@ -86,11 +87,15 @@ public class ReadMapPropertyBlock extends CodeBlock {
             readerClassSource.addImport(ObjectNode.class);
             readerClassSource.addImport(List.class);
 
-            body.addContext("mapValueJavaType", resolved.javaInterface().getName());
-            body.addContext("createMethodName", "create" + entityTypeName);
-            body.addContext("readMethodName", "read" + entityTypeName);
-            body.addContext("addMethodName", ctx.addMethodName(ctx.singularize(property.getName())));
-            body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
+            body.addContext(Map.of(
+                    "propertyName", property.getName(),
+                    "setterMethodName", ctx.setterMethodName(property),
+                    "mapValueJavaType", resolved.javaInterface().getName(),
+                    "createMethodName", "create" + entityTypeName,
+                    "readMethodName", "read" + entityTypeName,
+                    "addMethodName", ctx.addMethodName(ctx.singularize(property.getName())),
+                    "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
+            ));
 
             body.appendBlock("""
 {

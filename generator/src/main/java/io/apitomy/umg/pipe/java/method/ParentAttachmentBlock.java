@@ -57,59 +57,73 @@ public class ParentAttachmentBlock extends CodeBlock {
     private void appendEntityAttachment(BodyBuilder body) {
         String parentPropertyType = kindToString();
         String quotedName = propertyName != null ? "\"" + propertyName + "\"" : "null";
-        body.append("if (value != null) {");
-        body.append("    ((NodeImpl) value)._setParent(this);");
-        body.append("    ((NodeImpl) value)._setParentPropertyName(" + quotedName + ");");
-        body.append("    ((NodeImpl) value)._setParentPropertyType(ParentPropertyType." + parentPropertyType + ");");
-        if (kind == ParentPropertyKind.MAP) {
-            body.append("    ((NodeImpl) value)._setMapPropertyName(name);");
-        }
-        body.append("}");
+        body.addContext(Map.of(
+                "quotedName", quotedName,
+                "parentPropertyType", parentPropertyType
+        ));
+        body.ifElse(kind == ParentPropertyKind.MAP,
+                () -> """
+                        if (value != null) {
+                            ((NodeImpl) value)._setParent(this);
+                            ((NodeImpl) value)._setParentPropertyName(${quotedName});
+                            ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
+                            ((NodeImpl) value)._setMapPropertyName(name);
+                        }
+                        """,
+                () -> """
+                        if (value != null) {
+                            ((NodeImpl) value)._setParent(this);
+                            ((NodeImpl) value)._setParentPropertyName(${quotedName});
+                            ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
+                        }
+                        """);
     }
 
     /**
      * Union attachment for setter (standard) - has full isEntity/isEntityList/isEntityMap/else dispatch.
      */
     private void appendUnionStandardAttachment(BodyBuilder body) {
-        String quotedName = "\"" + propertyName + "\"";
-        body.append("if (value != null) {");
-        body.append("    if (value.isEntity()) {");
-        body.append("        ((NodeImpl) value)._setParent(this);");
-        body.append("        ((NodeImpl) value)._setParentPropertyName(" + quotedName + ");");
-        body.append("        ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);");
-        body.append("    } else if (value.isEntityList()) {");
-        body.append("        ((UnionValueImpl<?>) value)._setParent(this);");
-        body.append("        ((UnionValueImpl<?>) value)._setParentPropertyName(" + quotedName + ");");
-        body.append("        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);");
-        body.append("        List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();");
-        body.append("        for (Object entity : entityList) {");
-        body.append("            if (entity != null) {");
-        body.append("                ((NodeImpl) entity)._setParent(this);");
-        body.append("                ((NodeImpl) entity)._setParentPropertyName(" + quotedName + ");");
-        body.append("                ((NodeImpl) entity)._setParentPropertyType(ParentPropertyType.array);");
-        body.append("            }");
-        body.append("        }");
-        body.append("    } else if (value.isEntityMap()) {");
-        body.append("        ((UnionValueImpl<?>) value)._setParent(this);");
-        body.append("        ((UnionValueImpl<?>) value)._setParentPropertyName(" + quotedName + ");");
-        body.append("        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);");
-        body.append("        Map<String, ?> entityMap = (Map<String, ?>) ((UnionValue<?>) value).getValue();");
-        body.append("        Collection<String> keys = entityMap.keySet();");
-        body.append("        for (String key : keys) {");
-        body.append("            NodeImpl entity = (NodeImpl) entityMap.get(key);");
-        body.append("            if (entity != null) {");
-        body.append("                entity._setParent(this);");
-        body.append("                entity._setParentPropertyName(" + quotedName + ");");
-        body.append("                entity._setParentPropertyType(ParentPropertyType.map);");
-        body.append("                entity._setMapPropertyName(key);");
-        body.append("            }");
-        body.append("        }");
-        body.append("    } else {");
-        body.append("        ((UnionValueImpl<?>) value)._setParent(this);");
-        body.append("        ((UnionValueImpl<?>) value)._setParentPropertyName(" + quotedName + ");");
-        body.append("        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);");
-        body.append("    }");
-        body.append("}");
+        body.addContext("quotedName", "\"" + propertyName + "\"");
+        body.appendBlock("""
+                if (value != null) {
+                    if (value.isEntity()) {
+                        ((NodeImpl) value)._setParent(this);
+                        ((NodeImpl) value)._setParentPropertyName(${quotedName});
+                        ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
+                    } else if (value.isEntityList()) {
+                        ((UnionValueImpl<?>) value)._setParent(this);
+                        ((UnionValueImpl<?>) value)._setParentPropertyName(${quotedName});
+                        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
+                        List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();
+                        for (Object entity : entityList) {
+                            if (entity != null) {
+                                ((NodeImpl) entity)._setParent(this);
+                                ((NodeImpl) entity)._setParentPropertyName(${quotedName});
+                                ((NodeImpl) entity)._setParentPropertyType(ParentPropertyType.array);
+                            }
+                        }
+                    } else if (value.isEntityMap()) {
+                        ((UnionValueImpl<?>) value)._setParent(this);
+                        ((UnionValueImpl<?>) value)._setParentPropertyName(${quotedName});
+                        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
+                        Map<String, ?> entityMap = (Map<String, ?>) ((UnionValue<?>) value).getValue();
+                        Collection<String> keys = entityMap.keySet();
+                        for (String key : keys) {
+                            NodeImpl entity = (NodeImpl) entityMap.get(key);
+                            if (entity != null) {
+                                entity._setParent(this);
+                                entity._setParentPropertyName(${quotedName});
+                                entity._setParentPropertyType(ParentPropertyType.map);
+                                entity._setMapPropertyName(key);
+                            }
+                        }
+                    } else {
+                        ((UnionValueImpl<?>) value)._setParent(this);
+                        ((UnionValueImpl<?>) value)._setParentPropertyName(${quotedName});
+                        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
+                    }
+                }
+                """);
     }
 
     /**
@@ -117,24 +131,39 @@ public class ParentAttachmentBlock extends CodeBlock {
      */
     private void appendUnionCollectionAttachment(BodyBuilder body) {
         String parentPropertyType = kindToString();
-        String quotedName = "\"" + propertyName + "\"";
-        body.append("if (value != null) {");
-        body.append("    if (value.isEntity()) {");
-        body.append("        ((NodeImpl) value)._setParent(this);");
-        body.append("        ((NodeImpl) value)._setParentPropertyName(" + quotedName + ");");
-        body.append("        ((NodeImpl) value)._setParentPropertyType(ParentPropertyType." + parentPropertyType + ");");
-        if (kind == ParentPropertyKind.MAP) {
-            body.append("        ((NodeImpl) value)._setMapPropertyName(name);");
-        }
-        body.append("    } else {");
-        body.append("        ((UnionValueImpl<?>) value)._setParent(this);");
-        body.append("        ((UnionValueImpl<?>) value)._setParentPropertyName(" + quotedName + ");");
-        body.append("        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType." + parentPropertyType + ");");
-        if (kind == ParentPropertyKind.MAP) {
-            body.append("        ((UnionValueImpl<?>) value)._setMapPropertyName(name);");
-        }
-        body.append("    }");
-        body.append("}");
+        body.addContext(Map.of(
+                "quotedName", "\"" + propertyName + "\"",
+                "parentPropertyType", parentPropertyType
+        ));
+        body.ifElse(kind == ParentPropertyKind.MAP,
+                () -> """
+                        if (value != null) {
+                            if (value.isEntity()) {
+                                ((NodeImpl) value)._setParent(this);
+                                ((NodeImpl) value)._setParentPropertyName(${quotedName});
+                                ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
+                                ((NodeImpl) value)._setMapPropertyName(name);
+                            } else {
+                                ((UnionValueImpl<?>) value)._setParent(this);
+                                ((UnionValueImpl<?>) value)._setParentPropertyName(${quotedName});
+                                ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
+                                ((UnionValueImpl<?>) value)._setMapPropertyName(name);
+                            }
+                        }
+                        """,
+                () -> """
+                        if (value != null) {
+                            if (value.isEntity()) {
+                                ((NodeImpl) value)._setParent(this);
+                                ((NodeImpl) value)._setParentPropertyName(${quotedName});
+                                ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
+                            } else {
+                                ((UnionValueImpl<?>) value)._setParent(this);
+                                ((UnionValueImpl<?>) value)._setParentPropertyName(${quotedName});
+                                ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
+                            }
+                        }
+                        """);
     }
 
     @Override
