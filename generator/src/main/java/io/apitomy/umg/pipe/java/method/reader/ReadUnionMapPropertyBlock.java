@@ -1,6 +1,7 @@
 package io.apitomy.umg.pipe.java.method.reader;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -44,29 +45,32 @@ public class ReadUnionMapPropertyBlock extends CodeBlock {
         readerClassSource.addImport(List.class);
         valueJt.addImportsTo(readerClassSource);
 
-        body.addContext("propertyName", property.getName());
-        body.addContext("addMethodName", ctx.addMethodName(ctx.singularize(property.getName())));
-        body.addContext("readMethodName", readMethodName);
-        body.addContext("unionJavaType", valueJt.toJavaTypeString());
+        body.addContext(Map.of(
+                "propertyName", property.getName(),
+                "addMethodName", ctx.addMethodName(ctx.singularize(property.getName())),
+                "readMethodName", readMethodName,
+                "unionJavaType", valueJt.toJavaTypeString(),
+                "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
+        ));
 
-        body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
-
-        body.append("{");
-        body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
-        body.append("    if (JsonUtil.isObject(${varName})) {");
-        body.append("        ObjectNode _obj = JsonUtil.toObject(${varName});");
-        body.append("        List<String> _keys = JsonUtil.keys(_obj);");
-        body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
-        body.append("            String _key = _keys.get(_i);");
-        body.append("            JsonNode _val = JsonUtil.getProperty(_obj, _key);");
-        body.append("            if (JsonUtil.isJsonNode(_val)) {");
-        body.append("                ${unionJavaType} model = this.${readMethodName}(_val, null);");
-        body.append("                if (model != null) node.${addMethodName}(_key, model);");
-        body.append("            }");
-        body.append("        }");
-        body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
-        body.append("    }");
-        body.append("}");
+        body.appendBlock("""
+                {
+                    JsonNode ${varName} = JsonUtil.getProperty(json, "${propertyName}");
+                    if (JsonUtil.isObject(${varName})) {
+                        ObjectNode _obj = JsonUtil.toObject(${varName});
+                        List<String> _keys = JsonUtil.keys(_obj);
+                        for (int _i = 0; _i < _keys.size(); _i++) {
+                            String _key = _keys.get(_i);
+                            JsonNode _val = JsonUtil.getProperty(_obj, _key);
+                            if (JsonUtil.isJsonNode(_val)) {
+                                ${unionJavaType} model = this.${readMethodName}(_val, null);
+                                if (model != null) node.${addMethodName}(_key, model);
+                            }
+                        }
+                        JsonUtil.removeProperty(json, "${propertyName}");
+                    }
+                }
+                """);
     }
 
     @Override

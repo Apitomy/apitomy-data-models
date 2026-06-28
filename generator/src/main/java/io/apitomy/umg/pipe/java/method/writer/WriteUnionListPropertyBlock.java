@@ -1,6 +1,7 @@
 package io.apitomy.umg.pipe.java.method.writer;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -44,22 +45,26 @@ public class WriteUnionListPropertyBlock extends CodeBlock {
         writerClassSource.addImport(ArrayNode.class);
         writerClassSource.addImport(List.class);
 
-        body.addContext("propertyName", property.getName());
-        body.addContext("getterMethodName", ctx.getterMethodName(property));
-        body.addContext("writeMethodName", writeMethodName);
-        body.addContext("unionJavaType", valueJt.toJavaTypeString());
+        body.addContext(Map.of(
+                "propertyName", property.getName(),
+                "getterMethodName", ctx.getterMethodName(property),
+                "writeMethodName", writeMethodName,
+                "unionJavaType", valueJt.toJavaTypeString()
+        ));
 
-        body.append("{");
-        body.append("    List<${unionJavaType}> items = node.${getterMethodName}();");
-        body.append("    if (items != null && !items.isEmpty()) {");
-        body.append("        ArrayNode array = JsonUtil.arrayNode();");
-        body.append("        items.forEach(item -> {");
-        body.append("            JsonNode value = this.${writeMethodName}(item);");
-        body.append("            if (value != null) array.add(value);");
-        body.append("        });");
-        body.append("        JsonUtil.setProperty(json, \"${propertyName}\", array);");
-        body.append("    }");
-        body.append("}");
+        body.appendBlock("""
+                {
+                    List<${unionJavaType}> items = node.${getterMethodName}();
+                    if (items != null && !items.isEmpty()) {
+                        ArrayNode array = JsonUtil.arrayNode();
+                        items.forEach(item -> {
+                            JsonNode value = this.${writeMethodName}(item);
+                            if (value != null) array.add(value);
+                        });
+                        JsonUtil.setProperty(json, "${propertyName}", array);
+                    }
+                }
+                """);
     }
 
     @Override

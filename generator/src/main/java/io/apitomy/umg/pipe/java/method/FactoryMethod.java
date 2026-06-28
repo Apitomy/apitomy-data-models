@@ -37,9 +37,11 @@ public class FactoryMethod implements CanAddImports {
 
         BodyBuilder body = new BodyBuilder();
         body.addContext("implClass", entityImpl.getName());
-        body.append("${implClass} node = new ${implClass}();");
-        body.append("node._setParent(this);");
-        body.append("return node;");
+        body.appendBlock("""
+                ${implClass} node = new ${implClass}();
+                node._setParent(this);
+                return node;
+                """);
         method.setBody(body.toString());
     }
 

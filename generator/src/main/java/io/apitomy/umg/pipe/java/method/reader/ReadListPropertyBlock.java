@@ -2,6 +2,7 @@ package io.apitomy.umg.pipe.java.method.reader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -39,9 +40,6 @@ public class ReadListPropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = propertyWithOrigin.getProperty();
-        body.addContext("propertyName", property.getName());
-        body.addContext("setterMethodName", ctx.setterMethodName(property));
-
         Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
         if (listValueType.isPrimitiveType()) {
             readerClassSource.addImport(JsonNode.class);
@@ -51,10 +49,14 @@ public class ReadListPropertyBlock extends CodeBlock {
             String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(listValueType, ctx);
             String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(listValueType, ctx, readerClassSource);
             String elementValueType = PrimitiveTypeHelper.determineValueType(listValueType, ctx, readerClassSource);
-            body.addContext("expectedType", expectedType);
-            body.addContext("toConversionMethod", toConversionMethod);
-            body.addContext("elementValueType", elementValueType);
-            body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
+            body.addContext(Map.of(
+                    "propertyName", property.getName(),
+                    "setterMethodName", ctx.setterMethodName(property),
+                    "expectedType", expectedType,
+                    "toConversionMethod", toConversionMethod,
+                    "elementValueType", elementValueType,
+                    "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
+            ));
 
             body.appendBlock("""
 {
@@ -79,11 +81,15 @@ public class ReadListPropertyBlock extends CodeBlock {
             readerClassSource.addImport(JsonNode.class);
             readerClassSource.addImport(List.class);
 
-            body.addContext("listValueJavaType", resolved.javaInterface().getName());
-            body.addContext("createMethodName", ctx.createMethodName(resolved.entityModel()));
-            body.addContext("readMethodName", ctx.readMethodName(resolved.entityModel()));
-            body.addContext("addMethodName", ctx.addMethodName(ctx.singularize(property.getName())));
-            body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
+            body.addContext(Map.of(
+                    "propertyName", property.getName(),
+                    "setterMethodName", ctx.setterMethodName(property),
+                    "listValueJavaType", resolved.javaInterface().getName(),
+                    "createMethodName", ctx.createMethodName(resolved.entityModel()),
+                    "readMethodName", ctx.readMethodName(resolved.entityModel()),
+                    "addMethodName", ctx.addMethodName(ctx.singularize(property.getName())),
+                    "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
+            ));
 
             body.appendBlock("""
 {

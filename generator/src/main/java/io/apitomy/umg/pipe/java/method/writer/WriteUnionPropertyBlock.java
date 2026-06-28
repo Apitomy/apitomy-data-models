@@ -1,5 +1,7 @@
 package io.apitomy.umg.pipe.java.method.writer;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -39,14 +41,18 @@ public class WriteUnionPropertyBlock extends CodeBlock {
         jt.addImportsTo(writerClassSource);
         writerClassSource.addImport(JsonNode.class);
 
-        body.addContext("propertyName", property.getName());
-        body.addContext("getterMethodName", ctx.getterMethodName(property));
-        body.addContext("writeMethodName", writeMethodName);
+        body.addContext(Map.of(
+                "propertyName", property.getName(),
+                "getterMethodName", ctx.getterMethodName(property),
+                "writeMethodName", writeMethodName
+        ));
 
-        body.append("{");
-        body.append("    JsonNode value = this.${writeMethodName}(node.${getterMethodName}());");
-        body.append("    if (value != null) JsonUtil.setProperty(json, \"${propertyName}\", value);");
-        body.append("}");
+        body.appendBlock("""
+                {
+                    JsonNode value = this.${writeMethodName}(node.${getterMethodName}());
+                    if (value != null) JsonUtil.setProperty(json, "${propertyName}", value);
+                }
+                """);
     }
 
     @Override

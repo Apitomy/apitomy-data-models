@@ -1,5 +1,7 @@
 package io.apitomy.umg.pipe.java.method.writer;
 
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
@@ -39,10 +41,12 @@ public class WriteEntityPropertyBlock extends CodeBlock {
         }
         writerClassSource.addImport(resolved.javaInterface());
 
-        body.addContext("propertyName", property.getName());
-        body.addContext("getterMethodName", ctx.getterMethodName(property));
-        body.addContext("writeMethodName", writeMethodName(resolved.entityModel()));
-        body.addContext("propertyTypeJavaEntity", resolved.javaInterface().getName());
+        body.addContext(Map.of(
+                "propertyName", property.getName(),
+                "getterMethodName", ctx.getterMethodName(property),
+                "writeMethodName", writeMethodName(resolved.entityModel()),
+                "propertyTypeJavaEntity", resolved.javaInterface().getName()
+        ));
 
         body.appendBlock("""
 {

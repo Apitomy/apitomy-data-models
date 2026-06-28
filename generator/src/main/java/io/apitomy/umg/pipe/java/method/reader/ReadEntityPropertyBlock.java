@@ -1,5 +1,7 @@
 package io.apitomy.umg.pipe.java.method.reader;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -41,13 +43,15 @@ public class ReadEntityPropertyBlock extends CodeBlock {
         readerClassSource.addImport(resolved.javaInterface());
         readerClassSource.addImport(JsonNode.class);
 
-        body.addContext("propertyName", property.getName());
-        body.addContext("setterMethodName", ctx.setterMethodName(property));
-        body.addContext("createMethodName", ctx.createMethodName(resolved.entityModel()));
-        body.addContext("getterMethodName", ctx.getterMethodName(property));
-        body.addContext("readMethodName", ctx.readMethodName(resolved.entityModel()));
-        body.addContext("propertyEntityType", resolved.javaInterface().getName());
-        body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
+        body.addContext(Map.of(
+                "propertyName", property.getName(),
+                "setterMethodName", ctx.setterMethodName(property),
+                "createMethodName", ctx.createMethodName(resolved.entityModel()),
+                "getterMethodName", ctx.getterMethodName(property),
+                "readMethodName", ctx.readMethodName(resolved.entityModel()),
+                "propertyEntityType", resolved.javaInterface().getName(),
+                "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
+        ));
 
         body.appendBlock("""
 {

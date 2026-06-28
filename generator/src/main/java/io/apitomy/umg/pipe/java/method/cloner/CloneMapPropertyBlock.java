@@ -40,20 +40,23 @@ public class CloneMapPropertyBlock extends CodeBlock {
         PropertyModel property = propertyWithOrigin.getProperty();
         Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
 
-        body.addContext("getterMethodName", ctx.getterMethodName(property));
-
         if (mapValueType.isPrimitiveType()) {
             clonerClassSource.addImport(Map.class);
             clonerClassSource.addImport(LinkedHashMap.class);
-            body.addContext("setterMethodName", ctx.setterMethodName(property));
-            body.addContext("valueType", PrimitiveTypeHelper.determineValueType(mapValueType, ctx, clonerClassSource));
+            body.addContext(Map.of(
+                    "getterMethodName", ctx.getterMethodName(property),
+                    "setterMethodName", ctx.setterMethodName(property),
+                    "valueType", PrimitiveTypeHelper.determineValueType(mapValueType, ctx, clonerClassSource)
+            ));
 
-            body.append("{");
-            body.append("    Map<String, ${valueType}> srcMap = source.${getterMethodName}();");
-            body.append("    if (srcMap != null && !srcMap.isEmpty()) {");
-            body.append("        target.${setterMethodName}(new LinkedHashMap<>(srcMap));");
-            body.append("    }");
-            body.append("}");
+            body.appendBlock("""
+                    {
+                        Map<String, ${valueType}> srcMap = source.${getterMethodName}();
+                        if (srcMap != null && !srcMap.isEmpty()) {
+                            target.${setterMethodName}(new LinkedHashMap<>(srcMap));
+                        }
+                    }
+                    """);
         } else if (mapValueType.isEntityType()) {
             String entityTypeName = mapValueType.getName();
             var resolved = EntityResolver.resolveEntityInterface(property, entityTypeName, entityModel, ctx, "MAP");
@@ -66,22 +69,27 @@ public class CloneMapPropertyBlock extends CodeBlock {
             clonerClassSource.addImport(resolved.javaInterface());
             clonerClassSource.addImport(commonEntityTypeJavaModel);
 
-            body.addContext("entityJavaType", resolved.javaInterface().getName());
-            body.addContext("commonEntityType", commonEntityTypeJavaModel.getName());
-            body.addContext("createMethodName", "create" + entityTypeName);
-            body.addContext("cloneMethodName", "clone" + entityTypeName);
-            body.addContext("addMethodName", ctx.addMethodName(ctx.singularize(property.getName())));
+            body.addContext(Map.of(
+                    "getterMethodName", ctx.getterMethodName(property),
+                    "entityJavaType", resolved.javaInterface().getName(),
+                    "commonEntityType", commonEntityTypeJavaModel.getName(),
+                    "createMethodName", "create" + entityTypeName,
+                    "cloneMethodName", "clone" + entityTypeName,
+                    "addMethodName", ctx.addMethodName(ctx.singularize(property.getName()))
+            ));
 
-            body.append("{");
-            body.append("    Map<String, ? extends ${commonEntityType}> srcMap = source.${getterMethodName}();");
-            body.append("    if (srcMap != null && !srcMap.isEmpty()) {");
-            body.append("        srcMap.keySet().forEach(name -> {");
-            body.append("            ${entityJavaType} tgtItem = (${entityJavaType}) target.${createMethodName}();");
-            body.append("            this.${cloneMethodName}((${entityJavaType}) srcMap.get(name), tgtItem);");
-            body.append("            target.${addMethodName}(name, tgtItem);");
-            body.append("        });");
-            body.append("    }");
-            body.append("}");
+            body.appendBlock("""
+                    {
+                        Map<String, ? extends ${commonEntityType}> srcMap = source.${getterMethodName}();
+                        if (srcMap != null && !srcMap.isEmpty()) {
+                            srcMap.keySet().forEach(name -> {
+                                ${entityJavaType} tgtItem = (${entityJavaType}) target.${createMethodName}();
+                                this.${cloneMethodName}((${entityJavaType}) srcMap.get(name), tgtItem);
+                                target.${addMethodName}(name, tgtItem);
+                            });
+                        }
+                    }
+                    """);
         } else {
             ctx.warn("MAP Entity property '" + property.getName() + "' not cloned (unsupported) for entity: " + entityModel.fullyQualifiedName());
         }

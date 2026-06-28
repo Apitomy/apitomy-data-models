@@ -56,22 +56,28 @@ public class WriteMapPropertyBlock extends CodeBlock {
             writerClassSource.addImport(resolved.javaInterface());
             writerClassSource.addImport(commonEntityTypeJavaModel);
 
-            body.addContext("mapValueJavaType", resolved.javaInterface().getName());
-            body.addContext("writeMethodName", "write" + entityTypeName);
-            body.addContext("mapValueCommonJavaType", commonEntityTypeJavaModel.getName());
+            body.addContext(Map.of(
+                    "propertyName", property.getName(),
+                    "getterMethodName", ctx.getterMethodName(property),
+                    "mapValueJavaType", resolved.javaInterface().getName(),
+                    "writeMethodName", "write" + entityTypeName,
+                    "mapValueCommonJavaType", commonEntityTypeJavaModel.getName()
+            ));
 
-            body.append("{");
-            body.append("    Map<String, ? extends ${mapValueCommonJavaType}> models = node.${getterMethodName}();");
-            body.append("    if (models != null && !models.isEmpty()) {");
-            body.append("        ObjectNode object = JsonUtil.objectNode();");
-            body.append("        models.keySet().forEach(jsonName -> {");
-            body.append("            ObjectNode jsonValue = JsonUtil.objectNode();");
-            body.append("            this.${writeMethodName}((${mapValueJavaType}) models.get(jsonName), jsonValue);");
-            body.append("            JsonUtil.setProperty(object, jsonName, jsonValue);");
-            body.append("        });");
-            body.append("        JsonUtil.setProperty(json, \"${propertyName}\", object);");
-            body.append("    }");
-            body.append("}");
+            body.appendBlock("""
+                    {
+                        Map<String, ? extends ${mapValueCommonJavaType}> models = node.${getterMethodName}();
+                        if (models != null && !models.isEmpty()) {
+                            ObjectNode object = JsonUtil.objectNode();
+                            models.keySet().forEach(jsonName -> {
+                                ObjectNode jsonValue = JsonUtil.objectNode();
+                                this.${writeMethodName}((${mapValueJavaType}) models.get(jsonName), jsonValue);
+                                JsonUtil.setProperty(object, jsonName, jsonValue);
+                            });
+                            JsonUtil.setProperty(json, "${propertyName}", object);
+                        }
+                    }
+                    """);
         } else {
             ctx.warn("MAP Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
             ctx.warn("       property type: " + property.getResolvedType());

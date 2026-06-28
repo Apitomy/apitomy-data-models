@@ -4,6 +4,7 @@ import io.apitomy.umg.pipe.java.AbstractJavaStage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -44,9 +45,11 @@ public class CloneUnionPropertyBlock extends CodeBlock {
         NamespaceModel nsContext = propertyWithOrigin.getOrigin().getNamespace();
         io.apitomy.umg.models.concept.type.UnionType effectiveUnionType = getEffectiveUnionType(property);
 
-        body.addContext("unionJavaType", getUnionJavaTypeName(property, effectiveUnionType));
-        body.addContext("getterMethodName", ctx.getterMethodName(property));
-        body.addContext("setterMethodName", ctx.setterMethodName(property));
+        body.addContext(Map.of(
+                "unionJavaType", getUnionJavaTypeName(property, effectiveUnionType),
+                "getterMethodName", ctx.getterMethodName(property),
+                "setterMethodName", ctx.setterMethodName(property)
+        ));
 
         body.appendBlock("""
 {
