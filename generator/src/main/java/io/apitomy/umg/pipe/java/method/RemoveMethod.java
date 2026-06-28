@@ -13,9 +13,9 @@ import io.apitomy.umg.models.concept.type.Type;
 public class RemoveMethod implements CanAddImports {
 
     private final PropertyModel property;
-    private final ImplMethodContext ctx;
+    private final CodeGenContext ctx;
 
-    public RemoveMethod(PropertyModel property, ImplMethodContext ctx) {
+    public RemoveMethod(PropertyModel property, CodeGenContext ctx) {
         this.property = property;
         this.ctx = ctx;
     }
