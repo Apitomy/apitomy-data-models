@@ -37,8 +37,6 @@ import io.apitomy.umg.pipe.java.method.reader.ReadPrimitivePropertyBlock;
 import io.apitomy.umg.pipe.java.method.reader.ReadUnionPropertyBlock;
 import io.apitomy.umg.pipe.java.method.reader.ReadUnionListPropertyBlock;
 import io.apitomy.umg.pipe.java.method.reader.ReadUnionMapPropertyBlock;
-import io.apitomy.umg.index.concept.ConceptIndex;
-import io.apitomy.umg.index.java.JavaIndex;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -48,10 +46,19 @@ import lombok.Data;
  *
  * @author eric.wittmann@gmail.com
  */
-public class CreateReadersStage extends AbstractJavaStage implements CodeGenContext {
+public class CreateReadersStage extends AbstractJavaStage {
+
+    private CodeGenContext ctx;
 
     @Override
     protected void doProcess() {
+        ctx = new CodeGenContext(
+                getState().getConceptIndex(),
+                getState().getJavaIndex(),
+                getJavaTypeFactory(),
+                getState().getConfig().getRootNamespace(),
+                getState().getSpecIndex(),
+                getClass().getSimpleName());
         getState().getSpecIndex().getAllSpecificationVersions().forEach(specVersion -> {
             createReader(specVersion);
         });
@@ -435,23 +442,6 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
         body.append("ReaderUtil.readExtraProperties(json, node);");
     }
 
-    // --- CodeGenContext implementation (only methods not inherited from AbstractJavaStage) ---
-
-    @Override
-    public ConceptIndex getConceptIndex() {
-        return getState().getConceptIndex();
-    }
-
-    @Override
-    public JavaIndex getJavaIndex() {
-        return getState().getJavaIndex();
-    }
-
-    @Override
-    public void warn(String message) {
-        super.warn(message);
-    }
-
     @Data
     @AllArgsConstructor
     private class CreateReadPropertySnippet {
@@ -531,24 +521,24 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
         }
 
         private void handleResolvedUnionProperty(BodyBuilder body, io.apitomy.umg.models.concept.type.Type resolved) {
-            new ReadUnionPropertyBlock(propertyWithOrigin, readerClassSource, CreateReadersStage.this).appendTo(body);
+            new ReadUnionPropertyBlock(propertyWithOrigin, readerClassSource, ctx).appendTo(body);
         }
 
         private void handleResolvedUnionListProperty(BodyBuilder body,
                 io.apitomy.umg.models.concept.type.ListType listType) {
-            new ReadUnionListPropertyBlock(propertyWithOrigin, readerClassSource, CreateReadersStage.this).appendTo(body);
+            new ReadUnionListPropertyBlock(propertyWithOrigin, readerClassSource, ctx).appendTo(body);
         }
 
         private void handleResolvedUnionMapProperty(BodyBuilder body,
                 io.apitomy.umg.models.concept.type.MapType mapType) {
-            new ReadUnionMapPropertyBlock(propertyWithOrigin, readerClassSource, CreateReadersStage.this).appendTo(body);
+            new ReadUnionMapPropertyBlock(propertyWithOrigin, readerClassSource, ctx).appendTo(body);
         }
 
         private void handleStarProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             if (isEntity(property)) {
                 var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
-                        entityModel, CreateReadersStage.this, "STAR");
+                        entityModel, ctx, "STAR");
                 if (resolved == null) {
                     return;
                 }
@@ -578,8 +568,8 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 readerClassSource.addImport(List.class);
                 readerClassSource.addImport(JsonNode.class);
 
-                body.addContext("isCheckMethod", PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), CreateReadersStage.this, readerClassSource));
-                body.addContext("toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), CreateReadersStage.this, readerClassSource));
+                body.addContext("isCheckMethod", PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), ctx, readerClassSource));
+                body.addContext("toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), ctx, readerClassSource));
 
                 body.append("{");
                 body.append("    List<String> propertyNames = JsonUtil.keys(json);");
@@ -598,9 +588,9 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 readerClassSource.addImport(JsonNode.class);
 
                 Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
-                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(listValueType, CreateReadersStage.this);
-                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(listValueType, CreateReadersStage.this, readerClassSource);
-                String elementValueType = PrimitiveTypeHelper.determineValueType(listValueType, CreateReadersStage.this, readerClassSource);
+                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(listValueType, ctx);
+                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(listValueType, ctx, readerClassSource);
+                String elementValueType = PrimitiveTypeHelper.determineValueType(listValueType, ctx, readerClassSource);
                 body.addContext("expectedType", expectedType);
                 body.addContext("toConversionMethod", toConversionMethod);
                 body.addContext("elementValueType", elementValueType);
@@ -628,9 +618,9 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 readerClassSource.addImport(java.util.LinkedHashMap.class);
 
                 Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
-                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, CreateReadersStage.this);
-                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(mapValueType, CreateReadersStage.this, readerClassSource);
-                String elementValueType = PrimitiveTypeHelper.determineValueType(mapValueType, CreateReadersStage.this, readerClassSource);
+                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, ctx);
+                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(mapValueType, ctx, readerClassSource);
+                String elementValueType = PrimitiveTypeHelper.determineValueType(mapValueType, ctx, readerClassSource);
                 body.addContext("expectedType", expectedType);
                 body.addContext("toConversionMethod", toConversionMethod);
                 body.addContext("elementValueType", elementValueType);
@@ -662,7 +652,7 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
             PropertyModel property = propertyWithOrigin.getProperty();
             if (isEntity(property)) {
                 var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
-                        entityModel, CreateReadersStage.this, "REGEX");
+                        entityModel, ctx, "REGEX");
                 if (resolved == null) {
                     return;
                 }
@@ -694,8 +684,8 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 readerClassSource.addImport(JsonNode.class);
 
                 body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
-                body.addContext("isCheckMethod", PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), CreateReadersStage.this, readerClassSource));
-                body.addContext("toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), CreateReadersStage.this, readerClassSource));
+                body.addContext("isCheckMethod", PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), ctx, readerClassSource));
+                body.addContext("toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), ctx, readerClassSource));
                 body.addContext("addMethodName", addMethodName(singularize(property.getCollection())));
 
                 body.append("{");
@@ -715,9 +705,9 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 readerClassSource.addImport(JsonNode.class);
 
                 Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
-                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(listValueType, CreateReadersStage.this);
-                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(listValueType, CreateReadersStage.this, readerClassSource);
-                String elementValueType = PrimitiveTypeHelper.determineValueType(listValueType, CreateReadersStage.this, readerClassSource);
+                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(listValueType, ctx);
+                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(listValueType, ctx, readerClassSource);
+                String elementValueType = PrimitiveTypeHelper.determineValueType(listValueType, ctx, readerClassSource);
                 body.addContext("expectedType", expectedType);
                 body.addContext("toConversionMethod", toConversionMethod);
                 body.addContext("elementValueType", elementValueType);
@@ -747,9 +737,9 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
                 readerClassSource.addImport(java.util.LinkedHashMap.class);
 
                 Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
-                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, CreateReadersStage.this);
-                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(mapValueType, CreateReadersStage.this, readerClassSource);
-                String elementValueType = PrimitiveTypeHelper.determineValueType(mapValueType, CreateReadersStage.this, readerClassSource);
+                String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, ctx);
+                String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(mapValueType, ctx, readerClassSource);
+                String elementValueType = PrimitiveTypeHelper.determineValueType(mapValueType, ctx, readerClassSource);
                 body.addContext("expectedType", expectedType);
                 body.addContext("toConversionMethod", toConversionMethod);
                 body.addContext("elementValueType", elementValueType);
@@ -780,19 +770,19 @@ public class CreateReadersStage extends AbstractJavaStage implements CodeGenCont
         }
 
         private void handleEntityProperty(BodyBuilder body) {
-            new ReadEntityPropertyBlock(propertyWithOrigin, entityModel, readerClassSource, CreateReadersStage.this).appendTo(body);
+            new ReadEntityPropertyBlock(propertyWithOrigin, entityModel, readerClassSource, ctx).appendTo(body);
         }
 
         private void handlePrimitiveTypeProperty(BodyBuilder body) {
-            new ReadPrimitivePropertyBlock(propertyWithOrigin, readerClassSource, CreateReadersStage.this).appendTo(body);
+            new ReadPrimitivePropertyBlock(propertyWithOrigin, readerClassSource, ctx).appendTo(body);
         }
 
         private void handleListProperty(BodyBuilder body) {
-            new ReadListPropertyBlock(propertyWithOrigin, entityModel, readerClassSource, CreateReadersStage.this).appendTo(body);
+            new ReadListPropertyBlock(propertyWithOrigin, entityModel, readerClassSource, ctx).appendTo(body);
         }
 
         private void handleMapProperty(BodyBuilder body) {
-            new ReadMapPropertyBlock(propertyWithOrigin, entityModel, readerClassSource, CreateReadersStage.this).appendTo(body);
+            new ReadMapPropertyBlock(propertyWithOrigin, entityModel, readerClassSource, ctx).appendTo(body);
         }
 
 
