@@ -33,8 +33,6 @@ import io.apitomy.umg.pipe.java.method.cloner.ClonePrimitivePropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.CloneUnionPropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.CloneUnionListPropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.CloneUnionMapPropertyBlock;
-import io.apitomy.umg.index.concept.ConceptIndex;
-import io.apitomy.umg.index.java.JavaIndex;
 import io.apitomy.umg.models.java.type.JavaTypeFactory;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -44,10 +42,19 @@ import lombok.Data;
  * version. Each cloner can clone any node in the tree by walking the source node and
  * copying property values directly into a new target node -- avoiding JSON serialization.
  */
-public class CreateClonersStage extends AbstractJavaStage implements CodeGenContext {
+public class CreateClonersStage extends AbstractJavaStage {
+
+    private CodeGenContext ctx;
 
     @Override
     protected void doProcess() {
+        ctx = new CodeGenContext(
+                getState().getConceptIndex(),
+                getState().getJavaIndex(),
+                getJavaTypeFactory(),
+                getState().getConfig().getRootNamespace(),
+                getState().getSpecIndex(),
+                getClass().getSimpleName());
         getState().getSpecIndex().getAllSpecificationVersions().forEach(specVersion -> {
             createCloner(specVersion);
         });
@@ -146,23 +153,6 @@ public class CreateClonersStage extends AbstractJavaStage implements CodeGenCont
         return "clone" + entityModel.getName();
     }
 
-    // --- CodeGenContext implementation (only methods not inherited from AbstractJavaStage) ---
-
-    @Override
-    public ConceptIndex getConceptIndex() {
-        return getState().getConceptIndex();
-    }
-
-    @Override
-    public JavaIndex getJavaIndex() {
-        return getState().getJavaIndex();
-    }
-
-    @Override
-    public void warn(String message) {
-        super.warn(message);
-    }
-
     @AllArgsConstructor
     private class CreateCloneProperty {
 
@@ -231,18 +221,18 @@ public class CreateClonersStage extends AbstractJavaStage implements CodeGenCont
         }
 
         private void handlePrimitiveProperty(BodyBuilder body) {
-            new ClonePrimitivePropertyBlock(propertyWithOrigin, CreateClonersStage.this).appendTo(body);
+            new ClonePrimitivePropertyBlock(propertyWithOrigin, ctx).appendTo(body);
         }
 
         private void handleEntityProperty(BodyBuilder body) {
-            new CloneEntityPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, CreateClonersStage.this).appendTo(body);
+            new CloneEntityPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, ctx).appendTo(body);
         }
 
         private void handleStarProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             if (isEntity(property)) {
                 var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
-                        entityModel, CreateClonersStage.this, "STAR");
+                        entityModel, ctx, "STAR");
                 if (resolved == null) {
                     return;
                 }
@@ -286,7 +276,7 @@ public class CreateClonersStage extends AbstractJavaStage implements CodeGenCont
             PropertyModel property = propertyWithOrigin.getProperty();
             if (isEntity(property)) {
                 var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
-                        entityModel, CreateClonersStage.this, "REGEX");
+                        entityModel, ctx, "REGEX");
                 if (resolved == null) {
                     return;
                 }
@@ -319,7 +309,7 @@ public class CreateClonersStage extends AbstractJavaStage implements CodeGenCont
 
                 body.addContext("getterMethodName", getterMethodName(property));
                 body.addContext("addMethodName", addMethodName(singularize(property.getCollection())));
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateClonersStage.this, clonerClassSource));
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, clonerClassSource));
 
                 clonerClassSource.addImport(List.class);
                 body.append("{");
@@ -337,23 +327,23 @@ public class CreateClonersStage extends AbstractJavaStage implements CodeGenCont
         }
 
         private void handleListProperty(BodyBuilder body) {
-            new CloneListPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, CreateClonersStage.this).appendTo(body);
+            new CloneListPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, ctx).appendTo(body);
         }
 
         private void handleMapProperty(BodyBuilder body) {
-            new CloneMapPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, CreateClonersStage.this).appendTo(body);
+            new CloneMapPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, ctx).appendTo(body);
         }
 
         private void handleUnionProperty(BodyBuilder body) {
-            new CloneUnionPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, CreateClonersStage.this).appendTo(body);
+            new CloneUnionPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, ctx).appendTo(body);
         }
 
         private void handleUnionListProperty(BodyBuilder body) {
-            new CloneUnionListPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, CreateClonersStage.this).appendTo(body);
+            new CloneUnionListPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, ctx).appendTo(body);
         }
 
         private void handleUnionMapProperty(BodyBuilder body) {
-            new CloneUnionMapPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, CreateClonersStage.this).appendTo(body);
+            new CloneUnionMapPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, ctx).appendTo(body);
         }
 
 

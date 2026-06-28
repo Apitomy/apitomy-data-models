@@ -10,17 +10,15 @@ import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.forge.roaster.model.source.MethodHolderSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
-import io.apitomy.umg.index.concept.ConceptIndex;
-import io.apitomy.umg.index.java.JavaIndex;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.ClearMethod;
+import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
-import io.apitomy.umg.pipe.java.method.ImplMethodContext;
 import io.apitomy.umg.pipe.java.method.InsertMethod;
 import io.apitomy.umg.pipe.java.method.RemoveMethod;
 import io.apitomy.umg.pipe.java.method.SetterMethod;
@@ -34,70 +32,17 @@ import io.apitomy.umg.pipe.java.method.SetterMethod;
  */
 public class CreateImplMethodsStage extends AbstractCreateMethodsStage {
 
-    private final ImplMethodContext ctx = new ImplMethodContext() {
-        @Override
-        public String getFieldName(PropertyModel property) {
-            return CreateImplMethodsStage.this.getFieldName(property);
-        }
-
-        @Override
-        public String getNodeEntityClassFQN() {
-            return CreateImplMethodsStage.this.getNodeEntityClassFQN();
-        }
-
-        @Override
-        public String getParentPropertyTypeEnumFQN() {
-            return CreateImplMethodsStage.this.getParentPropertyTypeEnumFQN();
-        }
-
-        @Override
-        public String getUnionValueInterfaceFQN() {
-            return CreateImplMethodsStage.this.getUnionValueInterfaceFQN();
-        }
-
-        @Override
-        public String getUnionTypeFQN(String name) {
-            return CreateImplMethodsStage.this.getUnionTypeFQN(name);
-        }
-
-        @Override
-        public String getDataModelUtilFQCN() {
-            return CreateImplMethodsStage.this.getDataModelUtilFQCN();
-        }
-
-        @Override
-        public String getJavaEntityClassFQN(EntityModel entity) {
-            return CreateImplMethodsStage.this.getJavaEntityClassFQN(entity);
-        }
-
-        @Override
-        public JavaClassSource lookupJavaEntityImpl(String fqn) {
-            return CreateImplMethodsStage.this.lookupJavaEntityImpl(fqn);
-        }
-
-        @Override
-        public JavaClassSource lookupJavaEntityImpl(EntityModel entity) {
-            return CreateImplMethodsStage.this.lookupJavaEntityImpl(entity);
-        }
-
-        @Override
-        public ConceptIndex getConceptIndex() {
-            return CreateImplMethodsStage.this.getState().getConceptIndex();
-        }
-
-        @Override
-        public JavaIndex getJavaIndex() {
-            return CreateImplMethodsStage.this.getState().getJavaIndex();
-        }
-
-        @Override
-        public void error(String message) {
-            CreateImplMethodsStage.this.error(message);
-        }
-    };
+    private CodeGenContext ctx;
 
     @Override
     protected void doProcess() {
+        ctx = new CodeGenContext(
+                getState().getConceptIndex(),
+                getState().getJavaIndex(),
+                getJavaTypeFactory(),
+                getState().getConfig().getRootNamespace(),
+                getState().getSpecIndex(),
+                getClass().getSimpleName());
         getState().getConceptIndex().findEntities("").stream().filter(entity -> entity.isLeaf()).forEach(entity -> {
             createEntityImplMethods(entity);
         });

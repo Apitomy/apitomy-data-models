@@ -11,9 +11,9 @@ import io.apitomy.umg.models.concept.PropertyModel;
 public class GetterMethod implements CanAddImports {
 
     private final PropertyModel property;
-    private final ImplMethodContext ctx;
+    private final CodeGenContext ctx;
 
-    public GetterMethod(PropertyModel property, ImplMethodContext ctx) {
+    public GetterMethod(PropertyModel property, CodeGenContext ctx) {
         this.property = property;
         this.ctx = ctx;
     }

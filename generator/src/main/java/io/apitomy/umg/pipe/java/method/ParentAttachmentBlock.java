@@ -24,7 +24,7 @@ public class ParentAttachmentBlock extends CodeBlock {
     private final Type valueType;
     private final String propertyName;
     private final ParentPropertyKind kind;
-    private final ImplMethodContext ctx;
+    private final CodeGenContext ctx;
 
     /**
      * @param valueType the resolved type of the value being attached
@@ -33,7 +33,7 @@ public class ParentAttachmentBlock extends CodeBlock {
      * @param ctx stage context for FQN lookups
      */
     public ParentAttachmentBlock(Type valueType, String propertyName, ParentPropertyKind kind,
-            ImplMethodContext ctx) {
+            CodeGenContext ctx) {
         this.valueType = valueType;
         this.propertyName = propertyName;
         this.kind = kind;

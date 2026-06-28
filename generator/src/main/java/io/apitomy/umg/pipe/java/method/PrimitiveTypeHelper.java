@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.apitomy.umg.models.concept.type.Type;
+import io.apitomy.umg.pipe.java.Util;
 
 /**
  * Shared helpers for mapping concept-model {@link Type}s to Java type names
@@ -18,6 +19,24 @@ public final class PrimitiveTypeHelper {
     }
 
     /**
+     * Maps a primitive concept type to its corresponding Java class.
+     *
+     * @param type the primitive type
+     * @return the Java class
+     * @throws UnsupportedOperationException if the type is not primitive or has no mapping
+     */
+    public static Class<?> primitiveTypeToClass(Type type) {
+        if (!type.isPrimitiveType()) {
+            throw new UnsupportedOperationException("Property type not primitive: " + type);
+        }
+        Class<?> rval = Util.PRIMITIVE_TYPE_MAP.get(type.getName());
+        if (rval == null) {
+            throw new UnsupportedOperationException("Primitive-to-class mapping not found for: " + type.getName());
+        }
+        return rval;
+    }
+
+    /**
      * Determines the Java data type name for a primitive (or list/map-of-primitive) type.
      * Any required import is added to {@code classSource}.
      *
@@ -25,7 +44,7 @@ public final class PrimitiveTypeHelper {
      */
     public static String determineValueType(Type type, CodeGenContext ctx, JavaClassSource classSource) {
         if (type.isPrimitiveType()) {
-            Class<?> _class = ctx.primitiveTypeToClass(type);
+            Class<?> _class = primitiveTypeToClass(type);
             if (_class != null) {
                 classSource.addImport(_class);
                 return _class.getSimpleName();
@@ -35,7 +54,7 @@ public final class PrimitiveTypeHelper {
         if (type.isListType()) {
             Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) type).getValueType();
             if (listValueType.isPrimitiveType()) {
-                Class<?> _class = ctx.primitiveTypeToClass(listValueType);
+                Class<?> _class = primitiveTypeToClass(listValueType);
                 if (_class != null) {
                     classSource.addImport(_class);
                     return "List<" + _class.getSimpleName() + ">";
@@ -46,7 +65,7 @@ public final class PrimitiveTypeHelper {
         if (type.isMapType()) {
             Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) type).getValueType();
             if (mapValueType.isPrimitiveType()) {
-                Class<?> _class = ctx.primitiveTypeToClass(mapValueType);
+                Class<?> _class = primitiveTypeToClass(mapValueType);
                 if (_class != null) {
                     classSource.addImport(_class);
                     return "Map<String, " + _class.getSimpleName() + ">";
@@ -62,7 +81,7 @@ public final class PrimitiveTypeHelper {
      * E.g. String → "isString", Boolean → "isBoolean", ObjectNode → "isObject", JsonNode → "isJsonNode".
      */
     public static String determineIsCheckMethod(Type primitiveType, CodeGenContext ctx, JavaClassSource classSource) {
-        Class<?> _class = ctx.primitiveTypeToClass(primitiveType);
+        Class<?> _class = primitiveTypeToClass(primitiveType);
         if (ObjectNode.class.equals(_class)) {
             classSource.addImport(_class);
             return "isObject";
@@ -84,7 +103,7 @@ public final class PrimitiveTypeHelper {
      * E.g. String → "toString", Boolean → "toBoolean", ObjectNode → "toObject", JsonNode → "toJsonNode".
      */
     public static String determineToConversionMethod(Type primitiveType, CodeGenContext ctx, JavaClassSource classSource) {
-        Class<?> _class = ctx.primitiveTypeToClass(primitiveType);
+        Class<?> _class = primitiveTypeToClass(primitiveType);
         if (ObjectNode.class.equals(_class)) {
             classSource.addImport(_class);
             return "toObject";
@@ -108,7 +127,7 @@ public final class PrimitiveTypeHelper {
      * E.g. String → "string", Boolean → "boolean", ObjectNode → "object", JsonNode → "any".
      */
     public static String determineExpectedTypeString(Type primitiveType, CodeGenContext ctx) {
-        Class<?> _class = ctx.primitiveTypeToClass(primitiveType);
+        Class<?> _class = primitiveTypeToClass(primitiveType);
         if (ObjectNode.class.equals(_class)) {
             return "object";
         } else if (JsonNode.class.equals(_class)) {
@@ -130,7 +149,7 @@ public final class PrimitiveTypeHelper {
      * meaning no wrapping via toJsonNode() is needed for writers and no conversion is needed for readers.
      */
     public static boolean isJsonNodeType(Type primitiveType, CodeGenContext ctx) {
-        Class<?> _class = ctx.primitiveTypeToClass(primitiveType);
+        Class<?> _class = primitiveTypeToClass(primitiveType);
         return ObjectNode.class.equals(_class) || JsonNode.class.equals(_class);
     }
 }

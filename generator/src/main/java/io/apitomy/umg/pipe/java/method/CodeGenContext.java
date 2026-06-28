@@ -1,60 +1,239 @@
 package io.apitomy.umg.pipe.java.method;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
+import org.modeshape.common.text.Inflector;
 
+import io.apitomy.umg.index.concept.ConceptIndex;
+import io.apitomy.umg.index.concept.SpecificationIndex;
+import io.apitomy.umg.index.java.JavaIndex;
+import io.apitomy.umg.logging.Logger;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.NamespaceModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.models.java.type.JavaTypeFactory;
-import io.apitomy.umg.index.concept.ConceptIndex;
-import io.apitomy.umg.index.java.JavaIndex;
+import io.apitomy.umg.pipe.java.Util;
 
 /**
- * Provides stage-level lookups that extracted code block classes need
- * for resolving FQNs, looking up Java entities, and computing method names.
- * This decouples code blocks from the concrete stage classes.
+ * Self-contained context that provides entity resolution, naming logic, and
+ * index lookups needed by code-generation blocks and method classes.
+ * Replaces the former CodeGenContext interface and ImplMethodContext interface.
  */
-public interface CodeGenContext {
+public class CodeGenContext {
 
-    ConceptIndex getConceptIndex();
+    private static final Inflector inflector = new Inflector();
 
-    JavaIndex getJavaIndex();
+    private final ConceptIndex conceptIndex;
+    private final JavaIndex javaIndex;
+    private final JavaTypeFactory javaTypeFactory;
+    private final String rootNamespace;
+    private final SpecificationIndex specIndex;
+    private final String logPrefix;
 
-    JavaTypeFactory getJavaTypeFactory();
+    public CodeGenContext(ConceptIndex conceptIndex, JavaIndex javaIndex,
+                          JavaTypeFactory javaTypeFactory, String rootNamespace,
+                          SpecificationIndex specIndex, String logPrefix) {
+        this.conceptIndex = conceptIndex;
+        this.javaIndex = javaIndex;
+        this.javaTypeFactory = javaTypeFactory;
+        this.rootNamespace = rootNamespace;
+        this.specIndex = specIndex;
+        this.logPrefix = logPrefix;
+    }
 
-    String getJavaEntityInterfaceFQN(EntityModel entity);
+    // --- Index accessors ---
 
-    String getJavaEntityClassFQN(EntityModel entity);
+    public ConceptIndex getConceptIndex() {
+        return conceptIndex;
+    }
 
-    String getNodeEntityClassFQN();
+    public JavaIndex getJavaIndex() {
+        return javaIndex;
+    }
 
-    String getUnionTypeFQN(String name);
+    public JavaTypeFactory getJavaTypeFactory() {
+        return javaTypeFactory;
+    }
 
-    JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, PropertyModel property);
+    // --- FQN construction ---
 
-    JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, Type type);
+    public String getJavaEntityInterfaceFQN(EntityModel entity) {
+        return getJavaEntityInterfacePackage(entity) + "." + getJavaEntityInterfaceName(entity);
+    }
 
-    JavaInterfaceSource resolveJavaEntity(EntityModel entity);
+    public String getJavaEntityClassFQN(EntityModel entity) {
+        return getJavaEntityClassPackage(entity) + "." + getJavaEntityClassName(entity);
+    }
 
-    JavaInterfaceSource resolveCommonJavaEntity(EntityModel entity);
+    public String getNodeEntityClassFQN() {
+        return rootNamespace + ".NodeImpl";
+    }
 
-    JavaClassSource lookupJavaEntityImpl(String fqn);
+    public String getDataModelUtilFQCN() {
+        return rootNamespace + ".util.DataModelUtil";
+    }
 
-    Class<?> primitiveTypeToClass(Type type);
+    public String getParentPropertyTypeEnumFQN() {
+        return rootNamespace + ".ParentPropertyType";
+    }
 
-    String getterMethodName(PropertyModel property);
+    public String getUnionValueInterfaceFQN() {
+        return getUnionTypesPackageName() + ".UnionValue";
+    }
 
-    String setterMethodName(PropertyModel property);
+    public String getUnionTypeFQN(String name) {
+        return getUnionTypesPackageName() + "." + name;
+    }
 
-    String createMethodName(EntityModel entity);
+    // --- Naming helpers ---
 
-    String addMethodName(String singularName);
+    private String getJavaEntityInterfaceName(EntityModel entity) {
+        String prefix = getPrefix(entity.getNamespace().fullName());
+        return prefix + entity.getName();
+    }
 
-    String singularize(String name);
+    private String getJavaEntityClassName(EntityModel entity) {
+        String prefix = getPrefix(entity.getNamespace().fullName());
+        return prefix + entity.getName() + "Impl";
+    }
 
-    String readMethodName(EntityModel entity);
+    private String getJavaEntityInterfacePackage(EntityModel entity) {
+        return entity.getNamespace().fullName();
+    }
 
-    void warn(String message);
+    private String getJavaEntityClassPackage(EntityModel entity) {
+        return entity.getNamespace().fullName();
+    }
+
+    private String getPrefix(String namespace) {
+        String prefix = specIndex.getNsToPrefix().get(namespace);
+        return prefix == null ? "" : prefix;
+    }
+
+    private String getUnionTypesPackageName() {
+        return rootNamespace + ".union";
+    }
+
+    // --- Entity resolution ---
+
+    public JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, PropertyModel property) {
+        var entityType = (io.apitomy.umg.models.concept.type.EntityType) property.getResolvedType();
+        return resolveJavaEntity(namespace.fullName(), entityType.getName());
+    }
+
+    public JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, Type type) {
+        return resolveJavaEntity(namespace.fullName(), type.getName());
+    }
+
+    public JavaInterfaceSource resolveJavaEntity(EntityModel entityModel) {
+        return resolveJavaEntity(entityModel.getNamespace().fullName(), entityModel.getName());
+    }
+
+    private JavaInterfaceSource resolveJavaEntity(String namespace, String entityName) {
+        String prefix = getPrefix(namespace);
+        String fqn = namespace + "." + prefix + entityName;
+        return lookupJavaEntity(fqn);
+    }
+
+    public JavaInterfaceSource resolveCommonJavaEntity(EntityModel entityModel) {
+        EntityModel commonEntity = conceptIndex.lookupCommonEntity(
+                entityModel.getNamespace().fullName(), entityModel.getName());
+        return lookupJavaEntity(commonEntity);
+    }
+
+    private JavaInterfaceSource lookupJavaEntity(EntityModel entity) {
+        return lookupJavaEntity(getJavaEntityInterfaceFQN(entity));
+    }
+
+    private JavaInterfaceSource lookupJavaEntity(String fullyQualifiedName) {
+        return javaIndex.lookupInterface(fullyQualifiedName);
+    }
+
+    public JavaClassSource lookupJavaEntityImpl(EntityModel entity) {
+        return lookupJavaEntityImpl(getJavaEntityClassFQN(entity));
+    }
+
+    public JavaClassSource lookupJavaEntityImpl(String fullyQualifiedName) {
+        return javaIndex.lookupClass(fullyQualifiedName);
+    }
+
+    // --- Primitive type mapping ---
+
+    public Class<?> primitiveTypeToClass(Type type) {
+        return PrimitiveTypeHelper.primitiveTypeToClass(type);
+    }
+
+    // --- Method name helpers ---
+
+    public String getterMethodName(PropertyModel propertyModel) {
+        String name = propertyModel.getName();
+        if (name.startsWith("/")) {
+            name = propertyModel.getCollection();
+        }
+        return getterMethodName(name, propertyModel.getResolvedType());
+    }
+
+    public String getterMethodName(String propertyName, Type type) {
+        boolean isBool = type.isPrimitiveType() && type.getName().equals("boolean");
+        return (isBool ? "is" : "get") + StringUtils.capitalize(propertyName);
+    }
+
+    public String setterMethodName(PropertyModel propertyModel) {
+        return "set" + StringUtils.capitalize(propertyModel.getName());
+    }
+
+    public String createMethodName(EntityModel entityModel) {
+        return createMethodName(entityModel.getName());
+    }
+
+    public String createMethodName(String entityName) {
+        return "create" + StringUtils.capitalize(entityName);
+    }
+
+    public String addMethodName(String name) {
+        return "add" + StringUtils.capitalize(name);
+    }
+
+    public String readMethodName(EntityModel entityModel) {
+        return readMethodName(entityModel.getName());
+    }
+
+    public String readMethodName(String entityName) {
+        return "read" + StringUtils.capitalize(entityName);
+    }
+
+    public String singularize(String name) {
+        return inflector.singularize(name);
+    }
+
+    // --- Field name ---
+
+    public String getFieldName(PropertyModel property) {
+        if (property.getName().equals("*")) {
+            return "_items";
+        }
+        if (property.getName().startsWith("/")) {
+            return sanitizeFieldName(property.getCollection());
+        }
+        return sanitizeFieldName(property.getName());
+    }
+
+    private String sanitizeFieldName(String name) {
+        if (name == null) {
+            return null;
+        }
+        return Util.JAVA_KEYWORD_MAP.getOrDefault(name, name);
+    }
+
+    // --- Logging ---
+
+    public void warn(String message) {
+        Logger.warn("[" + logPrefix + "] " + message);
+    }
+
+    public void error(String message) {
+        Logger.error("[" + logPrefix + "] " + message);
+    }
 }

@@ -18,10 +18,10 @@ public class AddMethod implements CanAddImports {
 
     private final PropertyModel property;
     private final JavaSource<?> javaEntity;
-    private final ImplMethodContext ctx;
+    private final CodeGenContext ctx;
     private final ParentAttachmentBlock parentBlock;
 
-    public AddMethod(JavaSource<?> javaEntity, PropertyModel property, ImplMethodContext ctx) {
+    public AddMethod(JavaSource<?> javaEntity, PropertyModel property, CodeGenContext ctx) {
         this.property = property;
         this.javaEntity = javaEntity;
         this.ctx = ctx;

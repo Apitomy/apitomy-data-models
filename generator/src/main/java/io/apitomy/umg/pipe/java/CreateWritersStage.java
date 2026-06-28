@@ -31,8 +31,6 @@ import io.apitomy.umg.pipe.java.method.writer.WritePrimitivePropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WriteUnionPropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WriteUnionListPropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WriteUnionMapPropertyBlock;
-import io.apitomy.umg.index.concept.ConceptIndex;
-import io.apitomy.umg.index.java.JavaIndex;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -42,10 +40,19 @@ import lombok.Data;
  *
  * @author eric.wittmann@gmail.com
  */
-public class CreateWritersStage extends AbstractJavaStage implements CodeGenContext {
+public class CreateWritersStage extends AbstractJavaStage {
+
+    private CodeGenContext ctx;
 
     @Override
     protected void doProcess() {
+        ctx = new CodeGenContext(
+                getState().getConceptIndex(),
+                getState().getJavaIndex(),
+                getJavaTypeFactory(),
+                getState().getConfig().getRootNamespace(),
+                getState().getSpecIndex(),
+                getClass().getSimpleName());
         getState().getSpecIndex().getAllSpecificationVersions().forEach(specVersion -> {
             createWriter(specVersion);
         });
@@ -376,23 +383,6 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
         return "write" + StringUtils.capitalize(entityName);
     }
 
-    // --- CodeGenContext implementation (only methods not inherited from AbstractJavaStage) ---
-
-    @Override
-    public ConceptIndex getConceptIndex() {
-        return getState().getConceptIndex();
-    }
-
-    @Override
-    public JavaIndex getJavaIndex() {
-        return getState().getJavaIndex();
-    }
-
-    @Override
-    public void warn(String message) {
-        super.warn(message);
-    }
-
     @Data
     @AllArgsConstructor
     private class CreateWriteProperty {
@@ -463,24 +453,24 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
         }
 
         private void handleResolvedUnionProperty(BodyBuilder body, io.apitomy.umg.models.concept.type.Type resolved) {
-            new WriteUnionPropertyBlock(propertyWithOrigin, writerClassSource, CreateWritersStage.this).appendTo(body);
+            new WriteUnionPropertyBlock(propertyWithOrigin, writerClassSource, ctx).appendTo(body);
         }
 
         private void handleResolvedUnionListProperty(BodyBuilder body,
                 io.apitomy.umg.models.concept.type.ListType listType) {
-            new WriteUnionListPropertyBlock(propertyWithOrigin, writerClassSource, CreateWritersStage.this).appendTo(body);
+            new WriteUnionListPropertyBlock(propertyWithOrigin, writerClassSource, ctx).appendTo(body);
         }
 
         private void handleResolvedUnionMapProperty(BodyBuilder body,
                 io.apitomy.umg.models.concept.type.MapType mapType) {
-            new WriteUnionMapPropertyBlock(propertyWithOrigin, writerClassSource, CreateWritersStage.this).appendTo(body);
+            new WriteUnionMapPropertyBlock(propertyWithOrigin, writerClassSource, ctx).appendTo(body);
         }
 
         private void handleStarProperty(BodyBuilder body) {
             PropertyModel property = propertyWithOrigin.getProperty();
             if (isEntity(property)) {
                 var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
-                        entityModel, CreateWritersStage.this, "STAR");
+                        entityModel, ctx, "STAR");
                 if (resolved == null) {
                     return;
                 }
@@ -503,7 +493,7 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
             } else if (isPrimitive(property)) {
                 writerClassSource.addImport(List.class);
 
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
 
                 body.append("{");
                 body.append("    List<String> propertyNames = node.getItemNames();");
@@ -516,7 +506,7 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
             } else if (isPrimitiveList(property)) {
                 writerClassSource.addImport(List.class);
 
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
 
                 body.append("{");
                 body.append("    List<String> propertyNames = node.getItemNames();");
@@ -530,7 +520,7 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
                 writerClassSource.addImport(List.class);
                 writerClassSource.addImport(Map.class);
 
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
 
                 body.append("{");
                 body.append("    List<String> propertyNames = node.getItemNames();");
@@ -550,7 +540,7 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
             PropertyModel property = propertyWithOrigin.getProperty();
             if (isEntity(property)) {
                 var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
-                        entityModel, CreateWritersStage.this, "REGEX");
+                        entityModel, ctx, "REGEX");
                 if (resolved == null) {
                     return;
                 }
@@ -582,7 +572,7 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
                 writerClassSource.addImport(List.class);
                 writerClassSource.addImport(Map.class);
 
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
                 body.addContext("getterMethodName", getterMethodName(property));
 
                 body.append("{");
@@ -600,7 +590,7 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
                 writerClassSource.addImport(List.class);
                 writerClassSource.addImport(Map.class);
 
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
                 body.addContext("getterMethodName", getterMethodName(property));
 
                 body.append("{");
@@ -618,7 +608,7 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
                 writerClassSource.addImport(List.class);
                 writerClassSource.addImport(Map.class);
 
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), CreateWritersStage.this, writerClassSource));
+                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
                 body.addContext("getterMethodName", getterMethodName(property));
 
                 body.append("{");
@@ -639,19 +629,19 @@ public class CreateWritersStage extends AbstractJavaStage implements CodeGenCont
         }
 
         private void handleEntityProperty(BodyBuilder body) {
-            new WriteEntityPropertyBlock(propertyWithOrigin, entityModel, writerClassSource, CreateWritersStage.this).appendTo(body);
+            new WriteEntityPropertyBlock(propertyWithOrigin, entityModel, writerClassSource, ctx).appendTo(body);
         }
 
         private void handlePrimitiveTypeProperty(BodyBuilder body) {
-            new WritePrimitivePropertyBlock(propertyWithOrigin, writerClassSource, CreateWritersStage.this).appendTo(body);
+            new WritePrimitivePropertyBlock(propertyWithOrigin, writerClassSource, ctx).appendTo(body);
         }
 
         private void handleListProperty(BodyBuilder body) {
-            new WriteListPropertyBlock(propertyWithOrigin, entityModel, writerClassSource, CreateWritersStage.this).appendTo(body);
+            new WriteListPropertyBlock(propertyWithOrigin, entityModel, writerClassSource, ctx).appendTo(body);
         }
 
         private void handleMapProperty(BodyBuilder body) {
-            new WriteMapPropertyBlock(propertyWithOrigin, entityModel, writerClassSource, CreateWritersStage.this).appendTo(body);
+            new WriteMapPropertyBlock(propertyWithOrigin, entityModel, writerClassSource, ctx).appendTo(body);
         }
 
 

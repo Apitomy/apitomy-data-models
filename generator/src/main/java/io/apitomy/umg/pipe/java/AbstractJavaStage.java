@@ -324,14 +324,7 @@ public abstract class AbstractJavaStage extends AbstractStage {
     }
 
     public Class<?> primitiveTypeToClass(Type type) {
-        if (!type.isPrimitiveType()) {
-            throw new UnsupportedOperationException("Property type not primitive: " + type);
-        }
-        Class<?> rval = Util.PRIMITIVE_TYPE_MAP.get(type.getName());
-        if (rval == null) {
-            throw new UnsupportedOperationException("Primitive-to-class mapping not found for: " + type.getName());
-        }
-        return rval;
+        return io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper.primitiveTypeToClass(type);
     }
 
     public JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, PropertyModel property) {
