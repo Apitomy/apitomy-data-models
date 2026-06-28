@@ -83,28 +83,28 @@ public class ParentAttachmentBlock extends CodeBlock {
      * Union attachment for setter (standard) - has full isEntity/isEntityList/isEntityMap/else dispatch.
      */
     private void appendUnionStandardAttachment(BodyBuilder body) {
-        body.addContext("quotedName", "\"" + propertyName + "\"");
+        body.addContext("propertyName", propertyName);
         body.appendBlock("""
                 if (value != null) {
                     if (value.isEntity()) {
                         ((NodeImpl) value)._setParent(this);
-                        ((NodeImpl) value)._setParentPropertyName(${quotedName});
+                        ((NodeImpl) value)._setParentPropertyName("${propertyName}");
                         ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
                     } else if (value.isEntityList()) {
                         ((UnionValueImpl<?>) value)._setParent(this);
-                        ((UnionValueImpl<?>) value)._setParentPropertyName(${quotedName});
+                        ((UnionValueImpl<?>) value)._setParentPropertyName("${propertyName}");
                         ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
                         List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();
                         for (Object entity : entityList) {
                             if (entity != null) {
                                 ((NodeImpl) entity)._setParent(this);
-                                ((NodeImpl) entity)._setParentPropertyName(${quotedName});
+                                ((NodeImpl) entity)._setParentPropertyName("${propertyName}");
                                 ((NodeImpl) entity)._setParentPropertyType(ParentPropertyType.array);
                             }
                         }
                     } else if (value.isEntityMap()) {
                         ((UnionValueImpl<?>) value)._setParent(this);
-                        ((UnionValueImpl<?>) value)._setParentPropertyName(${quotedName});
+                        ((UnionValueImpl<?>) value)._setParentPropertyName("${propertyName}");
                         ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
                         Map<String, ?> entityMap = (Map<String, ?>) ((UnionValue<?>) value).getValue();
                         Collection<String> keys = entityMap.keySet();
@@ -112,14 +112,14 @@ public class ParentAttachmentBlock extends CodeBlock {
                             NodeImpl entity = (NodeImpl) entityMap.get(key);
                             if (entity != null) {
                                 entity._setParent(this);
-                                entity._setParentPropertyName(${quotedName});
+                                entity._setParentPropertyName("${propertyName}");
                                 entity._setParentPropertyType(ParentPropertyType.map);
                                 entity._setMapPropertyName(key);
                             }
                         }
                     } else {
                         ((UnionValueImpl<?>) value)._setParent(this);
-                        ((UnionValueImpl<?>) value)._setParentPropertyName(${quotedName});
+                        ((UnionValueImpl<?>) value)._setParentPropertyName("${propertyName}");
                         ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
                     }
                 }
@@ -132,7 +132,7 @@ public class ParentAttachmentBlock extends CodeBlock {
     private void appendUnionCollectionAttachment(BodyBuilder body) {
         String parentPropertyType = kindToString();
         body.addContext(Map.of(
-                "quotedName", "\"" + propertyName + "\"",
+                "propertyName", propertyName,
                 "parentPropertyType", parentPropertyType
         ));
         body.ifElse(kind == ParentPropertyKind.MAP,
@@ -140,12 +140,12 @@ public class ParentAttachmentBlock extends CodeBlock {
                         if (value != null) {
                             if (value.isEntity()) {
                                 ((NodeImpl) value)._setParent(this);
-                                ((NodeImpl) value)._setParentPropertyName(${quotedName});
+                                ((NodeImpl) value)._setParentPropertyName("${propertyName}");
                                 ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
                                 ((NodeImpl) value)._setMapPropertyName(name);
                             } else {
                                 ((UnionValueImpl<?>) value)._setParent(this);
-                                ((UnionValueImpl<?>) value)._setParentPropertyName(${quotedName});
+                                ((UnionValueImpl<?>) value)._setParentPropertyName("${propertyName}");
                                 ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
                                 ((UnionValueImpl<?>) value)._setMapPropertyName(name);
                             }
@@ -155,11 +155,11 @@ public class ParentAttachmentBlock extends CodeBlock {
                         if (value != null) {
                             if (value.isEntity()) {
                                 ((NodeImpl) value)._setParent(this);
-                                ((NodeImpl) value)._setParentPropertyName(${quotedName});
+                                ((NodeImpl) value)._setParentPropertyName("${propertyName}");
                                 ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
                             } else {
                                 ((UnionValueImpl<?>) value)._setParent(this);
-                                ((UnionValueImpl<?>) value)._setParentPropertyName(${quotedName});
+                                ((UnionValueImpl<?>) value)._setParentPropertyName("${propertyName}");
                                 ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
                             }
                         }
