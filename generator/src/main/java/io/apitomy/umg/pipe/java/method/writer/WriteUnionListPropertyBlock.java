@@ -12,7 +12,6 @@ import org.jboss.forge.roaster.model.source.JavaSource;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.WriterMethod;
 
@@ -45,7 +44,7 @@ public class WriteUnionListPropertyBlock extends CodeBlock {
 
         body.addContext(Map.of(
                 "propertyName", property.getName(),
-                "getterMethodName", GetterMethod.methodName(property),
+                "getterMethodName", prop.getGetterName(),
                 "writeMethodName", writeMethodName,
                 "unionJavaType", valueJt.toJavaTypeString()
         ));

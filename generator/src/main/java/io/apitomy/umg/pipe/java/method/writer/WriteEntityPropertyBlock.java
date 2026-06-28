@@ -10,7 +10,6 @@ import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
-import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.WriterMethod;
 
@@ -38,7 +37,7 @@ public class WriteEntityPropertyBlock extends CodeBlock {
 
         body.addContext(Map.of(
                 "propertyName", property.getName(),
-                "getterMethodName", GetterMethod.methodName(property),
+                "getterMethodName", prop.getGetterName(),
                 "writeMethodName", writeMethodName(resolved.entityModel()),
                 "propertyTypeJavaEntity", resolved.javaInterface().getName()
         ));

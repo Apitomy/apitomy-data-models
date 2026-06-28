@@ -11,7 +11,6 @@ import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
-import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.WriterMethod;
@@ -33,7 +32,7 @@ public class WriteMapPropertyBlock extends CodeBlock {
     public void appendTo(BodyBuilder body) {
         PropertyModel property = prop.getProperty();
         body.addContext("propertyName", property.getName());
-        body.addContext("getterMethodName", GetterMethod.methodName(property));
+        body.addContext("getterMethodName", prop.getGetterName());
 
         Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
         if (mapValueType.isPrimitiveType()) {
@@ -52,7 +51,7 @@ public class WriteMapPropertyBlock extends CodeBlock {
 
             body.addContext(Map.of(
                     "propertyName", property.getName(),
-                    "getterMethodName", GetterMethod.methodName(property),
+                    "getterMethodName", prop.getGetterName(),
                     "mapValueJavaType", resolved.javaInterface().getName(),
                     "writeMethodName", WriterMethod.methodName(entityTypeName),
                     "mapValueCommonJavaType", commonEntityTypeJavaModel.getName()

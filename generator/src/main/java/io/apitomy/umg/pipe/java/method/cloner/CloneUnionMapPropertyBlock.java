@@ -16,7 +16,6 @@ import io.apitomy.umg.models.concept.type.UnionVariantComparator;
 import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.UnionAsMethod;
 import io.apitomy.umg.pipe.java.method.UnionIsMethod;
@@ -46,7 +45,7 @@ public class CloneUnionMapPropertyBlock extends CodeBlock {
         unionJavaType.addImportsTo(clonerClassSource);
         body.addContext(Map.of(
                 "unionJavaType", unionJavaType.getSimpleName(),
-                "getterMethodName", GetterMethod.methodName(property),
+                "getterMethodName", prop.getGetterName(),
                 "addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getName()))
         ));
 

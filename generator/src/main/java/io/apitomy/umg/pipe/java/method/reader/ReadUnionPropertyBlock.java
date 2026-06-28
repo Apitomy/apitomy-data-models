@@ -13,7 +13,6 @@ import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.ReaderMethod;
-import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
  * Generates code to read a union-typed property from JSON using the type-based reader method.
@@ -41,7 +40,7 @@ public class ReadUnionPropertyBlock extends CodeBlock {
 
         body.addContext(Map.of(
                 "propertyName", property.getName(),
-                "setterMethodName", SetterMethod.methodName(property),
+                "setterMethodName", prop.getSetterName(),
                 "readMethodName", readMethodName,
                 "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
         ));

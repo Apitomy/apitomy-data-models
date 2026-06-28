@@ -14,7 +14,6 @@ import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
-import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 
 /**
@@ -34,7 +33,7 @@ public class WriteListPropertyBlock extends CodeBlock {
     public void appendTo(BodyBuilder body) {
         PropertyModel property = prop.getProperty();
         body.addContext("propertyName", property.getName());
-        body.addContext("getterMethodName", GetterMethod.methodName(property));
+        body.addContext("getterMethodName", prop.getGetterName());
 
         Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
         if (listValueType.isPrimitiveType()) {
@@ -53,7 +52,7 @@ public class WriteListPropertyBlock extends CodeBlock {
 
             body.addContext(Map.of(
                     "propertyName", property.getName(),
-                    "getterMethodName", GetterMethod.methodName(property),
+                    "getterMethodName", prop.getGetterName(),
                     "listValueJavaType", resolved.javaInterface().getName(),
                     "writeMethodName", WriteEntityPropertyBlock.writeMethodName(resolved.entityModel()),
                     "listValueCommonJavaType", commonEntityTypeJavaModel.getName()
