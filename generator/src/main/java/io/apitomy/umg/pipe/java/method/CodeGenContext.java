@@ -86,6 +86,37 @@ public class CodeGenContext {
         return getUnionTypesPackageName() + "." + name;
     }
 
+    public String getModelTypeEnumFQN() {
+        return rootNamespace + ".ModelType";
+    }
+
+    /**
+     * Resolves the package for union value impl classes, preferring the common-entity
+     * namespace when a variant references a common entity.
+     */
+    public String resolveUnionPackage(io.apitomy.umg.models.concept.type.UnionType unionType) {
+        for (var variant : unionType.getTypes()) {
+            io.apitomy.umg.models.concept.type.EntityType entityType = null;
+            if (variant instanceof io.apitomy.umg.models.concept.type.EntityType et) {
+                entityType = et;
+            } else if (variant instanceof io.apitomy.umg.models.concept.type.ListType lt
+                    && lt.getValueType() instanceof io.apitomy.umg.models.concept.type.EntityType et) {
+                entityType = et;
+            } else if (variant instanceof io.apitomy.umg.models.concept.type.MapType mt
+                    && mt.getValueType() instanceof io.apitomy.umg.models.concept.type.EntityType et) {
+                entityType = et;
+            }
+            if (entityType != null) {
+                EntityModel common = conceptIndex.lookupCommonEntity(
+                        unionType.getNamespace(), entityType.getName());
+                if (common != null) {
+                    return common.getNamespace().fullName();
+                }
+            }
+        }
+        return getUnionTypesPackageName();
+    }
+
     // --- Naming helpers ---
 
     private String getJavaEntityInterfaceName(EntityModel entity) {
@@ -142,7 +173,7 @@ public class CodeGenContext {
         return lookupJavaEntity(commonEntity);
     }
 
-    private JavaInterfaceSource lookupJavaEntity(EntityModel entity) {
+    public JavaInterfaceSource lookupJavaEntity(EntityModel entity) {
         return lookupJavaEntity(getJavaEntityInterfaceFQN(entity));
     }
 

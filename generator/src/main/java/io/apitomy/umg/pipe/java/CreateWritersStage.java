@@ -11,7 +11,6 @@ import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.apitomy.umg.beans.SpecificationVersion;
@@ -26,8 +25,7 @@ import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
-import io.apitomy.umg.pipe.java.method.UnionAsMethod;
-import io.apitomy.umg.pipe.java.method.UnionIsMethod;
+
 import io.apitomy.umg.pipe.java.method.WriterMethod;
 import io.apitomy.umg.pipe.java.method.writer.WriteEntityPropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WriteListPropertyBlock;
@@ -112,121 +110,14 @@ public class CreateWritersStage extends AbstractJavaStage {
         getState().getConceptIndex().findTypes(namespace).stream()
                 .filter(t -> t instanceof io.apitomy.umg.models.concept.type.UnionType)
                 .map(t -> (io.apitomy.umg.models.concept.type.UnionType) t)
-                .forEach(unionType -> createUnionWriterMethod(specVersion, writerClassSource, unionType));
+                .forEach(unionType -> {
+                    var nsModel = getState().getConceptIndex().lookupNamespace(namespace);
+                    var jt = getJavaTypeFactory().createJavaType(unionType, nsModel);
+                    new WriterMethod(jt.getSimpleName()).writeTo(writerClassSource, specVersion, unionType, ctx);
+                });
     }
 
-    private void createUnionWriterMethod(SpecificationVersion specVersion, JavaClassSource writerClassSource,
-                                          io.apitomy.umg.models.concept.type.UnionType unionType) {
-        var namespace = specVersion.getNamespace();
-        var nsModel = getState().getConceptIndex().lookupNamespace(namespace);
-        var jt = getJavaTypeFactory().createJavaType(unionType, nsModel);
-        String unionTypeName = jt.getSimpleName();
-        String methodName = WriterMethod.methodName(unionTypeName);
 
-        if (hasMethod(writerClassSource, methodName)) {
-            return;
-        }
-
-        debug("Creating union writer method: %s", methodName);
-
-        writerClassSource.addImport(ObjectNode.class);
-        writerClassSource.addImport(JsonNode.class);
-        jt.addImportsTo(writerClassSource);
-
-        MethodSource<JavaClassSource> method = writerClassSource.addMethod()
-                .setName(methodName)
-                .setReturnType("JsonNode")
-                .setPrivate();
-        method.addParameter(jt.toJavaTypeString(), "union");
-
-        BodyBuilder body = new BodyBuilder();
-        body.append("if (union == null) return null;");
-
-        for (var variantType : unionType.getTypes()) {
-            if (variantType instanceof io.apitomy.umg.models.concept.type.EntityType entityType) {
-                var entity = entityType.getEntity();
-                if (entity == null) entity = getState().getConceptIndex().lookupEntity(namespace, entityType.getName());
-                if (entity == null) continue;
-
-                String typeName = io.apitomy.umg.models.java.type.JavaTypeFactory.getUnionComponentName(variantType);
-                JavaInterfaceSource entitySource = lookupJavaEntity(entity);
-                writerClassSource.addImport(entitySource);
-
-                body.addContext("isMethod", UnionIsMethod.methodName(typeName));
-                body.addContext("asMethod", UnionAsMethod.methodName(typeName));
-                body.addContext("entityType", entitySource.getName());
-                body.addContext("writeMethodName", writeMethodName(entity));
-
-                body.append("if (union.${isMethod}()) {");
-                body.append("    ObjectNode jsonValue = JsonUtil.objectNode();");
-                body.append("    this.${writeMethodName}((${entityType}) union.${asMethod}(), jsonValue);");
-                body.append("    return jsonValue;");
-                body.append("}");
-            } else if (variantType instanceof io.apitomy.umg.models.concept.type.PrimitiveUnionVariantType puv) {
-                String typeName = io.apitomy.umg.models.java.type.JavaTypeFactory.getUnionComponentName(variantType);
-                Class<?> javaClass = Util.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
-                if (javaClass == null) continue;
-
-                body.addContext("isMethod", UnionIsMethod.methodName(typeName));
-                body.addContext("asMethod", UnionAsMethod.methodName(typeName));
-
-                if (JsonNode.class.isAssignableFrom(javaClass)) {
-                    body.append("if (union.${isMethod}()) {");
-                    body.append("    return union.${asMethod}();");
-                    body.append("}");
-                } else {
-                    body.append("if (union.${isMethod}()) {");
-                    body.append("    return JsonUtil.toJsonNode(union.${asMethod}());");
-                    body.append("}");
-                }
-            } else if (variantType instanceof io.apitomy.umg.models.concept.type.ListType listType) {
-                String typeName = io.apitomy.umg.models.java.type.JavaTypeFactory.getUnionComponentName(variantType);
-
-                body.addContext("isMethod", UnionIsMethod.methodName(typeName));
-                body.addContext("asMethod", UnionAsMethod.methodName(typeName));
-
-                writerClassSource.addImport(ArrayNode.class);
-
-                if (listType.getValueType() instanceof io.apitomy.umg.models.concept.type.EntityType listEntityType) {
-                    var entity = listEntityType.getEntity();
-                    if (entity == null) entity = getState().getConceptIndex().lookupEntity(namespace, listEntityType.getName());
-                    if (entity == null) continue;
-
-                    JavaInterfaceSource entitySource = lookupJavaEntity(entity);
-                    writerClassSource.addImport(entitySource);
-                    body.addContext("entityType", entitySource.getName());
-                    body.addContext("writeMethodName", writeMethodName(entity));
-
-                    body.append("if (union.${isMethod}()) {");
-                    body.append("    ArrayNode array = JsonUtil.arrayNode();");
-                    body.append("    for (Object item : (java.util.List<?>) union.${asMethod}()) {");
-                    body.append("        ObjectNode itemNode = JsonUtil.objectNode();");
-                    body.append("        this.${writeMethodName}((${entityType}) item, itemNode);");
-                    body.append("        array.add(itemNode);");
-                    body.append("    }");
-                    body.append("    return array;");
-                    body.append("}");
-                } else if (listType.getValueType() instanceof io.apitomy.umg.models.concept.type.PrimitiveType primType) {
-                    Class<?> javaClass = Util.PRIMITIVE_TYPE_MAP.get(primType.name().toLowerCase());
-                    if (javaClass == null) continue;
-
-                    writerClassSource.addImport(javaClass);
-                    body.addContext("primType", javaClass.getSimpleName());
-
-                    body.addContext("addExpr", "array.add(JsonUtil.toJsonNode(item))");
-                    body.append("if (union.${isMethod}()) {");
-                    body.append("    ArrayNode array = JsonUtil.arrayNode();");
-                    body.append("    for (Object item : (java.util.List<?>) union.${asMethod}()) {");
-                    body.append("        ${addExpr};");
-                    body.append("    }");
-                    body.append("    return array;");
-                    body.append("}");
-                }
-            }
-        }
-        body.append("return null;");
-        method.setBody(body.toString());
-    }
 
     private boolean hasMethod(JavaClassSource source, String name) {
         return source.getMethods().stream().anyMatch(m -> m.getName().equals(name));
