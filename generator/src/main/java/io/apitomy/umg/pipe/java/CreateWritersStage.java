@@ -25,6 +25,7 @@ import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.UnionAsMethod;
 import io.apitomy.umg.pipe.java.method.UnionIsMethod;
 import io.apitomy.umg.pipe.java.method.WriterMethod;
@@ -457,17 +458,20 @@ public class CreateWritersStage extends AbstractJavaStage {
         }
 
         private void handleResolvedUnionProperty(BodyBuilder body, io.apitomy.umg.models.concept.type.Type resolved) {
-            new WriteUnionPropertyBlock(propertyWithOrigin, writerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new WriteUnionPropertyBlock(prop, writerClassSource).appendTo(body);
         }
 
         private void handleResolvedUnionListProperty(BodyBuilder body,
                 io.apitomy.umg.models.concept.type.ListType listType) {
-            new WriteUnionListPropertyBlock(propertyWithOrigin, writerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new WriteUnionListPropertyBlock(prop, writerClassSource).appendTo(body);
         }
 
         private void handleResolvedUnionMapProperty(BodyBuilder body,
                 io.apitomy.umg.models.concept.type.MapType mapType) {
-            new WriteUnionMapPropertyBlock(propertyWithOrigin, writerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new WriteUnionMapPropertyBlock(prop, writerClassSource).appendTo(body);
         }
 
         private void handleStarProperty(BodyBuilder body) {
@@ -633,19 +637,23 @@ public class CreateWritersStage extends AbstractJavaStage {
         }
 
         private void handleEntityProperty(BodyBuilder body) {
-            new WriteEntityPropertyBlock(propertyWithOrigin, entityModel, writerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new WriteEntityPropertyBlock(prop, writerClassSource).appendTo(body);
         }
 
         private void handlePrimitiveTypeProperty(BodyBuilder body) {
-            new WritePrimitivePropertyBlock(propertyWithOrigin, writerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new WritePrimitivePropertyBlock(prop, writerClassSource).appendTo(body);
         }
 
         private void handleListProperty(BodyBuilder body) {
-            new WriteListPropertyBlock(propertyWithOrigin, entityModel, writerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new WriteListPropertyBlock(prop, writerClassSource).appendTo(body);
         }
 
         private void handleMapProperty(BodyBuilder body) {
-            new WriteMapPropertyBlock(propertyWithOrigin, entityModel, writerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new WriteMapPropertyBlock(prop, writerClassSource).appendTo(body);
         }
 
 

@@ -8,19 +8,17 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
-import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.ClonerMethod;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
@@ -28,22 +26,17 @@ import io.apitomy.umg.pipe.java.method.SetterMethod;
  */
 public class CloneListPropertyBlock extends CodeBlock {
 
-    private final PropertyModelWithOrigin propertyWithOrigin;
-    private final EntityModel entityModel;
+    private final PropertyCodeGen prop;
     private final JavaClassSource clonerClassSource;
-    private final CodeGenContext ctx;
 
-    public CloneListPropertyBlock(PropertyModelWithOrigin propertyWithOrigin, EntityModel entityModel,
-            JavaClassSource clonerClassSource, CodeGenContext ctx) {
-        this.propertyWithOrigin = propertyWithOrigin;
-        this.entityModel = entityModel;
+    public CloneListPropertyBlock(PropertyCodeGen prop, JavaClassSource clonerClassSource) {
+        this.prop = prop;
         this.clonerClassSource = clonerClassSource;
-        this.ctx = ctx;
     }
 
     @Override
     public void appendTo(BodyBuilder body) {
-        PropertyModel property = propertyWithOrigin.getProperty();
+        PropertyModel property = prop.getProperty();
         Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
 
         if (listValueType.isPrimitiveType()) {
@@ -52,7 +45,7 @@ public class CloneListPropertyBlock extends CodeBlock {
             body.addContext(Map.of(
                     "getterMethodName", GetterMethod.methodName(property),
                     "setterMethodName", SetterMethod.methodName(property),
-                    "valueType", PrimitiveTypeHelper.determineValueType(listValueType, ctx, clonerClassSource)
+                    "valueType", PrimitiveTypeHelper.determineValueType(listValueType, prop.getCtx(), clonerClassSource)
             ));
 
             body.appendBlock("""
@@ -64,11 +57,11 @@ public class CloneListPropertyBlock extends CodeBlock {
                     }
                     """);
         } else if (listValueType.isEntityType()) {
-            var resolved = EntityResolver.resolveEntityInterface(property, listValueType.getName(), entityModel, ctx, "LIST");
+            var resolved = EntityResolver.resolveEntityInterface(property, listValueType.getName(), prop.getOwningEntity(), prop.getCtx(), "LIST");
             if (resolved == null) {
                 return;
             }
-            JavaInterfaceSource commonEntityTypeJavaModel = ctx.resolveCommonJavaEntity(resolved.entityModel());
+            JavaInterfaceSource commonEntityTypeJavaModel = prop.getCtx().resolveCommonJavaEntity(resolved.entityModel());
             clonerClassSource.addImport(resolved.javaInterface());
             clonerClassSource.addImport(commonEntityTypeJavaModel);
             clonerClassSource.addImport(List.class);
@@ -79,7 +72,7 @@ public class CloneListPropertyBlock extends CodeBlock {
                     "commonEntityType", commonEntityTypeJavaModel.getName(),
                     "createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()),
                     "cloneMethodName", ClonerMethod.methodName(resolved.entityModel().getName()),
-                    "addMethodName", AddMethod.methodName(ctx.singularize(property.getName()))
+                    "addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getName()))
             ));
 
             body.appendBlock("""
@@ -95,11 +88,11 @@ public class CloneListPropertyBlock extends CodeBlock {
                     }
                     """);
         } else {
-            ctx.warn("LIST Entity property '" + property.getName() + "' not cloned (unsupported) for entity: " + entityModel.fullyQualifiedName());
+            prop.getCtx().warn("LIST Entity property '" + property.getName() + "' not cloned (unsupported) for entity: " + prop.getOwningEntity().fullyQualifiedName());
         }
     }
 
-    
+
 
     @Override
     public void addImportsTo(JavaSource<?> source) {

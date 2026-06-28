@@ -32,6 +32,7 @@ import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.ReaderMethod;
 import io.apitomy.umg.pipe.java.method.UnionIsMethod;
 import io.apitomy.umg.pipe.java.method.reader.ReadEntityPropertyBlock;
@@ -525,17 +526,20 @@ public class CreateReadersStage extends AbstractJavaStage {
         }
 
         private void handleResolvedUnionProperty(BodyBuilder body, io.apitomy.umg.models.concept.type.Type resolved) {
-            new ReadUnionPropertyBlock(propertyWithOrigin, readerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new ReadUnionPropertyBlock(prop, readerClassSource).appendTo(body);
         }
 
         private void handleResolvedUnionListProperty(BodyBuilder body,
                 io.apitomy.umg.models.concept.type.ListType listType) {
-            new ReadUnionListPropertyBlock(propertyWithOrigin, readerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new ReadUnionListPropertyBlock(prop, readerClassSource).appendTo(body);
         }
 
         private void handleResolvedUnionMapProperty(BodyBuilder body,
                 io.apitomy.umg.models.concept.type.MapType mapType) {
-            new ReadUnionMapPropertyBlock(propertyWithOrigin, readerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new ReadUnionMapPropertyBlock(prop, readerClassSource).appendTo(body);
         }
 
         private void handleStarProperty(BodyBuilder body) {
@@ -774,19 +778,23 @@ public class CreateReadersStage extends AbstractJavaStage {
         }
 
         private void handleEntityProperty(BodyBuilder body) {
-            new ReadEntityPropertyBlock(propertyWithOrigin, entityModel, readerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new ReadEntityPropertyBlock(prop, readerClassSource).appendTo(body);
         }
 
         private void handlePrimitiveTypeProperty(BodyBuilder body) {
-            new ReadPrimitivePropertyBlock(propertyWithOrigin, readerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new ReadPrimitivePropertyBlock(prop, readerClassSource).appendTo(body);
         }
 
         private void handleListProperty(BodyBuilder body) {
-            new ReadListPropertyBlock(propertyWithOrigin, entityModel, readerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new ReadListPropertyBlock(prop, readerClassSource).appendTo(body);
         }
 
         private void handleMapProperty(BodyBuilder body) {
-            new ReadMapPropertyBlock(propertyWithOrigin, entityModel, readerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new ReadMapPropertyBlock(prop, readerClassSource).appendTo(body);
         }
 
 

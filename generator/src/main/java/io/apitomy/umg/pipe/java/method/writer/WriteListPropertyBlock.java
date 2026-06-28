@@ -9,38 +9,30 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
-import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
-import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 
 /**
  * Generates code to write a list property to JSON (primitive list or entity list).
  */
 public class WriteListPropertyBlock extends CodeBlock {
 
-    private final PropertyModelWithOrigin propertyWithOrigin;
-    private final EntityModel entityModel;
+    private final PropertyCodeGen prop;
     private final JavaClassSource writerClassSource;
-    private final CodeGenContext ctx;
 
-    public WriteListPropertyBlock(PropertyModelWithOrigin propertyWithOrigin, EntityModel entityModel,
-            JavaClassSource writerClassSource, CodeGenContext ctx) {
-        this.propertyWithOrigin = propertyWithOrigin;
-        this.entityModel = entityModel;
+    public WriteListPropertyBlock(PropertyCodeGen prop, JavaClassSource writerClassSource) {
+        this.prop = prop;
         this.writerClassSource = writerClassSource;
-        this.ctx = ctx;
     }
 
     @Override
     public void appendTo(BodyBuilder body) {
-        PropertyModel property = propertyWithOrigin.getProperty();
+        PropertyModel property = prop.getProperty();
         body.addContext("propertyName", property.getName());
         body.addContext("getterMethodName", GetterMethod.methodName(property));
 
@@ -48,11 +40,11 @@ public class WriteListPropertyBlock extends CodeBlock {
         if (listValueType.isPrimitiveType()) {
             body.append("JsonUtil.setProperty(json, \"${propertyName}\", JsonUtil.toArrayNode(node.${getterMethodName}()));");
         } else if (listValueType.isEntityType()) {
-            var resolved = EntityResolver.resolveEntityInterface(property, listValueType.getName(), entityModel, ctx, "LIST");
+            var resolved = EntityResolver.resolveEntityInterface(property, listValueType.getName(), prop.getOwningEntity(), prop.getCtx(), "LIST");
             if (resolved == null) {
                 return;
             }
-            JavaInterfaceSource commonEntityTypeJavaModel = ctx.resolveCommonJavaEntity(resolved.entityModel());
+            JavaInterfaceSource commonEntityTypeJavaModel = prop.getCtx().resolveCommonJavaEntity(resolved.entityModel());
 
             writerClassSource.addImport(resolved.javaInterface());
             writerClassSource.addImport(commonEntityTypeJavaModel);
@@ -82,8 +74,8 @@ public class WriteListPropertyBlock extends CodeBlock {
                     }
                     """);
         } else {
-            ctx.warn("LIST Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
-            ctx.warn("       property type: " + property.getResolvedType());
+            prop.getCtx().warn("LIST Entity property '" + property.getName() + "' not written (unsupported) for entity: " + prop.getOwningEntity().fullyQualifiedName());
+            prop.getCtx().warn("       property type: " + property.getResolvedType());
         }
     }
 

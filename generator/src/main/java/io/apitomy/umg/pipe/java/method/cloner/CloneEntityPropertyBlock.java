@@ -8,14 +8,13 @@ import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.ClonerMethod;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
@@ -24,26 +23,21 @@ import io.apitomy.umg.pipe.java.method.SetterMethod;
  */
 public class CloneEntityPropertyBlock extends CodeBlock {
 
-    private final PropertyModelWithOrigin propertyWithOrigin;
-    private final EntityModel entityModel;
+    private final PropertyCodeGen prop;
     private final JavaClassSource clonerClassSource;
-    private final CodeGenContext ctx;
 
     // resolved during appendTo
     private JavaInterfaceSource propertyTypeJavaEntity;
 
-    public CloneEntityPropertyBlock(PropertyModelWithOrigin propertyWithOrigin, EntityModel entityModel,
-            JavaClassSource clonerClassSource, CodeGenContext ctx) {
-        this.propertyWithOrigin = propertyWithOrigin;
-        this.entityModel = entityModel;
+    public CloneEntityPropertyBlock(PropertyCodeGen prop, JavaClassSource clonerClassSource) {
+        this.prop = prop;
         this.clonerClassSource = clonerClassSource;
-        this.ctx = ctx;
     }
 
     @Override
     public void appendTo(BodyBuilder body) {
-        PropertyModel property = propertyWithOrigin.getProperty();
-        var resolved = EntityResolver.resolveEntityInterface(propertyWithOrigin, entityModel, ctx, "");
+        PropertyModel property = prop.getProperty();
+        var resolved = EntityResolver.resolveEntityInterface(prop.getPropertyWithOrigin(), prop.getOwningEntity(), prop.getCtx(), "");
         if (resolved == null) {
             return;
         }
