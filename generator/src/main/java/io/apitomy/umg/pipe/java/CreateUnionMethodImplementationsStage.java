@@ -8,6 +8,8 @@ import io.apitomy.umg.models.concept.type.PrimitiveUnionVariantType;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.models.concept.type.UnionType;
 import io.apitomy.umg.models.java.type.JavaTypeFactory;
+import io.apitomy.umg.pipe.java.method.UnionAsMethod;
+import io.apitomy.umg.pipe.java.method.UnionIsMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
@@ -81,8 +83,8 @@ public class CreateUnionMethodImplementationsStage extends AbstractJavaStage {
                                       List<Type> allVariants, io.apitomy.umg.models.concept.NamespaceModel nsModel) {
         for (Type variantType : allVariants) {
             String typeName = JavaTypeFactory.getUnionComponentName(variantType);
-            String isMethodName = "is" + typeName;
-            String asMethodName = "as" + typeName;
+            String isMethodName = UnionIsMethod.methodName(typeName);
+            String asMethodName = UnionAsMethod.methodName(typeName);
 
             if (implSource.hasMethodSignature(isMethodName)) {
                 continue;

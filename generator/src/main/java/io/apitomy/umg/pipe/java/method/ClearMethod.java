@@ -1,5 +1,6 @@
 package io.apitomy.umg.pipe.java.method;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
@@ -10,7 +11,7 @@ import io.apitomy.umg.models.concept.type.Type;
 /**
  * Generates a "clear" method body: clear collection plus detach all items if entity/union.
  */
-public class ClearMethod implements CanAddImports {
+public class ClearMethod implements Method {
 
     private final PropertyModel property;
     private final CodeGenContext ctx;
@@ -18,6 +19,18 @@ public class ClearMethod implements CanAddImports {
     public ClearMethod(PropertyModel property, CodeGenContext ctx) {
         this.property = property;
         this.ctx = ctx;
+    }
+
+    /**
+     * Returns the clear method name for the given property name.
+     */
+    public static String methodName(String propertyName) {
+        return "clear" + StringUtils.capitalize(propertyName);
+    }
+
+    @Override
+    public String getName() {
+        return methodName(property.getName());
     }
 
     public void writeTo(MethodSource<?> method) {

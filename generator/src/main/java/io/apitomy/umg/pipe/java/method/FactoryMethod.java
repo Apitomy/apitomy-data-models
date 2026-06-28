@@ -1,5 +1,6 @@
 package io.apitomy.umg.pipe.java.method;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
@@ -9,7 +10,7 @@ import io.apitomy.umg.models.concept.EntityModel;
 /**
  * Generates a factory method body: create new entity impl instance and set parent.
  */
-public class FactoryMethod implements CanAddImports {
+public class FactoryMethod implements Method {
 
     private final JavaSource<?> javaEntity;
     private final String entityName;
@@ -21,6 +22,18 @@ public class FactoryMethod implements CanAddImports {
         this.javaEntity = javaEntity;
         this.entityName = entityName;
         this.ctx = ctx;
+    }
+
+    /**
+     * Returns the factory method name for the given entity name.
+     */
+    public static String methodName(String entityName) {
+        return "create" + StringUtils.capitalize(entityName);
+    }
+
+    @Override
+    public String getName() {
+        return methodName(entityName);
     }
 
     public void writeTo(MethodSource<?> method) {

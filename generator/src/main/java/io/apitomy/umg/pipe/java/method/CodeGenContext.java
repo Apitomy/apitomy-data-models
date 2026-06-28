@@ -1,6 +1,5 @@
 package io.apitomy.umg.pipe.java.method;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.modeshape.common.text.Inflector;
@@ -163,45 +162,6 @@ public class CodeGenContext {
 
     public Class<?> primitiveTypeToClass(Type type) {
         return PrimitiveTypeHelper.primitiveTypeToClass(type);
-    }
-
-    // --- Method name helpers ---
-
-    public String getterMethodName(PropertyModel propertyModel) {
-        String name = propertyModel.getName();
-        if (name.startsWith("/")) {
-            name = propertyModel.getCollection();
-        }
-        return getterMethodName(name, propertyModel.getResolvedType());
-    }
-
-    public String getterMethodName(String propertyName, Type type) {
-        boolean isBool = type.isPrimitiveType() && type.getName().equals("boolean");
-        return (isBool ? "is" : "get") + StringUtils.capitalize(propertyName);
-    }
-
-    public String setterMethodName(PropertyModel propertyModel) {
-        return "set" + StringUtils.capitalize(propertyModel.getName());
-    }
-
-    public String createMethodName(EntityModel entityModel) {
-        return createMethodName(entityModel.getName());
-    }
-
-    public String createMethodName(String entityName) {
-        return "create" + StringUtils.capitalize(entityName);
-    }
-
-    public String addMethodName(String name) {
-        return "add" + StringUtils.capitalize(name);
-    }
-
-    public String readMethodName(EntityModel entityModel) {
-        return readMethodName(entityModel.getName());
-    }
-
-    public String readMethodName(String entityName) {
-        return "read" + StringUtils.capitalize(entityName);
     }
 
     public String singularize(String name) {

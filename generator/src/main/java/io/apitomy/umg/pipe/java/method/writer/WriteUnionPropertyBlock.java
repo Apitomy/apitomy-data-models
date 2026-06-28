@@ -13,6 +13,8 @@ import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.WriterMethod;
 
 /**
  * Generates code to write a union-typed property to JSON using the type-based writer method.
@@ -36,14 +38,14 @@ public class WriteUnionPropertyBlock extends CodeBlock {
         Type resolved = property.getResolvedType();
         var nsModel = propertyWithOrigin.getOrigin().getNamespace();
         var jt = ctx.getJavaTypeFactory().createJavaType(resolved, nsModel);
-        String writeMethodName = "write" + jt.getSimpleName();
+        String writeMethodName = WriterMethod.methodName(jt.getSimpleName());
 
         jt.addImportsTo(writerClassSource);
         writerClassSource.addImport(JsonNode.class);
 
         body.addContext(Map.of(
                 "propertyName", property.getName(),
-                "getterMethodName", ctx.getterMethodName(property),
+                "getterMethodName", GetterMethod.methodName(property),
                 "writeMethodName", writeMethodName
         ));
 

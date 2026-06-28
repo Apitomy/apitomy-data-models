@@ -15,6 +15,7 @@ import org.jboss.forge.roaster.model.source.ParameterSource;
 import io.apitomy.umg.beans.SpecificationVersion;
 import io.apitomy.umg.models.concept.VisitorModel;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
+import io.apitomy.umg.pipe.java.method.ClonerMethod;
 
 /**
  * Creates a cloner dispatcher for each specification version. A cloner dispatcher is a
@@ -123,7 +124,7 @@ public class CreateClonerDispatchersStage extends AbstractVisitorStage {
             dispatcherSource.addImport(javaEntityType);
 
             BodyBuilder body = new BodyBuilder();
-            body.addContext("cloneMethodName", "clone" + entityName);
+            body.addContext("cloneMethodName", ClonerMethod.methodName(entityName));
             body.addContext("javaEntityType", javaEntityType.getName());
             body.append("this.cloner.${cloneMethodName}((${javaEntityType}) node, (${javaEntityType}) this.clonedNode);");
             methodSource.setBody(body.toString());

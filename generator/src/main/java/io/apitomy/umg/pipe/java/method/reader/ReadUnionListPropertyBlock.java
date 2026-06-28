@@ -11,9 +11,11 @@ import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
+import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.ReaderMethod;
 
 /**
  * Generates code to read a list of union values from JSON using the type-based reader method.
@@ -38,7 +40,7 @@ public class ReadUnionListPropertyBlock extends CodeBlock {
                 (io.apitomy.umg.models.concept.type.ListType) property.getResolvedType();
         var nsModel = propertyWithOrigin.getOrigin().getNamespace();
         var valueJt = ctx.getJavaTypeFactory().createJavaType(listType.getValueType(), nsModel);
-        String readMethodName = "read" + valueJt.getSimpleName();
+        String readMethodName = ReaderMethod.methodName(valueJt.getSimpleName());
 
         readerClassSource.addImport(JsonNode.class);
         readerClassSource.addImport(List.class);
@@ -47,7 +49,7 @@ public class ReadUnionListPropertyBlock extends CodeBlock {
 
         body.addContext(Map.of(
                 "propertyName", property.getName(),
-                "addMethodName", ctx.addMethodName(ctx.singularize(property.getName())),
+                "addMethodName", AddMethod.methodName(ctx.singularize(property.getName())),
                 "readMethodName", readMethodName,
                 "unionJavaType", valueJt.toJavaTypeString(),
                 "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")

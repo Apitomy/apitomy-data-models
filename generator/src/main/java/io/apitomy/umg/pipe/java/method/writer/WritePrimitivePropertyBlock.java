@@ -8,6 +8,7 @@ import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
 
 /**
@@ -30,7 +31,7 @@ public class WritePrimitivePropertyBlock extends CodeBlock {
     public void appendTo(BodyBuilder body) {
         PropertyModel property = propertyWithOrigin.getProperty();
         body.addContext("propertyName", property.getName());
-        body.addContext("getterMethodName", ctx.getterMethodName(property));
+        body.addContext("getterMethodName", GetterMethod.methodName(property));
 
         body.ifElse(PrimitiveTypeHelper.isJsonNodeType(property.getResolvedType(), ctx),
                 // ObjectNode and JsonNode are already JsonNode subtypes, use setProperty directly

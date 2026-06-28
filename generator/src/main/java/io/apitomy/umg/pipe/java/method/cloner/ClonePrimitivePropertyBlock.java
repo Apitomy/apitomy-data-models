@@ -7,6 +7,8 @@ import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
  * Generates code to clone a primitive property from source to target:
@@ -25,8 +27,8 @@ public class ClonePrimitivePropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = propertyWithOrigin.getProperty();
-        body.addContext("getterMethodName", ctx.getterMethodName(property));
-        body.addContext("setterMethodName", ctx.setterMethodName(property));
+        body.addContext("getterMethodName", GetterMethod.methodName(property));
+        body.addContext("setterMethodName", SetterMethod.methodName(property));
         body.append("target.${setterMethodName}(source.${getterMethodName}());");
     }
 

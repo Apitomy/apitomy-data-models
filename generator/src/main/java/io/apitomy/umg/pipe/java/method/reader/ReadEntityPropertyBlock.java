@@ -14,6 +14,10 @@ import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.FactoryMethod;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.ReaderMethod;
+import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
  * Generates code to read an entity-typed property from JSON.
@@ -45,10 +49,10 @@ public class ReadEntityPropertyBlock extends CodeBlock {
 
         body.addContext(Map.of(
                 "propertyName", property.getName(),
-                "setterMethodName", ctx.setterMethodName(property),
-                "createMethodName", ctx.createMethodName(resolved.entityModel()),
-                "getterMethodName", ctx.getterMethodName(property),
-                "readMethodName", ctx.readMethodName(resolved.entityModel()),
+                "setterMethodName", SetterMethod.methodName(property),
+                "createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()),
+                "getterMethodName", GetterMethod.methodName(property),
+                "readMethodName", ReaderMethod.methodName(resolved.entityModel().getName()),
                 "propertyEntityType", resolved.javaInterface().getName(),
                 "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
         ));

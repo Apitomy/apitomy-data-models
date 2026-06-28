@@ -1,5 +1,6 @@
 package io.apitomy.umg.pipe.java.method;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.model.source.JavaSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
@@ -10,7 +11,7 @@ import io.apitomy.umg.models.concept.type.Type;
 /**
  * Generates a "remove" method body: remove from list or map, plus detach if entity/union.
  */
-public class RemoveMethod implements CanAddImports {
+public class RemoveMethod implements Method {
 
     private final PropertyModel property;
     private final CodeGenContext ctx;
@@ -18,6 +19,18 @@ public class RemoveMethod implements CanAddImports {
     public RemoveMethod(PropertyModel property, CodeGenContext ctx) {
         this.property = property;
         this.ctx = ctx;
+    }
+
+    /**
+     * Returns the remove method name for the given (singularized) name.
+     */
+    public static String methodName(String singularName) {
+        return "remove" + StringUtils.capitalize(singularName);
+    }
+
+    @Override
+    public String getName() {
+        return methodName(ctx.singularize(property.getName()));
     }
 
     public void writeTo(MethodSource<?> method) {

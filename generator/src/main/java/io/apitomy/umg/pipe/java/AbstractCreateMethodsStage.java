@@ -12,6 +12,13 @@ import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.CollectionType;
 import io.apitomy.umg.models.concept.type.Type;
+import io.apitomy.umg.pipe.java.method.AddMethod;
+import io.apitomy.umg.pipe.java.method.ClearMethod;
+import io.apitomy.umg.pipe.java.method.FactoryMethod;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.InsertMethod;
+import io.apitomy.umg.pipe.java.method.RemoveMethod;
+import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
  * Base class for the stages that create methods for entity interfaces and impl classes both.  The
@@ -116,7 +123,7 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
     protected void createGetter(JavaSource<?> javaEntity, PropertyModelWithOrigin propertyWithOrigin) {
         PropertyModel property = propertyWithOrigin.getProperty();
 
-        MethodSource<?> method = ((MethodHolderSource<?>) javaEntity).addMethod().setName(getterMethodName(property)).setPublic();
+        MethodSource<?> method = ((MethodHolderSource<?>) javaEntity).addMethod().setName(GetterMethod.methodName(property)).setPublic();
         addAnnotations(method);
 
         var jt = getJavaTypeFactory().createJavaType(property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
@@ -135,7 +142,7 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
     protected void createSetter(JavaSource<?> javaEntity, PropertyModelWithOrigin propertyWithOrigin) {
         PropertyModel property = propertyWithOrigin.getProperty();
 
-        MethodSource<?> method = ((MethodHolderSource<?>) javaEntity).addMethod().setName(setterMethodName(property)).setReturnTypeVoid().setPublic();
+        MethodSource<?> method = ((MethodHolderSource<?>) javaEntity).addMethod().setName(SetterMethod.methodName(property)).setReturnTypeVoid().setPublic();
         addAnnotations(method);
 
         var jt = getJavaTypeFactory().createJavaType(property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
@@ -164,7 +171,7 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
             effectiveType = ((io.apitomy.umg.models.concept.type.CollectionType) effectiveType).getValueType();
         }
         String entityName = effectiveType.getName();
-        String methodName = createMethodName(entityName);
+        String methodName = FactoryMethod.methodName(entityName);
         // The name of the "create" method is based on the type, so it's possible to have
         // duplicates.  Let's not do that.
         if (!hasNamedMethod(((MethodHolderSource<?>) javaEntity), methodName)) {
@@ -191,7 +198,7 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
     protected void createAddMethod(JavaSource<?> javaEntity, PropertyModelWithOrigin propertyWithOrigin) {
         PropertyModel property = propertyWithOrigin.getProperty();
 
-        String methodName = addMethodName(singularize(property.getName()));
+        String methodName = AddMethod.methodName(singularize(property.getName()));
         var resolvedValueType = extractValueType(property.getResolvedType());
         if (resolvedValueType == null) {
             warn("Type not supported for 'add' method: " + methodName + " with type: " + property.getResolvedType());
@@ -221,7 +228,7 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
     protected void createClearMethod(JavaSource<?> javaEntity, PropertyModelWithOrigin propertyWithOrigin) {
         PropertyModel property = propertyWithOrigin.getProperty();
 
-        String methodName = clearMethodName(property.getName());
+        String methodName = ClearMethod.methodName(property.getName());
 
         MethodSource<?> method = ((MethodHolderSource<?>) javaEntity).addMethod().setPublic().setName(methodName).setReturnTypeVoid();
         addAnnotations(method);
@@ -239,7 +246,7 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
     protected void createRemoveMethod(JavaSource<?> javaEntity, PropertyModelWithOrigin propertyWithOrigin) {
         PropertyModel property = propertyWithOrigin.getProperty();
 
-        String methodName = removeMethodName(singularize(property.getName()));
+        String methodName = RemoveMethod.methodName(singularize(property.getName()));
         MethodSource<?> method = ((MethodHolderSource<?>) javaEntity).addMethod().setPublic().setName(methodName).setReturnTypeVoid();
         addAnnotations(method);
 
@@ -266,7 +273,7 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
     protected void createInsertMethod(JavaSource<?> javaEntity, PropertyModelWithOrigin propertyWithOrigin) {
         PropertyModel property = propertyWithOrigin.getProperty();
 
-        String methodName = insertMethodName(singularize(property.getName()));
+        String methodName = InsertMethod.methodName(singularize(property.getName()));
         var resolvedValueType = extractValueType(property.getResolvedType());
         if (resolvedValueType == null) {
             warn("Type not supported for 'insert' method: " + methodName + " with type: " + property.getResolvedType());
