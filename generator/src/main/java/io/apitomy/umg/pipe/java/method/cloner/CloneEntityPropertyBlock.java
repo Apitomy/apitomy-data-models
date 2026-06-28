@@ -1,5 +1,7 @@
 package io.apitomy.umg.pipe.java.method.cloner;
 
+import java.util.Map;
+
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
@@ -44,18 +46,22 @@ public class CloneEntityPropertyBlock extends CodeBlock {
         propertyTypeJavaEntity = resolved.javaInterface();
         clonerClassSource.addImport(propertyTypeJavaEntity);
 
-        body.addContext("getterMethodName", ctx.getterMethodName(property));
-        body.addContext("setterMethodName", ctx.setterMethodName(property));
-        body.addContext("createMethodName", ctx.createMethodName(resolved.entityModel()));
-        body.addContext("cloneMethodName", cloneMethodName(resolved.entityModel()));
-        body.addContext("entityType", propertyTypeJavaEntity.getName());
+        body.addContext(Map.of(
+                "getterMethodName", ctx.getterMethodName(property),
+                "setterMethodName", ctx.setterMethodName(property),
+                "createMethodName", ctx.createMethodName(resolved.entityModel()),
+                "cloneMethodName", cloneMethodName(resolved.entityModel()),
+                "entityType", propertyTypeJavaEntity.getName()
+        ));
 
-        body.append("{");
-        body.append("    if (source.${getterMethodName}() != null) {");
-        body.append("        target.${setterMethodName}(target.${createMethodName}());");
-        body.append("        this.${cloneMethodName}((${entityType}) source.${getterMethodName}(), (${entityType}) target.${getterMethodName}());");
-        body.append("    }");
-        body.append("}");
+        body.appendBlock("""
+                {
+                    if (source.${getterMethodName}() != null) {
+                        target.${setterMethodName}(target.${createMethodName}());
+                        this.${cloneMethodName}((${entityType}) source.${getterMethodName}(), (${entityType}) target.${getterMethodName}());
+                    }
+                }
+                """);
     }
 
     @Override

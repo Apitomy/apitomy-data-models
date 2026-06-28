@@ -46,9 +46,11 @@ public class CloneUnionMapPropertyBlock extends CodeBlock {
 
         var unionJavaType = ctx.getJavaTypeFactory().createJavaType(effectiveUnionType, nsContext);
         unionJavaType.addImportsTo(clonerClassSource);
-        body.addContext("unionJavaType", unionJavaType.getSimpleName());
-        body.addContext("getterMethodName", ctx.getterMethodName(property));
-        body.addContext("addMethodName", ctx.addMethodName(ctx.singularize(property.getName())));
+        body.addContext(Map.of(
+                "unionJavaType", unionJavaType.getSimpleName(),
+                "getterMethodName", ctx.getterMethodName(property),
+                "addMethodName", ctx.addMethodName(ctx.singularize(property.getName()))
+        ));
 
         body.append("{");
         body.append("    Map<String, ${unionJavaType}> srcMap = source.${getterMethodName}();");

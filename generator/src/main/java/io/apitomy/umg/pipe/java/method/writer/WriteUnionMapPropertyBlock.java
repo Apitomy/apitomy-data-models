@@ -45,25 +45,29 @@ public class WriteUnionMapPropertyBlock extends CodeBlock {
         writerClassSource.addImport(ObjectNode.class);
         writerClassSource.addImport(Map.class);
 
-        body.addContext("propertyName", property.getName());
-        body.addContext("getterMethodName", ctx.getterMethodName(property));
-        body.addContext("writeMethodName", writeMethodName);
-        body.addContext("unionJavaType", valueJt.toJavaTypeString());
+        body.addContext(Map.of(
+                "propertyName", property.getName(),
+                "getterMethodName", ctx.getterMethodName(property),
+                "writeMethodName", writeMethodName,
+                "unionJavaType", valueJt.toJavaTypeString()
+        ));
 
         writerClassSource.addImport(Collection.class);
 
-        body.append("{");
-        body.append("    Map<String, ${unionJavaType}> items = node.${getterMethodName}();");
-        body.append("    if (items != null && !items.isEmpty()) {");
-        body.append("        ObjectNode mapJson = JsonUtil.objectNode();");
-        body.append("        Collection<String> keys = items.keySet();");
-        body.append("        keys.forEach(key -> {");
-        body.append("            JsonNode value = this.${writeMethodName}(items.get(key));");
-        body.append("            if (value != null) JsonUtil.setProperty(mapJson, key, value);");
-        body.append("        });");
-        body.append("        JsonUtil.setProperty(json, \"${propertyName}\", mapJson);");
-        body.append("    }");
-        body.append("}");
+        body.appendBlock("""
+                {
+                    Map<String, ${unionJavaType}> items = node.${getterMethodName}();
+                    if (items != null && !items.isEmpty()) {
+                        ObjectNode mapJson = JsonUtil.objectNode();
+                        Collection<String> keys = items.keySet();
+                        keys.forEach(key -> {
+                            JsonNode value = this.${writeMethodName}(items.get(key));
+                            if (value != null) JsonUtil.setProperty(mapJson, key, value);
+                        });
+                        JsonUtil.setProperty(json, "${propertyName}", mapJson);
+                    }
+                }
+                """);
     }
 
     @Override

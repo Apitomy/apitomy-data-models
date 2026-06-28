@@ -1,6 +1,7 @@
 package io.apitomy.umg.pipe.java.method.writer;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
@@ -57,23 +58,28 @@ public class WriteListPropertyBlock extends CodeBlock {
             writerClassSource.addImport(List.class);
             writerClassSource.addImport(ArrayNode.class);
 
-            body.addContext("propertyName", property.getName());
-            body.addContext("listValueJavaType", resolved.javaInterface().getName());
-            body.addContext("writeMethodName", WriteEntityPropertyBlock.writeMethodName(resolved.entityModel()));
-            body.addContext("listValueCommonJavaType", commonEntityTypeJavaModel.getName());
+            body.addContext(Map.of(
+                    "propertyName", property.getName(),
+                    "getterMethodName", ctx.getterMethodName(property),
+                    "listValueJavaType", resolved.javaInterface().getName(),
+                    "writeMethodName", WriteEntityPropertyBlock.writeMethodName(resolved.entityModel()),
+                    "listValueCommonJavaType", commonEntityTypeJavaModel.getName()
+            ));
 
-            body.append("{");
-            body.append("    List<? extends ${listValueCommonJavaType}> models = node.${getterMethodName}();");
-            body.append("    if (models != null && !models.isEmpty()) {");
-            body.append("        ArrayNode array = JsonUtil.arrayNode();");
-            body.append("        models.forEach(model -> {");
-            body.append("            ObjectNode object = JsonUtil.objectNode();");
-            body.append("            this.${writeMethodName}((${listValueJavaType}) model, object);");
-            body.append("            JsonUtil.addToArray(array, object);");
-            body.append("        });");
-            body.append("        JsonUtil.setProperty(json, \"${propertyName}\", array);");
-            body.append("    }");
-            body.append("}");
+            body.appendBlock("""
+                    {
+                        List<? extends ${listValueCommonJavaType}> models = node.${getterMethodName}();
+                        if (models != null && !models.isEmpty()) {
+                            ArrayNode array = JsonUtil.arrayNode();
+                            models.forEach(model -> {
+                                ObjectNode object = JsonUtil.objectNode();
+                                this.${writeMethodName}((${listValueJavaType}) model, object);
+                                JsonUtil.addToArray(array, object);
+                            });
+                            JsonUtil.setProperty(json, "${propertyName}", array);
+                        }
+                    }
+                    """);
         } else {
             ctx.warn("LIST Entity property '" + property.getName() + "' not written (unsupported) for entity: " + entityModel.fullyQualifiedName());
             ctx.warn("       property type: " + property.getResolvedType());

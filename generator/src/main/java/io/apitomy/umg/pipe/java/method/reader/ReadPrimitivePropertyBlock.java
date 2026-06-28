@@ -1,5 +1,7 @@
 package io.apitomy.umg.pipe.java.method.reader;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -31,16 +33,17 @@ public class ReadPrimitivePropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = propertyWithOrigin.getProperty();
-        body.addContext("propertyName", property.getName());
-        body.addContext("setterMethodName", ctx.setterMethodName(property));
-        body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
-
         readerClassSource.addImport(JsonNode.class);
 
         String isCheckMethod = PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), ctx, readerClassSource);
         String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), ctx, readerClassSource);
-        body.addContext("isCheckMethod", isCheckMethod);
-        body.addContext("toConversionMethod", toConversionMethod);
+        body.addContext(Map.of(
+                "propertyName", property.getName(),
+                "setterMethodName", ctx.setterMethodName(property),
+                "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"),
+                "isCheckMethod", isCheckMethod,
+                "toConversionMethod", toConversionMethod
+        ));
 
         body.appendBlock("""
 {
