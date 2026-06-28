@@ -33,6 +33,8 @@ import io.apitomy.umg.pipe.java.method.writer.WriteEntityPropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WriteListPropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WriteMapPropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WritePrimitivePropertyBlock;
+import io.apitomy.umg.pipe.java.method.writer.WriteRegexPropertyBlock;
+import io.apitomy.umg.pipe.java.method.writer.WriteStarPropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WriteUnionPropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WriteUnionListPropertyBlock;
 import io.apitomy.umg.pipe.java.method.writer.WriteUnionMapPropertyBlock;
@@ -475,165 +477,13 @@ public class CreateWritersStage extends AbstractJavaStage {
         }
 
         private void handleStarProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            if (isEntity(property)) {
-                var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
-                        entityModel, ctx, "STAR");
-                if (resolved == null) {
-                    return;
-                }
-
-                writerClassSource.addImport(List.class);
-                writerClassSource.addImport(resolved.javaInterface());
-
-                body.addContext("writeMethodName", writeMethodName(resolved.entityModel()));
-                body.addContext("entityJavaType", resolved.javaInterface().getName());
-
-                body.append("{");
-                body.append("    List<String> propertyNames = node.getItemNames();");
-                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
-                body.append("        String propertyName = propertyNames.get(_i);");
-                body.append("        ObjectNode object = JsonUtil.objectNode();");
-                body.append("        this.${writeMethodName}((${entityJavaType}) node.getItem(propertyName), object);");
-                body.append("        JsonUtil.setProperty(json, propertyName, object);");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitive(property)) {
-                writerClassSource.addImport(List.class);
-
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
-
-                body.append("{");
-                body.append("    List<String> propertyNames = node.getItemNames();");
-                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
-                body.append("        String propertyName = propertyNames.get(_i);");
-                body.append("        ${valueType} value = node.getItem(propertyName);");
-                body.append("        JsonUtil.setProperty(json, propertyName, JsonUtil.toJsonNode(value));");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitiveList(property)) {
-                writerClassSource.addImport(List.class);
-
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
-
-                body.append("{");
-                body.append("    List<String> propertyNames = node.getItemNames();");
-                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
-                body.append("        String propertyName = propertyNames.get(_i);");
-                body.append("        ${valueType} value = node.getItem(propertyName);");
-                body.append("        JsonUtil.setProperty(json, propertyName, JsonUtil.toArrayNode(value));");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitiveMap(property)) {
-                writerClassSource.addImport(List.class);
-                writerClassSource.addImport(Map.class);
-
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
-
-                body.append("{");
-                body.append("    List<String> propertyNames = node.getItemNames();");
-                body.append("    for (int _i = 0; _i < propertyNames.size(); _i++) {");
-                body.append("        String propertyName = propertyNames.get(_i);");
-                body.append("        ${valueType} value = node.getItem(propertyName);");
-                body.append("        JsonUtil.setProperty(json, propertyName, JsonUtil.toObject(value));");
-                body.append("    }");
-                body.append("}");
-            } else {
-                warn("STAR Entity property '" + property.getName() + "' not written (unhandled) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getResolvedType());
-            }
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new WriteStarPropertyBlock(prop, writerClassSource).appendTo(body);
         }
 
         private void handleRegexProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            if (isEntity(property)) {
-                var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
-                        entityModel, ctx, "REGEX");
-                if (resolved == null) {
-                    return;
-                }
-                JavaInterfaceSource commonEntityTypeJavaModel = resolveCommonJavaEntity(resolved.entityModel());
-
-                writerClassSource.addImport(Map.class);
-                writerClassSource.addImport(List.class);
-                writerClassSource.addImport(resolved.javaInterface());
-                writerClassSource.addImport(commonEntityTypeJavaModel);
-
-                body.addContext("mapValueJavaType", resolved.javaInterface().getName());
-                body.addContext("getterMethodName", GetterMethod.methodName(property));
-                body.addContext("writeMethodName", writeMethodName(resolved.entityModel()));
-                body.addContext("mapValueCommonJavaType", commonEntityTypeJavaModel.getName());
-
-                body.append("{");
-                body.append("    Map<String, ? extends ${mapValueCommonJavaType}> models = node.${getterMethodName}();");
-                body.append("    if (models != null && !models.isEmpty()) {");
-                body.append("        List<String> _keys = new java.util.ArrayList<>(models.keySet());");
-                body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
-                body.append("            String propertyName = _keys.get(_i);");
-                body.append("            ObjectNode object = JsonUtil.objectNode();");
-                body.append("            this.${writeMethodName}((${mapValueJavaType}) models.get(propertyName), object);");
-                body.append("            JsonUtil.setProperty(json, propertyName, object);");
-                body.append("        }");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitive(property)) {
-                writerClassSource.addImport(List.class);
-                writerClassSource.addImport(Map.class);
-
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
-                body.addContext("getterMethodName", GetterMethod.methodName(property));
-
-                body.append("{");
-                body.append("    Map<String, ${valueType}> values = node.${getterMethodName}();");
-                body.append("    if (values != null && !values.isEmpty()) {");
-                body.append("        List<String> _keys = new java.util.ArrayList<>(values.keySet());");
-                body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
-                body.append("            String propertyName = _keys.get(_i);");
-                body.append("            ${valueType} value = values.get(propertyName);");
-                body.append("            JsonUtil.setProperty(json, propertyName, JsonUtil.toJsonNode(value));");
-                body.append("        }");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitiveList(property)) {
-                writerClassSource.addImport(List.class);
-                writerClassSource.addImport(Map.class);
-
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
-                body.addContext("getterMethodName", GetterMethod.methodName(property));
-
-                body.append("{");
-                body.append("    Map<String, ${valueType}> values = node.${getterMethodName}();");
-                body.append("    if (values != null && !values.isEmpty()) {");
-                body.append("        List<String> _keys = new java.util.ArrayList<>(values.keySet());");
-                body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
-                body.append("            String propertyName = _keys.get(_i);");
-                body.append("            ${valueType} value = values.get(propertyName);");
-                body.append("            JsonUtil.setProperty(json, propertyName, JsonUtil.toArrayNode(value));");
-                body.append("        }");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitiveMap(property)) {
-                writerClassSource.addImport(List.class);
-                writerClassSource.addImport(Map.class);
-
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, writerClassSource));
-                body.addContext("getterMethodName", GetterMethod.methodName(property));
-
-                body.append("{");
-                body.append("    Map<String, ${valueType}> values = node.${getterMethodName}();");
-                body.append("    if (values != null && !values.isEmpty()) {");
-                body.append("        List<String> _keys = new java.util.ArrayList<>(values.keySet());");
-                body.append("        for (int _i = 0; _i < _keys.size(); _i++) {");
-                body.append("            String propertyName = _keys.get(_i);");
-                body.append("            ${valueType} value = values.get(propertyName);");
-                body.append("            JsonUtil.setProperty(json, propertyName, JsonUtil.toObject(value));");
-                body.append("        }");
-                body.append("    }");
-                body.append("}");
-            } else {
-                warn("REGEX Entity property '" + property.getName() + "' not written (unhandled) for entity: " + entityModel.fullyQualifiedName());
-                warn("       property type: " + property.getResolvedType());
-            }
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new WriteRegexPropertyBlock(prop, writerClassSource).appendTo(body);
         }
 
         private void handleEntityProperty(BodyBuilder body) {

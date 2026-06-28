@@ -35,6 +35,8 @@ import io.apitomy.umg.pipe.java.method.cloner.CloneEntityPropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.CloneListPropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.CloneMapPropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.ClonePrimitivePropertyBlock;
+import io.apitomy.umg.pipe.java.method.cloner.CloneRegexPropertyBlock;
+import io.apitomy.umg.pipe.java.method.cloner.CloneStarPropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.CloneUnionPropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.CloneUnionListPropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.CloneUnionMapPropertyBlock;
@@ -236,101 +238,13 @@ public class CreateClonersStage extends AbstractJavaStage {
         }
 
         private void handleStarProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            if (isEntity(property)) {
-                var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
-                        entityModel, ctx, "STAR");
-                if (resolved == null) {
-                    return;
-                }
-                clonerClassSource.addImport(resolved.javaInterface());
-                clonerClassSource.addImport(List.class);
-
-                body.addContext("entityJavaType", resolved.javaInterface().getName());
-                body.addContext("createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()));
-                body.addContext("cloneMethodName", cloneMethodName(resolved.entityModel()));
-
-                body.append("{");
-                body.append("    List<String> itemNames = source.getItemNames();");
-                body.append("    if (itemNames != null) {");
-                body.append("        itemNames.forEach(name -> {");
-                body.append("            ${entityJavaType} srcItem = (${entityJavaType}) source.getItem(name);");
-                body.append("            if (srcItem != null) {");
-                body.append("                ${entityJavaType} tgtItem = (${entityJavaType}) target.${createMethodName}();");
-                body.append("                this.${cloneMethodName}(srcItem, tgtItem);");
-                body.append("                target.addItem(name, tgtItem);");
-                body.append("            }");
-                body.append("        });");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
-                clonerClassSource.addImport(List.class);
-
-                body.append("{");
-                body.append("    List<String> itemNames = source.getItemNames();");
-                body.append("    if (itemNames != null) {");
-                body.append("        itemNames.forEach(name -> {");
-                body.append("            target.addItem(name, source.getItem(name));");
-                body.append("        });");
-                body.append("    }");
-                body.append("}");
-            } else {
-                warn("STAR Entity property '" + property.getName() + "' not cloned (unhandled) for entity: " + entityModel.fullyQualifiedName());
-            }
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new CloneStarPropertyBlock(prop, clonerClassSource).appendTo(body);
         }
 
         private void handleRegexProperty(BodyBuilder body) {
-            PropertyModel property = propertyWithOrigin.getProperty();
-            if (isEntity(property)) {
-                var resolved = EntityResolver.resolveEntityInterface(property, property.getResolvedType().getName(),
-                        entityModel, ctx, "REGEX");
-                if (resolved == null) {
-                    return;
-                }
-                JavaInterfaceSource commonEntityTypeJavaModel = resolveCommonJavaEntity(resolved.entityModel());
-
-                clonerClassSource.addImport(resolved.javaInterface());
-                clonerClassSource.addImport(commonEntityTypeJavaModel);
-                clonerClassSource.addImport(Map.class);
-
-                body.addContext("entityJavaType", resolved.javaInterface().getName());
-                body.addContext("commonEntityType", commonEntityTypeJavaModel.getName());
-                body.addContext("getterMethodName", GetterMethod.methodName(property));
-                body.addContext("createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()));
-                body.addContext("cloneMethodName", cloneMethodName(resolved.entityModel()));
-                body.addContext("addMethodName", AddMethod.methodName(singularize(property.getCollection())));
-
-                body.append("{");
-                body.append("    Map<String, ? extends ${commonEntityType}> srcMap = source.${getterMethodName}();");
-                body.append("    if (srcMap != null && !srcMap.isEmpty()) {");
-                body.append("        srcMap.keySet().forEach(name -> {");
-                body.append("            ${entityJavaType} srcItem = (${entityJavaType}) srcMap.get(name);");
-                body.append("            ${entityJavaType} tgtItem = (${entityJavaType}) target.${createMethodName}();");
-                body.append("            this.${cloneMethodName}(srcItem, tgtItem);");
-                body.append("            target.${addMethodName}(name, tgtItem);");
-                body.append("        });");
-                body.append("    }");
-                body.append("}");
-            } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
-                clonerClassSource.addImport(Map.class);
-
-                body.addContext("getterMethodName", GetterMethod.methodName(property));
-                body.addContext("addMethodName", AddMethod.methodName(singularize(property.getCollection())));
-                body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), ctx, clonerClassSource));
-
-                clonerClassSource.addImport(List.class);
-                body.append("{");
-                body.append("    Map<String, ${valueType}> srcMap = source.${getterMethodName}();");
-                body.append("    if (srcMap != null && !srcMap.isEmpty()) {");
-                body.append("        List<String> keys = new java.util.ArrayList<>(srcMap.keySet());");
-                body.append("        keys.forEach(name -> {");
-                body.append("            target.${addMethodName}(name, srcMap.get(name));");
-                body.append("        });");
-                body.append("    }");
-                body.append("}");
-            } else {
-                warn("REGEX Entity property '" + property.getName() + "' not cloned (unhandled) for entity: " + entityModel.fullyQualifiedName());
-            }
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new CloneRegexPropertyBlock(prop, clonerClassSource).appendTo(body);
         }
 
         private void handleListProperty(BodyBuilder body) {
