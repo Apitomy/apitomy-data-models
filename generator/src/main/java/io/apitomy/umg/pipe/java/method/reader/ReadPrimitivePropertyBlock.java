@@ -8,11 +8,10 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
@@ -20,24 +19,21 @@ import io.apitomy.umg.pipe.java.method.SetterMethod;
  */
 public class ReadPrimitivePropertyBlock extends CodeBlock {
 
-    private final PropertyModelWithOrigin propertyWithOrigin;
+    private final PropertyCodeGen prop;
     private final JavaClassSource readerClassSource;
-    private final CodeGenContext ctx;
 
-    public ReadPrimitivePropertyBlock(PropertyModelWithOrigin propertyWithOrigin, JavaClassSource readerClassSource,
-            CodeGenContext ctx) {
-        this.propertyWithOrigin = propertyWithOrigin;
+    public ReadPrimitivePropertyBlock(PropertyCodeGen prop, JavaClassSource readerClassSource) {
+        this.prop = prop;
         this.readerClassSource = readerClassSource;
-        this.ctx = ctx;
     }
 
     @Override
     public void appendTo(BodyBuilder body) {
-        PropertyModel property = propertyWithOrigin.getProperty();
+        PropertyModel property = prop.getProperty();
         readerClassSource.addImport(JsonNode.class);
 
-        String isCheckMethod = PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), ctx, readerClassSource);
-        String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), ctx, readerClassSource);
+        String isCheckMethod = PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), prop.getCtx(), readerClassSource);
+        String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), prop.getCtx(), readerClassSource);
         body.addContext(Map.of(
                 "propertyName", property.getName(),
                 "setterMethodName", SetterMethod.methodName(property),

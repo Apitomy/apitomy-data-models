@@ -30,6 +30,7 @@ import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.cloner.CloneEntityPropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.CloneListPropertyBlock;
 import io.apitomy.umg.pipe.java.method.cloner.CloneMapPropertyBlock;
@@ -225,11 +226,13 @@ public class CreateClonersStage extends AbstractJavaStage {
         }
 
         private void handlePrimitiveProperty(BodyBuilder body) {
-            new ClonePrimitivePropertyBlock(propertyWithOrigin, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new ClonePrimitivePropertyBlock(prop).appendTo(body);
         }
 
         private void handleEntityProperty(BodyBuilder body) {
-            new CloneEntityPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new CloneEntityPropertyBlock(prop, clonerClassSource).appendTo(body);
         }
 
         private void handleStarProperty(BodyBuilder body) {
@@ -331,23 +334,28 @@ public class CreateClonersStage extends AbstractJavaStage {
         }
 
         private void handleListProperty(BodyBuilder body) {
-            new CloneListPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new CloneListPropertyBlock(prop, clonerClassSource).appendTo(body);
         }
 
         private void handleMapProperty(BodyBuilder body) {
-            new CloneMapPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new CloneMapPropertyBlock(prop, clonerClassSource).appendTo(body);
         }
 
         private void handleUnionProperty(BodyBuilder body) {
-            new CloneUnionPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new CloneUnionPropertyBlock(prop, clonerClassSource).appendTo(body);
         }
 
         private void handleUnionListProperty(BodyBuilder body) {
-            new CloneUnionListPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new CloneUnionListPropertyBlock(prop, clonerClassSource).appendTo(body);
         }
 
         private void handleUnionMapProperty(BodyBuilder body) {
-            new CloneUnionMapPropertyBlock(propertyWithOrigin, entityModel, clonerClassSource, ctx).appendTo(body);
+            PropertyCodeGen prop = new PropertyCodeGen(propertyWithOrigin, entityModel, ctx);
+            new CloneUnionMapPropertyBlock(prop, clonerClassSource).appendTo(body);
         }
 
 

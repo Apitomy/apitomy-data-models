@@ -4,36 +4,32 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 
 /**
  * Generates code to write a primitive-typed property to JSON.
  */
 public class WritePrimitivePropertyBlock extends CodeBlock {
 
-    private final PropertyModelWithOrigin propertyWithOrigin;
+    private final PropertyCodeGen prop;
     private final JavaClassSource writerClassSource;
-    private final CodeGenContext ctx;
 
-    public WritePrimitivePropertyBlock(PropertyModelWithOrigin propertyWithOrigin, JavaClassSource writerClassSource,
-            CodeGenContext ctx) {
-        this.propertyWithOrigin = propertyWithOrigin;
+    public WritePrimitivePropertyBlock(PropertyCodeGen prop, JavaClassSource writerClassSource) {
+        this.prop = prop;
         this.writerClassSource = writerClassSource;
-        this.ctx = ctx;
     }
 
     @Override
     public void appendTo(BodyBuilder body) {
-        PropertyModel property = propertyWithOrigin.getProperty();
+        PropertyModel property = prop.getProperty();
         body.addContext("propertyName", property.getName());
         body.addContext("getterMethodName", GetterMethod.methodName(property));
 
-        body.ifElse(PrimitiveTypeHelper.isJsonNodeType(property.getResolvedType(), ctx),
+        body.ifElse(PrimitiveTypeHelper.isJsonNodeType(property.getResolvedType(), prop.getCtx()),
                 // ObjectNode and JsonNode are already JsonNode subtypes, use setProperty directly
                 () -> "JsonUtil.setProperty(json, \"${propertyName}\", node.${getterMethodName}());",
                 () -> "JsonUtil.setProperty(json, \"${propertyName}\", JsonUtil.toJsonNode(node.${getterMethodName}()));");

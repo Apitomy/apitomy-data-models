@@ -10,17 +10,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
-import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
 import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.ReaderMethod;
 import io.apitomy.umg.pipe.java.method.SetterMethod;
 
@@ -29,22 +27,17 @@ import io.apitomy.umg.pipe.java.method.SetterMethod;
  */
 public class ReadMapPropertyBlock extends CodeBlock {
 
-    private final PropertyModelWithOrigin propertyWithOrigin;
-    private final EntityModel entityModel;
+    private final PropertyCodeGen prop;
     private final JavaClassSource readerClassSource;
-    private final CodeGenContext ctx;
 
-    public ReadMapPropertyBlock(PropertyModelWithOrigin propertyWithOrigin, EntityModel entityModel,
-            JavaClassSource readerClassSource, CodeGenContext ctx) {
-        this.propertyWithOrigin = propertyWithOrigin;
-        this.entityModel = entityModel;
+    public ReadMapPropertyBlock(PropertyCodeGen prop, JavaClassSource readerClassSource) {
+        this.prop = prop;
         this.readerClassSource = readerClassSource;
-        this.ctx = ctx;
     }
 
     @Override
     public void appendTo(BodyBuilder body) {
-        PropertyModel property = propertyWithOrigin.getProperty();
+        PropertyModel property = prop.getProperty();
         Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
         if (mapValueType.isPrimitiveType()) {
             readerClassSource.addImport(JsonNode.class);
@@ -53,9 +46,9 @@ public class ReadMapPropertyBlock extends CodeBlock {
             readerClassSource.addImport(LinkedHashMap.class);
             readerClassSource.addImport(List.class);
 
-            String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, ctx);
-            String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(mapValueType, ctx, readerClassSource);
-            String elementValueType = PrimitiveTypeHelper.determineValueType(mapValueType, ctx, readerClassSource);
+            String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, prop.getCtx());
+            String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(mapValueType, prop.getCtx(), readerClassSource);
+            String elementValueType = PrimitiveTypeHelper.determineValueType(mapValueType, prop.getCtx(), readerClassSource);
             body.addContext(Map.of(
                     "propertyName", property.getName(),
                     "setterMethodName", SetterMethod.methodName(property),
@@ -82,7 +75,7 @@ public class ReadMapPropertyBlock extends CodeBlock {
 """);
         } else if (mapValueType.isEntityType()) {
             String entityTypeName = mapValueType.getName();
-            var resolved = EntityResolver.resolveEntityInterface(property, entityTypeName, entityModel, ctx, "MAP");
+            var resolved = EntityResolver.resolveEntityInterface(property, entityTypeName, prop.getOwningEntity(), prop.getCtx(), "MAP");
             if (resolved == null) {
                 return;
             }
@@ -97,7 +90,7 @@ public class ReadMapPropertyBlock extends CodeBlock {
                     "mapValueJavaType", resolved.javaInterface().getName(),
                     "createMethodName", FactoryMethod.methodName(entityTypeName),
                     "readMethodName", ReaderMethod.methodName(entityTypeName),
-                    "addMethodName", AddMethod.methodName(ctx.singularize(property.getName())),
+                    "addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getName())),
                     "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
             ));
 
@@ -121,8 +114,8 @@ public class ReadMapPropertyBlock extends CodeBlock {
 }
 """);
         } else {
-            ctx.warn("MAP Entity property '" + property.getName() + "' not read (unsupported) for entity: " + entityModel.fullyQualifiedName());
-            ctx.warn("       property type: " + property.getResolvedType());
+            prop.getCtx().warn("MAP Entity property '" + property.getName() + "' not read (unsupported) for entity: " + prop.getOwningEntity().fullyQualifiedName());
+            prop.getCtx().warn("       property type: " + property.getResolvedType());
         }
     }
 
