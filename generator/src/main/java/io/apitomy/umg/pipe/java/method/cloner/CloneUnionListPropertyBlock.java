@@ -3,6 +3,7 @@ package io.apitomy.umg.pipe.java.method.cloner;
 import io.apitomy.umg.pipe.java.AbstractJavaStage;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
@@ -46,9 +47,11 @@ public class CloneUnionListPropertyBlock extends CodeBlock {
 
         var unionJavaType = ctx.getJavaTypeFactory().createJavaType(effectiveUnionType, nsContext);
         unionJavaType.addImportsTo(clonerClassSource);
-        body.addContext("unionJavaType", unionJavaType.getSimpleName());
-        body.addContext("getterMethodName", ctx.getterMethodName(property));
-        body.addContext("addMethodName", ctx.addMethodName(ctx.singularize(property.getName())));
+        body.addContext(Map.of(
+                "unionJavaType", unionJavaType.getSimpleName(),
+                "getterMethodName", ctx.getterMethodName(property),
+                "addMethodName", ctx.addMethodName(ctx.singularize(property.getName()))
+        ));
 
         body.append("{");
         body.append("    List<${unionJavaType}> srcList = source.${getterMethodName}();");

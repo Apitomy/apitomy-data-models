@@ -1,5 +1,7 @@
 package io.apitomy.umg.pipe.java.method.reader;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -39,19 +41,22 @@ public class ReadUnionPropertyBlock extends CodeBlock {
         readerClassSource.addImport(JsonNode.class);
         jt.addImportsTo(readerClassSource);
 
-        body.addContext("propertyName", property.getName());
-        body.addContext("setterMethodName", ctx.setterMethodName(property));
-        body.addContext("readMethodName", readMethodName);
+        body.addContext(Map.of(
+                "propertyName", property.getName(),
+                "setterMethodName", ctx.setterMethodName(property),
+                "readMethodName", readMethodName,
+                "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
+        ));
 
-        body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
-
-        body.append("{");
-        body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
-        body.append("    if (JsonUtil.isJsonNode(${varName})) {");
-        body.append("        node.${setterMethodName}(this.${readMethodName}(${varName}, null));");
-        body.append("        JsonUtil.removeProperty(json, \"${propertyName}\");");
-        body.append("    }");
-        body.append("}");
+        body.appendBlock("""
+                {
+                    JsonNode ${varName} = JsonUtil.getProperty(json, "${propertyName}");
+                    if (JsonUtil.isJsonNode(${varName})) {
+                        node.${setterMethodName}(this.${readMethodName}(${varName}, null));
+                        JsonUtil.removeProperty(json, "${propertyName}");
+                    }
+                }
+                """);
     }
 
     @Override

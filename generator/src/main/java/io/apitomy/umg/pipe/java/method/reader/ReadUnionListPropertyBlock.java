@@ -2,6 +2,7 @@ package io.apitomy.umg.pipe.java.method.reader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -44,32 +45,35 @@ public class ReadUnionListPropertyBlock extends CodeBlock {
         readerClassSource.addImport(ArrayList.class);
         valueJt.addImportsTo(readerClassSource);
 
-        body.addContext("propertyName", property.getName());
-        body.addContext("addMethodName", ctx.addMethodName(ctx.singularize(property.getName())));
-        body.addContext("readMethodName", readMethodName);
-        body.addContext("unionJavaType", valueJt.toJavaTypeString());
+        body.addContext(Map.of(
+                "propertyName", property.getName(),
+                "addMethodName", ctx.addMethodName(ctx.singularize(property.getName())),
+                "readMethodName", readMethodName,
+                "unionJavaType", valueJt.toJavaTypeString(),
+                "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
+        ));
 
-        body.addContext("varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"));
-
-        body.append("{");
-        body.append("    JsonNode ${varName} = JsonUtil.getProperty(json, \"${propertyName}\");");
-        body.append("    if (JsonUtil.isArray(${varName})) {");
-        body.append("        List<JsonNode> _nodes = JsonUtil.toList(${varName});");
-        body.append("        List<${unionJavaType}> _items = new ArrayList<>();");
-        body.append("        boolean _valid = true;");
-        body.append("        for (int _i = 0; _i < _nodes.size(); _i++) {");
-        body.append("            ${unionJavaType} _result = this.${readMethodName}(_nodes.get(_i), null);");
-        body.append("            if (_result == null) { _valid = false; break; }");
-        body.append("            _items.add(_result);");
-        body.append("        }");
-        body.append("        if (_valid) {");
-        body.append("            for (int _i = 0; _i < _items.size(); _i++) {");
-        body.append("                node.${addMethodName}(_items.get(_i));");
-        body.append("            }");
-        body.append("            JsonUtil.removeProperty(json, \"${propertyName}\");");
-        body.append("        }");
-        body.append("    }");
-        body.append("}");
+        body.appendBlock("""
+                {
+                    JsonNode ${varName} = JsonUtil.getProperty(json, "${propertyName}");
+                    if (JsonUtil.isArray(${varName})) {
+                        List<JsonNode> _nodes = JsonUtil.toList(${varName});
+                        List<${unionJavaType}> _items = new ArrayList<>();
+                        boolean _valid = true;
+                        for (int _i = 0; _i < _nodes.size(); _i++) {
+                            ${unionJavaType} _result = this.${readMethodName}(_nodes.get(_i), null);
+                            if (_result == null) { _valid = false; break; }
+                            _items.add(_result);
+                        }
+                        if (_valid) {
+                            for (int _i = 0; _i < _items.size(); _i++) {
+                                node.${addMethodName}(_items.get(_i));
+                            }
+                            JsonUtil.removeProperty(json, "${propertyName}");
+                        }
+                    }
+                }
+                """);
     }
 
     @Override
