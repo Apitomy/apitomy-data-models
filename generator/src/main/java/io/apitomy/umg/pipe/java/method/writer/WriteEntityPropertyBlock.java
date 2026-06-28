@@ -2,7 +2,6 @@ package io.apitomy.umg.pipe.java.method.writer;
 
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
@@ -13,6 +12,8 @@ import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.WriterMethod;
 
 /**
  * Generates code to write an entity-typed property to JSON.
@@ -43,7 +44,7 @@ public class WriteEntityPropertyBlock extends CodeBlock {
 
         body.addContext(Map.of(
                 "propertyName", property.getName(),
-                "getterMethodName", ctx.getterMethodName(property),
+                "getterMethodName", GetterMethod.methodName(property),
                 "writeMethodName", writeMethodName(resolved.entityModel()),
                 "propertyTypeJavaEntity", resolved.javaInterface().getName()
         ));
@@ -60,11 +61,11 @@ public class WriteEntityPropertyBlock extends CodeBlock {
     }
 
     static String writeMethodName(EntityModel entityModel) {
-        return "write" + StringUtils.capitalize(entityModel.getName());
+        return WriterMethod.methodName(entityModel.getName());
     }
 
     static String writeMethodName(String entityName) {
-        return "write" + StringUtils.capitalize(entityName);
+        return WriterMethod.methodName(entityName);
     }
 
     @Override

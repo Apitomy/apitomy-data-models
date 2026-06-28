@@ -14,6 +14,8 @@ import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.WriterMethod;
 
 /**
  * Generates code to write a list of union values to JSON using the type-based writer method.
@@ -38,7 +40,7 @@ public class WriteUnionListPropertyBlock extends CodeBlock {
                 (io.apitomy.umg.models.concept.type.ListType) property.getResolvedType();
         var nsModel = propertyWithOrigin.getOrigin().getNamespace();
         var valueJt = ctx.getJavaTypeFactory().createJavaType(listType.getValueType(), nsModel);
-        String writeMethodName = "write" + valueJt.getSimpleName();
+        String writeMethodName = WriterMethod.methodName(valueJt.getSimpleName());
 
         valueJt.addImportsTo(writerClassSource);
         writerClassSource.addImport(JsonNode.class);
@@ -47,7 +49,7 @@ public class WriteUnionListPropertyBlock extends CodeBlock {
 
         body.addContext(Map.of(
                 "propertyName", property.getName(),
-                "getterMethodName", ctx.getterMethodName(property),
+                "getterMethodName", GetterMethod.methodName(property),
                 "writeMethodName", writeMethodName,
                 "unionJavaType", valueJt.toJavaTypeString()
         ));

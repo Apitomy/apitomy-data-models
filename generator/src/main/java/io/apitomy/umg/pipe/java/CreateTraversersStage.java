@@ -19,6 +19,7 @@ import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.VisitorModel;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
 
 /**
  * Creates a traverser for each specification visitor interface.  A traverser is a visitor that
@@ -132,7 +133,7 @@ public class CreateTraversersStage extends AbstractVisitorStage {
             PropertyModel property = _property;
 
             body.addContext("propertyName", property.getName());
-            body.addContext("propertyGetter", getterMethodName(property));
+            body.addContext("propertyGetter", GetterMethod.methodName(property));
 
             if (isUnion(property)) {
                 body.append("this.traverseUnion(\"${propertyName}\", model.${propertyGetter}());");

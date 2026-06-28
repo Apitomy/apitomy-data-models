@@ -10,9 +10,13 @@ import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
+import io.apitomy.umg.pipe.java.method.ClonerMethod;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
+import io.apitomy.umg.pipe.java.method.FactoryMethod;
+import io.apitomy.umg.pipe.java.method.GetterMethod;
+import io.apitomy.umg.pipe.java.method.SetterMethod;
 
 /**
  * Generates code to clone an entity-typed property: creates the target entity,
@@ -47,9 +51,9 @@ public class CloneEntityPropertyBlock extends CodeBlock {
         clonerClassSource.addImport(propertyTypeJavaEntity);
 
         body.addContext(Map.of(
-                "getterMethodName", ctx.getterMethodName(property),
-                "setterMethodName", ctx.setterMethodName(property),
-                "createMethodName", ctx.createMethodName(resolved.entityModel()),
+                "getterMethodName", GetterMethod.methodName(property),
+                "setterMethodName", SetterMethod.methodName(property),
+                "createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()),
                 "cloneMethodName", cloneMethodName(resolved.entityModel()),
                 "entityType", propertyTypeJavaEntity.getName()
         ));
@@ -70,6 +74,6 @@ public class CloneEntityPropertyBlock extends CodeBlock {
     }
 
     static String cloneMethodName(EntityModel entityModel) {
-        return "clone" + entityModel.getName();
+        return ClonerMethod.methodName(entityModel.getName());
     }
 }
