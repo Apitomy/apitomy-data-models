@@ -21,6 +21,7 @@ import io.apitomy.umg.models.concept.VisitorModel;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.models.java.type.JavaTypeFactory;
 import io.apitomy.umg.pipe.AbstractStage;
+import io.apitomy.umg.pipe.java.method.CodeGenContext;
 
 public abstract class AbstractJavaStage extends AbstractStage {
 
@@ -123,7 +124,7 @@ public abstract class AbstractJavaStage extends AbstractStage {
         if (name == null) {
             return null;
         }
-        return Util.JAVA_KEYWORD_MAP.getOrDefault(name, name);
+        return CodeGenContext.JAVA_KEYWORD_MAP.getOrDefault(name, name);
     }
 
     protected String getPrefix(NamespaceModel namespace) {

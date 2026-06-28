@@ -1,26 +1,29 @@
 package io.apitomy.umg.pipe.java.method;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
+import org.jboss.forge.roaster.model.source.MethodHolderSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.Type;
 
 /**
- * Generates a setter method body: {@code this.${fieldName} = value;} plus parent
- * tracking for entity/union types.
+ * Generates a setter method: signature, parameter, @Override (for impl), and body
+ * with field assignment plus parent tracking for entity/union types.
  */
 public class SetterMethod implements Method {
 
     private final PropertyModel property;
-    private final JavaSource<?> javaEntity;
+    private final PropertyModelWithOrigin propertyWithOrigin;
     private final CodeGenContext ctx;
     private final ParentAttachmentBlock parentBlock;
 
-    public SetterMethod(JavaSource<?> javaEntity, PropertyModel property, CodeGenContext ctx) {
+    public SetterMethod(PropertyModel property, PropertyModelWithOrigin propertyWithOrigin, CodeGenContext ctx) {
         this.property = property;
-        this.javaEntity = javaEntity;
+        this.propertyWithOrigin = propertyWithOrigin;
         this.ctx = ctx;
 
         Type resolvedType = property.getResolvedType();
@@ -52,20 +55,37 @@ public class SetterMethod implements Method {
         return methodName(property);
     }
 
-    public void writeTo(MethodSource<?> method) {
-        String fieldName = ctx.getFieldName(property);
-        String propertyName = property.getName();
+    @Override
+    public void writeTo(JavaSource<?> target) {
+        MethodSource<?> method = ((MethodHolderSource<?>) target).addMethod()
+                .setName(getName())
+                .setReturnTypeVoid()
+                .setPublic();
 
-        BodyBuilder body = new BodyBuilder();
-        body.addContext("fieldName", fieldName);
-        body.addContext("propertyName", propertyName);
-        body.append("this.${fieldName} = value;");
+        var jt = ctx.getJavaTypeFactory().createJavaType(
+                property.getResolvedType(),
+                propertyWithOrigin.getOrigin().getNamespace());
+        jt.addImportsTo(target);
+        method.addParameter(jt.toJavaTypeString(), "value");
 
-        if (parentBlock != null) {
-            parentBlock.appendTo(body);
+        if (target instanceof JavaClassSource) {
+            method.addAnnotation(Override.class);
+            addImportsTo(target);
+
+            String fieldName = ctx.getFieldName(property);
+            String propertyName = property.getName();
+
+            BodyBuilder body = new BodyBuilder();
+            body.addContext("fieldName", fieldName);
+            body.addContext("propertyName", propertyName);
+            body.append("this.${fieldName} = value;");
+
+            if (parentBlock != null) {
+                parentBlock.appendTo(body);
+            }
+
+            method.setBody(body.toString());
         }
-
-        method.setBody(body.toString());
     }
 
     @Override

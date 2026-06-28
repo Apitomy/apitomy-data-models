@@ -2,6 +2,8 @@ package io.apitomy.umg.pipe.java.method;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
+import org.jboss.forge.roaster.model.source.MethodHolderSource;
+import org.jboss.forge.roaster.model.source.MethodSource;
 import org.modeshape.common.text.Inflector;
 
 import io.apitomy.umg.index.concept.ConceptIndex;
@@ -13,7 +15,9 @@ import io.apitomy.umg.models.concept.NamespaceModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.models.java.type.JavaTypeFactory;
-import io.apitomy.umg.pipe.java.Util;
+import java.util.Map;
+
+import static java.util.Map.entry;
 
 /**
  * Self-contained context that provides entity resolution, naming logic, and
@@ -23,6 +27,13 @@ import io.apitomy.umg.pipe.java.Util;
 public class CodeGenContext {
 
     private static final Inflector inflector = new Inflector();
+
+    public static final Map<String, String> JAVA_KEYWORD_MAP = Map.ofEntries(
+            entry("default", "_default"),
+            entry("enum", "_enum"),
+            entry("const", "_const"),
+            entry("if", "_if"),
+            entry("else", "_else"));
 
     private final ConceptIndex conceptIndex;
     private final JavaIndex javaIndex;
@@ -146,6 +157,14 @@ public class CodeGenContext {
         return rootNamespace + ".union";
     }
 
+    public JavaInterfaceSource resolveJavaEntityType(String namespace, Type type) {
+        return resolveJavaEntity(namespace, type.getName());
+    }
+
+    public JavaInterfaceSource resolveJavaEntityType(String namespace, String entityName) {
+        return resolveJavaEntity(namespace, entityName);
+    }
+
     // --- Entity resolution ---
 
     public JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, PropertyModel property) {
@@ -189,6 +208,18 @@ public class CodeGenContext {
         return javaIndex.lookupClass(fullyQualifiedName);
     }
 
+    /**
+     * Checks whether the given method holder already contains a method with the given name.
+     */
+    public boolean hasNamedMethod(MethodHolderSource<?> holder, String methodName) {
+        for (MethodSource<?> method : holder.getMethods()) {
+            if (method.getName().equals(methodName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // --- Primitive type mapping ---
 
     public Class<?> primitiveTypeToClass(Type type) {
@@ -215,7 +246,7 @@ public class CodeGenContext {
         if (name == null) {
             return null;
         }
-        return Util.JAVA_KEYWORD_MAP.getOrDefault(name, name);
+        return JAVA_KEYWORD_MAP.getOrDefault(name, name);
     }
 
     // --- Logging ---

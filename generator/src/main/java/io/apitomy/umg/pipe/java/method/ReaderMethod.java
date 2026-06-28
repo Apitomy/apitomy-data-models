@@ -21,7 +21,7 @@ import io.apitomy.umg.models.concept.type.PrimitiveUnionVariantType;
 import io.apitomy.umg.models.concept.type.UnionType;
 import io.apitomy.umg.models.java.type.JavaType;
 import io.apitomy.umg.models.java.type.JavaTypeFactory;
-import io.apitomy.umg.pipe.java.Util;
+
 
 /**
  * Naming class for reader methods: {@code read${EntityName}}.
@@ -50,6 +50,12 @@ public class ReaderMethod implements Method {
     @Override
     public void addImportsTo(JavaSource<?> source) {
         // No imports needed for the naming-only use case
+    }
+
+    @Override
+    public void writeTo(JavaSource<?> target) {
+        throw new UnsupportedOperationException(
+                "ReaderMethod requires additional context; use writeTo(JavaClassSource, SpecificationVersion, UnionType, CodeGenContext) instead");
     }
 
     /**
@@ -126,7 +132,7 @@ public class ReaderMethod implements Method {
                 body.append("    return node;");
                 body.append("}");
             } else if (variantType instanceof PrimitiveUnionVariantType puv) {
-                Class<?> javaClass = Util.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
+                Class<?> javaClass = PrimitiveTypeHelper.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
                 if (javaClass == null) continue;
 
                 String typeName = JavaTypeFactory.getUnionComponentName(variantType);
@@ -194,7 +200,7 @@ public class ReaderMethod implements Method {
                 JavaClassSource unionValueClass = ctx.getJavaIndex().lookupClass(unionValueClassFQN);
                 if (unionValueClass == null) continue;
 
-                Class<?> javaClass = Util.PRIMITIVE_TYPE_MAP.get(primType.name().toLowerCase());
+                Class<?> javaClass = PrimitiveTypeHelper.PRIMITIVE_TYPE_MAP.get(primType.name().toLowerCase());
                 if (javaClass == null) continue;
 
                 readerClassSource.addImport(unionValueClass);

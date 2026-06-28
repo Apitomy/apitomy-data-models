@@ -40,6 +40,12 @@ public class UnionIsMethod implements Method {
     }
 
     @Override
+    public void writeTo(JavaSource<?> target) {
+        throw new UnsupportedOperationException(
+                "UnionIsMethod is a naming-only helper and does not support writeTo(JavaSource)");
+    }
+
+    @Override
     public void addImportsTo(JavaSource<?> source) {
         // No imports needed
     }
