@@ -9,6 +9,7 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
+import io.apitomy.umg.models.concept.type.MapType;
 
 /**
  * Creates the fields for each entity implementation.  This is done by iterating over all leaf entities
@@ -39,7 +40,7 @@ public class CreateImplFieldsStage extends AbstractJavaStage {
 
         boolean isStarProperty = false;
         if (isStarProperty(property)) {
-            var collectionResolvedType = io.apitomy.umg.models.concept.type.MapType.builder()
+            var collectionResolvedType = MapType.builder()
                     .namespace(property.getResolvedType().getNamespace())
                     .name("{" + property.getResolvedType().getName() + "}")
                     .valueType(property.getResolvedType())
@@ -51,7 +52,7 @@ public class CreateImplFieldsStage extends AbstractJavaStage {
                 error("Regex property defined without a collection name: " + javaEntityImpl.getCanonicalName() + "::" + property);
                 return;
             }
-            var collectionResolvedType = io.apitomy.umg.models.concept.type.MapType.builder()
+            var collectionResolvedType = MapType.builder()
                     .namespace(property.getResolvedType().getNamespace())
                     .name("{" + property.getResolvedType().getName() + "}")
                     .valueType(property.getResolvedType())

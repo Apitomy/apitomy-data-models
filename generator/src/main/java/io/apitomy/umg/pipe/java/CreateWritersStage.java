@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.apitomy.umg.beans.SpecificationVersion;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
+import io.apitomy.umg.models.concept.type.UnionType;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
@@ -105,8 +106,8 @@ public class CreateWritersStage extends AbstractIOStage {
         var namespace = specVersion.getNamespace();
 
         getState().getConceptIndex().findTypes(namespace).stream()
-                .filter(t -> t instanceof io.apitomy.umg.models.concept.type.UnionType)
-                .map(t -> (io.apitomy.umg.models.concept.type.UnionType) t)
+                .filter(t -> t instanceof UnionType)
+                .map(t -> (UnionType) t)
                 .forEach(unionType -> {
                     new WriterMethod(specVersion, unionType, ctx).writeTo(classSource);
                 });
@@ -119,7 +120,7 @@ public class CreateWritersStage extends AbstractIOStage {
         var namespace = specVersion.getNamespace();
 
         var rootType = getState().getConceptIndex().lookupType(namespace, rootTypeName);
-        if (rootType instanceof io.apitomy.umg.models.concept.type.UnionType unionType) {
+        if (rootType instanceof UnionType unionType) {
             createUnionWriteRootMethod(specVersion, classSource, unionType);
             return;
         }
@@ -131,7 +132,7 @@ public class CreateWritersStage extends AbstractIOStage {
     }
 
     private void createUnionWriteRootMethod(SpecificationVersion specVersion,
-            JavaClassSource classSource, io.apitomy.umg.models.concept.type.UnionType unionType) {
+            JavaClassSource classSource, UnionType unionType) {
         JavaInterfaceSource rootCapableSource =
                 getState().getJavaIndex().lookupInterface(getRootNodeInterfaceFQN());
         classSource.addImport(rootCapableSource);

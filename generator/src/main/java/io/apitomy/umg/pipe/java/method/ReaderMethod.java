@@ -143,7 +143,7 @@ public class ReaderMethod implements Method {
                 body.append("    return node;");
                 body.append("}");
             } else if (variantType instanceof PrimitiveUnionVariantType puv) {
-                Class<?> javaClass = PrimitiveTypeHelper.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
+                Class<?> javaClass = PrimitiveTypeUtil.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
                 if (javaClass == null) continue;
 
                 String typeName = JavaTypeFactory.getUnionComponentName(variantType);
@@ -215,7 +215,7 @@ public class ReaderMethod implements Method {
                 JavaClassSource unionValueClass = ctx.getJavaIndex().lookupClass(unionValueClassFQN);
                 if (unionValueClass == null) continue;
 
-                Class<?> javaClass = PrimitiveTypeHelper.PRIMITIVE_TYPE_MAP.get(primType.name().toLowerCase());
+                Class<?> javaClass = PrimitiveTypeUtil.PRIMITIVE_TYPE_MAP.get(primType.name().toLowerCase());
                 if (javaClass == null) continue;
 
                 readerClassSource.addImport(unionValueClass);

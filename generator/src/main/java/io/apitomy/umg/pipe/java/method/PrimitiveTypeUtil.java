@@ -9,6 +9,8 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.apitomy.umg.models.concept.type.ListType;
+import io.apitomy.umg.models.concept.type.MapType;
 import io.apitomy.umg.models.concept.type.Type;
 
 /**
@@ -16,7 +18,7 @@ import io.apitomy.umg.models.concept.type.Type;
  * and to the corresponding {@code JsonUtil} consume/set method variants.
  * Extracted from duplicated code across reader, writer, and cloner blocks.
  */
-public final class PrimitiveTypeHelper {
+public final class PrimitiveTypeUtil {
 
     public static final Map<String, Class<?>> PRIMITIVE_TYPE_MAP = Map.ofEntries(
             entry("string", String.class),
@@ -26,7 +28,7 @@ public final class PrimitiveTypeHelper {
             entry("object", ObjectNode.class),
             entry("any", JsonNode.class));
 
-    private PrimitiveTypeHelper() {
+    private PrimitiveTypeUtil() {
     }
 
     /**
@@ -63,7 +65,7 @@ public final class PrimitiveTypeHelper {
         }
 
         if (type.isListType()) {
-            Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) type).getValueType();
+            Type listValueType = ((ListType) type).getValueType();
             if (listValueType.isPrimitiveType()) {
                 Class<?> _class = primitiveTypeToClass(listValueType);
                 if (_class != null) {
@@ -74,7 +76,7 @@ public final class PrimitiveTypeHelper {
         }
 
         if (type.isMapType()) {
-            Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) type).getValueType();
+            Type mapValueType = ((MapType) type).getValueType();
             if (mapValueType.isPrimitiveType()) {
                 Class<?> _class = primitiveTypeToClass(mapValueType);
                 if (_class != null) {

@@ -1,24 +1,20 @@
 package io.apitomy.umg.pipe.java;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
-import org.jboss.forge.roaster.model.source.MethodHolderSource;
-import org.jboss.forge.roaster.model.source.MethodSource;
 
 import io.apitomy.umg.beans.SpecificationVersion;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.NamespaceModel;
 import io.apitomy.umg.models.concept.PropertyModel;
-import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 
 import io.apitomy.umg.models.concept.TraitModel;
 import io.apitomy.umg.models.concept.VisitorModel;
+import io.apitomy.umg.models.concept.type.EntityType;
+import io.apitomy.umg.models.concept.type.ListType;
+import io.apitomy.umg.models.concept.type.MapType;
 import io.apitomy.umg.models.concept.type.Type;
+import io.apitomy.umg.models.concept.type.UnionType;
 import io.apitomy.umg.models.java.type.JavaTypeFactory;
 import io.apitomy.umg.pipe.AbstractStage;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
@@ -72,7 +68,6 @@ public abstract class AbstractJavaStage extends AbstractStage {
 
     /**
      * Determines the package to use for the interface generated for the given visitor.
-     * @param visitor
      */
     protected String getVisitorInterfacePackageName(VisitorModel visitor) {
         String packageName = visitor.getNamespace().fullName();
@@ -82,7 +77,6 @@ public abstract class AbstractJavaStage extends AbstractStage {
 
     /**
      * Determines the prefix to use for the interface name for the given visitor.
-     * @param visitor
      */
     protected String getVisitorInterfacePrefix(VisitorModel visitor) {
         return (visitor.getParent() == null) ? "" : getState().getSpecIndex().prefixForNS(visitor.getNamespace().fullName());
@@ -90,7 +84,6 @@ public abstract class AbstractJavaStage extends AbstractStage {
 
     /**
      * Determines the interface name for the given visitor.
-     * @param visitor
      */
     protected String getVisitorInterfaceName(VisitorModel visitor) {
         String visitorPrefix = getVisitorInterfacePrefix(visitor);
@@ -100,7 +93,6 @@ public abstract class AbstractJavaStage extends AbstractStage {
 
     /**
      * Determines the fully qualified name of the Java interface for a given visitor.
-     * @param visitor
      */
     protected String getVisitorInterfaceFullName(VisitorModel visitor) {
         String packageName = visitor.getNamespace().fullName();
@@ -187,9 +179,6 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return getState().getConfig().getRootNamespace() + ".RootCapable";
     }
 
-    protected String getMappedNodeInterfaceFQN() {
-        return getState().getConfig().getRootNamespace() + ".MappedNode";
-    }
 
     public String getNodeEntityClassFQN() {
         return getState().getConfig().getRootNamespace() + ".NodeImpl";
@@ -235,21 +224,15 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return getUnionTypesPackageName() + ".Union";
     }
 
-    protected String getUnionValueInterfaceFQN() {
-        return getUnionTypesPackageName() + ".UnionValue";
-    }
 
-    public Class<?> primitiveTypeToClass(Type type) {
-        return io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper.primitiveTypeToClass(type);
-    }
 
     public JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, PropertyModel property) {
-        var entityType = (io.apitomy.umg.models.concept.type.EntityType) property.getResolvedType();
+        var entityType = (EntityType) property.getResolvedType();
         return resolveJavaEntity(namespace.fullName(), entityType.getName());
     }
 
     public JavaInterfaceSource resolveJavaEntityType(String namespace, PropertyModel property) {
-        var entityType = (io.apitomy.umg.models.concept.type.EntityType) property.getResolvedType();
+        var entityType = (EntityType) property.getResolvedType();
         return resolveJavaEntity(namespace, entityType.getName());
     }
 
@@ -297,14 +280,6 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return lookupJavaEntity(commonEntity);
     }
 
-    protected boolean hasNamedMethod(MethodHolderSource<?> entityInterface, String methodName) {
-        for (MethodSource<?> method : entityInterface.getMethods()) {
-            if (method.getName().equals(methodName)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     protected JavaInterfaceSource lookupJavaEntity(EntityModel entity) {
         return lookupJavaEntity(getJavaEntityInterfaceFQN(entity));
@@ -352,16 +327,16 @@ public abstract class AbstractJavaStage extends AbstractStage {
         return pkg + "." + name;
     }
 
-    protected String resolveUnionPackage(io.apitomy.umg.models.concept.type.UnionType unionType) {
+    protected String resolveUnionPackage(UnionType unionType) {
         for (var variant : unionType.getTypes()) {
-            io.apitomy.umg.models.concept.type.EntityType entityType = null;
-            if (variant instanceof io.apitomy.umg.models.concept.type.EntityType et) {
+            EntityType entityType = null;
+            if (variant instanceof EntityType et) {
                 entityType = et;
-            } else if (variant instanceof io.apitomy.umg.models.concept.type.ListType lt
-                    && lt.getValueType() instanceof io.apitomy.umg.models.concept.type.EntityType et) {
+            } else if (variant instanceof ListType lt
+                    && lt.getValueType() instanceof EntityType et) {
                 entityType = et;
-            } else if (variant instanceof io.apitomy.umg.models.concept.type.MapType mt
-                    && mt.getValueType() instanceof io.apitomy.umg.models.concept.type.EntityType et) {
+            } else if (variant instanceof MapType mt
+                    && mt.getValueType() instanceof EntityType et) {
                 entityType = et;
             }
             if (entityType != null) {
@@ -374,32 +349,6 @@ public abstract class AbstractJavaStage extends AbstractStage {
         }
         return getUnionTypesPackageName();
     }
-
-
-
-    public static String getTypeName(Type type) {
-        if (type.isEntityType()) {
-            return type.getName();
-        } else if (type.isPrimitiveType()) {
-            return StringUtils.capitalize(type.getName());
-        } else if (type.isPrimitiveUnionVariantType()) {
-            return StringUtils.capitalize(type.getName());
-        } else if (type.isUnionType()) {
-            List<Type> nestedTypes = new ArrayList<>(((io.apitomy.umg.models.concept.type.UnionType) type).getTypes());
-            return getUnionTypeName(nestedTypes);
-        } else if (type.isListType()) {
-            return getTypeName(((io.apitomy.umg.models.concept.type.ListType) type).getValueType()) + "List";
-        } else if (type.isMapType()) {
-            return getTypeName(((io.apitomy.umg.models.concept.type.MapType) type).getValueType()) + "Map";
-        } else {
-            throw new RuntimeException("Unsupported type in union: " + type);
-        }
-    }
-
-    private static String getUnionTypeName(List<Type> unionNestedTypes) {
-        return unionNestedTypes.stream().map(pt -> getTypeName(pt)).reduce((t, u) -> t + u).orElseThrow() + "Union";
-    }
-
 
 
 }

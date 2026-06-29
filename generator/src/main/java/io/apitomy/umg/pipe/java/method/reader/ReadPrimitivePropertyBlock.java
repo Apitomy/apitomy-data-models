@@ -10,7 +10,7 @@ import org.jboss.forge.roaster.model.source.JavaSource;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeUtil;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 
 /**
@@ -31,8 +31,8 @@ public class ReadPrimitivePropertyBlock extends CodeBlock {
         PropertyModel property = prop.getProperty();
         readerClassSource.addImport(JsonNode.class);
 
-        String isCheckMethod = PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), prop.getCtx(), readerClassSource);
-        String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), prop.getCtx(), readerClassSource);
+        String isCheckMethod = PrimitiveTypeUtil.determineIsCheckMethod(property.getResolvedType(), prop.getCtx(), readerClassSource);
+        String toConversionMethod = PrimitiveTypeUtil.determineToConversionMethod(property.getResolvedType(), prop.getCtx(), readerClassSource);
         body.addContext(Map.of(
                 "propertyName", property.getName(),
                 "setterMethodName", prop.getSetterName(),

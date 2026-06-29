@@ -11,7 +11,7 @@ import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
-import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeUtil;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.WriterMethod;
 
@@ -78,7 +78,7 @@ public class WriteStarPropertyBlock extends CodeBlock {
     private void appendPrimitive(BodyBuilder body, PropertyModel property) {
         writerClassSource.addImport(List.class);
 
-        body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
+        body.addContext("valueType", PrimitiveTypeUtil.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
 
         body.appendBlock("""
 {
@@ -95,7 +95,7 @@ public class WriteStarPropertyBlock extends CodeBlock {
     private void appendPrimitiveList(BodyBuilder body, PropertyModel property) {
         writerClassSource.addImport(List.class);
 
-        body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
+        body.addContext("valueType", PrimitiveTypeUtil.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
 
         body.appendBlock("""
 {
@@ -113,7 +113,7 @@ public class WriteStarPropertyBlock extends CodeBlock {
         writerClassSource.addImport(List.class);
         writerClassSource.addImport(Map.class);
 
-        body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
+        body.addContext("valueType", PrimitiveTypeUtil.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
 
         body.appendBlock("""
 {

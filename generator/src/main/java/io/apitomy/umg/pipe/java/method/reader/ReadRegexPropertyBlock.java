@@ -11,13 +11,15 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.type.ListType;
+import io.apitomy.umg.models.concept.type.MapType;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
-import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeUtil;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.ReaderMethod;
 
@@ -96,8 +98,8 @@ public class ReadRegexPropertyBlock extends CodeBlock {
 
         body.addContext(Map.of(
                 "propertyRegex", encodeRegex(extractRegex(property.getName())),
-                "isCheckMethod", PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), prop.getCtx(), readerClassSource),
-                "toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), prop.getCtx(), readerClassSource),
+                "isCheckMethod", PrimitiveTypeUtil.determineIsCheckMethod(property.getResolvedType(), prop.getCtx(), readerClassSource),
+                "toConversionMethod", PrimitiveTypeUtil.determineToConversionMethod(property.getResolvedType(), prop.getCtx(), readerClassSource),
                 "addMethodName", new AddMethod(prop.getCtx().singularize(property.getCollection())).getName()
         ));
 
@@ -121,11 +123,11 @@ public class ReadRegexPropertyBlock extends CodeBlock {
         readerClassSource.addImport(ArrayList.class);
         readerClassSource.addImport(JsonNode.class);
 
-        Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
+        Type listValueType = ((ListType) property.getResolvedType()).getValueType();
         body.addContext(Map.of(
-                "expectedType", PrimitiveTypeHelper.determineExpectedTypeString(listValueType, prop.getCtx()),
-                "toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(listValueType, prop.getCtx(), readerClassSource),
-                "elementValueType", PrimitiveTypeHelper.determineValueType(listValueType, prop.getCtx(), readerClassSource),
+                "expectedType", PrimitiveTypeUtil.determineExpectedTypeString(listValueType, prop.getCtx()),
+                "toConversionMethod", PrimitiveTypeUtil.determineToConversionMethod(listValueType, prop.getCtx(), readerClassSource),
+                "elementValueType", PrimitiveTypeUtil.determineValueType(listValueType, prop.getCtx(), readerClassSource),
                 "propertyRegex", encodeRegex(extractRegex(property.getName())),
                 "addMethodName", new AddMethod(prop.getCtx().singularize(property.getCollection())).getName()
         ));
@@ -156,11 +158,11 @@ public class ReadRegexPropertyBlock extends CodeBlock {
         readerClassSource.addImport(Map.class);
         readerClassSource.addImport(LinkedHashMap.class);
 
-        Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
+        Type mapValueType = ((MapType) property.getResolvedType()).getValueType();
         body.addContext(Map.of(
-                "expectedType", PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, prop.getCtx()),
-                "toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(mapValueType, prop.getCtx(), readerClassSource),
-                "elementValueType", PrimitiveTypeHelper.determineValueType(mapValueType, prop.getCtx(), readerClassSource),
+                "expectedType", PrimitiveTypeUtil.determineExpectedTypeString(mapValueType, prop.getCtx()),
+                "toConversionMethod", PrimitiveTypeUtil.determineToConversionMethod(mapValueType, prop.getCtx(), readerClassSource),
+                "elementValueType", PrimitiveTypeUtil.determineValueType(mapValueType, prop.getCtx(), readerClassSource),
                 "propertyRegex", encodeRegex(extractRegex(property.getName())),
                 "addMethodName", new AddMethod(prop.getCtx().singularize(property.getCollection())).getName()
         ));

@@ -11,12 +11,14 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.type.ListType;
+import io.apitomy.umg.models.concept.type.MapType;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
-import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeUtil;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.ReaderMethod;
 
@@ -92,8 +94,8 @@ public class ReadStarPropertyBlock extends CodeBlock {
         readerClassSource.addImport(List.class);
         readerClassSource.addImport(JsonNode.class);
 
-        body.addContext("isCheckMethod", PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), prop.getCtx(), readerClassSource));
-        body.addContext("toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), prop.getCtx(), readerClassSource));
+        body.addContext("isCheckMethod", PrimitiveTypeUtil.determineIsCheckMethod(property.getResolvedType(), prop.getCtx(), readerClassSource));
+        body.addContext("toConversionMethod", PrimitiveTypeUtil.determineToConversionMethod(property.getResolvedType(), prop.getCtx(), readerClassSource));
 
         body.appendBlock("""
 {
@@ -115,11 +117,11 @@ public class ReadStarPropertyBlock extends CodeBlock {
         readerClassSource.addImport(ArrayList.class);
         readerClassSource.addImport(JsonNode.class);
 
-        Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
+        Type listValueType = ((ListType) property.getResolvedType()).getValueType();
         body.addContext(Map.of(
-                "expectedType", PrimitiveTypeHelper.determineExpectedTypeString(listValueType, prop.getCtx()),
-                "toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(listValueType, prop.getCtx(), readerClassSource),
-                "elementValueType", PrimitiveTypeHelper.determineValueType(listValueType, prop.getCtx(), readerClassSource)
+                "expectedType", PrimitiveTypeUtil.determineExpectedTypeString(listValueType, prop.getCtx()),
+                "toConversionMethod", PrimitiveTypeUtil.determineToConversionMethod(listValueType, prop.getCtx(), readerClassSource),
+                "elementValueType", PrimitiveTypeUtil.determineValueType(listValueType, prop.getCtx(), readerClassSource)
         ));
 
         body.appendBlock("""
@@ -148,11 +150,11 @@ public class ReadStarPropertyBlock extends CodeBlock {
         readerClassSource.addImport(Map.class);
         readerClassSource.addImport(LinkedHashMap.class);
 
-        Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
+        Type mapValueType = ((MapType) property.getResolvedType()).getValueType();
         body.addContext(Map.of(
-                "expectedType", PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, prop.getCtx()),
-                "toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(mapValueType, prop.getCtx(), readerClassSource),
-                "elementValueType", PrimitiveTypeHelper.determineValueType(mapValueType, prop.getCtx(), readerClassSource)
+                "expectedType", PrimitiveTypeUtil.determineExpectedTypeString(mapValueType, prop.getCtx()),
+                "toConversionMethod", PrimitiveTypeUtil.determineToConversionMethod(mapValueType, prop.getCtx(), readerClassSource),
+                "elementValueType", PrimitiveTypeUtil.determineValueType(mapValueType, prop.getCtx(), readerClassSource)
         ));
 
         body.appendBlock("""

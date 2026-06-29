@@ -6,7 +6,7 @@ import org.jboss.forge.roaster.model.source.JavaSource;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
-import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeUtil;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 
 /**
@@ -28,7 +28,7 @@ public class WritePrimitivePropertyBlock extends CodeBlock {
         body.addContext("propertyName", property.getName());
         body.addContext("getterMethodName", prop.getGetterName());
 
-        body.ifElse(PrimitiveTypeHelper.isJsonNodeType(property.getResolvedType(), prop.getCtx()),
+        body.ifElse(PrimitiveTypeUtil.isJsonNodeType(property.getResolvedType(), prop.getCtx()),
                 // ObjectNode and JsonNode are already JsonNode subtypes, use setProperty directly
                 () -> "JsonUtil.setProperty(json, \"${propertyName}\", node.${getterMethodName}());",
                 () -> "JsonUtil.setProperty(json, \"${propertyName}\", JsonUtil.toJsonNode(node.${getterMethodName}()));");

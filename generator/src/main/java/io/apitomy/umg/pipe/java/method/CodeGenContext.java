@@ -13,7 +13,11 @@ import io.apitomy.umg.logging.Logger;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.NamespaceModel;
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.type.EntityType;
+import io.apitomy.umg.models.concept.type.ListType;
+import io.apitomy.umg.models.concept.type.MapType;
 import io.apitomy.umg.models.concept.type.Type;
+import io.apitomy.umg.models.concept.type.UnionType;
 import io.apitomy.umg.models.java.type.JavaTypeFactory;
 import java.util.Map;
 
@@ -129,16 +133,16 @@ public class CodeGenContext {
      * Resolves the package for union value impl classes, preferring the common-entity
      * namespace when a variant references a common entity.
      */
-    public String resolveUnionPackage(io.apitomy.umg.models.concept.type.UnionType unionType) {
+    public String resolveUnionPackage(UnionType unionType) {
         for (var variant : unionType.getTypes()) {
-            io.apitomy.umg.models.concept.type.EntityType entityType = null;
-            if (variant instanceof io.apitomy.umg.models.concept.type.EntityType et) {
+            EntityType entityType = null;
+            if (variant instanceof EntityType et) {
                 entityType = et;
-            } else if (variant instanceof io.apitomy.umg.models.concept.type.ListType lt
-                    && lt.getValueType() instanceof io.apitomy.umg.models.concept.type.EntityType et) {
+            } else if (variant instanceof ListType lt
+                    && lt.getValueType() instanceof EntityType et) {
                 entityType = et;
-            } else if (variant instanceof io.apitomy.umg.models.concept.type.MapType mt
-                    && mt.getValueType() instanceof io.apitomy.umg.models.concept.type.EntityType et) {
+            } else if (variant instanceof MapType mt
+                    && mt.getValueType() instanceof EntityType et) {
                 entityType = et;
             }
             if (entityType != null) {
@@ -192,7 +196,7 @@ public class CodeGenContext {
     // --- Entity resolution ---
 
     public JavaInterfaceSource resolveJavaEntityType(NamespaceModel namespace, PropertyModel property) {
-        var entityType = (io.apitomy.umg.models.concept.type.EntityType) property.getResolvedType();
+        var entityType = (EntityType) property.getResolvedType();
         return resolveJavaEntity(namespace.fullName(), entityType.getName());
     }
 
@@ -247,7 +251,7 @@ public class CodeGenContext {
     // --- Primitive type mapping ---
 
     public Class<?> primitiveTypeToClass(Type type) {
-        return PrimitiveTypeHelper.primitiveTypeToClass(type);
+        return PrimitiveTypeUtil.primitiveTypeToClass(type);
     }
 
     public String singularize(String name) {

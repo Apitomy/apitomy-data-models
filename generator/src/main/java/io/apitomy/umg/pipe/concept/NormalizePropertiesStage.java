@@ -94,8 +94,6 @@ public class NormalizePropertiesStage extends AbstractStage {
     /**
      * Checks if the given collection of properties contains the given property.  It must have a property with
      * the same name and the property must have the same type.
-     * @param properties
-     * @param property
      */
     private boolean hasProperty(Map<String, PropertyModel> properties, PropertyModel property) {
         PropertyModel otherProperty = properties.get(property.getName());

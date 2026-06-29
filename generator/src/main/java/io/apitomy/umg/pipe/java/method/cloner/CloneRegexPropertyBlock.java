@@ -16,7 +16,7 @@ import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
-import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeUtil;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 
 /**
@@ -91,7 +91,7 @@ public class CloneRegexPropertyBlock extends CodeBlock {
         body.addContext(Map.of(
                 "getterMethodName", new GetterMethod(property).getName(),
                 "addMethodName", new AddMethod(prop.getCtx().singularize(property.getCollection())).getName(),
-                "valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), prop.getCtx(), clonerClassSource)
+                "valueType", PrimitiveTypeUtil.determineValueType(property.getResolvedType(), prop.getCtx(), clonerClassSource)
         ));
 
         body.appendBlock("""

@@ -66,8 +66,6 @@ public class CreateInterfaceMethodsStage extends AbstractCreateMethodsStage {
      * When an entity has a "*" property, that means the entity is a wrapper around a map of values of a
      * particular type. In this case, the entity interface needs to extend the "MappedNode" interface.
      *
-     * @param javaEntity
-     * @param propertyWithOrigin
      */
     @Override
     protected void createMappedNodeMethods(JavaSource<?> javaEntity, PropertyModelWithOrigin propertyWithOrigin) {

@@ -1,6 +1,6 @@
 package io.apitomy.umg.pipe.java.method.cloner;
 
-import io.apitomy.umg.pipe.java.AbstractJavaStage;
+import io.apitomy.umg.pipe.java.method.TypeNameUtil;
 
 import java.util.Map;
 
@@ -11,7 +11,9 @@ import org.jboss.forge.roaster.model.source.JavaSource;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.NamespaceModel;
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.type.MapType;
 import io.apitomy.umg.models.concept.type.Type;
+import io.apitomy.umg.models.concept.type.UnionType;
 import io.apitomy.umg.models.concept.type.UnionVariantComparator;
 import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
@@ -37,7 +39,7 @@ public class CloneUnionMapPropertyBlock extends CodeBlock {
     public void appendTo(BodyBuilder body) {
         PropertyModel property = prop.getProperty();
         NamespaceModel nsContext = prop.getPropertyWithOrigin().getOrigin().getNamespace();
-        io.apitomy.umg.models.concept.type.UnionType effectiveUnionType = (io.apitomy.umg.models.concept.type.UnionType) ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
+        UnionType effectiveUnionType = (UnionType) ((MapType) property.getResolvedType()).getValueType();
 
         clonerClassSource.addImport(Map.class);
 
@@ -60,7 +62,7 @@ public class CloneUnionMapPropertyBlock extends CodeBlock {
         effectiveUnionType.getTypes().stream()
                 .sorted(UnionVariantComparator.INSTANCE)
                 .forEach(nestedType -> {
-            String typeName = AbstractJavaStage.getTypeName(nestedType);
+            String typeName = TypeNameUtil.getTypeName(nestedType);
             String isMethodName = new UnionIsMethod(typeName).getName();
             String asMethodName = new UnionAsMethod(typeName).getName();
 

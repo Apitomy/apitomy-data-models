@@ -43,4 +43,7 @@ public class ListType extends CollectionType {
 
     @Override
     public boolean isEntityListType() { return valueType.isEntityType(); }
+
+    @Override
+    public boolean isUnionListType() { return valueType.isUnionType(); }
 }
