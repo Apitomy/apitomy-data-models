@@ -27,16 +27,11 @@ public class RemoveMethod implements Method {
         this.ctx = ctx;
     }
 
-    /**
-     * Returns the remove method name for the given (singularized) name.
-     */
-    public static String methodName(String singularName) {
-        return "remove" + StringUtils.capitalize(singularName);
-    }
+
 
     @Override
     public String getName() {
-        return methodName(ctx.singularize(property.getName()));
+        return "remove" + StringUtils.capitalize(ctx.singularize(property.getName()));
     }
 
     @Override

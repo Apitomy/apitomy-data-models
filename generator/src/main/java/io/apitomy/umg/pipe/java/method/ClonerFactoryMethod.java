@@ -1,6 +1,7 @@
 package io.apitomy.umg.pipe.java.method;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaEnumSource;
@@ -66,9 +67,11 @@ public class ClonerFactoryMethod implements Method {
             classSource.addImport(dispatcherSource);
 
             String modelTypeValue = specVersion.getPrefix().toUpperCase();
-            body.addContext("modelTypeValue", modelTypeValue);
-            body.addContext("clonerClassName", clonerSource.getName());
-            body.addContext("dispatcherClassName", dispatcherSource.getName());
+            body.addContext(Map.of(
+                    "modelTypeValue", modelTypeValue,
+                    "clonerClassName", clonerSource.getName(),
+                    "dispatcherClassName", dispatcherSource.getName()
+            ));
 
             body.append("    case ${modelTypeValue}:");
             body.append("        cloner = new ${dispatcherClassName}(new ${clonerClassName}());");

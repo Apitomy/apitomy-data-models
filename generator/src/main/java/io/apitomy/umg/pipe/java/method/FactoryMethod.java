@@ -26,15 +26,19 @@ public class FactoryMethod implements Method {
     }
 
     /**
-     * Returns the factory method name for the given entity name.
+     * Naming-only constructor — use when only getName() is needed.
      */
-    public static String methodName(String entityName) {
-        return "create" + StringUtils.capitalize(entityName);
+    public FactoryMethod(String entityName) {
+        this.javaEntity = null;
+        this.entityName = entityName;
+        this.ctx = null;
     }
+
+
 
     @Override
     public String getName() {
-        return methodName(entityName);
+        return "create" + StringUtils.capitalize(entityName);
     }
 
     @Override

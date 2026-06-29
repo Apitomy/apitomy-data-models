@@ -24,16 +24,11 @@ public class ClearMethod implements Method {
         this.ctx = ctx;
     }
 
-    /**
-     * Returns the clear method name for the given property name.
-     */
-    public static String methodName(String propertyName) {
-        return "clear" + StringUtils.capitalize(propertyName);
-    }
+
 
     @Override
     public String getName() {
-        return methodName(property.getName());
+        return "clear" + StringUtils.capitalize(property.getName());
     }
 
     @Override

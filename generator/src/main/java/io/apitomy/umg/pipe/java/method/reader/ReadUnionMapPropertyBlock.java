@@ -36,7 +36,7 @@ public class ReadUnionMapPropertyBlock extends CodeBlock {
                 (io.apitomy.umg.models.concept.type.MapType) property.getResolvedType();
         var nsModel = prop.getPropertyWithOrigin().getOrigin().getNamespace();
         var valueJt = prop.getCtx().getJavaTypeFactory().createJavaType(mapType.getValueType(), nsModel);
-        String readMethodName = ReaderMethod.methodName(valueJt.getSimpleName());
+        String readMethodName = new ReaderMethod(valueJt.getSimpleName()).getName();
 
         readerClassSource.addImport(JsonNode.class);
         readerClassSource.addImport(ObjectNode.class);
@@ -45,7 +45,7 @@ public class ReadUnionMapPropertyBlock extends CodeBlock {
 
         body.addContext(Map.of(
                 "propertyName", property.getName(),
-                "addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getName())),
+                "addMethodName", new AddMethod(prop.getCtx().singularize(property.getName())).getName(),
                 "readMethodName", readMethodName,
                 "unionJavaType", valueJt.toJavaTypeString(),
                 "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")

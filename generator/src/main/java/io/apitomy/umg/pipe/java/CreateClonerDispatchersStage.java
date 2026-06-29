@@ -124,7 +124,7 @@ public class CreateClonerDispatchersStage extends AbstractVisitorStage {
             dispatcherSource.addImport(javaEntityType);
 
             BodyBuilder body = new BodyBuilder();
-            body.addContext("cloneMethodName", ClonerMethod.methodName(entityName));
+            body.addContext("cloneMethodName", new ClonerMethod(entityName).getName());
             body.addContext("javaEntityType", javaEntityType.getName());
             body.append("this.cloner.${cloneMethodName}((${javaEntityType}) node, (${javaEntityType}) this.clonedNode);");
             methodSource.setBody(body.toString());

@@ -54,11 +54,11 @@ public class WriteEntityPropertyBlock extends CodeBlock {
     }
 
     static String writeMethodName(EntityModel entityModel) {
-        return WriterMethod.methodName(entityModel.getName());
+        return new WriterMethod(entityModel.getName()).getName();
     }
 
     static String writeMethodName(String entityName) {
-        return WriterMethod.methodName(entityName);
+        return new WriterMethod(entityName).getName();
     }
 
     @Override

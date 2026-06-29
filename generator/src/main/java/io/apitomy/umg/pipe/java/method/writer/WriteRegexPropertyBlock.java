@@ -64,10 +64,12 @@ public class WriteRegexPropertyBlock extends CodeBlock {
         writerClassSource.addImport(resolved.javaInterface());
         writerClassSource.addImport(commonEntityTypeJavaModel);
 
-        body.addContext("mapValueJavaType", resolved.javaInterface().getName());
-        body.addContext("getterMethodName", GetterMethod.methodName(property));
-        body.addContext("writeMethodName", WriterMethod.methodName(resolved.entityModel().getName()));
-        body.addContext("mapValueCommonJavaType", commonEntityTypeJavaModel.getName());
+        body.addContext(Map.of(
+                "mapValueJavaType", resolved.javaInterface().getName(),
+                "getterMethodName", new GetterMethod(property).getName(),
+                "writeMethodName", new WriterMethod(resolved.entityModel().getName()).getName(),
+                "mapValueCommonJavaType", commonEntityTypeJavaModel.getName()
+        ));
 
         body.appendBlock("""
 {
@@ -90,7 +92,7 @@ public class WriteRegexPropertyBlock extends CodeBlock {
         writerClassSource.addImport(Map.class);
 
         body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
-        body.addContext("getterMethodName", GetterMethod.methodName(property));
+        body.addContext("getterMethodName", new GetterMethod(property).getName());
 
         body.appendBlock("""
 {
@@ -112,7 +114,7 @@ public class WriteRegexPropertyBlock extends CodeBlock {
         writerClassSource.addImport(Map.class);
 
         body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
-        body.addContext("getterMethodName", GetterMethod.methodName(property));
+        body.addContext("getterMethodName", new GetterMethod(property).getName());
 
         body.appendBlock("""
 {
@@ -134,7 +136,7 @@ public class WriteRegexPropertyBlock extends CodeBlock {
         writerClassSource.addImport(Map.class);
 
         body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
-        body.addContext("getterMethodName", GetterMethod.methodName(property));
+        body.addContext("getterMethodName", new GetterMethod(property).getName());
 
         body.appendBlock("""
 {

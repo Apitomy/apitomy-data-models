@@ -35,7 +35,7 @@ public class WriteUnionMapPropertyBlock extends CodeBlock {
                 (io.apitomy.umg.models.concept.type.MapType) property.getResolvedType();
         var nsModel = prop.getPropertyWithOrigin().getOrigin().getNamespace();
         var valueJt = prop.getCtx().getJavaTypeFactory().createJavaType(mapType.getValueType(), nsModel);
-        String writeMethodName = WriterMethod.methodName(valueJt.getSimpleName());
+        String writeMethodName = new WriterMethod(valueJt.getSimpleName()).getName();
 
         valueJt.addImportsTo(writerClassSource);
         writerClassSource.addImport(JsonNode.class);

@@ -1,5 +1,7 @@
 package io.apitomy.umg.pipe.java.method;
 
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaEnumSource;
@@ -50,16 +52,11 @@ public class ReaderMethod implements Method {
         this.ctx = ctx;
     }
 
-    /**
-     * Returns the reader method name for the given entity name.
-     */
-    public static String methodName(String entityName) {
-        return "read" + StringUtils.capitalize(entityName);
-    }
+
 
     @Override
     public String getName() {
-        return methodName(entityName);
+        return "read" + StringUtils.capitalize(entityName);
     }
 
     @Override
@@ -81,7 +78,7 @@ public class ReaderMethod implements Method {
         NamespaceModel nsModel = ctx.getConceptIndex().lookupNamespace(namespace);
         JavaType jt = ctx.getJavaTypeFactory().createJavaType(unionType, nsModel);
         String unionTypeName = jt.getSimpleName();
-        String methodName = methodName(unionTypeName);
+        String methodName = new ReaderMethod(unionTypeName).getName();
 
         // Skip if already created
         if (readerClassSource.getMethod(methodName, JsonNode.class.getSimpleName(), "ModelType") != null) {
@@ -118,9 +115,11 @@ public class ReaderMethod implements Method {
                 readerClassSource.addImport(entitySource);
                 readerClassSource.addImport(entityImplSource);
 
-                body.addContext("entityType", entitySource.getName());
-                body.addContext("entityImplType", entityImplSource.getName());
-                body.addContext("readMethodName", methodName(entity.getName()));
+                body.addContext(Map.of(
+                        "entityType", entitySource.getName(),
+                        "entityImplType", entityImplSource.getName(),
+                        "readMethodName", new ReaderMethod(entity.getName()).getName()
+                ));
 
                 var rule = unionType.getRuleFor(entityType.getName());
                 String condition;
@@ -154,9 +153,11 @@ public class ReaderMethod implements Method {
 
                 readerClassSource.addImport(unionValueClass);
 
-                body.addContext("isMethod", UnionIsMethod.methodName(javaClass.getSimpleName()));
-                body.addContext("toMethod", "to" + javaClass.getSimpleName());
-                body.addContext("unionValueClass", unionValueClass.getName());
+                body.addContext(Map.of(
+                        "isMethod", new UnionIsMethod(javaClass.getSimpleName()).getName(),
+                        "toMethod", "to" + javaClass.getSimpleName(),
+                        "unionValueClass", unionValueClass.getName()
+                ));
 
                 if (!first) body.append(" else ");
                 first = false;
@@ -185,9 +186,11 @@ public class ReaderMethod implements Method {
                 readerClassSource.addImport(java.util.List.class);
                 readerClassSource.addImport(java.util.ArrayList.class);
 
-                body.addContext("listValueType", entitySource.getName());
-                body.addContext("readMethodName", methodName(entity.getName()));
-                body.addContext("unionValueClass", unionValueClass.getName());
+                body.addContext(Map.of(
+                        "listValueType", entitySource.getName(),
+                        "readMethodName", new ReaderMethod(entity.getName()).getName(),
+                        "unionValueClass", unionValueClass.getName()
+                ));
 
                 if (!first) body.append(" else ");
                 first = false;
@@ -220,9 +223,11 @@ public class ReaderMethod implements Method {
                 readerClassSource.addImport(java.util.ArrayList.class);
                 readerClassSource.addImport(javaClass);
 
-                body.addContext("primType", javaClass.getSimpleName());
-                body.addContext("toMethod", "to" + javaClass.getSimpleName());
-                body.addContext("unionValueClass", unionValueClass.getName());
+                body.addContext(Map.of(
+                        "primType", javaClass.getSimpleName(),
+                        "toMethod", "to" + javaClass.getSimpleName(),
+                        "unionValueClass", unionValueClass.getName()
+                ));
 
                 if (!first) body.append(" else ");
                 first = false;
