@@ -3,8 +3,6 @@ package io.apitomy.umg.pipe.java;
 
 import org.jboss.forge.roaster.model.source.JavaSource;
 
-import java.util.function.Predicate;
-
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.type.CollectionType;
@@ -82,29 +80,29 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
         } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
             new GetterMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
             new SetterMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
-        } else if (resolvedTypeIs(property, Type::isEntityType)) {
+        } else if (isEntity(property)) {
             new GetterMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
             new SetterMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
             createFactoryMethodForType(javaEntity, property.getResolvedType());
-        } else if (resolvedTypeIs(property, t -> t.isEntityListType() || t.isEntityMapType())) {
+        } else if (isEntityList(property) || isEntityMap(property)) {
             createFactoryMethodForType(javaEntity, property.getResolvedType());
             new GetterMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
             new AddMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
             new ClearMethod(property, ctx).writeTo(javaEntity);
             new RemoveMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
             new InsertMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
-        } else if (resolvedTypeIs(property, Type::isUnionType)) {
+        } else if (isUnion(property)) {
             new GetterMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
             new SetterMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
             createUnionFactoryMethods(javaEntity, propertyWithOrigin);
-        } else if (resolvedTypeIs(property, t -> t.isUnionListType() || t.isUnionMapType())) {
+        } else if (isUnionList(property) || isUnionMap(property)) {
             createUnionFactoryMethods(javaEntity, propertyWithOrigin);
             new GetterMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
             new AddMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
             new ClearMethod(property, ctx).writeTo(javaEntity);
             new RemoveMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
             new InsertMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
-        } else if (resolvedTypeIs(property, Type::isCollectionType)) {
+        } else if (property.getResolvedType().isCollectionType()) {
             new GetterMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
             new AddMethod(property, propertyWithOrigin, ctx).writeTo(javaEntity);
             new ClearMethod(property, ctx).writeTo(javaEntity);
@@ -113,11 +111,6 @@ public abstract class AbstractCreateMethodsStage extends AbstractJavaStage {
         } else {
             warn("Failed to create methods (not yet implemented) for property '" + property.getName() + "' of entity: " + javaEntity.getQualifiedName());
         }
-    }
-
-    private boolean resolvedTypeIs(PropertyModel property, Predicate<Type> predicate) {
-        var resolved = property.getResolvedType();
-        return resolved != null && predicate.test(resolved);
     }
 
     /**
