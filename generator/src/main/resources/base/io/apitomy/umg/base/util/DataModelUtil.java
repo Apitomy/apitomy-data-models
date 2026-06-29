@@ -1,5 +1,10 @@
 package io.apitomy.umg.base.util;
 
+import io.apitomy.umg.base.Node;
+import io.apitomy.umg.base.NodeImpl;
+import io.apitomy.umg.base.ParentPropertyType;
+import io.apitomy.umg.base.union.UnionValueImpl;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +46,27 @@ public class DataModelUtil {
             list.add(atIndex, value);
         }
         return list;
+    }
+
+    public static void setParent(Object child, Node parent, String propertyName, ParentPropertyType propertyType) {
+        if (child instanceof NodeImpl) {
+            ((NodeImpl) child)._setParent(parent);
+            ((NodeImpl) child)._setParentPropertyName(propertyName);
+            ((NodeImpl) child)._setParentPropertyType(propertyType);
+        } else if (child instanceof UnionValueImpl) {
+            ((UnionValueImpl<?>) child)._setParent(parent);
+            ((UnionValueImpl<?>) child)._setParentPropertyName(propertyName);
+            ((UnionValueImpl<?>) child)._setParentPropertyType(propertyType);
+        }
+    }
+
+    public static void setParentMap(Object child, Node parent, String propertyName, ParentPropertyType propertyType, String mapPropertyName) {
+        setParent(child, parent, propertyName, propertyType);
+        if (child instanceof NodeImpl) {
+            ((NodeImpl) child)._setMapPropertyName(mapPropertyName);
+        } else if (child instanceof UnionValueImpl) {
+            ((UnionValueImpl<?>) child)._setMapPropertyName(mapPropertyName);
+        }
     }
 
 }

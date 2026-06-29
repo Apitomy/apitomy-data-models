@@ -53,7 +53,7 @@ public class ClearMethod implements Method {
             body.addContext("fieldName", fieldName);
 
             if (needsDetach) {
-                ((JavaClassSource) target).addImport(ctx.getNodeInterfaceFQN());
+                ((JavaClassSource) target).addImport(ctx.getAnyInterfaceFQN());
             }
 
             body.ifElse(needsDetach, () -> {
@@ -62,8 +62,8 @@ public class ClearMethod implements Method {
                 body.addContext("valuesExpr", valuesExpr);
                 return """
 if (this.${fieldName} != null) {
-    for (Object item : ${valuesExpr}) {
-        if (item != null) ((Node) item).detach();
+    for (Any item : ${valuesExpr}) {
+        if (item != null) item.detach();
     }
     this.${fieldName}.clear();
 }

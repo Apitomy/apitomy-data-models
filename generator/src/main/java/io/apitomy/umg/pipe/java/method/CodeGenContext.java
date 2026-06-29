@@ -89,6 +89,10 @@ public class CodeGenContext {
         return rootNamespace + ".Node";
     }
 
+    public String getAnyInterfaceFQN() {
+        return rootNamespace + ".Any";
+    }
+
     public String getDataModelUtilFQCN() {
         return rootNamespace + ".util.DataModelUtil";
     }

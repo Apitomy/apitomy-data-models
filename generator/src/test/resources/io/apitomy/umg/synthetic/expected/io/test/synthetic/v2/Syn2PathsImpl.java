@@ -1,6 +1,7 @@
 package io.test.synthetic.v2;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.test.synthetic.Any;
 import io.test.synthetic.Node;
 import io.test.synthetic.NodeImpl;
 import io.test.synthetic.ParentPropertyType;
@@ -41,10 +42,7 @@ public class Syn2PathsImpl extends NodeImpl implements Syn2Paths {
 	public void addItem(String name, SynPathItem item) {
 		this._items.put(name, item);
 		if (item != null) {
-			((NodeImpl) item)._setParent(this);
-			((NodeImpl) item)._setParentPropertyName(null);
-			((NodeImpl) item)._setParentPropertyType(ParentPropertyType.map);
-			((NodeImpl) item)._setMapPropertyName(name);
+			DataModelUtil.setParentMap(item, this, null, ParentPropertyType.map, name);
 		}
 	}
 
@@ -52,10 +50,7 @@ public class Syn2PathsImpl extends NodeImpl implements Syn2Paths {
 	public void insertItem(String name, SynPathItem item, int atIndex) {
 		this._items = DataModelUtil.insertMapEntry(this._items, name, item, atIndex);
 		if (item != null) {
-			((NodeImpl) item)._setParent(this);
-			((NodeImpl) item)._setParentPropertyName(null);
-			((NodeImpl) item)._setParentPropertyType(ParentPropertyType.map);
-			((NodeImpl) item)._setMapPropertyName(name);
+			DataModelUtil.setParentMap(item, this, null, ParentPropertyType.map, name);
 		}
 	}
 
@@ -69,9 +64,9 @@ public class Syn2PathsImpl extends NodeImpl implements Syn2Paths {
 
 	@Override
 	public void clearItems() {
-		for (Object item : this._items.values()) {
+		for (Any item : this._items.values()) {
 			if (item != null)
-				((Node) item).detach();
+				item.detach();
 		}
 		this._items.clear();
 	}

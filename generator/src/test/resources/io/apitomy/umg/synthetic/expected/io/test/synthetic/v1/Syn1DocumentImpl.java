@@ -1,6 +1,7 @@
 package io.test.synthetic.v1;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.test.synthetic.Any;
 import io.test.synthetic.Node;
 import io.test.synthetic.NodeImpl;
 import io.test.synthetic.ParentPropertyType;
@@ -8,7 +9,6 @@ import io.test.synthetic.SchemaOrBoolean;
 import io.test.synthetic.SynInfo;
 import io.test.synthetic.SynItem;
 import io.test.synthetic.union.UnionValue;
-import io.test.synthetic.union.UnionValueImpl;
 import io.test.synthetic.util.DataModelUtil;
 import io.test.synthetic.v1.visitors.Syn1Visitor;
 import io.test.synthetic.visitors.Visitor;
@@ -47,9 +47,7 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 	public void setInfo(SynInfo value) {
 		this.info = value;
 		if (value != null) {
-			((NodeImpl) value)._setParent(this);
-			((NodeImpl) value)._setParentPropertyName("info");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
+			DataModelUtil.setParent(value, this, "info", ParentPropertyType.standard);
 		}
 	}
 
@@ -79,18 +77,16 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 		}
 		this.items.add(value);
 		if (value != null) {
-			((NodeImpl) value)._setParent(this);
-			((NodeImpl) value)._setParentPropertyName("items");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
+			DataModelUtil.setParent(value, this, "items", ParentPropertyType.array);
 		}
 	}
 
 	@Override
 	public void clearItems() {
 		if (this.items != null) {
-			for (Object item : this.items) {
+			for (Any item : this.items) {
 				if (item != null)
-					((Node) item).detach();
+					item.detach();
 			}
 			this.items.clear();
 		}
@@ -114,9 +110,7 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 			this.items = DataModelUtil.insertListEntry(this.items, value, atIndex);
 		}
 		if (value != null) {
-			((NodeImpl) value)._setParent(this);
-			((NodeImpl) value)._setParentPropertyName("items");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
+			DataModelUtil.setParent(value, this, "items", ParentPropertyType.array);
 		}
 	}
 
@@ -150,40 +144,27 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 		this.additionalSchema = value;
 		if (value != null) {
 			if (value.isEntity()) {
-				((NodeImpl) value)._setParent(this);
-				((NodeImpl) value)._setParentPropertyName("additionalSchema");
-				((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
+				DataModelUtil.setParent(value, this, "additionalSchema", ParentPropertyType.standard);
 			} else if (value.isEntityList()) {
-				((UnionValueImpl<?>) value)._setParent(this);
-				((UnionValueImpl<?>) value)._setParentPropertyName("additionalSchema");
-				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
+				DataModelUtil.setParent(value, this, "additionalSchema", ParentPropertyType.standard);
 				List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();
 				for (Object entity : entityList) {
 					if (entity != null) {
-						((NodeImpl) entity)._setParent(this);
-						((NodeImpl) entity)._setParentPropertyName("additionalSchema");
-						((NodeImpl) entity)._setParentPropertyType(ParentPropertyType.array);
+						DataModelUtil.setParent(entity, this, "additionalSchema", ParentPropertyType.array);
 					}
 				}
 			} else if (value.isEntityMap()) {
-				((UnionValueImpl<?>) value)._setParent(this);
-				((UnionValueImpl<?>) value)._setParentPropertyName("additionalSchema");
-				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
+				DataModelUtil.setParent(value, this, "additionalSchema", ParentPropertyType.standard);
 				Map<String, ?> entityMap = (Map<String, ?>) ((UnionValue<?>) value).getValue();
 				Collection<String> keys = entityMap.keySet();
 				for (String key : keys) {
-					NodeImpl entity = (NodeImpl) entityMap.get(key);
+					Object entity = entityMap.get(key);
 					if (entity != null) {
-						entity._setParent(this);
-						entity._setParentPropertyName("additionalSchema");
-						entity._setParentPropertyType(ParentPropertyType.map);
-						entity._setMapPropertyName(key);
+						DataModelUtil.setParentMap(entity, this, "additionalSchema", ParentPropertyType.map, key);
 					}
 				}
 			} else {
-				((UnionValueImpl<?>) value)._setParent(this);
-				((UnionValueImpl<?>) value)._setParentPropertyName("additionalSchema");
-				((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
+				DataModelUtil.setParent(value, this, "additionalSchema", ParentPropertyType.standard);
 			}
 		}
 	}

@@ -1,5 +1,9 @@
 package io.test.synthetic.util;
 
+import io.test.synthetic.Node;
+import io.test.synthetic.NodeImpl;
+import io.test.synthetic.ParentPropertyType;
+import io.test.synthetic.union.UnionValueImpl;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +47,28 @@ public class DataModelUtil {
 			list.add(atIndex, value);
 		}
 		return list;
+	}
+
+	public static void setParent(Object child, Node parent, String propertyName, ParentPropertyType propertyType) {
+		if (child instanceof NodeImpl) {
+			((NodeImpl) child)._setParent(parent);
+			((NodeImpl) child)._setParentPropertyName(propertyName);
+			((NodeImpl) child)._setParentPropertyType(propertyType);
+		} else if (child instanceof UnionValueImpl) {
+			((UnionValueImpl<?>) child)._setParent(parent);
+			((UnionValueImpl<?>) child)._setParentPropertyName(propertyName);
+			((UnionValueImpl<?>) child)._setParentPropertyType(propertyType);
+		}
+	}
+
+	public static void setParentMap(Object child, Node parent, String propertyName, ParentPropertyType propertyType,
+			String mapPropertyName) {
+		setParent(child, parent, propertyName, propertyType);
+		if (child instanceof NodeImpl) {
+			((NodeImpl) child)._setMapPropertyName(mapPropertyName);
+		} else if (child instanceof UnionValueImpl) {
+			((UnionValueImpl<?>) child)._setMapPropertyName(mapPropertyName);
+		}
 	}
 
 }
