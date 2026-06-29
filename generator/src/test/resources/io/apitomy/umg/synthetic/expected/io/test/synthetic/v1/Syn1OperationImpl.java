@@ -1,6 +1,7 @@
 package io.test.synthetic.v1;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.test.synthetic.Any;
 import io.test.synthetic.Node;
 import io.test.synthetic.NodeImpl;
 import io.test.synthetic.ParentPropertyType;
@@ -70,18 +71,16 @@ public class Syn1OperationImpl extends NodeImpl implements Syn1Operation {
 		}
 		this.parameters.add(value);
 		if (value != null) {
-			((NodeImpl) value)._setParent(this);
-			((NodeImpl) value)._setParentPropertyName("parameters");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
+			DataModelUtil.setParent(value, this, "parameters", ParentPropertyType.array);
 		}
 	}
 
 	@Override
 	public void clearParameters() {
 		if (this.parameters != null) {
-			for (Object item : this.parameters) {
+			for (Any item : this.parameters) {
 				if (item != null)
-					((Node) item).detach();
+					item.detach();
 			}
 			this.parameters.clear();
 		}
@@ -105,9 +104,7 @@ public class Syn1OperationImpl extends NodeImpl implements Syn1Operation {
 			this.parameters = DataModelUtil.insertListEntry(this.parameters, value, atIndex);
 		}
 		if (value != null) {
-			((NodeImpl) value)._setParent(this);
-			((NodeImpl) value)._setParentPropertyName("parameters");
-			((NodeImpl) value)._setParentPropertyType(ParentPropertyType.array);
+			DataModelUtil.setParent(value, this, "parameters", ParentPropertyType.array);
 		}
 	}
 

@@ -121,10 +121,7 @@ public class MappedNodeMethods {
             addParentTrackingImports(javaEntity);
             body.appendBlock("""
 if (item != null) {
-    ((NodeImpl) item)._setParent(this);
-    ((NodeImpl) item)._setParentPropertyName(null);
-    ((NodeImpl) item)._setParentPropertyType(ParentPropertyType.map);
-    ((NodeImpl) item)._setMapPropertyName(name);
+    DataModelUtil.setParentMap(item, this, null, ParentPropertyType.map, name);
 }
 """);
         }
@@ -147,10 +144,7 @@ if (item != null) {
             addParentTrackingImports(javaEntity);
             body.appendBlock("""
 if (item != null) {
-    ((NodeImpl) item)._setParent(this);
-    ((NodeImpl) item)._setParentPropertyName(null);
-    ((NodeImpl) item)._setParentPropertyType(ParentPropertyType.map);
-    ((NodeImpl) item)._setMapPropertyName(name);
+    DataModelUtil.setParentMap(item, this, null, ParentPropertyType.map, name);
 }
 """);
         }
@@ -178,8 +172,9 @@ if (item != null) {
         method.setReturnTypeVoid();
         BodyBuilder body = new BodyBuilder();
         if (entityProperty) {
-            body.append("for (Object item : this._items.values()) {");
-            body.append("    if (item != null) ((Node) item).detach();");
+            javaEntity.addImport(ctx.getAnyInterfaceFQN());
+            body.append("for (Any item : this._items.values()) {");
+            body.append("    if (item != null) item.detach();");
             body.append("}");
         }
         body.append("this._items.clear();");
@@ -189,8 +184,8 @@ if (item != null) {
     private void addParentTrackingImports(JavaSource<?> javaEntity) {
         JavaEnumSource parentPropertyTypeSource = ctx.getJavaIndex().lookupEnum(ctx.getParentPropertyTypeEnumFQN());
         javaEntity.addImport(parentPropertyTypeSource);
-        JavaClassSource nodeImplSource = ctx.getJavaIndex().lookupClass(ctx.getNodeEntityClassFQN());
-        javaEntity.addImport(nodeImplSource);
+        JavaClassSource dataModelUtilSource = ctx.getJavaIndex().lookupClass(ctx.getDataModelUtilFQCN());
+        javaEntity.addImport(dataModelUtilSource);
     }
 
 }

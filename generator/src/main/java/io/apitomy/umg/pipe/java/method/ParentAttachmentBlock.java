@@ -68,17 +68,12 @@ public class ParentAttachmentBlock extends CodeBlock {
         body.ifElse(kind == ParentPropertyKind.MAP,
                 () -> """
                         if (value != null) {
-                            ((NodeImpl) value)._setParent(this);
-                            ((NodeImpl) value)._setParentPropertyName(${quotedName});
-                            ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
-                            ((NodeImpl) value)._setMapPropertyName(name);
+                            DataModelUtil.setParentMap(value, this, ${quotedName}, ParentPropertyType.${parentPropertyType}, name);
                         }
                         """,
                 () -> """
                         if (value != null) {
-                            ((NodeImpl) value)._setParent(this);
-                            ((NodeImpl) value)._setParentPropertyName(${quotedName});
-                            ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
+                            DataModelUtil.setParent(value, this, ${quotedName}, ParentPropertyType.${parentPropertyType});
                         }
                         """);
     }
@@ -91,40 +86,27 @@ public class ParentAttachmentBlock extends CodeBlock {
         body.appendBlock("""
                 if (value != null) {
                     if (value.isEntity()) {
-                        ((NodeImpl) value)._setParent(this);
-                        ((NodeImpl) value)._setParentPropertyName("${propertyName}");
-                        ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.standard);
+                        DataModelUtil.setParent(value, this, "${propertyName}", ParentPropertyType.standard);
                     } else if (value.isEntityList()) {
-                        ((UnionValueImpl<?>) value)._setParent(this);
-                        ((UnionValueImpl<?>) value)._setParentPropertyName("${propertyName}");
-                        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
+                        DataModelUtil.setParent(value, this, "${propertyName}", ParentPropertyType.standard);
                         List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();
                         for (Object entity : entityList) {
                             if (entity != null) {
-                                ((NodeImpl) entity)._setParent(this);
-                                ((NodeImpl) entity)._setParentPropertyName("${propertyName}");
-                                ((NodeImpl) entity)._setParentPropertyType(ParentPropertyType.array);
+                                DataModelUtil.setParent(entity, this, "${propertyName}", ParentPropertyType.array);
                             }
                         }
                     } else if (value.isEntityMap()) {
-                        ((UnionValueImpl<?>) value)._setParent(this);
-                        ((UnionValueImpl<?>) value)._setParentPropertyName("${propertyName}");
-                        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
+                        DataModelUtil.setParent(value, this, "${propertyName}", ParentPropertyType.standard);
                         Map<String, ?> entityMap = (Map<String, ?>) ((UnionValue<?>) value).getValue();
                         Collection<String> keys = entityMap.keySet();
                         for (String key : keys) {
-                            NodeImpl entity = (NodeImpl) entityMap.get(key);
+                            Object entity = entityMap.get(key);
                             if (entity != null) {
-                                entity._setParent(this);
-                                entity._setParentPropertyName("${propertyName}");
-                                entity._setParentPropertyType(ParentPropertyType.map);
-                                entity._setMapPropertyName(key);
+                                DataModelUtil.setParentMap(entity, this, "${propertyName}", ParentPropertyType.map, key);
                             }
                         }
                     } else {
-                        ((UnionValueImpl<?>) value)._setParent(this);
-                        ((UnionValueImpl<?>) value)._setParentPropertyName("${propertyName}");
-                        ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.standard);
+                        DataModelUtil.setParent(value, this, "${propertyName}", ParentPropertyType.standard);
                     }
                 }
                 """);
@@ -142,30 +124,12 @@ public class ParentAttachmentBlock extends CodeBlock {
         body.ifElse(kind == ParentPropertyKind.MAP,
                 () -> """
                         if (value != null) {
-                            if (value.isEntity()) {
-                                ((NodeImpl) value)._setParent(this);
-                                ((NodeImpl) value)._setParentPropertyName("${propertyName}");
-                                ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
-                                ((NodeImpl) value)._setMapPropertyName(name);
-                            } else {
-                                ((UnionValueImpl<?>) value)._setParent(this);
-                                ((UnionValueImpl<?>) value)._setParentPropertyName("${propertyName}");
-                                ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
-                                ((UnionValueImpl<?>) value)._setMapPropertyName(name);
-                            }
+                            DataModelUtil.setParentMap(value, this, "${propertyName}", ParentPropertyType.${parentPropertyType}, name);
                         }
                         """,
                 () -> """
                         if (value != null) {
-                            if (value.isEntity()) {
-                                ((NodeImpl) value)._setParent(this);
-                                ((NodeImpl) value)._setParentPropertyName("${propertyName}");
-                                ((NodeImpl) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
-                            } else {
-                                ((UnionValueImpl<?>) value)._setParent(this);
-                                ((UnionValueImpl<?>) value)._setParentPropertyName("${propertyName}");
-                                ((UnionValueImpl<?>) value)._setParentPropertyType(ParentPropertyType.${parentPropertyType});
-                            }
+                            DataModelUtil.setParent(value, this, "${propertyName}", ParentPropertyType.${parentPropertyType});
                         }
                         """);
     }
@@ -175,17 +139,15 @@ public class ParentAttachmentBlock extends CodeBlock {
         if (valueType.isEntityType()) {
             JavaEnumSource parentPropertyTypeSource = ctx.getJavaIndex().lookupEnum(ctx.getParentPropertyTypeEnumFQN());
             source.addImport(parentPropertyTypeSource);
-            JavaClassSource nodeImplSource = ctx.getJavaIndex().lookupClass(ctx.getNodeEntityClassFQN());
-            source.addImport(nodeImplSource);
+            JavaClassSource dataModelUtilSource = ctx.getJavaIndex().lookupClass(ctx.getDataModelUtilFQCN());
+            source.addImport(dataModelUtilSource);
         } else if (valueType.isUnionType()) {
             JavaEnumSource parentPropertyTypeSource = ctx.getJavaIndex().lookupEnum(ctx.getParentPropertyTypeEnumFQN());
             source.addImport(parentPropertyTypeSource);
-            JavaClassSource nodeImplSource = ctx.getJavaIndex().lookupClass(ctx.getNodeEntityClassFQN());
-            source.addImport(nodeImplSource);
+            JavaClassSource dataModelUtilSource = ctx.getJavaIndex().lookupClass(ctx.getDataModelUtilFQCN());
+            source.addImport(dataModelUtilSource);
             JavaInterfaceSource unionValueSource = ctx.getJavaIndex().lookupInterface(ctx.getUnionValueInterfaceFQN());
             source.addImport(unionValueSource);
-            JavaClassSource unionValueImplSource = ctx.getJavaIndex().lookupClass(ctx.getUnionTypeFQN("UnionValueImpl"));
-            source.addImport(unionValueImplSource);
 
             if (kind == ParentPropertyKind.STANDARD) {
                 source.addImport(Collection.class);
