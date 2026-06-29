@@ -147,7 +147,7 @@ public class CreateWritersStage extends AbstractIOStage {
 
         MethodSource<JavaClassSource> writeRootMethodSource = classSource.addMethod()
                 .setName("writeRoot")
-                .setReturnType(ObjectNode.class.getName())
+                .setReturnType(JsonNode.class.getName())
                 .setPublic();
         writeRootMethodSource.addParameter(rootCapableSource.getName(), "node");
         writeRootMethodSource.addAnnotation(Override.class);
@@ -156,13 +156,7 @@ public class CreateWritersStage extends AbstractIOStage {
         body.addContext("writeMethodName", writeMethodName);
         body.addContext("unionType", jt.toJavaTypeString());
 
-        body.appendBlock("""
-JsonNode result = this.${writeMethodName}((${unionType}) node);
-if (result != null && JsonUtil.isObjectNode(result)) {
-    return (ObjectNode) result;
-}
-return null;
-""");
+        body.append("return this.${writeMethodName}((${unionType}) node);");
         writeRootMethodSource.setBody(body.toString());
     }
 
@@ -173,9 +167,11 @@ return null;
         classSource.addImport(rootNodeInterfaceSource);
         classSource.addImport(ObjectNode.class);
 
+        classSource.addImport(JsonNode.class);
+
         MethodSource<JavaClassSource> writeRootMethodSource = classSource.addMethod()
                 .setName("writeRoot")
-                .setReturnType(ObjectNode.class.getName())
+                .setReturnType(JsonNode.class.getName())
                 .setPublic();
         writeRootMethodSource.addParameter(rootNodeInterfaceSource.getName(), "node");
         writeRootMethodSource.addAnnotation(Override.class);
