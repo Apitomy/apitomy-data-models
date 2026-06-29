@@ -49,7 +49,8 @@ public class ReadUnionListPropertyBlock extends CodeBlock {
                 "addMethodName", new AddMethod(prop.getCtx().singularize(property.getName())).getName(),
                 "readMethodName", readMethodName,
                 "unionJavaType", valueJt.toJavaTypeString(),
-                "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
+                "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"),
+                "readMethodExtraArgs", listType.getValueType().isRoot() ? ", null" : ""
         ));
 
         body.appendBlock("""
@@ -60,7 +61,7 @@ public class ReadUnionListPropertyBlock extends CodeBlock {
                         List<${unionJavaType}> _items = new ArrayList<>();
                         boolean _valid = true;
                         for (int _i = 0; _i < _nodes.size(); _i++) {
-                            ${unionJavaType} _result = this.${readMethodName}(_nodes.get(_i), null);
+                            ${unionJavaType} _result = this.${readMethodName}(_nodes.get(_i)${readMethodExtraArgs});
                             if (_result == null) { _valid = false; break; }
                             _items.add(_result);
                         }

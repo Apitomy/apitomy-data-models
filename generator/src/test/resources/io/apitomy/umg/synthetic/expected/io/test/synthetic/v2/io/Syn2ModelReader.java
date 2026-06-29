@@ -263,7 +263,7 @@ public class Syn2ModelReader implements ModelReader {
 		{
 			JsonNode _defaultValue = JsonUtil.getProperty(json, "defaultValue");
 			if (JsonUtil.isJsonNode(_defaultValue)) {
-				node.setDefaultValue(this.readBooleanSchemaUnion(_defaultValue, null));
+				node.setDefaultValue(this.readBooleanSchemaUnion(_defaultValue));
 				JsonUtil.removeProperty(json, "defaultValue");
 			}
 		}
@@ -313,7 +313,7 @@ public class Syn2ModelReader implements ModelReader {
 		{
 			JsonNode _items = JsonUtil.getProperty(json, "items");
 			if (JsonUtil.isJsonNode(_items)) {
-				node.setItems(this.readBooleanSchemaSchemaListUnion(_items, null));
+				node.setItems(this.readBooleanSchemaSchemaListUnion(_items));
 				JsonUtil.removeProperty(json, "items");
 			}
 		}
@@ -326,7 +326,7 @@ public class Syn2ModelReader implements ModelReader {
 					String _key = _keys.get(_i);
 					JsonNode _val = JsonUtil.getProperty(_obj, _key);
 					if (JsonUtil.isJsonNode(_val)) {
-						BooleanSchemaUnion model = this.readBooleanSchemaUnion(_val, null);
+						BooleanSchemaUnion model = this.readBooleanSchemaUnion(_val);
 						if (model != null)
 							node.addProperty(_key, model);
 					}
@@ -341,7 +341,7 @@ public class Syn2ModelReader implements ModelReader {
 				List<BooleanSchemaUnion> _items = new ArrayList<>();
 				boolean _valid = true;
 				for (int _i = 0; _i < _nodes.size(); _i++) {
-					BooleanSchemaUnion _result = this.readBooleanSchemaUnion(_nodes.get(_i), null);
+					BooleanSchemaUnion _result = this.readBooleanSchemaUnion(_nodes.get(_i));
 					if (_result == null) {
 						_valid = false;
 						break;
@@ -365,7 +365,7 @@ public class Syn2ModelReader implements ModelReader {
 					String _key = _keys.get(_i);
 					JsonNode _val = JsonUtil.getProperty(_obj, _key);
 					if (JsonUtil.isJsonNode(_val)) {
-						BooleanSchemaUnion model = this.readBooleanSchemaUnion(_val, null);
+						BooleanSchemaUnion model = this.readBooleanSchemaUnion(_val);
 						if (model != null)
 							node.addDefinition(_key, model);
 					}
@@ -606,7 +606,7 @@ public class Syn2ModelReader implements ModelReader {
 		return null;
 	}
 
-	private BooleanSchemaSchemaListUnion readBooleanSchemaSchemaListUnion(JsonNode json, ModelType modelType) {
+	private BooleanSchemaSchemaListUnion readBooleanSchemaSchemaListUnion(JsonNode json) {
 		if (JsonUtil.isObjectWithProperty(json, "type")) {
 			Syn2Schema node = new Syn2SchemaImpl();
 			this.readSchema((ObjectNode) json, node);
@@ -624,18 +624,18 @@ public class Syn2ModelReader implements ModelReader {
 			SchemaListUnionValueImpl unionValue = new SchemaListUnionValueImpl((List) models);
 			return unionValue;
 		} else if (JsonUtil.isBoolean(json)) {
-			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json), modelType);
+			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json), null);
 		}
 		return null;
 	}
 
-	private BooleanSchemaUnion readBooleanSchemaUnion(JsonNode json, ModelType modelType) {
+	private BooleanSchemaUnion readBooleanSchemaUnion(JsonNode json) {
 		if (JsonUtil.isObjectWithProperty(json, "type")) {
 			Syn2Schema node = new Syn2SchemaImpl();
 			this.readSchema((ObjectNode) json, node);
 			return node;
 		} else if (JsonUtil.isBoolean(json)) {
-			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json), modelType);
+			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json), null);
 		}
 		return null;
 	}

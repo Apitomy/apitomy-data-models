@@ -42,14 +42,15 @@ public class ReadUnionPropertyBlock extends CodeBlock {
                 "propertyName", property.getName(),
                 "setterMethodName", prop.getSetterName(),
                 "readMethodName", readMethodName,
-                "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
+                "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"),
+                "readMethodExtraArgs", resolved.isRoot() ? ", null" : ""
         ));
 
         body.appendBlock("""
                 {
                     JsonNode ${varName} = JsonUtil.getProperty(json, "${propertyName}");
                     if (JsonUtil.isJsonNode(${varName})) {
-                        node.${setterMethodName}(this.${readMethodName}(${varName}, null));
+                        node.${setterMethodName}(this.${readMethodName}(${varName}${readMethodExtraArgs}));
                         JsonUtil.removeProperty(json, "${propertyName}");
                     }
                 }

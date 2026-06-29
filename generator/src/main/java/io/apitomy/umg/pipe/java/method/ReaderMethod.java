@@ -89,17 +89,24 @@ public class ReaderMethod implements Method {
         readerClassSource.addImport(ObjectNode.class);
         jt.addImportsTo(readerClassSource);
 
-        JavaEnumSource modelTypeEnum = ctx.getJavaIndex().lookupEnum(ctx.getModelTypeEnumFQN());
-        readerClassSource.addImport(modelTypeEnum);
+        boolean isRootUnion = unionType.isRoot();
+
+        if (isRootUnion) {
+            JavaEnumSource modelTypeEnum = ctx.getJavaIndex().lookupEnum(ctx.getModelTypeEnumFQN());
+            readerClassSource.addImport(modelTypeEnum);
+        }
 
         MethodSource<JavaClassSource> method = readerClassSource.addMethod()
                 .setName(methodName)
                 .setReturnType(jt.toJavaTypeString())
                 .setPrivate();
         method.addParameter("JsonNode", "json");
-        method.addParameter("ModelType", "modelType");
+        if (isRootUnion) {
+            method.addParameter("ModelType", "modelType");
+        }
 
         BodyBuilder body = new BodyBuilder();
+        body.addContext("modelTypeArg", isRootUnion ? "modelType" : "null");
         // Generate dispatch for each variant
         boolean first = true;
         for (var variantType : unionType.getTypes()) {
@@ -161,7 +168,7 @@ public class ReaderMethod implements Method {
                 first = false;
 
                 body.append("if (JsonUtil.${isMethod}(json)) {");
-                body.append("    return new ${unionValueClass}(JsonUtil.${toMethod}(json), modelType);");
+                body.append("    return new ${unionValueClass}(JsonUtil.${toMethod}(json), ${modelTypeArg});");
                 body.append("}");
             } else if (variantType instanceof ListType listType
                     && listType.getValueType() instanceof EntityType listEntityType) {
