@@ -79,6 +79,12 @@ public class InsertMethod implements Method {
         method.addParameter(jt.toJavaTypeString(), "value");
         method.addParameter("int", "atIndex");
 
+        method.getJavaDoc()
+                .setText("Inserts an item at the given index.")
+                .addTagValue("@param", "atIndex insertion position: &lt;= 0 inserts at the beginning, "
+                        + "&gt;= size inserts at the end, otherwise inserts at the given position "
+                        + "shifting existing items to the right");
+
         if (target instanceof JavaClassSource) {
             method.addAnnotation(Override.class);
             addImportsTo(target);

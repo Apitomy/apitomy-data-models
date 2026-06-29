@@ -59,15 +59,23 @@ public class ReadUnionMapPropertyBlock extends CodeBlock {
                     if (JsonUtil.isObject(${varName})) {
                         ObjectNode _obj = JsonUtil.toObject(${varName});
                         List<String> _keys = JsonUtil.keys(_obj);
+                        java.util.LinkedHashMap<String, ${unionJavaType}> _items = new java.util.LinkedHashMap<>();
+                        boolean _valid = true;
                         for (int _i = 0; _i < _keys.size(); _i++) {
                             String _key = _keys.get(_i);
                             JsonNode _val = JsonUtil.getProperty(_obj, _key);
                             if (JsonUtil.isJsonNode(_val)) {
                                 ${unionJavaType} model = this.${readMethodName}(_val${readMethodExtraArgs});
-                                if (model != null) node.${addMethodName}(_key, model);
+                                if (model == null) { _valid = false; break; }
+                                _items.put(_key, model);
                             }
                         }
-                        JsonUtil.removeProperty(json, "${propertyName}");
+                        if (_valid) {
+                            for (String _key : _items.keySet()) {
+                                node.${addMethodName}(_key, _items.get(_key));
+                            }
+                            JsonUtil.removeProperty(json, "${propertyName}");
+                        }
                     }
                 }
                 """);

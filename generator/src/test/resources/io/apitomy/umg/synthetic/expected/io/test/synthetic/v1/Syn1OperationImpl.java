@@ -95,6 +95,14 @@ public class Syn1OperationImpl extends NodeImpl implements Syn1Operation {
 		}
 	}
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	@Override
 	public void insertParameter(SynItem value, int atIndex) {
 		if (this.parameters == null) {
@@ -133,6 +141,14 @@ public class Syn1OperationImpl extends NodeImpl implements Syn1Operation {
 		}
 	}
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	@Override
 	public void insertExtension(String name, JsonNode value, int atIndex) {
 		if (this.extensions == null) {

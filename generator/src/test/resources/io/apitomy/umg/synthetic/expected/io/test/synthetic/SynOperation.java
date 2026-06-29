@@ -18,6 +18,14 @@ public interface SynOperation extends Node {
 
 	public void removeParameter(SynItem value);
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	public void insertParameter(SynItem value, int atIndex);
 
 	public String getSummary();

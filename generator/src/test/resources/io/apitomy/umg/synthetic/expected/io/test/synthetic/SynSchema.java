@@ -16,6 +16,14 @@ public interface SynSchema extends Node, SchemaOrBoolean, BooleanSchemaSchemaLis
 
 	public void removeAllOf(BooleanSchemaUnion value);
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	public void insertAllOf(BooleanSchemaUnion value, int atIndex);
 
 	public List<SchemaOrBoolean> getComposedSchemas();
@@ -26,6 +34,14 @@ public interface SynSchema extends Node, SchemaOrBoolean, BooleanSchemaSchemaLis
 
 	public void removeComposedSchema(SchemaOrBoolean value);
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	public void insertComposedSchema(SchemaOrBoolean value, int atIndex);
 
 	public Map<String, BooleanSchemaUnion> getDefinitions();
@@ -36,6 +52,14 @@ public interface SynSchema extends Node, SchemaOrBoolean, BooleanSchemaSchemaLis
 
 	public void removeDefinition(String name);
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	public void insertDefinition(String name, BooleanSchemaUnion value, int atIndex);
 
 	public List<JsonNode> getEnum();
@@ -62,6 +86,14 @@ public interface SynSchema extends Node, SchemaOrBoolean, BooleanSchemaSchemaLis
 
 	public void removeNestedSchema(String name);
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	public void insertNestedSchema(String name, SchemaOrBoolean value, int atIndex);
 
 	public Map<String, BooleanSchemaUnion> getProperties();
@@ -72,6 +104,14 @@ public interface SynSchema extends Node, SchemaOrBoolean, BooleanSchemaSchemaLis
 
 	public void removeProperty(String name);
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	public void insertProperty(String name, BooleanSchemaUnion value, int atIndex);
 
 	public String getType();

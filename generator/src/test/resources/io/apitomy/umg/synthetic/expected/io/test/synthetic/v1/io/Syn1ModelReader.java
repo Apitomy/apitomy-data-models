@@ -291,16 +291,26 @@ public class Syn1ModelReader implements ModelReader {
 			if (JsonUtil.isObject(_properties)) {
 				ObjectNode _obj = JsonUtil.toObject(_properties);
 				List<String> _keys = JsonUtil.keys(_obj);
+				java.util.LinkedHashMap<String, BooleanSchemaUnion> _items = new java.util.LinkedHashMap<>();
+				boolean _valid = true;
 				for (int _i = 0; _i < _keys.size(); _i++) {
 					String _key = _keys.get(_i);
 					JsonNode _val = JsonUtil.getProperty(_obj, _key);
 					if (JsonUtil.isJsonNode(_val)) {
 						BooleanSchemaUnion model = this.readBooleanSchemaUnion(_val);
-						if (model != null)
-							node.addProperty(_key, model);
+						if (model == null) {
+							_valid = false;
+							break;
+						}
+						_items.put(_key, model);
 					}
 				}
-				JsonUtil.removeProperty(json, "properties");
+				if (_valid) {
+					for (String _key : _items.keySet()) {
+						node.addProperty(_key, _items.get(_key));
+					}
+					JsonUtil.removeProperty(json, "properties");
+				}
 			}
 		}
 		{
@@ -330,16 +340,26 @@ public class Syn1ModelReader implements ModelReader {
 			if (JsonUtil.isObject(_definitions)) {
 				ObjectNode _obj = JsonUtil.toObject(_definitions);
 				List<String> _keys = JsonUtil.keys(_obj);
+				java.util.LinkedHashMap<String, BooleanSchemaUnion> _items = new java.util.LinkedHashMap<>();
+				boolean _valid = true;
 				for (int _i = 0; _i < _keys.size(); _i++) {
 					String _key = _keys.get(_i);
 					JsonNode _val = JsonUtil.getProperty(_obj, _key);
 					if (JsonUtil.isJsonNode(_val)) {
 						BooleanSchemaUnion model = this.readBooleanSchemaUnion(_val);
-						if (model != null)
-							node.addDefinition(_key, model);
+						if (model == null) {
+							_valid = false;
+							break;
+						}
+						_items.put(_key, model);
 					}
 				}
-				JsonUtil.removeProperty(json, "definitions");
+				if (_valid) {
+					for (String _key : _items.keySet()) {
+						node.addDefinition(_key, _items.get(_key));
+					}
+					JsonUtil.removeProperty(json, "definitions");
+				}
 			}
 		}
 		{
@@ -347,16 +367,26 @@ public class Syn1ModelReader implements ModelReader {
 			if (JsonUtil.isObject(_nestedSchemas)) {
 				ObjectNode _obj = JsonUtil.toObject(_nestedSchemas);
 				List<String> _keys = JsonUtil.keys(_obj);
+				java.util.LinkedHashMap<String, SchemaOrBoolean> _items = new java.util.LinkedHashMap<>();
+				boolean _valid = true;
 				for (int _i = 0; _i < _keys.size(); _i++) {
 					String _key = _keys.get(_i);
 					JsonNode _val = JsonUtil.getProperty(_obj, _key);
 					if (JsonUtil.isJsonNode(_val)) {
 						SchemaOrBoolean model = this.readSchemaOrBoolean(_val, null);
-						if (model != null)
-							node.addNestedSchema(_key, model);
+						if (model == null) {
+							_valid = false;
+							break;
+						}
+						_items.put(_key, model);
 					}
 				}
-				JsonUtil.removeProperty(json, "nestedSchemas");
+				if (_valid) {
+					for (String _key : _items.keySet()) {
+						node.addNestedSchema(_key, _items.get(_key));
+					}
+					JsonUtil.removeProperty(json, "nestedSchemas");
+				}
 			}
 		}
 		{
