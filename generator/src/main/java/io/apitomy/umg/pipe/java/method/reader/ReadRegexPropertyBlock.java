@@ -138,7 +138,7 @@ public class ReadRegexPropertyBlock extends CodeBlock {
     for (int _i = 0; _i < propertyNames.size(); _i++) {
         String name = propertyNames.get(_i);
         JsonNode _val = JsonUtil.getProperty(json, name);
-        if (JsonUtil.isArray(_val) && JsonUtil.allMatch(_val, "${expectedType}")) {
+        if (JsonUtil.isArray(_val) && JsonUtil.allMatch(_val, JsonUtil.JsonType.${expectedType})) {
             List<${elementValueType}> items = new ArrayList<>();
             List<JsonNode> _nodes = JsonUtil.toList(_val);
             for (int _j = 0; _j < _nodes.size(); _j++) {
@@ -173,7 +173,7 @@ public class ReadRegexPropertyBlock extends CodeBlock {
     for (int _i = 0; _i < propertyNames.size(); _i++) {
         String name = propertyNames.get(_i);
         JsonNode _val = JsonUtil.getProperty(json, name);
-        if (JsonUtil.isObject(_val) && JsonUtil.allValuesMatch((ObjectNode) _val, "${expectedType}")) {
+        if (JsonUtil.isObject(_val) && JsonUtil.allValuesMatch((ObjectNode) _val, JsonUtil.JsonType.${expectedType})) {
             Map<String, ${elementValueType}> items = new LinkedHashMap<>();
             List<String> _keys = JsonUtil.keys((ObjectNode) _val);
             for (int _j = 0; _j < _keys.size(); _j++) {
