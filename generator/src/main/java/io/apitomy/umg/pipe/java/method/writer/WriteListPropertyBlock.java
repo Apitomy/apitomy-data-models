@@ -10,6 +10,7 @@ import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.type.ListType;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
@@ -35,7 +36,7 @@ public class WriteListPropertyBlock extends CodeBlock {
         body.addContext("propertyName", property.getName());
         body.addContext("getterMethodName", prop.getGetterName());
 
-        Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
+        Type listValueType = ((ListType) property.getResolvedType()).getValueType();
         if (listValueType.isPrimitiveType()) {
             body.append("JsonUtil.setProperty(json, \"${propertyName}\", JsonUtil.toArrayNode(node.${getterMethodName}()));");
         } else if (listValueType.isEntityType()) {

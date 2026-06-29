@@ -10,6 +10,7 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.type.ListType;
 import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
@@ -32,8 +33,8 @@ public class ReadUnionListPropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = prop.getProperty();
-        io.apitomy.umg.models.concept.type.ListType listType =
-                (io.apitomy.umg.models.concept.type.ListType) property.getResolvedType();
+        ListType listType =
+                (ListType) property.getResolvedType();
         var nsModel = prop.getPropertyWithOrigin().getOrigin().getNamespace();
         var valueJt = prop.getCtx().getJavaTypeFactory().createJavaType(listType.getValueType(), nsModel);
         String readMethodName = new ReaderMethod(valueJt.getSimpleName()).getName();

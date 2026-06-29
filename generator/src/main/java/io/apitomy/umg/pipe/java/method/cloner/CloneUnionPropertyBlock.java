@@ -1,6 +1,6 @@
 package io.apitomy.umg.pipe.java.method.cloner;
 
-import io.apitomy.umg.pipe.java.AbstractJavaStage;
+import io.apitomy.umg.pipe.java.method.TypeNameUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,10 @@ import org.jboss.forge.roaster.model.source.JavaSource;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.NamespaceModel;
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.type.CollectionType;
+import io.apitomy.umg.models.concept.type.ListType;
 import io.apitomy.umg.models.concept.type.Type;
+import io.apitomy.umg.models.concept.type.UnionType;
 import io.apitomy.umg.models.concept.type.UnionVariantComparator;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
@@ -40,7 +43,7 @@ public class CloneUnionPropertyBlock extends CodeBlock {
     public void appendTo(BodyBuilder body) {
         PropertyModel property = prop.getProperty();
         NamespaceModel nsContext = prop.getPropertyWithOrigin().getOrigin().getNamespace();
-        io.apitomy.umg.models.concept.type.UnionType effectiveUnionType = getEffectiveUnionType(property);
+        UnionType effectiveUnionType = getEffectiveUnionType(property);
 
         body.addContext(Map.of(
                 "unionJavaType", getUnionJavaTypeName(property, effectiveUnionType),
@@ -59,7 +62,7 @@ public class CloneUnionPropertyBlock extends CodeBlock {
                 .sorted(UnionVariantComparator.INSTANCE)
                 .collect(Collectors.toList());
         body.forEach(sortedTypes, (loopCtx, nestedType, isFirst) -> {
-            String typeName = AbstractJavaStage.getTypeName(nestedType);
+            String typeName = TypeNameUtil.getTypeName(nestedType);
             String isMethodName = new UnionIsMethod(typeName).getName();
             String asMethodName = new UnionAsMethod(typeName).getName();
 
@@ -82,8 +85,8 @@ public class CloneUnionPropertyBlock extends CodeBlock {
         }
 """;
                 }
-            } else if (nestedType.isListType() && ((io.apitomy.umg.models.concept.type.ListType) nestedType).getValueType().isPrimitiveType()) {
-                String unionValueName = AbstractJavaStage.getTypeName(nestedType);
+            } else if (nestedType.isListType() && ((ListType) nestedType).getValueType().isPrimitiveType()) {
+                String unionValueName = TypeNameUtil.getTypeName(nestedType);
                 String unionValueInterfaceFQN = prop.getCtx().getUnionTypeFQN(unionValueName + "UnionValue");
                 String unionValueClassFQN = unionValueInterfaceFQN + "Impl";
                 JavaInterfaceSource unionValueInterface = prop.getCtx().getJavaIndex().lookupInterface(unionValueInterfaceFQN);
@@ -122,14 +125,14 @@ public class CloneUnionPropertyBlock extends CodeBlock {
 """;
                     }
                 }
-            } else if (nestedType.isListType() && ((io.apitomy.umg.models.concept.type.ListType) nestedType).getValueType().isEntityType()) {
-                Type listItemType = ((io.apitomy.umg.models.concept.type.ListType) nestedType).getValueType();
+            } else if (nestedType.isListType() && ((ListType) nestedType).getValueType().isEntityType()) {
+                Type listItemType = ((ListType) nestedType).getValueType();
                 String listItemEntityName = prop.getOwningEntity().getNamespace().fullName() + "." + listItemType.getName();
                 EntityModel listItemEntity = prop.getCtx().getConceptIndex().lookupEntity(listItemEntityName);
                 if (listItemEntity != null) {
                     JavaInterfaceSource listItemEntitySource = prop.getCtx().getJavaIndex().lookupInterface(prop.getCtx().getJavaEntityInterfaceFQN(listItemEntity));
                     if (listItemEntitySource != null) {
-                        String unionValueName = AbstractJavaStage.getTypeName(nestedType);
+                        String unionValueName = TypeNameUtil.getTypeName(nestedType);
                         String unionValueInterfaceFQN = prop.getCtx().getUnionTypeFQN(unionValueName + "UnionValue");
                         String unionValueClassFQN = unionValueInterfaceFQN + "Impl";
                         JavaInterfaceSource unionValueInterface = prop.getCtx().getJavaIndex().lookupInterface(unionValueInterfaceFQN);
@@ -182,21 +185,21 @@ public class CloneUnionPropertyBlock extends CodeBlock {
         unionJavaType.addImportsTo(clonerClassSource);
     }
 
-    private io.apitomy.umg.models.concept.type.UnionType getEffectiveUnionType(PropertyModel property) {
+    private UnionType getEffectiveUnionType(PropertyModel property) {
         Type resolved = property.getResolvedType();
         if (resolved.isUnionType()) {
-            return (io.apitomy.umg.models.concept.type.UnionType) resolved;
+            return (UnionType) resolved;
         }
         if (resolved.isCollectionType()) {
-            Type valueType = ((io.apitomy.umg.models.concept.type.CollectionType) resolved).getValueType();
+            Type valueType = ((CollectionType) resolved).getValueType();
             if (valueType.isUnionType()) {
-                return (io.apitomy.umg.models.concept.type.UnionType) valueType;
+                return (UnionType) valueType;
             }
         }
         throw new IllegalStateException("Could not extract union type from: " + resolved);
     }
 
-    private String getUnionJavaTypeName(PropertyModel property, io.apitomy.umg.models.concept.type.UnionType unionType) {
+    private String getUnionJavaTypeName(PropertyModel property, UnionType unionType) {
         var nsModel = prop.getPropertyWithOrigin().getOrigin().getNamespace();
         var jt = prop.getCtx().getJavaTypeFactory().createJavaType(unionType, nsModel);
         jt.addImportsTo(clonerClassSource);

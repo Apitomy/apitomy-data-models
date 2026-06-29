@@ -121,7 +121,7 @@ public class WriterMethod implements Method {
                 body.append("}");
             } else if (variantType instanceof PrimitiveUnionVariantType puv) {
                 String typeName = JavaTypeFactory.getUnionComponentName(variantType);
-                Class<?> javaClass = PrimitiveTypeHelper.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
+                Class<?> javaClass = PrimitiveTypeUtil.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
                 if (javaClass == null) continue;
 
                 body.addContext("isMethod", new UnionIsMethod(typeName).getName());
@@ -164,7 +164,7 @@ public class WriterMethod implements Method {
                     body.append("    return array;");
                     body.append("}");
                 } else if (listType.getValueType() instanceof PrimitiveType primType) {
-                    Class<?> javaClass = PrimitiveTypeHelper.PRIMITIVE_TYPE_MAP.get(primType.name().toLowerCase());
+                    Class<?> javaClass = PrimitiveTypeUtil.PRIMITIVE_TYPE_MAP.get(primType.name().toLowerCase());
                     if (javaClass == null) continue;
 
                     writerClassSource.addImport(javaClass);

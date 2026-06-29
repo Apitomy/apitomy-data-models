@@ -28,8 +28,6 @@ public class CreateVisitorInterfacesStage extends AbstractVisitorStage {
      * Creates visitor interfaces for all visitors in a hierarchy, starting with the
      * given root visitor model.
      *
-     * @param visitor
-     * @param parentVisitorInterface
      */
     private void createVisitorInterfaces(VisitorModel visitor, JavaInterfaceSource parentVisitorInterface) {
         debug("Creating interface for: " + visitor.toString());
@@ -62,8 +60,6 @@ public class CreateVisitorInterfacesStage extends AbstractVisitorStage {
     /**
      * Creates the readXyz() method for the given entity.
      *
-     * @param visitorInterfaceSource
-     * @param entity
      */
     private void createVisitMethodFor(JavaInterfaceSource visitorInterfaceSource, EntityModel entity) {
         String visitMethodName = "visit" + entity.getName();

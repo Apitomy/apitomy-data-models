@@ -64,8 +64,6 @@ public class NormalizeEntitiesStage extends AbstractStage {
      * interfaces are always generated (e.g. OpenRpcDocument) even when a spec has only
      * one major version.
      *
-     * @param namespaceModel
-     * @param entityName
      */
     private boolean needsParentEntity(NamespaceModel namespaceModel, String entityName) {
         int count = 0;
