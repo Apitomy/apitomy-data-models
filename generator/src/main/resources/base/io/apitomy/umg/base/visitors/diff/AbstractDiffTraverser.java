@@ -11,7 +11,7 @@ import io.apitomy.umg.base.union.Union;
  * Base class for generated diff traversers. Provides shared collection diffing logic.
  * Subclasses (generated per spec version) provide entity-specific field iteration.
  */
-public abstract class AbstractDiffTraverser {
+public class AbstractDiffTraverser {
 
     protected final DiffVisitor visitor;
 
@@ -79,5 +79,6 @@ public abstract class AbstractDiffTraverser {
      * Dispatches to the correct entity-specific traverse method.
      * Generated subclasses override this with type-based dispatch.
      */
-    protected abstract void traverseNode(Node original, Node updated);
+    protected void traverseNode(Node original, Node updated) {
+    }
 }
