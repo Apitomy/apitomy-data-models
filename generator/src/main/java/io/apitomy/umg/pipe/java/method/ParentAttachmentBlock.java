@@ -18,7 +18,11 @@ import io.apitomy.umg.models.concept.type.Type;
 public class ParentAttachmentBlock extends CodeBlock {
 
     public enum ParentPropertyKind {
-        STANDARD, ARRAY, MAP
+        STANDARD("standard"), ARRAY("array"), MAP("map");
+
+        private final String value;
+        ParentPropertyKind(String value) { this.value = value; }
+        public String value() { return value; }
     }
 
     private final Type valueType;
@@ -192,11 +196,7 @@ public class ParentAttachmentBlock extends CodeBlock {
     }
 
     private String kindToString() {
-        return switch (kind) {
-            case STANDARD -> "standard";
-            case ARRAY -> "array";
-            case MAP -> "map";
-        };
+        return kind.value();
     }
 
 }

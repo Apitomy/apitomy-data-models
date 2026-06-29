@@ -156,7 +156,7 @@ public class WriterMethod implements Method {
 
                     body.append("if (union.${isMethod}()) {");
                     body.append("    ArrayNode array = JsonUtil.arrayNode();");
-                    body.append("    for (Object item : (java.util.List<?>) union.${asMethod}()) {");
+                    body.append("    for (Object item : union.${asMethod}()) {");
                     body.append("        ObjectNode itemNode = JsonUtil.objectNode();");
                     body.append("        this.${writeMethodName}((${entityType}) item, itemNode);");
                     body.append("        array.add(itemNode);");
@@ -173,7 +173,7 @@ public class WriterMethod implements Method {
                     body.addContext("addExpr", "array.add(JsonUtil.toJsonNode(item))");
                     body.append("if (union.${isMethod}()) {");
                     body.append("    ArrayNode array = JsonUtil.arrayNode();");
-                    body.append("    for (Object item : (java.util.List<?>) union.${asMethod}()) {");
+                    body.append("    for (Object item : union.${asMethod}()) {");
                     body.append("        ${addExpr};");
                     body.append("    }");
                     body.append("    return array;");

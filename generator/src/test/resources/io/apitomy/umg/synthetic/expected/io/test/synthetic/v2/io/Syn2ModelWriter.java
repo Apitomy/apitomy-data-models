@@ -388,7 +388,7 @@ public class Syn2ModelWriter implements ModelWriter {
 		}
 		if (union.isSchemaList()) {
 			ArrayNode array = JsonUtil.arrayNode();
-			for (Object item : (java.util.List<?>) union.asSchemaList()) {
+			for (Object item : union.asSchemaList()) {
 				ObjectNode itemNode = JsonUtil.objectNode();
 				this.writeSchema((Syn2Schema) item, itemNode);
 				array.add(itemNode);
@@ -416,11 +416,7 @@ public class Syn2ModelWriter implements ModelWriter {
 	}
 
 	@Override
-	public ObjectNode writeRoot(RootCapable node) {
-		JsonNode result = this.writeSchemaOrBoolean((SchemaOrBoolean) node);
-		if (result != null && JsonUtil.isObjectNode(result)) {
-			return (ObjectNode) result;
-		}
-		return null;
+	public JsonNode writeRoot(RootCapable node) {
+		return this.writeSchemaOrBoolean((SchemaOrBoolean) node);
 	}
 }

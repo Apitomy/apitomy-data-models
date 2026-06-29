@@ -1,10 +1,10 @@
 package io.apitomy.umg.base.io;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.apitomy.umg.base.RootCapable;
 
 public interface ModelWriter {
 
-    public ObjectNode writeRoot(RootCapable node);
+    public JsonNode writeRoot(RootCapable node);
 
 }

@@ -159,7 +159,7 @@ public class Library {
     @Deprecated
     public static ObjectNode writeDocument(Document document) {
         ModelWriter writer = ModelWriterFactory.createModelWriter(document.root().modelType());
-        return writer.writeRoot((RootCapable) document);
+        return (ObjectNode) writer.writeRoot((RootCapable) document);
     }
 
     /**
