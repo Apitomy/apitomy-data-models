@@ -74,8 +74,6 @@ public class CreateImplicitUnionRulesStage extends AbstractStage {
     /**
      * Create implicit union rules for the union type.  This is only called if we actually need it.
      *
-     * @param entity
-     * @param property
      */
     private void createImplicitUnionRules(EntityModel entity, PropertyModel property) {
         var unionType = (UnionType) property.getResolvedType();
@@ -108,8 +106,6 @@ public class CreateImplicitUnionRulesStage extends AbstractStage {
      * 2) The entity definition has only one property.  The existence of that property is used for
      *    discrimination.
      *
-     * @param nsContext
-     * @param simpleType
      */
     private UnionRule createImplicitRuleForEntity(NamespaceModel nsContext, String entityName) {
         EntityModel entity = getState().getConceptIndex().lookupEntity(nsContext, entityName);

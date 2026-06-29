@@ -68,4 +68,8 @@ public interface Type {
     default boolean isEntityListType() { return false; }
 
     default boolean isEntityMapType() { return false; }
+
+    default boolean isUnionListType() { return false; }
+
+    default boolean isUnionMapType() { return false; }
 }

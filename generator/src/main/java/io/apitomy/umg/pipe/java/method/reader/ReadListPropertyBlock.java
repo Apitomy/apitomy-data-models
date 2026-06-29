@@ -10,13 +10,14 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.type.ListType;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
-import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeUtil;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.ReaderMethod;
 
@@ -36,15 +37,15 @@ public class ReadListPropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = prop.getProperty();
-        Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
+        Type listValueType = ((ListType) property.getResolvedType()).getValueType();
         if (listValueType.isPrimitiveType()) {
             readerClassSource.addImport(JsonNode.class);
             readerClassSource.addImport(List.class);
             readerClassSource.addImport(ArrayList.class);
 
-            String expectedType = PrimitiveTypeHelper.determineExpectedTypeString(listValueType, prop.getCtx());
-            String toConversionMethod = PrimitiveTypeHelper.determineToConversionMethod(listValueType, prop.getCtx(), readerClassSource);
-            String elementValueType = PrimitiveTypeHelper.determineValueType(listValueType, prop.getCtx(), readerClassSource);
+            String expectedType = PrimitiveTypeUtil.determineExpectedTypeString(listValueType, prop.getCtx());
+            String toConversionMethod = PrimitiveTypeUtil.determineToConversionMethod(listValueType, prop.getCtx(), readerClassSource);
+            String elementValueType = PrimitiveTypeUtil.determineValueType(listValueType, prop.getCtx(), readerClassSource);
             body.addContext(Map.of(
                     "propertyName", property.getName(),
                     "setterMethodName", prop.getSetterName(),

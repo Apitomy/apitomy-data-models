@@ -9,6 +9,7 @@ import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.type.ListType;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
@@ -16,7 +17,7 @@ import io.apitomy.umg.pipe.java.method.ClonerMethod;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
-import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeUtil;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 
 /**
@@ -35,7 +36,7 @@ public class CloneListPropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = prop.getProperty();
-        Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
+        Type listValueType = ((ListType) property.getResolvedType()).getValueType();
 
         if (listValueType.isPrimitiveType()) {
             clonerClassSource.addImport(List.class);
@@ -43,7 +44,7 @@ public class CloneListPropertyBlock extends CodeBlock {
             body.addContext(Map.of(
                     "getterMethodName", prop.getGetterName(),
                     "setterMethodName", prop.getSetterName(),
-                    "valueType", PrimitiveTypeHelper.determineValueType(listValueType, prop.getCtx(), clonerClassSource)
+                    "valueType", PrimitiveTypeUtil.determineValueType(listValueType, prop.getCtx(), clonerClassSource)
             ));
 
             body.appendBlock("""

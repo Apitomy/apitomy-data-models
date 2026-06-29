@@ -10,6 +10,7 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.type.MapType;
 import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
@@ -32,8 +33,8 @@ public class ReadUnionMapPropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = prop.getProperty();
-        io.apitomy.umg.models.concept.type.MapType mapType =
-                (io.apitomy.umg.models.concept.type.MapType) property.getResolvedType();
+        MapType mapType =
+                (MapType) property.getResolvedType();
         var nsModel = prop.getPropertyWithOrigin().getOrigin().getNamespace();
         var valueJt = prop.getCtx().getJavaTypeFactory().createJavaType(mapType.getValueType(), nsModel);
         String readMethodName = new ReaderMethod(valueJt.getSimpleName()).getName();

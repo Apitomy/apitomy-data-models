@@ -16,7 +16,6 @@ public abstract class AbstractVisitorStage extends AbstractJavaStage {
     /**
      * Finds all of the descendant visitors for the given visitor.  This walks down the
      * visitor hierarchy and finds all of the "leaf" visitor nodes in that tree.
-     * @param visitor
      */
     protected Set<VisitorModel> findDescendantVisitors(VisitorModel visitor) {
         return getState().getConceptIndex().findVisitors(visitor.getNamespace().fullName()).stream().filter(v -> isVisitorForSpecVersion(v)).collect(Collectors.toSet());
@@ -24,7 +23,6 @@ public abstract class AbstractVisitorStage extends AbstractJavaStage {
 
     /**
      * Returns ture if the given visitor is associated with a specification version.
-     * @param visitor
      */
     private boolean isVisitorForSpecVersion(VisitorModel visitor) {
         SpecificationVersionId id = SpecificationVersionId.create(visitor.getNamespace().fullName());
@@ -36,7 +34,6 @@ public abstract class AbstractVisitorStage extends AbstractJavaStage {
      * given visitor model.  This walks up the visitor hierarchy, collecting all methods
      * defined on visitor interfaces.  It returns the full collection of methods (for
      * this visitor and all super-interfaces).
-     * @param visitor
      */
     protected List<MethodSource<?>> getAllMethodsForVisitorInterface(VisitorModel visitor) {
         List<MethodSource<?>> methods = new LinkedList<>();
