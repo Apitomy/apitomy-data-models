@@ -25,6 +25,14 @@ public interface SynDocument extends Node {
 
 	public void removeItem(SynItem value);
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	public void insertItem(SynItem value, int atIndex);
 
 	public Map<String, String> getMetadata();

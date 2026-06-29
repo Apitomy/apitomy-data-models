@@ -135,6 +135,14 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 		}
 	}
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	@Override
 	public void insertProperty(String name, BooleanSchemaUnion value, int atIndex) {
 		if (this.properties == null) {
@@ -182,6 +190,14 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 		}
 	}
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	@Override
 	public void insertAllOf(BooleanSchemaUnion value, int atIndex) {
 		if (this.allOf == null) {
@@ -227,6 +243,14 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 		}
 	}
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	@Override
 	public void insertDefinition(String name, BooleanSchemaUnion value, int atIndex) {
 		if (this.definitions == null) {
@@ -272,6 +296,14 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 		}
 	}
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	@Override
 	public void insertNestedSchema(String name, SchemaOrBoolean value, int atIndex) {
 		if (this.nestedSchemas == null) {
@@ -319,6 +351,14 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 		}
 	}
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	@Override
 	public void insertComposedSchema(SchemaOrBoolean value, int atIndex) {
 		if (this.composedSchemas == null) {
@@ -387,6 +427,14 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 		}
 	}
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	@Override
 	public void insertExtension(String name, JsonNode value, int atIndex) {
 		if (this.extensions == null) {
