@@ -49,7 +49,8 @@ public class ReadUnionMapPropertyBlock extends CodeBlock {
                 "addMethodName", new AddMethod(prop.getCtx().singularize(property.getName())).getName(),
                 "readMethodName", readMethodName,
                 "unionJavaType", valueJt.toJavaTypeString(),
-                "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
+                "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_"),
+                "readMethodExtraArgs", mapType.getValueType().isRoot() ? ", null" : ""
         ));
 
         body.appendBlock("""
@@ -62,7 +63,7 @@ public class ReadUnionMapPropertyBlock extends CodeBlock {
                             String _key = _keys.get(_i);
                             JsonNode _val = JsonUtil.getProperty(_obj, _key);
                             if (JsonUtil.isJsonNode(_val)) {
-                                ${unionJavaType} model = this.${readMethodName}(_val, null);
+                                ${unionJavaType} model = this.${readMethodName}(_val${readMethodExtraArgs});
                                 if (model != null) node.${addMethodName}(_key, model);
                             }
                         }
