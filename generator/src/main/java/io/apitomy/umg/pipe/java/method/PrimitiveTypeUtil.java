@@ -136,25 +136,23 @@ public final class PrimitiveTypeUtil {
     }
 
     /**
-     * Determines the expected type string for {@code JsonUtil.allMatch} / {@code JsonUtil.allValuesMatch}.
-     * E.g. String → "string", Boolean → "boolean", ObjectNode → "object", JsonNode → "any".
+     * Determines the JsonUtil.JsonType enum constant name for {@code JsonUtil.allMatch} / {@code JsonUtil.allValuesMatch}.
+     * E.g. String → "STRING", Boolean → "BOOLEAN", ObjectNode → "OBJECT", JsonNode → "ANY".
      */
     public static String determineExpectedTypeString(Type primitiveType, CodeGenContext ctx) {
         Class<?> _class = primitiveTypeToClass(primitiveType);
         if (ObjectNode.class.equals(_class)) {
-            return "object";
+            return "OBJECT";
         } else if (JsonNode.class.equals(_class)) {
-            return "any";
+            return "ANY";
         } else if (String.class.equals(_class)) {
-            return "string";
+            return "STRING";
         } else if (Boolean.class.equals(_class)) {
-            return "boolean";
-        } else if (Number.class.equals(_class)) {
-            return "number";
-        } else if (Integer.class.equals(_class)) {
-            return "number";
+            return "BOOLEAN";
+        } else if (Number.class.equals(_class) || Integer.class.equals(_class)) {
+            return "NUMBER";
         }
-        return "any";
+        return "ANY";
     }
 
     /**

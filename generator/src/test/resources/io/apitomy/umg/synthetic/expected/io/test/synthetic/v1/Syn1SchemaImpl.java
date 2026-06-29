@@ -139,10 +139,8 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 	public void insertProperty(String name, BooleanSchemaUnion value, int atIndex) {
 		if (this.properties == null) {
 			this.properties = new LinkedHashMap<>();
-			this.properties.put(name, value);
-		} else {
-			this.properties = DataModelUtil.insertMapEntry(this.properties, name, value, atIndex);
 		}
+		this.properties = DataModelUtil.insertMapEntry(this.properties, name, value, atIndex);
 		if (value != null) {
 			DataModelUtil.setParentMap(value, this, "properties", ParentPropertyType.map, name);
 		}
@@ -188,10 +186,8 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 	public void insertAllOf(BooleanSchemaUnion value, int atIndex) {
 		if (this.allOf == null) {
 			this.allOf = new ArrayList<>();
-			this.allOf.add(value);
-		} else {
-			this.allOf = DataModelUtil.insertListEntry(this.allOf, value, atIndex);
 		}
+		this.allOf = DataModelUtil.insertListEntry(this.allOf, value, atIndex);
 		if (value != null) {
 			DataModelUtil.setParent(value, this, "allOf", ParentPropertyType.array);
 		}
@@ -235,10 +231,8 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 	public void insertDefinition(String name, BooleanSchemaUnion value, int atIndex) {
 		if (this.definitions == null) {
 			this.definitions = new LinkedHashMap<>();
-			this.definitions.put(name, value);
-		} else {
-			this.definitions = DataModelUtil.insertMapEntry(this.definitions, name, value, atIndex);
 		}
+		this.definitions = DataModelUtil.insertMapEntry(this.definitions, name, value, atIndex);
 		if (value != null) {
 			DataModelUtil.setParentMap(value, this, "definitions", ParentPropertyType.map, name);
 		}
@@ -282,10 +276,8 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 	public void insertNestedSchema(String name, SchemaOrBoolean value, int atIndex) {
 		if (this.nestedSchemas == null) {
 			this.nestedSchemas = new LinkedHashMap<>();
-			this.nestedSchemas.put(name, value);
-		} else {
-			this.nestedSchemas = DataModelUtil.insertMapEntry(this.nestedSchemas, name, value, atIndex);
 		}
+		this.nestedSchemas = DataModelUtil.insertMapEntry(this.nestedSchemas, name, value, atIndex);
 		if (value != null) {
 			DataModelUtil.setParentMap(value, this, "nestedSchemas", ParentPropertyType.map, name);
 		}
@@ -331,10 +323,8 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 	public void insertComposedSchema(SchemaOrBoolean value, int atIndex) {
 		if (this.composedSchemas == null) {
 			this.composedSchemas = new ArrayList<>();
-			this.composedSchemas.add(value);
-		} else {
-			this.composedSchemas = DataModelUtil.insertListEntry(this.composedSchemas, value, atIndex);
 		}
+		this.composedSchemas = DataModelUtil.insertListEntry(this.composedSchemas, value, atIndex);
 		if (value != null) {
 			DataModelUtil.setParent(value, this, "composedSchemas", ParentPropertyType.array);
 		}
@@ -401,10 +391,8 @@ public class Syn1SchemaImpl extends RootCapableImpl implements Syn1Schema {
 	public void insertExtension(String name, JsonNode value, int atIndex) {
 		if (this.extensions == null) {
 			this.extensions = new LinkedHashMap<>();
-			this.extensions.put(name, value);
-		} else {
-			this.extensions = DataModelUtil.insertMapEntry(this.extensions, name, value, atIndex);
 		}
+		this.extensions = DataModelUtil.insertMapEntry(this.extensions, name, value, atIndex);
 	}
 
 	@Override
