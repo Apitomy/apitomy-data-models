@@ -7,11 +7,9 @@ import io.test.synthetic.Node;
 import io.test.synthetic.NodeImpl;
 import io.test.synthetic.ParentPropertyType;
 import io.test.synthetic.SynSchema;
-import io.test.synthetic.union.UnionValue;
 import io.test.synthetic.util.DataModelUtil;
 import io.test.synthetic.v2.visitors.Syn2Visitor;
 import io.test.synthetic.visitors.Visitor;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,9 +108,7 @@ public class Syn2ItemImpl extends NodeImpl implements Syn2Item {
 	@Override
 	public void setSchema(SynSchema value) {
 		this.schema = value;
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "schema", ParentPropertyType.standard);
-		}
+		DataModelUtil.setParent(value, this, "schema", ParentPropertyType.standard);
 	}
 
 	@Override
@@ -140,31 +136,7 @@ public class Syn2ItemImpl extends NodeImpl implements Syn2Item {
 	@Override
 	public void setDefaultValue(BooleanSchemaUnion value) {
 		this.defaultValue = value;
-		if (value != null) {
-			if (value.isEntity()) {
-				DataModelUtil.setParent(value, this, "defaultValue", ParentPropertyType.standard);
-			} else if (value.isEntityList()) {
-				DataModelUtil.setParent(value, this, "defaultValue", ParentPropertyType.standard);
-				List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();
-				for (Object entity : entityList) {
-					if (entity != null) {
-						DataModelUtil.setParent(entity, this, "defaultValue", ParentPropertyType.array);
-					}
-				}
-			} else if (value.isEntityMap()) {
-				DataModelUtil.setParent(value, this, "defaultValue", ParentPropertyType.standard);
-				Map<String, ?> entityMap = (Map<String, ?>) ((UnionValue<?>) value).getValue();
-				Collection<String> keys = entityMap.keySet();
-				for (String key : keys) {
-					Object entity = entityMap.get(key);
-					if (entity != null) {
-						DataModelUtil.setParentMap(entity, this, "defaultValue", ParentPropertyType.map, key);
-					}
-				}
-			} else {
-				DataModelUtil.setParent(value, this, "defaultValue", ParentPropertyType.standard);
-			}
-		}
+		DataModelUtil.setParent(value, this, "defaultValue", ParentPropertyType.standard);
 	}
 
 	@Override
