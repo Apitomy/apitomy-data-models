@@ -34,7 +34,7 @@ public class DataModelUtil {
         return newMap;
     }
 
-    public static <V> List<V> insertListEntry(List<V> list, V value, int atIndex) {
+    public static <V> void insertListEntry(List<V> list, V value, int atIndex) {
         if (atIndex >= list.size()) {
             list.add(value);
         } else if (atIndex < 0) {
@@ -42,7 +42,6 @@ public class DataModelUtil {
         } else {
             list.add(atIndex, value);
         }
-        return list;
     }
 
     /**

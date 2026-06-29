@@ -171,7 +171,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 		if (this.allOf == null) {
 			this.allOf = new ArrayList<>();
 		}
-		this.allOf = DataModelUtil.insertListEntry(this.allOf, value, atIndex);
+		DataModelUtil.insertListEntry(this.allOf, value, atIndex);
 		DataModelUtil.setParent(value, this, "allOf", ParentPropertyType.array);
 	}
 
@@ -320,7 +320,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 		if (this.composedSchemas == null) {
 			this.composedSchemas = new ArrayList<>();
 		}
-		this.composedSchemas = DataModelUtil.insertListEntry(this.composedSchemas, value, atIndex);
+		DataModelUtil.insertListEntry(this.composedSchemas, value, atIndex);
 		DataModelUtil.setParent(value, this, "composedSchemas", ParentPropertyType.array);
 	}
 

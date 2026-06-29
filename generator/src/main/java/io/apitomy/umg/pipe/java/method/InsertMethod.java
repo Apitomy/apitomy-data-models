@@ -118,7 +118,7 @@ this.${fieldName} = DataModelUtil.insertMapEntry(this.${fieldName}, name, value,
 if (this.${fieldName} == null) {
     this.${fieldName} = new ArrayList<>();
 }
-this.${fieldName} = DataModelUtil.insertListEntry(this.${fieldName}, value, atIndex);
+DataModelUtil.insertListEntry(this.${fieldName}, value, atIndex);
 """;
                 });
 
