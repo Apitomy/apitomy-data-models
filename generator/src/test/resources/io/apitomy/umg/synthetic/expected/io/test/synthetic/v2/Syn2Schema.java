@@ -19,5 +19,13 @@ public interface Syn2Schema extends RootCapable, SynSchema, Syn2Extensible, Syn2
 
 	public void removeExtension(String name);
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	public void insertExtension(String name, JsonNode value, int atIndex);
 }
