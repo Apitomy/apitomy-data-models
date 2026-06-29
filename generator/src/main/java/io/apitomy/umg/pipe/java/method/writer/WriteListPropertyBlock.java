@@ -64,11 +64,12 @@ public class WriteListPropertyBlock extends CodeBlock {
                         List<? extends ${listValueCommonJavaType}> models = node.${getterMethodName}();
                         if (models != null && !models.isEmpty()) {
                             ArrayNode array = JsonUtil.arrayNode();
-                            models.forEach(model -> {
+                            for (int _idx = 0; _idx < models.size(); _idx++) {
+                                ${listValueCommonJavaType} model = models.get(_idx);
                                 ObjectNode object = JsonUtil.objectNode();
                                 this.${writeMethodName}((${listValueJavaType}) model, object);
                                 JsonUtil.addToArray(array, object);
-                            });
+                            }
                             JsonUtil.setProperty(json, "${propertyName}", array);
                         }
                     }

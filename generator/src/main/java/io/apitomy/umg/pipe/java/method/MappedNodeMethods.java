@@ -178,9 +178,9 @@ if (item != null) {
         method.setReturnTypeVoid();
         BodyBuilder body = new BodyBuilder();
         if (entityProperty) {
-            body.append("this._items.values().forEach(item -> {");
-            body.append("    if (item != null) item.detach();");
-            body.append("});");
+            body.append("for (Object item : this._items.values()) {");
+            body.append("    if (item != null) ((Node) item).detach();");
+            body.append("}");
         }
         body.append("this._items.clear();");
         method.setBody(body.toString());

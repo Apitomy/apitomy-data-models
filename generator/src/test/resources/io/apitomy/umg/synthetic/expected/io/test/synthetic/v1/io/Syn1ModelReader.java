@@ -578,12 +578,12 @@ public class Syn1ModelReader implements ModelReader {
 		} else if (JsonUtil.isArray(json)) {
 			List<JsonNode> array = JsonUtil.toList(json);
 			List<Syn1Schema> models = new ArrayList<>();
-			array.forEach(item -> {
-				ObjectNode object = JsonUtil.toObject(item);
+			for (int _idx = 0; _idx < array.size(); _idx++) {
+				ObjectNode object = JsonUtil.toObject(array.get(_idx));
 				Syn1Schema model = new Syn1SchemaImpl();
 				this.readSchema(object, model);
 				models.add(model);
-			});
+			}
 			@SuppressWarnings({"unchecked", "rawtypes"})
 			SchemaListUnionValueImpl unionValue = new SchemaListUnionValueImpl((List) models);
 			return unionValue;

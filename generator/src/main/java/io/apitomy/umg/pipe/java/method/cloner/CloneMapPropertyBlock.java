@@ -79,11 +79,11 @@ public class CloneMapPropertyBlock extends CodeBlock {
                     {
                         Map<String, ? extends ${commonEntityType}> srcMap = source.${getterMethodName}();
                         if (srcMap != null && !srcMap.isEmpty()) {
-                            srcMap.keySet().forEach(name -> {
+                            for (String name : srcMap.keySet()) {
                                 ${entityJavaType} tgtItem = (${entityJavaType}) target.${createMethodName}();
                                 this.${cloneMethodName}((${entityJavaType}) srcMap.get(name), tgtItem);
                                 target.${addMethodName}(name, tgtItem);
-                            });
+                            }
                         }
                     }
                     """);

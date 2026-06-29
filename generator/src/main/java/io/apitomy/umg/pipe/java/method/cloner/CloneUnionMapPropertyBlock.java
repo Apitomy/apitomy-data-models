@@ -55,7 +55,7 @@ public class CloneUnionMapPropertyBlock extends CodeBlock {
 {
     Map<String, ${unionJavaType}> srcMap = source.${getterMethodName}();
     if (srcMap != null && !srcMap.isEmpty()) {
-        srcMap.keySet().forEach(key -> {
+        for (String key : srcMap.keySet()) {
             ${unionJavaType} srcUnion = srcMap.get(key);
 """);
 
@@ -116,7 +116,7 @@ public class CloneUnionMapPropertyBlock extends CodeBlock {
             body.append("            }");
         });
 
-        body.append("        });");
+        body.append("        }");
         body.append("    }");
         body.append("}");
     }

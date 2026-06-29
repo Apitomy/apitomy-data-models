@@ -79,10 +79,10 @@ public class Syn2OperationImpl extends NodeImpl implements Syn2Operation {
 	@Override
 	public void clearParameters() {
 		if (this.parameters != null) {
-			this.parameters.forEach(item -> {
+			for (Object item : this.parameters) {
 				if (item != null)
-					item.detach();
-			});
+					((Node) item).detach();
+			}
 			this.parameters.clear();
 		}
 	}

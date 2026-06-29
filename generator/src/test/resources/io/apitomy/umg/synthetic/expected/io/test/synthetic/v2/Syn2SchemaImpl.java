@@ -144,10 +144,10 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 	@Override
 	public void clearProperties() {
 		if (this.properties != null) {
-			this.properties.values().forEach(item -> {
+			for (Object item : this.properties.values()) {
 				if (item != null)
-					item.detach();
-			});
+					((Node) item).detach();
+			}
 			this.properties.clear();
 		}
 	}
@@ -209,10 +209,10 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 	@Override
 	public void clearAllOf() {
 		if (this.allOf != null) {
-			this.allOf.forEach(item -> {
+			for (Object item : this.allOf) {
 				if (item != null)
-					item.detach();
-			});
+					((Node) item).detach();
+			}
 			this.allOf.clear();
 		}
 	}
@@ -276,10 +276,10 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 	@Override
 	public void clearDefinitions() {
 		if (this.definitions != null) {
-			this.definitions.values().forEach(item -> {
+			for (Object item : this.definitions.values()) {
 				if (item != null)
-					item.detach();
-			});
+					((Node) item).detach();
+			}
 			this.definitions.clear();
 		}
 	}
@@ -343,10 +343,10 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 	@Override
 	public void clearNestedSchemas() {
 		if (this.nestedSchemas != null) {
-			this.nestedSchemas.values().forEach(item -> {
+			for (Object item : this.nestedSchemas.values()) {
 				if (item != null)
-					item.detach();
-			});
+					((Node) item).detach();
+			}
 			this.nestedSchemas.clear();
 		}
 	}
@@ -408,10 +408,10 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 	@Override
 	public void clearComposedSchemas() {
 		if (this.composedSchemas != null) {
-			this.composedSchemas.forEach(item -> {
+			for (Object item : this.composedSchemas) {
 				if (item != null)
-					item.detach();
-			});
+					((Node) item).detach();
+			}
 			this.composedSchemas.clear();
 		}
 	}

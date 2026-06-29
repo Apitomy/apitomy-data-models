@@ -87,14 +87,15 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
 		if (items != null) {
 			traversalContext.pushProperty(propertyName);
 			List<String> keys = JsonUtil.collectionToList(items.keySet());
-			keys.forEach(key -> {
+			for (int _idx = 0; _idx < keys.size(); _idx++) {
+				String key = keys.get(_idx);
 				Any value = items.get(key);
 				if (value != null && value.isNode()) {
 					this.traversalContext.pushMapIndex(key);
 					this.doTraverseNode((Node) value);
 					this.traversalContext.pop();
 				}
-			});
+			}
 			this.traversalContext.pop();
 		}
 	}
@@ -107,14 +108,15 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
 	protected void traverseMappedNode(MappedNode<? extends Node> mappedNode) {
 		if (mappedNode != null) {
 			List<String> names = JsonUtil.collectionToList(mappedNode.getItemNames());
-			names.forEach(name -> {
+			for (int _idx = 0; _idx < names.size(); _idx++) {
+				String name = names.get(_idx);
 				Node value = mappedNode.getItem(name);
 				if (value != null) {
 					this.traversalContext.pushMapIndex(name);
 					this.doTraverseNode(value);
 					this.traversalContext.pop();
 				}
-			});
+			}
 		}
 	}
 

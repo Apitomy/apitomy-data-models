@@ -198,12 +198,12 @@ public class ReaderMethod implements Method {
                 body.append("if (JsonUtil.isArray(json)) {");
                 body.append("    List<JsonNode> array = JsonUtil.toList(json);");
                 body.append("    List<${listValueType}> models = new ArrayList<>();");
-                body.append("    array.forEach(item -> {");
-                body.append("        ObjectNode object = JsonUtil.toObject(item);");
+                body.append("    for (int _idx = 0; _idx < array.size(); _idx++) {");
+                body.append("        ObjectNode object = JsonUtil.toObject(array.get(_idx));");
                 body.append("        ${listValueType} model = new ${listValueType}Impl();");
                 body.append("        this.${readMethodName}(object, model);");
                 body.append("        models.add(model);");
-                body.append("    });");
+                body.append("    }");
                 body.append("    @SuppressWarnings({ \"unchecked\", \"rawtypes\" })");
                 body.append("    ${unionValueClass} unionValue = new ${unionValueClass}((List) models);");
                 body.append("    return unionValue;");
@@ -235,9 +235,9 @@ public class ReaderMethod implements Method {
                 body.append("if (JsonUtil.isArray(json)) {");
                 body.append("    List<JsonNode> array = JsonUtil.toList(json);");
                 body.append("    List<${primType}> items = new ArrayList<>();");
-                body.append("    array.forEach(item -> {");
-                body.append("        items.add(JsonUtil.${toMethod}(item));");
-                body.append("    });");
+                body.append("    for (int _idx = 0; _idx < array.size(); _idx++) {");
+                body.append("        items.add(JsonUtil.${toMethod}(array.get(_idx)));");
+                body.append("    }");
                 body.append("    return new ${unionValueClass}(items);");
                 body.append("}");
             }

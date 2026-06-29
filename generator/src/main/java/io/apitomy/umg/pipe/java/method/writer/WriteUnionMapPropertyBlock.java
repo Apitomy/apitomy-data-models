@@ -58,10 +58,10 @@ public class WriteUnionMapPropertyBlock extends CodeBlock {
                     if (items != null && !items.isEmpty()) {
                         ObjectNode mapJson = JsonUtil.objectNode();
                         Collection<String> keys = items.keySet();
-                        keys.forEach(key -> {
+                        for (String key : keys) {
                             JsonNode value = this.${writeMethodName}(items.get(key));
                             if (value != null) JsonUtil.setProperty(mapJson, key, value);
-                        });
+                        }
                         JsonUtil.setProperty(json, "${propertyName}", mapJson);
                     }
                 }

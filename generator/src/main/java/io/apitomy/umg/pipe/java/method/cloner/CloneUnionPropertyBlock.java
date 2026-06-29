@@ -156,11 +156,12 @@ public class CloneUnionPropertyBlock extends CodeBlock {
                             return """
         if (srcUnion.${isMethodName}()) {
             List<${listItemType}> clonedList = new ArrayList<>();
-            srcUnion.${asMethodName}().forEach(srcItem -> {
+            for (int _idx = 0; _idx < srcUnion.${asMethodName}().size(); _idx++) {
+                ${listItemType} srcItem = (${listItemType}) srcUnion.${asMethodName}().get(_idx);
                 ${listItemType} tgtItem = (${listItemType}) target.${createMethodName}();
-                this.${cloneMethodName}((${listItemType}) srcItem, tgtItem);
+                this.${cloneMethodName}(srcItem, tgtItem);
                 clonedList.add(tgtItem);
-            });
+            }
             @SuppressWarnings({ "unchecked", "rawtypes" })
             ${unionValueClassName} unionValue = new ${unionValueClassName}((List) clonedList);
             target.${setterMethodName}(unionValue);

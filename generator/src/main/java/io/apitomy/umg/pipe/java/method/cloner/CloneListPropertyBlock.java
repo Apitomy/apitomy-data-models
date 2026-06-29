@@ -78,11 +78,12 @@ public class CloneListPropertyBlock extends CodeBlock {
                     {
                         List<? extends ${commonEntityType}> srcList = source.${getterMethodName}();
                         if (srcList != null && !srcList.isEmpty()) {
-                            srcList.forEach(srcItem -> {
+                            for (int _idx = 0; _idx < srcList.size(); _idx++) {
+                                ${entityJavaType} srcItem = (${entityJavaType}) srcList.get(_idx);
                                 ${entityJavaType} tgtItem = (${entityJavaType}) target.${createMethodName}();
-                                this.${cloneMethodName}((${entityJavaType}) srcItem, tgtItem);
+                                this.${cloneMethodName}(srcItem, tgtItem);
                                 target.${addMethodName}(tgtItem);
-                            });
+                            }
                         }
                     }
                     """);
