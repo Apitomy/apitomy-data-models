@@ -595,8 +595,6 @@ public class Syn2ModelReader implements ModelReader {
 	}
 
 	private SchemaOrBoolean readSchemaOrBoolean(JsonNode json, ModelType modelType) {
-		if (json == null)
-			return null;
 		if (JsonUtil.isObjectWithProperty(json, "type")) {
 			Syn2Schema node = new Syn2SchemaImpl();
 			this.readSchema((ObjectNode) json, node);
@@ -608,8 +606,6 @@ public class Syn2ModelReader implements ModelReader {
 	}
 
 	private BooleanSchemaSchemaListUnion readBooleanSchemaSchemaListUnion(JsonNode json, ModelType modelType) {
-		if (json == null)
-			return null;
 		if (JsonUtil.isObjectWithProperty(json, "type")) {
 			Syn2Schema node = new Syn2SchemaImpl();
 			this.readSchema((ObjectNode) json, node);
@@ -633,8 +629,6 @@ public class Syn2ModelReader implements ModelReader {
 	}
 
 	private BooleanSchemaUnion readBooleanSchemaUnion(JsonNode json, ModelType modelType) {
-		if (json == null)
-			return null;
 		if (JsonUtil.isObjectWithProperty(json, "type")) {
 			Syn2Schema node = new Syn2SchemaImpl();
 			this.readSchema((ObjectNode) json, node);
@@ -647,6 +641,6 @@ public class Syn2ModelReader implements ModelReader {
 
 	@Override
 	public RootCapable readRoot(JsonNode json) {
-		return (RootCapable) this.readSchemaOrBoolean(json, ModelType.SYN2);
+		return this.readSchemaOrBoolean(json, ModelType.SYN2);
 	}
 }
