@@ -38,6 +38,11 @@ public class LoadBaseClassesStage extends AbstractStage {
                     "io.apitomy.umg.base.visitors.TraversalStep",
                     "io.apitomy.umg.base.visitors.TraversalContextImpl",
                     "io.apitomy.umg.base.visitors.ReverseTraverser",
+                    "io.apitomy.umg.base.visitors.diff.AbstractDiffTraverser",
+                    "io.apitomy.umg.base.visitors.diff.CollectionDiff",
+                    "io.apitomy.umg.base.visitors.diff.DiffVisitor",
+                    "io.apitomy.umg.base.visitors.diff.IndexPairingStrategy",
+                    "io.apitomy.umg.base.visitors.diff.KeyPairingStrategy",
                     "io.apitomy.umg.base.union.ListUnionValueImpl",
                     "io.apitomy.umg.base.union.MapUnionValueImpl",
                     "io.apitomy.umg.base.union.EntityListUnionValueImpl",
@@ -64,6 +69,7 @@ public class LoadBaseClassesStage extends AbstractStage {
                     "io.apitomy.umg.base.union.MapUnionValue",
                     "io.apitomy.umg.base.union.PrimitiveUnionValue",
                     "io.apitomy.umg.base.union.StringListUnionValue",
+                    "io.apitomy.umg.base.visitors.diff.PairingStrategy",
                     "io.apitomy.umg.base.union.Union",
                     "io.apitomy.umg.base.union.UnionValue"
                     );
