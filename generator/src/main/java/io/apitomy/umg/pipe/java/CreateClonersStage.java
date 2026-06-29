@@ -91,12 +91,13 @@ public class CreateClonersStage extends AbstractIOStage {
 {
     List<String> extraPropertyNames = source.getExtraPropertyNames();
     if (extraPropertyNames != null) {
-        extraPropertyNames.forEach(name -> {
+        for (int _idx = 0; _idx < extraPropertyNames.size(); _idx++) {
+            String name = extraPropertyNames.get(_idx);
             JsonNode value = source.getExtraProperty(name);
             if (value != null) {
                 target.addExtraProperty(name, JsonUtil.clone(value));
             }
-        });
+        }
     }
 }
 """);

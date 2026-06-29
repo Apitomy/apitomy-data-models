@@ -88,10 +88,10 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 	@Override
 	public void clearItems() {
 		if (this.items != null) {
-			this.items.forEach(item -> {
+			for (Object item : this.items) {
 				if (item != null)
-					item.detach();
-			});
+					((Node) item).detach();
+			}
 			this.items.clear();
 		}
 	}

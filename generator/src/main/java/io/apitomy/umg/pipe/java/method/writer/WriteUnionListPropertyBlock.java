@@ -55,10 +55,11 @@ public class WriteUnionListPropertyBlock extends CodeBlock {
                     List<${unionJavaType}> items = node.${getterMethodName}();
                     if (items != null && !items.isEmpty()) {
                         ArrayNode array = JsonUtil.arrayNode();
-                        items.forEach(item -> {
+                        for (int _idx = 0; _idx < items.size(); _idx++) {
+                            ${unionJavaType} item = items.get(_idx);
                             JsonNode value = this.${writeMethodName}(item);
                             if (value != null) array.add(value);
-                        });
+                        }
                         JsonUtil.setProperty(json, "${propertyName}", array);
                     }
                 }

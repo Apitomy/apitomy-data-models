@@ -69,10 +69,10 @@ public class Syn1PathsImpl extends NodeImpl implements Syn1Paths {
 
 	@Override
 	public void clearItems() {
-		this._items.values().forEach(item -> {
+		for (Object item : this._items.values()) {
 			if (item != null)
-				item.detach();
-		});
+				((Node) item).detach();
+		}
 		this._items.clear();
 	}
 

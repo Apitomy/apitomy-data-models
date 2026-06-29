@@ -41,11 +41,12 @@ public class Syn1ModelWriter implements ModelWriter {
 			List<? extends SynItem> models = node.getItems();
 			if (models != null && !models.isEmpty()) {
 				ArrayNode array = JsonUtil.arrayNode();
-				models.forEach(model -> {
+				for (int _idx = 0; _idx < models.size(); _idx++) {
+					SynItem model = models.get(_idx);
 					ObjectNode object = JsonUtil.objectNode();
 					this.writeItem((Syn1Item) model, object);
 					JsonUtil.addToArray(array, object);
-				});
+				}
 				JsonUtil.setProperty(json, "items", array);
 			}
 		}
@@ -162,11 +163,11 @@ public class Syn1ModelWriter implements ModelWriter {
 			if (items != null && !items.isEmpty()) {
 				ObjectNode mapJson = JsonUtil.objectNode();
 				Collection<String> keys = items.keySet();
-				keys.forEach(key -> {
+				for (String key : keys) {
 					JsonNode value = this.writeBooleanSchemaUnion(items.get(key));
 					if (value != null)
 						JsonUtil.setProperty(mapJson, key, value);
-				});
+				}
 				JsonUtil.setProperty(json, "properties", mapJson);
 			}
 		}
@@ -174,11 +175,12 @@ public class Syn1ModelWriter implements ModelWriter {
 			List<BooleanSchemaUnion> items = node.getAllOf();
 			if (items != null && !items.isEmpty()) {
 				ArrayNode array = JsonUtil.arrayNode();
-				items.forEach(item -> {
+				for (int _idx = 0; _idx < items.size(); _idx++) {
+					BooleanSchemaUnion item = items.get(_idx);
 					JsonNode value = this.writeBooleanSchemaUnion(item);
 					if (value != null)
 						array.add(value);
-				});
+				}
 				JsonUtil.setProperty(json, "allOf", array);
 			}
 		}
@@ -187,11 +189,11 @@ public class Syn1ModelWriter implements ModelWriter {
 			if (items != null && !items.isEmpty()) {
 				ObjectNode mapJson = JsonUtil.objectNode();
 				Collection<String> keys = items.keySet();
-				keys.forEach(key -> {
+				for (String key : keys) {
 					JsonNode value = this.writeBooleanSchemaUnion(items.get(key));
 					if (value != null)
 						JsonUtil.setProperty(mapJson, key, value);
-				});
+				}
 				JsonUtil.setProperty(json, "definitions", mapJson);
 			}
 		}
@@ -200,11 +202,11 @@ public class Syn1ModelWriter implements ModelWriter {
 			if (items != null && !items.isEmpty()) {
 				ObjectNode mapJson = JsonUtil.objectNode();
 				Collection<String> keys = items.keySet();
-				keys.forEach(key -> {
+				for (String key : keys) {
 					JsonNode value = this.writeSchemaOrBoolean(items.get(key));
 					if (value != null)
 						JsonUtil.setProperty(mapJson, key, value);
-				});
+				}
 				JsonUtil.setProperty(json, "nestedSchemas", mapJson);
 			}
 		}
@@ -212,11 +214,12 @@ public class Syn1ModelWriter implements ModelWriter {
 			List<SchemaOrBoolean> items = node.getComposedSchemas();
 			if (items != null && !items.isEmpty()) {
 				ArrayNode array = JsonUtil.arrayNode();
-				items.forEach(item -> {
+				for (int _idx = 0; _idx < items.size(); _idx++) {
+					SchemaOrBoolean item = items.get(_idx);
 					JsonNode value = this.writeSchemaOrBoolean(item);
 					if (value != null)
 						array.add(value);
-				});
+				}
 				JsonUtil.setProperty(json, "composedSchemas", array);
 			}
 		}
@@ -316,11 +319,12 @@ public class Syn1ModelWriter implements ModelWriter {
 			List<? extends SynItem> models = node.getParameters();
 			if (models != null && !models.isEmpty()) {
 				ArrayNode array = JsonUtil.arrayNode();
-				models.forEach(model -> {
+				for (int _idx = 0; _idx < models.size(); _idx++) {
+					SynItem model = models.get(_idx);
 					ObjectNode object = JsonUtil.objectNode();
 					this.writeItem((Syn1Item) model, object);
 					JsonUtil.addToArray(array, object);
-				});
+				}
 				JsonUtil.setProperty(json, "parameters", array);
 			}
 		}

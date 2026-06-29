@@ -55,7 +55,8 @@ public class CloneUnionListPropertyBlock extends CodeBlock {
 {
     List<${unionJavaType}> srcList = source.${getterMethodName}();
     if (srcList != null && !srcList.isEmpty()) {
-        srcList.forEach(srcUnion -> {
+        for (int _idx = 0; _idx < srcList.size(); _idx++) {
+            ${unionJavaType} srcUnion = srcList.get(_idx);
 """);
 
         effectiveUnionType.getTypes().stream()
@@ -106,7 +107,7 @@ public class CloneUnionListPropertyBlock extends CodeBlock {
             body.append("            }");
         });
 
-        body.append("        });");
+        body.append("        }");
         body.append("    }");
         body.append("}");
     }
