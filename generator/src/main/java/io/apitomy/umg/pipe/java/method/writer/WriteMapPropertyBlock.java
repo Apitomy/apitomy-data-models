@@ -7,11 +7,12 @@ import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.type.MapType;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
-import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeUtil;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.WriterMethod;
 
@@ -34,7 +35,7 @@ public class WriteMapPropertyBlock extends CodeBlock {
         body.addContext("propertyName", property.getName());
         body.addContext("getterMethodName", prop.getGetterName());
 
-        Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
+        Type mapValueType = ((MapType) property.getResolvedType()).getValueType();
         if (mapValueType.isPrimitiveType()) {
             body.append("JsonUtil.setProperty(json, \"${propertyName}\", JsonUtil.toObjectNode(node.${getterMethodName}()));");
         } else if (mapValueType.isEntityType()) {

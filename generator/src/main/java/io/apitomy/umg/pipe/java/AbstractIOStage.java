@@ -9,9 +9,7 @@ import io.apitomy.umg.beans.SpecificationVersion;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
-import io.apitomy.umg.models.concept.type.ListType;
-import io.apitomy.umg.models.concept.type.MapType;
-import io.apitomy.umg.models.concept.type.UnionType;
+import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.CodeGenContext;
@@ -84,38 +82,10 @@ public abstract class AbstractIOStage extends AbstractJavaStage {
 
     private boolean dispatchByResolvedType(BodyBuilder body, PropertyModel property,
             PropertyCodeGen prop, JavaClassSource classSource) {
-        var resolved = property.getResolvedType();
-        if (resolved == null) return false;
-
-        if (resolved instanceof UnionType) {
-            createPropertyBlock(PropertyBlockKind.UNION, prop, classSource).appendTo(body);
-            return true;
-        }
-        if (resolved instanceof ListType lt && lt.getValueType() instanceof UnionType) {
-            createPropertyBlock(PropertyBlockKind.UNION_LIST, prop, classSource).appendTo(body);
-            return true;
-        }
-        if (resolved instanceof MapType mt && mt.getValueType() instanceof UnionType) {
-            createPropertyBlock(PropertyBlockKind.UNION_MAP, prop, classSource).appendTo(body);
-            return true;
-        }
-        if (resolved.isEntityType()) {
-            createPropertyBlock(PropertyBlockKind.ENTITY, prop, classSource).appendTo(body);
-            return true;
-        }
-        if (resolved.isPrimitiveType()) {
-            createPropertyBlock(PropertyBlockKind.PRIMITIVE, prop, classSource).appendTo(body);
-            return true;
-        }
-        if (resolved.isListType()) {
-            createPropertyBlock(PropertyBlockKind.LIST, prop, classSource).appendTo(body);
-            return true;
-        }
-        if (resolved.isMapType()) {
-            createPropertyBlock(PropertyBlockKind.MAP, prop, classSource).appendTo(body);
-            return true;
-        }
-        return false;
+        PropertyBlockKind kind = PropertyBlockKind.fromResolvedType(property.getResolvedType());
+        if (kind == null) return false;
+        createPropertyBlock(kind, prop, classSource).appendTo(body);
+        return true;
     }
 
     // ---- Abstract methods (must override) ----
@@ -141,6 +111,22 @@ public abstract class AbstractIOStage extends AbstractJavaStage {
     // ---- Property block kinds ----
 
     protected enum PropertyBlockKind {
-        STAR, REGEX, UNION, UNION_LIST, UNION_MAP, ENTITY, PRIMITIVE, LIST, MAP
+        STAR, REGEX, UNION, UNION_LIST, UNION_MAP, ENTITY, PRIMITIVE, LIST, MAP;
+
+        /**
+         * Maps a resolved type to its PropertyBlockKind.
+         * Returns null if the type is null or not recognized.
+         */
+        public static PropertyBlockKind fromResolvedType(Type resolvedType) {
+            if (resolvedType == null) return null;
+            if (resolvedType.isUnionType())     return UNION;
+            if (resolvedType.isUnionListType())  return UNION_LIST;
+            if (resolvedType.isUnionMapType())   return UNION_MAP;
+            if (resolvedType.isEntityType())     return ENTITY;
+            if (resolvedType.isPrimitiveType())  return PRIMITIVE;
+            if (resolvedType.isListType())       return LIST;
+            if (resolvedType.isMapType())        return MAP;
+            return null;
+        }
     }
 }

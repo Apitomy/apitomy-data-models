@@ -44,4 +44,7 @@ public class MapType extends CollectionType {
 
     @Override
     public boolean isEntityMapType() { return valueType.isEntityType(); }
+
+    @Override
+    public boolean isUnionMapType() { return valueType.isUnionType(); }
 }

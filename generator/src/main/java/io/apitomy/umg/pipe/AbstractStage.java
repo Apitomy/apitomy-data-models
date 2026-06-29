@@ -1,7 +1,5 @@
 package io.apitomy.umg.pipe;
 
-import org.modeshape.common.text.Inflector;
-
 import io.apitomy.umg.logging.Logger;
 import io.apitomy.umg.models.concept.PropertyModel;
 import lombok.Getter;
@@ -10,8 +8,6 @@ import lombok.Getter;
  * Base class for all pipeline stages.
  */
 public abstract class AbstractStage implements Stage {
-
-    private static final Inflector inflector = new Inflector();
 
     @Getter
     private GeneratorState state;
@@ -37,13 +33,11 @@ public abstract class AbstractStage implements Stage {
     }
 
     protected boolean isEntityList(PropertyModel property) {
-        return property.getResolvedType().isListType()
-                && ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType().isEntityType();
+        return property.getResolvedType().isEntityListType();
     }
 
     protected boolean isEntityMap(PropertyModel property) {
-        return property.getResolvedType().isMapType()
-                && ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType().isEntityType();
+        return property.getResolvedType().isEntityMapType();
     }
 
     protected boolean isEntity(PropertyModel property) {
@@ -59,28 +53,21 @@ public abstract class AbstractStage implements Stage {
     }
 
     protected boolean isPrimitiveList(PropertyModel property) {
-        return property.getResolvedType().isListType()
-                && ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType().isPrimitiveType();
+        return property.getResolvedType().isPrimitiveListType();
     }
 
     protected boolean isPrimitiveMap(PropertyModel property) {
-        return property.getResolvedType().isMapType()
-                && ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType().isPrimitiveType();
+        return property.getResolvedType().isPrimitiveMapType();
     }
 
     protected boolean isUnionList(PropertyModel property) {
-        return property.getResolvedType().isListType()
-                && ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType().isUnionType();
+        return property.getResolvedType().isUnionListType();
     }
 
     protected boolean isUnionMap(PropertyModel property) {
-        return property.getResolvedType().isMapType()
-                && ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType().isUnionType();
+        return property.getResolvedType().isUnionMapType();
     }
 
-    public String singularize(String name) {
-        return inflector.singularize(name);
-    }
 
     protected String extractRegex(String propertyName) {
         return propertyName.substring(1, propertyName.length() - 1);

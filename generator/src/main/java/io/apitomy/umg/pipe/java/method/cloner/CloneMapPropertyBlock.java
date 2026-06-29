@@ -8,6 +8,7 @@ import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.type.MapType;
 import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.pipe.java.method.AddMethod;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
@@ -15,7 +16,7 @@ import io.apitomy.umg.pipe.java.method.ClonerMethod;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.FactoryMethod;
-import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeUtil;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 
 /**
@@ -34,7 +35,7 @@ public class CloneMapPropertyBlock extends CodeBlock {
     @Override
     public void appendTo(BodyBuilder body) {
         PropertyModel property = prop.getProperty();
-        Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
+        Type mapValueType = ((MapType) property.getResolvedType()).getValueType();
 
         if (mapValueType.isPrimitiveType()) {
             clonerClassSource.addImport(Map.class);
@@ -42,7 +43,7 @@ public class CloneMapPropertyBlock extends CodeBlock {
             body.addContext(Map.of(
                     "getterMethodName", prop.getGetterName(),
                     "setterMethodName", prop.getSetterName(),
-                    "valueType", PrimitiveTypeHelper.determineValueType(mapValueType, prop.getCtx(), clonerClassSource)
+                    "valueType", PrimitiveTypeUtil.determineValueType(mapValueType, prop.getCtx(), clonerClassSource)
             ));
 
             body.appendBlock("""

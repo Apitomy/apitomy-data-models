@@ -13,7 +13,7 @@ import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.CodeBlock;
 import io.apitomy.umg.pipe.java.method.EntityResolver;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
-import io.apitomy.umg.pipe.java.method.PrimitiveTypeHelper;
+import io.apitomy.umg.pipe.java.method.PrimitiveTypeUtil;
 import io.apitomy.umg.pipe.java.method.PropertyCodeGen;
 import io.apitomy.umg.pipe.java.method.WriterMethod;
 
@@ -91,7 +91,7 @@ public class WriteRegexPropertyBlock extends CodeBlock {
         writerClassSource.addImport(List.class);
         writerClassSource.addImport(Map.class);
 
-        body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
+        body.addContext("valueType", PrimitiveTypeUtil.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
         body.addContext("getterMethodName", new GetterMethod(property).getName());
 
         body.appendBlock("""
@@ -113,7 +113,7 @@ public class WriteRegexPropertyBlock extends CodeBlock {
         writerClassSource.addImport(List.class);
         writerClassSource.addImport(Map.class);
 
-        body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
+        body.addContext("valueType", PrimitiveTypeUtil.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
         body.addContext("getterMethodName", new GetterMethod(property).getName());
 
         body.appendBlock("""
@@ -135,7 +135,7 @@ public class WriteRegexPropertyBlock extends CodeBlock {
         writerClassSource.addImport(List.class);
         writerClassSource.addImport(Map.class);
 
-        body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
+        body.addContext("valueType", PrimitiveTypeUtil.determineValueType(property.getResolvedType(), prop.getCtx(), writerClassSource));
         body.addContext("getterMethodName", new GetterMethod(property).getName());
 
         body.appendBlock("""
