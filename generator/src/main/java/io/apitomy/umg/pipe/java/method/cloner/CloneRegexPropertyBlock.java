@@ -73,12 +73,12 @@ public class CloneRegexPropertyBlock extends CodeBlock {
 {
     Map<String, ? extends ${commonEntityType}> srcMap = source.${getterMethodName}();
     if (srcMap != null && !srcMap.isEmpty()) {
-        srcMap.keySet().forEach(name -> {
+        for (String name : srcMap.keySet()) {
             ${entityJavaType} srcItem = (${entityJavaType}) srcMap.get(name);
             ${entityJavaType} tgtItem = (${entityJavaType}) target.${createMethodName}();
             this.${cloneMethodName}(srcItem, tgtItem);
             target.${addMethodName}(name, tgtItem);
-        });
+        }
     }
 }
 """);
@@ -99,9 +99,10 @@ public class CloneRegexPropertyBlock extends CodeBlock {
     Map<String, ${valueType}> srcMap = source.${getterMethodName}();
     if (srcMap != null && !srcMap.isEmpty()) {
         List<String> keys = new java.util.ArrayList<>(srcMap.keySet());
-        keys.forEach(name -> {
+        for (int _idx = 0; _idx < keys.size(); _idx++) {
+            String name = keys.get(_idx);
             target.${addMethodName}(name, srcMap.get(name));
-        });
+        }
     }
 }
 """);

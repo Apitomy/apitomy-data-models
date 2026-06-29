@@ -52,15 +52,19 @@ public class ClearMethod implements Method {
             BodyBuilder body = new BodyBuilder();
             body.addContext("fieldName", fieldName);
 
+            if (needsDetach) {
+                ((JavaClassSource) target).addImport(ctx.getNodeInterfaceFQN());
+            }
+
             body.ifElse(needsDetach, () -> {
                 String valuesExpr = resolvedType.isMapType()
                         ? "this." + fieldName + ".values()" : "this." + fieldName;
                 body.addContext("valuesExpr", valuesExpr);
                 return """
 if (this.${fieldName} != null) {
-    ${valuesExpr}.forEach(item -> {
-        if (item != null) item.detach();
-    });
+    for (Object item : ${valuesExpr}) {
+        if (item != null) ((Node) item).detach();
+    }
     this.${fieldName}.clear();
 }
 """;

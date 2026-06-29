@@ -63,11 +63,11 @@ public class WriteMapPropertyBlock extends CodeBlock {
                         Map<String, ? extends ${mapValueCommonJavaType}> models = node.${getterMethodName}();
                         if (models != null && !models.isEmpty()) {
                             ObjectNode object = JsonUtil.objectNode();
-                            models.keySet().forEach(jsonName -> {
+                            for (String jsonName : models.keySet()) {
                                 ObjectNode jsonValue = JsonUtil.objectNode();
                                 this.${writeMethodName}((${mapValueJavaType}) models.get(jsonName), jsonValue);
                                 JsonUtil.setProperty(object, jsonName, jsonValue);
-                            });
+                            }
                             JsonUtil.setProperty(json, "${propertyName}", object);
                         }
                     }
