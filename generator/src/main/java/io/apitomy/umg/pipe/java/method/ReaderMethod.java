@@ -100,8 +100,6 @@ public class ReaderMethod implements Method {
         method.addParameter("ModelType", "modelType");
 
         BodyBuilder body = new BodyBuilder();
-        body.append("if (json == null) return null;");
-
         // Generate dispatch for each variant
         boolean first = true;
         for (var variantType : unionType.getTypes()) {

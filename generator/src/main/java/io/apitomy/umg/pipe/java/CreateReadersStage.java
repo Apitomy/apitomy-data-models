@@ -199,7 +199,7 @@ public class CreateReadersStage extends AbstractIOStage {
         body.addContext("readMethodName", readMethodName);
         body.addContext("modelType", modelType);
 
-        body.append("return (RootCapable) this.${readMethodName}(json, ModelType.${modelType});");
+        body.append("return this.${readMethodName}(json, ModelType.${modelType});");
         readRootMethodSource.setBody(body.toString());
     }
 
