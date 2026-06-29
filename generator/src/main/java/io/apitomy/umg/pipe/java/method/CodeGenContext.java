@@ -89,6 +89,10 @@ public class CodeGenContext {
         return rootNamespace + ".ParentPropertyType";
     }
 
+    public String getMappedNodeInterfaceFQN() {
+        return rootNamespace + ".MappedNode";
+    }
+
     public String getUnionValueInterfaceFQN() {
         return getUnionTypesPackageName() + ".UnionValue";
     }

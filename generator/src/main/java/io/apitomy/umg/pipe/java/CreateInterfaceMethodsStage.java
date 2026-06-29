@@ -9,6 +9,7 @@ import org.jboss.forge.roaster.model.source.JavaSource;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
 import io.apitomy.umg.models.concept.TraitModel;
+import io.apitomy.umg.pipe.java.method.MappedNodeMethods;
 
 /**
  * Adds methods to all entity interfaces. This works by finding all the properties for the entity and then
@@ -70,17 +71,6 @@ public class CreateInterfaceMethodsStage extends AbstractCreateMethodsStage {
      */
     @Override
     protected void createMappedNodeMethods(JavaSource<?> javaEntity, PropertyModelWithOrigin propertyWithOrigin) {
-        var property = propertyWithOrigin.getProperty();
-
-        String mappedNodeFQN = getMappedNodeInterfaceFQN();
-        JavaInterfaceSource mappedNodeInterface = getState().getJavaIndex().lookupInterface(mappedNodeFQN);
-
-        javaEntity.addImport(mappedNodeInterface);
-
-        var jt = getJavaTypeFactory().createJavaType(property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
-        jt.addImportsTo(javaEntity);
-        String mappedNodeInterfaceWithType = mappedNodeInterface.getName() + "<" + jt.toJavaTypeString() + ">";
-
-        ((JavaInterfaceSource) javaEntity).addInterface(mappedNodeInterfaceWithType);
+        new MappedNodeMethods(propertyWithOrigin.getProperty(), propertyWithOrigin, getCtx()).writeTo(javaEntity);
     }
 }
