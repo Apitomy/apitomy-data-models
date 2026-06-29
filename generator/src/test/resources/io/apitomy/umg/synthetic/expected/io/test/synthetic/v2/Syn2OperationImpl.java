@@ -106,7 +106,7 @@ public class Syn2OperationImpl extends NodeImpl implements Syn2Operation {
 		if (this.parameters == null) {
 			this.parameters = new ArrayList<>();
 		}
-		this.parameters = DataModelUtil.insertListEntry(this.parameters, value, atIndex);
+		DataModelUtil.insertListEntry(this.parameters, value, atIndex);
 		DataModelUtil.setParent(value, this, "parameters", ParentPropertyType.array);
 	}
 
