@@ -81,7 +81,7 @@ public class CreateUnionMethodImplementationsStage extends AbstractJavaStage {
                                       List<Type> allVariants, io.apitomy.umg.models.concept.NamespaceModel nsModel) {
         for (Type variantType : allVariants) {
             String typeName = JavaTypeFactory.getUnionComponentName(variantType);
-            String isMethodName = UnionIsMethod.methodName(typeName);
+            String isMethodName = new UnionIsMethod(typeName).getName();
 
             if (implSource.hasMethodSignature(isMethodName)) {
                 continue;

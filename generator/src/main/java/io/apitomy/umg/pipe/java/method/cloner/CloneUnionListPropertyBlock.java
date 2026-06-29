@@ -46,20 +46,22 @@ public class CloneUnionListPropertyBlock extends CodeBlock {
         body.addContext(Map.of(
                 "unionJavaType", unionJavaType.getSimpleName(),
                 "getterMethodName", prop.getGetterName(),
-                "addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getName()))
+                "addMethodName", new AddMethod(prop.getCtx().singularize(property.getName())).getName()
         ));
 
-        body.append("{");
-        body.append("    List<${unionJavaType}> srcList = source.${getterMethodName}();");
-        body.append("    if (srcList != null && !srcList.isEmpty()) {");
-        body.append("        srcList.forEach(srcUnion -> {");
+        body.appendBlock("""
+{
+    List<${unionJavaType}> srcList = source.${getterMethodName}();
+    if (srcList != null && !srcList.isEmpty()) {
+        srcList.forEach(srcUnion -> {
+""");
 
         effectiveUnionType.getTypes().stream()
                 .sorted(UnionVariantComparator.INSTANCE)
                 .forEach(nestedType -> {
             String typeName = AbstractJavaStage.getTypeName(nestedType);
-            String isMethodName = UnionIsMethod.methodName(typeName);
-            String asMethodName = UnionAsMethod.methodName(typeName);
+            String isMethodName = new UnionIsMethod(typeName).getName();
+            String asMethodName = new UnionAsMethod(typeName).getName();
 
             body.addContext("isMethodName", isMethodName);
             body.addContext("asMethodName", asMethodName);

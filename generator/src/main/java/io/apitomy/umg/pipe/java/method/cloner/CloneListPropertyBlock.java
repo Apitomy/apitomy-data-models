@@ -68,9 +68,9 @@ public class CloneListPropertyBlock extends CodeBlock {
                     "getterMethodName", prop.getGetterName(),
                     "entityJavaType", resolved.javaInterface().getName(),
                     "commonEntityType", commonEntityTypeJavaModel.getName(),
-                    "createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()),
-                    "cloneMethodName", ClonerMethod.methodName(resolved.entityModel().getName()),
-                    "addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getName()))
+                    "createMethodName", new FactoryMethod(resolved.entityModel().getName()).getName(),
+                    "cloneMethodName", new ClonerMethod(resolved.entityModel().getName()).getName(),
+                    "addMethodName", new AddMethod(prop.getCtx().singularize(property.getName())).getName()
             ));
 
             body.appendBlock("""

@@ -1,5 +1,7 @@
 package io.apitomy.umg.pipe.java.method;
 
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
@@ -49,16 +51,11 @@ public class WriterMethod implements Method {
         this.ctx = ctx;
     }
 
-    /**
-     * Returns the writer method name for the given entity name.
-     */
-    public static String methodName(String entityName) {
-        return "write" + StringUtils.capitalize(entityName);
-    }
+
 
     @Override
     public String getName() {
-        return methodName(entityName);
+        return "write" + StringUtils.capitalize(entityName);
     }
 
     @Override
@@ -80,7 +77,7 @@ public class WriterMethod implements Method {
         NamespaceModel nsModel = ctx.getConceptIndex().lookupNamespace(namespace);
         JavaType jt = ctx.getJavaTypeFactory().createJavaType(unionType, nsModel);
         String unionTypeName = jt.getSimpleName();
-        String methodName = methodName(unionTypeName);
+        String methodName = new WriterMethod(unionTypeName).getName();
 
         // Skip if already created
         if (writerClassSource.getMethods().stream().anyMatch(m -> m.getName().equals(methodName))) {
@@ -110,10 +107,12 @@ public class WriterMethod implements Method {
                 JavaInterfaceSource entitySource = ctx.lookupJavaEntity(entity);
                 writerClassSource.addImport(entitySource);
 
-                body.addContext("isMethod", UnionIsMethod.methodName(typeName));
-                body.addContext("asMethod", UnionAsMethod.methodName(typeName));
-                body.addContext("entityType", entitySource.getName());
-                body.addContext("writeMethodName", methodName(entity.getName()));
+                body.addContext(Map.of(
+                        "isMethod", new UnionIsMethod(typeName).getName(),
+                        "asMethod", new UnionAsMethod(typeName).getName(),
+                        "entityType", entitySource.getName(),
+                        "writeMethodName", new WriterMethod(entity.getName()).getName()
+                ));
 
                 body.append("if (union.${isMethod}()) {");
                 body.append("    ObjectNode jsonValue = JsonUtil.objectNode();");
@@ -125,8 +124,8 @@ public class WriterMethod implements Method {
                 Class<?> javaClass = PrimitiveTypeHelper.PRIMITIVE_TYPE_MAP.get(puv.getType().name().toLowerCase());
                 if (javaClass == null) continue;
 
-                body.addContext("isMethod", UnionIsMethod.methodName(typeName));
-                body.addContext("asMethod", UnionAsMethod.methodName(typeName));
+                body.addContext("isMethod", new UnionIsMethod(typeName).getName());
+                body.addContext("asMethod", new UnionAsMethod(typeName).getName());
 
                 if (JsonNode.class.isAssignableFrom(javaClass)) {
                     body.append("if (union.${isMethod}()) {");
@@ -140,8 +139,8 @@ public class WriterMethod implements Method {
             } else if (variantType instanceof ListType listType) {
                 String typeName = JavaTypeFactory.getUnionComponentName(variantType);
 
-                body.addContext("isMethod", UnionIsMethod.methodName(typeName));
-                body.addContext("asMethod", UnionAsMethod.methodName(typeName));
+                body.addContext("isMethod", new UnionIsMethod(typeName).getName());
+                body.addContext("asMethod", new UnionAsMethod(typeName).getName());
 
                 writerClassSource.addImport(ArrayNode.class);
 
@@ -153,7 +152,7 @@ public class WriterMethod implements Method {
                     JavaInterfaceSource entitySource = ctx.lookupJavaEntity(entity);
                     writerClassSource.addImport(entitySource);
                     body.addContext("entityType", entitySource.getName());
-                    body.addContext("writeMethodName", methodName(entity.getName()));
+                    body.addContext("writeMethodName", new WriterMethod(entity.getName()).getName());
 
                     body.append("if (union.${isMethod}()) {");
                     body.append("    ArrayNode array = JsonUtil.arrayNode();");

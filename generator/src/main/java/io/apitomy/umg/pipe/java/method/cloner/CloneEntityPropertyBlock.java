@@ -45,7 +45,7 @@ public class CloneEntityPropertyBlock extends CodeBlock {
         body.addContext(Map.of(
                 "getterMethodName", prop.getGetterName(),
                 "setterMethodName", prop.getSetterName(),
-                "createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()),
+                "createMethodName", new FactoryMethod(resolved.entityModel().getName()).getName(),
                 "cloneMethodName", cloneMethodName(resolved.entityModel()),
                 "entityType", propertyTypeJavaEntity.getName()
         ));
@@ -66,6 +66,6 @@ public class CloneEntityPropertyBlock extends CodeBlock {
     }
 
     static String cloneMethodName(EntityModel entityModel) {
-        return ClonerMethod.methodName(entityModel.getName());
+        return new ClonerMethod(entityModel.getName()).getName();
     }
 }

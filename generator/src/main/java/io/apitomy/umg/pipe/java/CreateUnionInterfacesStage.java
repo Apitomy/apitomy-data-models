@@ -66,8 +66,8 @@ public class CreateUnionInterfacesStage extends AbstractJavaStage {
             String typeName = JavaTypeFactory.getUnionComponentName(variantType);
             var jt = getJavaTypeFactory().createJavaType(variantType, nsModel, true);
 
-            unionInterface.addMethod().setName(UnionIsMethod.methodName(typeName)).setReturnType(boolean.class).setPublic();
-            unionInterface.addMethod().setName(UnionAsMethod.methodName(typeName)).setReturnType(jt.toJavaTypeString()).setPublic();
+            unionInterface.addMethod().setName(new UnionIsMethod(typeName).getName()).setReturnType(boolean.class).setPublic();
+            unionInterface.addMethod().setName(new UnionAsMethod(typeName).getName()).setReturnType(jt.toJavaTypeString()).setPublic();
             jt.addImportsTo(unionInterface);
         }
 

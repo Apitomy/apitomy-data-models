@@ -1,6 +1,7 @@
 package io.apitomy.umg.pipe.java;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaEnumSource;
@@ -64,7 +65,7 @@ public class CreateReadersStage extends AbstractIOStage {
     protected void createEntityMethod(SpecificationVersion specVersion,
             JavaClassSource classSource, EntityModel entityModel) {
         String entityFQN = getJavaEntityInterfaceFQN(entityModel);
-        String readMethodName = ReaderMethod.methodName(entityModel.getName());
+        String readMethodName = new ReaderMethod(entityModel.getName()).getName();
 
         debug("Creating read method: " + readMethodName);
 
@@ -148,7 +149,7 @@ public class CreateReadersStage extends AbstractIOStage {
         readRootMethodSource.addParameter("JsonNode", "json");
         readRootMethodSource.addAnnotation(Override.class);
 
-        String readMethodName = ReaderMethod.methodName(entityModel.getName());
+        String readMethodName = new ReaderMethod(entityModel.getName()).getName();
         JavaInterfaceSource entitySource = lookupJavaEntity(entityModel);
         JavaClassSource entityImplSource = lookupJavaEntityImpl(entityModel);
 
@@ -156,9 +157,11 @@ public class CreateReadersStage extends AbstractIOStage {
         classSource.addImport(entityImplSource);
 
         BodyBuilder body = new BodyBuilder();
-        body.addContext("readMethodName", readMethodName);
-        body.addContext("rootEntityType", entitySource.getName());
-        body.addContext("rootEntityImplType", entityImplSource.getName());
+        body.addContext(Map.of(
+                "readMethodName", readMethodName,
+                "rootEntityType", entitySource.getName(),
+                "rootEntityImplType", entityImplSource.getName()
+        ));
 
         body.append("${rootEntityType} rootModel = new ${rootEntityImplType}();");
         body.append("this.${readMethodName}((ObjectNode) json, rootModel);");
@@ -179,7 +182,7 @@ public class CreateReadersStage extends AbstractIOStage {
         var namespace = specVersion.getNamespace();
         var nsModel = getState().getConceptIndex().lookupNamespace(namespace);
         var jt = getJavaTypeFactory().createJavaType(unionType, nsModel);
-        String readMethodName = ReaderMethod.methodName(jt.getSimpleName());
+        String readMethodName = new ReaderMethod(jt.getSimpleName()).getName();
 
         MethodSource<JavaClassSource> readRootMethodSource = classSource.addMethod()
                 .setName("readRoot")

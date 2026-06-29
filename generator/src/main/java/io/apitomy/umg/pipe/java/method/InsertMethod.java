@@ -45,16 +45,11 @@ public class InsertMethod implements Method {
         }
     }
 
-    /**
-     * Returns the insert method name for the given (singularized) name.
-     */
-    public static String methodName(String singularName) {
-        return "insert" + StringUtils.capitalize(singularName);
-    }
+
 
     @Override
     public String getName() {
-        return methodName(ctx.singularize(property.getName()));
+        return "insert" + StringUtils.capitalize(ctx.singularize(property.getName()));
     }
 
     @Override

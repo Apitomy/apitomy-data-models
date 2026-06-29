@@ -37,22 +37,20 @@ public class SetterMethod implements Method {
     }
 
     /**
-     * Returns the setter method name for the given property name.
+     * Naming-only constructor — use when only getName() is needed.
      */
-    public static String methodName(String propertyName) {
-        return "set" + StringUtils.capitalize(propertyName);
+    public SetterMethod(PropertyModel property) {
+        this.property = property;
+        this.propertyWithOrigin = null;
+        this.ctx = null;
+        this.parentBlock = null;
     }
 
-    /**
-     * Returns the setter method name for the given property.
-     */
-    public static String methodName(PropertyModel property) {
-        return methodName(property.getName());
-    }
+
 
     @Override
     public String getName() {
-        return methodName(property);
+        return "set" + StringUtils.capitalize(property.getName());
     }
 
     @Override

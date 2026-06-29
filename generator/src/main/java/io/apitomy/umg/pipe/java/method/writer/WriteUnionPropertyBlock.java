@@ -33,7 +33,7 @@ public class WriteUnionPropertyBlock extends CodeBlock {
         Type resolved = property.getResolvedType();
         var nsModel = prop.getPropertyWithOrigin().getOrigin().getNamespace();
         var jt = prop.getCtx().getJavaTypeFactory().createJavaType(resolved, nsModel);
-        String writeMethodName = WriterMethod.methodName(jt.getSimpleName());
+        String writeMethodName = new WriterMethod(jt.getSimpleName()).getName();
 
         jt.addImportsTo(writerClassSource);
         writerClassSource.addImport(JsonNode.class);

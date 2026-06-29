@@ -61,7 +61,7 @@ public class CreateWritersStage extends AbstractIOStage {
     @Override
     protected void createEntityMethod(SpecificationVersion specVersion,
             JavaClassSource classSource, EntityModel entityModel) {
-        String writeMethodName = WriterMethod.methodName(entityModel.getName());
+        String writeMethodName = new WriterMethod(entityModel.getName()).getName();
 
         JavaInterfaceSource javaEntity = getState().getJavaIndex()
                 .lookupInterface(getJavaEntityInterfaceFQN(entityModel));
@@ -141,7 +141,7 @@ public class CreateWritersStage extends AbstractIOStage {
         var namespace = specVersion.getNamespace();
         var nsModel = getState().getConceptIndex().lookupNamespace(namespace);
         var jt = getJavaTypeFactory().createJavaType(unionType, nsModel);
-        String writeMethodName = WriterMethod.methodName(jt.getSimpleName());
+        String writeMethodName = new WriterMethod(jt.getSimpleName()).getName();
         jt.addImportsTo(classSource);
 
         MethodSource<JavaClassSource> writeRootMethodSource = classSource.addMethod()
@@ -155,11 +155,13 @@ public class CreateWritersStage extends AbstractIOStage {
         body.addContext("writeMethodName", writeMethodName);
         body.addContext("unionType", jt.toJavaTypeString());
 
-        body.append("JsonNode result = this.${writeMethodName}((${unionType}) node);");
-        body.append("if (result != null && JsonUtil.isObjectNode(result)) {");
-        body.append("    return (ObjectNode) result;");
-        body.append("}");
-        body.append("return null;");
+        body.appendBlock("""
+JsonNode result = this.${writeMethodName}((${unionType}) node);
+if (result != null && JsonUtil.isObjectNode(result)) {
+    return (ObjectNode) result;
+}
+return null;
+""");
         writeRootMethodSource.setBody(body.toString());
     }
 
@@ -177,7 +179,7 @@ public class CreateWritersStage extends AbstractIOStage {
         writeRootMethodSource.addParameter(rootNodeInterfaceSource.getName(), "node");
         writeRootMethodSource.addAnnotation(Override.class);
 
-        String writeMethodName = WriterMethod.methodName(entityModel.getName());
+        String writeMethodName = new WriterMethod(entityModel.getName()).getName();
         JavaInterfaceSource entitySource = lookupJavaEntity(entityModel);
 
         classSource.addImport(entitySource);

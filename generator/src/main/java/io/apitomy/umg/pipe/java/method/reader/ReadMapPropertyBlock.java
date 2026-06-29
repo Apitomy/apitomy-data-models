@@ -87,9 +87,9 @@ public class ReadMapPropertyBlock extends CodeBlock {
                     "propertyName", property.getName(),
                     "setterMethodName", prop.getSetterName(),
                     "mapValueJavaType", resolved.javaInterface().getName(),
-                    "createMethodName", FactoryMethod.methodName(entityTypeName),
-                    "readMethodName", ReaderMethod.methodName(entityTypeName),
-                    "addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getName())),
+                    "createMethodName", new FactoryMethod(entityTypeName).getName(),
+                    "readMethodName", new ReaderMethod(entityTypeName).getName(),
+                    "addMethodName", new AddMethod(prop.getCtx().singularize(property.getName())).getName(),
                     "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
             ));
 

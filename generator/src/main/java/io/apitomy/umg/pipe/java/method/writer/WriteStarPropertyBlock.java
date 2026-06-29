@@ -59,7 +59,7 @@ public class WriteStarPropertyBlock extends CodeBlock {
         writerClassSource.addImport(List.class);
         writerClassSource.addImport(resolved.javaInterface());
 
-        body.addContext("writeMethodName", WriterMethod.methodName(resolved.entityModel().getName()));
+        body.addContext("writeMethodName", new WriterMethod(resolved.entityModel().getName()).getName());
         body.addContext("entityJavaType", resolved.javaInterface().getName());
 
         body.appendBlock("""

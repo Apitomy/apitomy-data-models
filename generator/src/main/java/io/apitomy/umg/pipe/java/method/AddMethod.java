@@ -25,11 +25,13 @@ public class AddMethod implements Method {
     private final PropertyModelWithOrigin propertyWithOrigin;
     private final CodeGenContext ctx;
     private final ParentAttachmentBlock parentBlock;
+    private final String singularName;
 
     public AddMethod(PropertyModel property, PropertyModelWithOrigin propertyWithOrigin, CodeGenContext ctx) {
         this.property = property;
         this.propertyWithOrigin = propertyWithOrigin;
         this.ctx = ctx;
+        this.singularName = null;
 
         Type resolvedType = property.getResolvedType();
         Type resolvedValueType = resolvedType.isCollectionType()
@@ -47,15 +49,24 @@ public class AddMethod implements Method {
     }
 
     /**
-     * Returns the add method name for the given (singularized) name.
+     * Naming-only constructor — use when only getName() is needed.
      */
-    public static String methodName(String singularName) {
-        return "add" + StringUtils.capitalize(singularName);
+    public AddMethod(String singularName) {
+        this.property = null;
+        this.propertyWithOrigin = null;
+        this.ctx = null;
+        this.parentBlock = null;
+        this.singularName = singularName;
     }
+
+
 
     @Override
     public String getName() {
-        return methodName(ctx.singularize(property.getName()));
+        if (singularName != null) {
+            return "add" + StringUtils.capitalize(singularName);
+        }
+        return "add" + StringUtils.capitalize(ctx.singularize(property.getName()));
     }
 
     @Override

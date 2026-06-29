@@ -14,16 +14,11 @@ public class ClonerMethod implements Method {
         this.entityName = entityName;
     }
 
-    /**
-     * Returns the cloner method name for the given entity name.
-     */
-    public static String methodName(String entityName) {
-        return "clone" + StringUtils.capitalize(entityName);
-    }
+
 
     @Override
     public String getName() {
-        return methodName(entityName);
+        return "clone" + StringUtils.capitalize(entityName);
     }
 
     @Override

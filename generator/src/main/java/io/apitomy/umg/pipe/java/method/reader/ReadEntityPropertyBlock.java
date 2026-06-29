@@ -41,9 +41,9 @@ public class ReadEntityPropertyBlock extends CodeBlock {
         body.addContext(Map.of(
                 "propertyName", property.getName(),
                 "setterMethodName", prop.getSetterName(),
-                "createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()),
+                "createMethodName", new FactoryMethod(resolved.entityModel().getName()).getName(),
                 "getterMethodName", prop.getGetterName(),
-                "readMethodName", ReaderMethod.methodName(resolved.entityModel().getName()),
+                "readMethodName", new ReaderMethod(resolved.entityModel().getName()).getName(),
                 "propertyEntityType", resolved.javaInterface().getName(),
                 "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
         ));

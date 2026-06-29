@@ -81,9 +81,9 @@ public class ReadListPropertyBlock extends CodeBlock {
                     "propertyName", property.getName(),
                     "setterMethodName", prop.getSetterName(),
                     "listValueJavaType", resolved.javaInterface().getName(),
-                    "createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()),
-                    "readMethodName", ReaderMethod.methodName(resolved.entityModel().getName()),
-                    "addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getName())),
+                    "createMethodName", new FactoryMethod(resolved.entityModel().getName()).getName(),
+                    "readMethodName", new ReaderMethod(resolved.entityModel().getName()).getName(),
+                    "addMethodName", new AddMethod(prop.getCtx().singularize(property.getName())).getName(),
                     "varName", "_" + property.getName().replaceAll("[^a-zA-Z0-9]", "_")
             ));
 

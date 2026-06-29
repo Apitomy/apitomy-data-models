@@ -52,7 +52,7 @@ public class CreateClonersStage extends AbstractIOStage {
     protected void createEntityMethod(SpecificationVersion specVersion,
             JavaClassSource classSource, EntityModel entityModel) {
         String entityFQN = getJavaEntityInterfaceFQN(entityModel);
-        String cloneMethodName = ClonerMethod.methodName(entityModel.getName());
+        String cloneMethodName = new ClonerMethod(entityModel.getName()).getName();
 
         debug("Creating clone method: " + cloneMethodName);
 
@@ -87,17 +87,19 @@ public class CreateClonersStage extends AbstractIOStage {
     private void appendExtraPropertiesCode(BodyBuilder body, JavaClassSource classSource) {
         classSource.addImport(JsonNode.class);
         classSource.addImport(List.class);
-        body.append("{");
-        body.append("    List<String> extraPropertyNames = source.getExtraPropertyNames();");
-        body.append("    if (extraPropertyNames != null) {");
-        body.append("        extraPropertyNames.forEach(name -> {");
-        body.append("            JsonNode value = source.getExtraProperty(name);");
-        body.append("            if (value != null) {");
-        body.append("                target.addExtraProperty(name, JsonUtil.clone(value));");
-        body.append("            }");
-        body.append("        });");
-        body.append("    }");
-        body.append("}");
+        body.appendBlock("""
+{
+    List<String> extraPropertyNames = source.getExtraPropertyNames();
+    if (extraPropertyNames != null) {
+        extraPropertyNames.forEach(name -> {
+            JsonNode value = source.getExtraProperty(name);
+            if (value != null) {
+                target.addExtraProperty(name, JsonUtil.clone(value));
+            }
+        });
+    }
+}
+""");
     }
 
     @Override

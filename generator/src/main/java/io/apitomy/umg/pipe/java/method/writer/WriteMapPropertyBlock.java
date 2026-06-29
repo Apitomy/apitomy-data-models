@@ -53,7 +53,7 @@ public class WriteMapPropertyBlock extends CodeBlock {
                     "propertyName", property.getName(),
                     "getterMethodName", prop.getGetterName(),
                     "mapValueJavaType", resolved.javaInterface().getName(),
-                    "writeMethodName", WriterMethod.methodName(entityTypeName),
+                    "writeMethodName", new WriterMethod(entityTypeName).getName(),
                     "mapValueCommonJavaType", commonEntityTypeJavaModel.getName()
             ));
 

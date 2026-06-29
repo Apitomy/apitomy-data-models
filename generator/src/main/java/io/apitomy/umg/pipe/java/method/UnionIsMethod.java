@@ -34,23 +34,11 @@ public class UnionIsMethod implements Method {
         this.active = active;
     }
 
-    /**
-     * Returns the union "is" method name for the given component name.
-     */
-    public static String methodName(String componentName) {
-        return "is" + componentName;
-    }
 
-    /**
-     * Returns the union "is" method name for the given variant type.
-     */
-    public static String methodName(Type variantType) {
-        return "is" + JavaTypeFactory.getUnionComponentName(variantType);
-    }
 
     @Override
     public String getName() {
-        return methodName(componentName);
+        return "is" + componentName;
     }
 
     @Override

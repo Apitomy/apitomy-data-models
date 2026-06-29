@@ -68,10 +68,10 @@ public class PropertyCodeGen {
     }
 
     public String getGetterName() {
-        return GetterMethod.methodName(getProperty());
+        return new GetterMethod(getProperty()).getName();
     }
 
     public String getSetterName() {
-        return SetterMethod.methodName(getProperty());
+        return new SetterMethod(getProperty()).getName();
     }
 }
