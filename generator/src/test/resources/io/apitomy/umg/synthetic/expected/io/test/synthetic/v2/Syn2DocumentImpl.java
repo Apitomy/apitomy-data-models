@@ -8,12 +8,10 @@ import io.test.synthetic.ParentPropertyType;
 import io.test.synthetic.SchemaOrBoolean;
 import io.test.synthetic.SynInfo;
 import io.test.synthetic.SynItem;
-import io.test.synthetic.union.UnionValue;
 import io.test.synthetic.util.DataModelUtil;
 import io.test.synthetic.v2.visitors.Syn2Visitor;
 import io.test.synthetic.visitors.Visitor;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +45,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	@Override
 	public void setInfo(SynInfo value) {
 		this.info = value;
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "info", ParentPropertyType.standard);
-		}
+		DataModelUtil.setParent(value, this, "info", ParentPropertyType.standard);
 	}
 
 	@Override
@@ -77,9 +73,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 			this.items = new ArrayList<>();
 		}
 		this.items.add(value);
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "items", ParentPropertyType.array);
-		}
+		DataModelUtil.setParent(value, this, "items", ParentPropertyType.array);
 	}
 
 	@Override
@@ -116,9 +110,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 			this.items = new ArrayList<>();
 		}
 		this.items = DataModelUtil.insertListEntry(this.items, value, atIndex);
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "items", ParentPropertyType.array);
-		}
+		DataModelUtil.setParent(value, this, "items", ParentPropertyType.array);
 	}
 
 	@Override
@@ -159,9 +151,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 			this.webhooks = new LinkedHashMap<>();
 		}
 		this.webhooks.put(name, value);
-		if (value != null) {
-			DataModelUtil.setParentMap(value, this, "webhooks", ParentPropertyType.map, name);
-		}
+		DataModelUtil.setParentMap(value, this, "webhooks", ParentPropertyType.map, name);
 	}
 
 	@Override
@@ -196,9 +186,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 			this.webhooks = new LinkedHashMap<>();
 		}
 		this.webhooks = DataModelUtil.insertMapEntry(this.webhooks, name, value, atIndex);
-		if (value != null) {
-			DataModelUtil.setParentMap(value, this, "webhooks", ParentPropertyType.map, name);
-		}
+		DataModelUtil.setParentMap(value, this, "webhooks", ParentPropertyType.map, name);
 	}
 
 	@Override
@@ -209,31 +197,7 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	@Override
 	public void setAdditionalSchema(SchemaOrBoolean value) {
 		this.additionalSchema = value;
-		if (value != null) {
-			if (value.isEntity()) {
-				DataModelUtil.setParent(value, this, "additionalSchema", ParentPropertyType.standard);
-			} else if (value.isEntityList()) {
-				DataModelUtil.setParent(value, this, "additionalSchema", ParentPropertyType.standard);
-				List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();
-				for (Object entity : entityList) {
-					if (entity != null) {
-						DataModelUtil.setParent(entity, this, "additionalSchema", ParentPropertyType.array);
-					}
-				}
-			} else if (value.isEntityMap()) {
-				DataModelUtil.setParent(value, this, "additionalSchema", ParentPropertyType.standard);
-				Map<String, ?> entityMap = (Map<String, ?>) ((UnionValue<?>) value).getValue();
-				Collection<String> keys = entityMap.keySet();
-				for (String key : keys) {
-					Object entity = entityMap.get(key);
-					if (entity != null) {
-						DataModelUtil.setParentMap(entity, this, "additionalSchema", ParentPropertyType.map, key);
-					}
-				}
-			} else {
-				DataModelUtil.setParent(value, this, "additionalSchema", ParentPropertyType.standard);
-			}
-		}
+		DataModelUtil.setParent(value, this, "additionalSchema", ParentPropertyType.standard);
 	}
 
 	@Override

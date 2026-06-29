@@ -70,9 +70,7 @@ public class Syn1OperationImpl extends NodeImpl implements Syn1Operation {
 			this.parameters = new ArrayList<>();
 		}
 		this.parameters.add(value);
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "parameters", ParentPropertyType.array);
-		}
+		DataModelUtil.setParent(value, this, "parameters", ParentPropertyType.array);
 	}
 
 	@Override
@@ -109,9 +107,7 @@ public class Syn1OperationImpl extends NodeImpl implements Syn1Operation {
 			this.parameters = new ArrayList<>();
 		}
 		this.parameters = DataModelUtil.insertListEntry(this.parameters, value, atIndex);
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "parameters", ParentPropertyType.array);
-		}
+		DataModelUtil.setParent(value, this, "parameters", ParentPropertyType.array);
 	}
 
 	@Override

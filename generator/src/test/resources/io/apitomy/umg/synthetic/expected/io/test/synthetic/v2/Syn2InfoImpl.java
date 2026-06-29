@@ -37,9 +37,7 @@ public class Syn2InfoImpl extends NodeImpl implements Syn2Info {
 	@Override
 	public void setContact(SynContact value) {
 		this.contact = value;
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "contact", ParentPropertyType.standard);
-		}
+		DataModelUtil.setParent(value, this, "contact", ParentPropertyType.standard);
 	}
 
 	@Override
