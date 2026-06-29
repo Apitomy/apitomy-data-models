@@ -10,12 +10,10 @@ import io.test.synthetic.ParentPropertyType;
 import io.test.synthetic.RootCapableImpl;
 import io.test.synthetic.SchemaOrBoolean;
 import io.test.synthetic.SynSchema;
-import io.test.synthetic.union.UnionValue;
 import io.test.synthetic.util.DataModelUtil;
 import io.test.synthetic.v2.visitors.Syn2Visitor;
 import io.test.synthetic.visitors.Visitor;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,31 +65,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 	@Override
 	public void setItems(BooleanSchemaSchemaListUnion value) {
 		this.items = value;
-		if (value != null) {
-			if (value.isEntity()) {
-				DataModelUtil.setParent(value, this, "items", ParentPropertyType.standard);
-			} else if (value.isEntityList()) {
-				DataModelUtil.setParent(value, this, "items", ParentPropertyType.standard);
-				List<?> entityList = (List<?>) ((UnionValue<?>) value).getValue();
-				for (Object entity : entityList) {
-					if (entity != null) {
-						DataModelUtil.setParent(entity, this, "items", ParentPropertyType.array);
-					}
-				}
-			} else if (value.isEntityMap()) {
-				DataModelUtil.setParent(value, this, "items", ParentPropertyType.standard);
-				Map<String, ?> entityMap = (Map<String, ?>) ((UnionValue<?>) value).getValue();
-				Collection<String> keys = entityMap.keySet();
-				for (String key : keys) {
-					Object entity = entityMap.get(key);
-					if (entity != null) {
-						DataModelUtil.setParentMap(entity, this, "items", ParentPropertyType.map, key);
-					}
-				}
-			} else {
-				DataModelUtil.setParent(value, this, "items", ParentPropertyType.standard);
-			}
-		}
+		DataModelUtil.setParent(value, this, "items", ParentPropertyType.standard);
 	}
 
 	@Override
@@ -112,9 +86,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 			this.properties = new LinkedHashMap<>();
 		}
 		this.properties.put(name, value);
-		if (value != null) {
-			DataModelUtil.setParentMap(value, this, "properties", ParentPropertyType.map, name);
-		}
+		DataModelUtil.setParentMap(value, this, "properties", ParentPropertyType.map, name);
 	}
 
 	@Override
@@ -149,9 +121,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 			this.properties = new LinkedHashMap<>();
 		}
 		this.properties = DataModelUtil.insertMapEntry(this.properties, name, value, atIndex);
-		if (value != null) {
-			DataModelUtil.setParentMap(value, this, "properties", ParentPropertyType.map, name);
-		}
+		DataModelUtil.setParentMap(value, this, "properties", ParentPropertyType.map, name);
 	}
 
 	@Override
@@ -165,9 +135,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 			this.allOf = new ArrayList<>();
 		}
 		this.allOf.add(value);
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "allOf", ParentPropertyType.array);
-		}
+		DataModelUtil.setParent(value, this, "allOf", ParentPropertyType.array);
 	}
 
 	@Override
@@ -204,9 +172,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 			this.allOf = new ArrayList<>();
 		}
 		this.allOf = DataModelUtil.insertListEntry(this.allOf, value, atIndex);
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "allOf", ParentPropertyType.array);
-		}
+		DataModelUtil.setParent(value, this, "allOf", ParentPropertyType.array);
 	}
 
 	@Override
@@ -220,9 +186,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 			this.definitions = new LinkedHashMap<>();
 		}
 		this.definitions.put(name, value);
-		if (value != null) {
-			DataModelUtil.setParentMap(value, this, "definitions", ParentPropertyType.map, name);
-		}
+		DataModelUtil.setParentMap(value, this, "definitions", ParentPropertyType.map, name);
 	}
 
 	@Override
@@ -257,9 +221,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 			this.definitions = new LinkedHashMap<>();
 		}
 		this.definitions = DataModelUtil.insertMapEntry(this.definitions, name, value, atIndex);
-		if (value != null) {
-			DataModelUtil.setParentMap(value, this, "definitions", ParentPropertyType.map, name);
-		}
+		DataModelUtil.setParentMap(value, this, "definitions", ParentPropertyType.map, name);
 	}
 
 	@Override
@@ -273,9 +235,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 			this.nestedSchemas = new LinkedHashMap<>();
 		}
 		this.nestedSchemas.put(name, value);
-		if (value != null) {
-			DataModelUtil.setParentMap(value, this, "nestedSchemas", ParentPropertyType.map, name);
-		}
+		DataModelUtil.setParentMap(value, this, "nestedSchemas", ParentPropertyType.map, name);
 	}
 
 	@Override
@@ -310,9 +270,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 			this.nestedSchemas = new LinkedHashMap<>();
 		}
 		this.nestedSchemas = DataModelUtil.insertMapEntry(this.nestedSchemas, name, value, atIndex);
-		if (value != null) {
-			DataModelUtil.setParentMap(value, this, "nestedSchemas", ParentPropertyType.map, name);
-		}
+		DataModelUtil.setParentMap(value, this, "nestedSchemas", ParentPropertyType.map, name);
 	}
 
 	@Override
@@ -326,9 +284,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 			this.composedSchemas = new ArrayList<>();
 		}
 		this.composedSchemas.add(value);
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "composedSchemas", ParentPropertyType.array);
-		}
+		DataModelUtil.setParent(value, this, "composedSchemas", ParentPropertyType.array);
 	}
 
 	@Override
@@ -365,9 +321,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 			this.composedSchemas = new ArrayList<>();
 		}
 		this.composedSchemas = DataModelUtil.insertListEntry(this.composedSchemas, value, atIndex);
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "composedSchemas", ParentPropertyType.array);
-		}
+		DataModelUtil.setParent(value, this, "composedSchemas", ParentPropertyType.array);
 	}
 
 	@Override

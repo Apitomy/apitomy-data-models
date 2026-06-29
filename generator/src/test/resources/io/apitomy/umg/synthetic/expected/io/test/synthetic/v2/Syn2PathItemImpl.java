@@ -49,9 +49,7 @@ public class Syn2PathItemImpl extends NodeImpl implements Syn2PathItem {
 	@Override
 	public void setGet(SynOperation value) {
 		this.get = value;
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "get", ParentPropertyType.standard);
-		}
+		DataModelUtil.setParent(value, this, "get", ParentPropertyType.standard);
 	}
 
 	@Override
@@ -69,9 +67,7 @@ public class Syn2PathItemImpl extends NodeImpl implements Syn2PathItem {
 	@Override
 	public void setPut(SynOperation value) {
 		this.put = value;
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "put", ParentPropertyType.standard);
-		}
+		DataModelUtil.setParent(value, this, "put", ParentPropertyType.standard);
 	}
 
 	@Override
@@ -82,9 +78,7 @@ public class Syn2PathItemImpl extends NodeImpl implements Syn2PathItem {
 	@Override
 	public void setPost(SynOperation value) {
 		this.post = value;
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "post", ParentPropertyType.standard);
-		}
+		DataModelUtil.setParent(value, this, "post", ParentPropertyType.standard);
 	}
 
 	@Override
@@ -95,9 +89,7 @@ public class Syn2PathItemImpl extends NodeImpl implements Syn2PathItem {
 	@Override
 	public void setDelete(Syn2Operation value) {
 		this.delete = value;
-		if (value != null) {
-			DataModelUtil.setParent(value, this, "delete", ParentPropertyType.standard);
-		}
+		DataModelUtil.setParent(value, this, "delete", ParentPropertyType.standard);
 	}
 
 	@Override
