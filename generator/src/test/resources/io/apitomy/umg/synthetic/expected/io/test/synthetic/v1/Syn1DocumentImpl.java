@@ -105,10 +105,8 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 	public void insertItem(SynItem value, int atIndex) {
 		if (this.items == null) {
 			this.items = new ArrayList<>();
-			this.items.add(value);
-		} else {
-			this.items = DataModelUtil.insertListEntry(this.items, value, atIndex);
 		}
+		this.items = DataModelUtil.insertListEntry(this.items, value, atIndex);
 		if (value != null) {
 			DataModelUtil.setParent(value, this, "items", ParentPropertyType.array);
 		}
@@ -200,10 +198,8 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 	public void insertExtension(String name, JsonNode value, int atIndex) {
 		if (this.extensions == null) {
 			this.extensions = new LinkedHashMap<>();
-			this.extensions.put(name, value);
-		} else {
-			this.extensions = DataModelUtil.insertMapEntry(this.extensions, name, value, atIndex);
 		}
+		this.extensions = DataModelUtil.insertMapEntry(this.extensions, name, value, atIndex);
 	}
 
 	@Override

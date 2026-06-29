@@ -117,10 +117,8 @@ public class Syn1PathItemImpl extends NodeImpl implements Syn1PathItem {
 	public void insertExtension(String name, JsonNode value, int atIndex) {
 		if (this.extensions == null) {
 			this.extensions = new LinkedHashMap<>();
-			this.extensions.put(name, value);
-		} else {
-			this.extensions = DataModelUtil.insertMapEntry(this.extensions, name, value, atIndex);
 		}
+		this.extensions = DataModelUtil.insertMapEntry(this.extensions, name, value, atIndex);
 	}
 
 	@Override

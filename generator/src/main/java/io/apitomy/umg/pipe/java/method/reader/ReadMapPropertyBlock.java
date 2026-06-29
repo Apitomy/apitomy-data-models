@@ -61,7 +61,7 @@ public class ReadMapPropertyBlock extends CodeBlock {
             body.appendBlock("""
 {
     JsonNode ${varName} = JsonUtil.getProperty(json, "${propertyName}");
-    if (JsonUtil.isObject(${varName}) && JsonUtil.allValuesMatch(JsonUtil.toObject(${varName}), "${expectedType}")) {
+    if (JsonUtil.isObject(${varName}) && JsonUtil.allValuesMatch(JsonUtil.toObject(${varName}), JsonUtil.JsonType.${expectedType})) {
         Map<String, ${elementValueType}> items = new LinkedHashMap<>();
         List<String> _keys = JsonUtil.keys(JsonUtil.toObject(${varName}));
         for (int _i = 0; _i < _keys.size(); _i++) {

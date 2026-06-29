@@ -58,7 +58,7 @@ public class ReadListPropertyBlock extends CodeBlock {
             body.appendBlock("""
 {
     JsonNode ${varName} = JsonUtil.getProperty(json, "${propertyName}");
-    if (JsonUtil.isArray(${varName}) && JsonUtil.allMatch(${varName}, "${expectedType}")) {
+    if (JsonUtil.isArray(${varName}) && JsonUtil.allMatch(${varName}, JsonUtil.JsonType.${expectedType})) {
         List<${elementValueType}> items = new ArrayList<>();
         List<JsonNode> _nodes = JsonUtil.toList(${varName});
         for (int _i = 0; _i < _nodes.size(); _i++) {
@@ -91,7 +91,7 @@ public class ReadListPropertyBlock extends CodeBlock {
             body.appendBlock("""
 {
     JsonNode ${varName} = JsonUtil.getProperty(json, "${propertyName}");
-    if (JsonUtil.isArray(${varName}) && JsonUtil.allMatch(${varName}, "object")) {
+    if (JsonUtil.isArray(${varName}) && JsonUtil.allMatch(${varName}, JsonUtil.JsonType.OBJECT)) {
         List<JsonNode> _nodes = JsonUtil.toList(${varName});
         for (int _i = 0; _i < _nodes.size(); _i++) {
             ObjectNode object = JsonUtil.toObject(_nodes.get(_i));

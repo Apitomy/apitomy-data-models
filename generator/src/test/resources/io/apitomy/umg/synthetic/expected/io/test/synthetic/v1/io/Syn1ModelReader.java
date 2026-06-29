@@ -46,7 +46,7 @@ public class Syn1ModelReader implements ModelReader {
 		}
 		{
 			JsonNode _items = JsonUtil.getProperty(json, "items");
-			if (JsonUtil.isArray(_items) && JsonUtil.allMatch(_items, "object")) {
+			if (JsonUtil.isArray(_items) && JsonUtil.allMatch(_items, JsonUtil.JsonType.OBJECT)) {
 				List<JsonNode> _nodes = JsonUtil.toList(_items);
 				for (int _i = 0; _i < _nodes.size(); _i++) {
 					ObjectNode object = JsonUtil.toObject(_nodes.get(_i));
@@ -59,7 +59,7 @@ public class Syn1ModelReader implements ModelReader {
 		}
 		{
 			JsonNode _tags = JsonUtil.getProperty(json, "tags");
-			if (JsonUtil.isArray(_tags) && JsonUtil.allMatch(_tags, "string")) {
+			if (JsonUtil.isArray(_tags) && JsonUtil.allMatch(_tags, JsonUtil.JsonType.STRING)) {
 				List<String> items = new ArrayList<>();
 				List<JsonNode> _nodes = JsonUtil.toList(_tags);
 				for (int _i = 0; _i < _nodes.size(); _i++) {
@@ -71,7 +71,8 @@ public class Syn1ModelReader implements ModelReader {
 		}
 		{
 			JsonNode _metadata = JsonUtil.getProperty(json, "metadata");
-			if (JsonUtil.isObject(_metadata) && JsonUtil.allValuesMatch(JsonUtil.toObject(_metadata), "string")) {
+			if (JsonUtil.isObject(_metadata)
+					&& JsonUtil.allValuesMatch(JsonUtil.toObject(_metadata), JsonUtil.JsonType.STRING)) {
 				Map<String, String> items = new LinkedHashMap<>();
 				List<String> _keys = JsonUtil.keys(JsonUtil.toObject(_metadata));
 				for (int _i = 0; _i < _keys.size(); _i++) {
@@ -225,7 +226,7 @@ public class Syn1ModelReader implements ModelReader {
 		}
 		{
 			JsonNode _examples = JsonUtil.getProperty(json, "examples");
-			if (JsonUtil.isArray(_examples) && JsonUtil.allMatch(_examples, "any")) {
+			if (JsonUtil.isArray(_examples) && JsonUtil.allMatch(_examples, JsonUtil.JsonType.ANY)) {
 				List<JsonNode> items = new ArrayList<>();
 				List<JsonNode> _nodes = JsonUtil.toList(_examples);
 				for (int _i = 0; _i < _nodes.size(); _i++) {
@@ -396,7 +397,7 @@ public class Syn1ModelReader implements ModelReader {
 		}
 		{
 			JsonNode _enum = JsonUtil.getProperty(json, "enum");
-			if (JsonUtil.isArray(_enum) && JsonUtil.allMatch(_enum, "any")) {
+			if (JsonUtil.isArray(_enum) && JsonUtil.allMatch(_enum, JsonUtil.JsonType.ANY)) {
 				List<JsonNode> items = new ArrayList<>();
 				List<JsonNode> _nodes = JsonUtil.toList(_enum);
 				for (int _i = 0; _i < _nodes.size(); _i++) {
@@ -518,7 +519,7 @@ public class Syn1ModelReader implements ModelReader {
 		}
 		{
 			JsonNode _tags = JsonUtil.getProperty(json, "tags");
-			if (JsonUtil.isArray(_tags) && JsonUtil.allMatch(_tags, "string")) {
+			if (JsonUtil.isArray(_tags) && JsonUtil.allMatch(_tags, JsonUtil.JsonType.STRING)) {
 				List<String> items = new ArrayList<>();
 				List<JsonNode> _nodes = JsonUtil.toList(_tags);
 				for (int _i = 0; _i < _nodes.size(); _i++) {
@@ -530,7 +531,7 @@ public class Syn1ModelReader implements ModelReader {
 		}
 		{
 			JsonNode _parameters = JsonUtil.getProperty(json, "parameters");
-			if (JsonUtil.isArray(_parameters) && JsonUtil.allMatch(_parameters, "object")) {
+			if (JsonUtil.isArray(_parameters) && JsonUtil.allMatch(_parameters, JsonUtil.JsonType.OBJECT)) {
 				List<JsonNode> _nodes = JsonUtil.toList(_parameters);
 				for (int _i = 0; _i < _nodes.size(); _i++) {
 					ObjectNode object = JsonUtil.toObject(_nodes.get(_i));

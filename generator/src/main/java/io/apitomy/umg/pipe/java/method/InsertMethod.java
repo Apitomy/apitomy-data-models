@@ -95,29 +95,24 @@ public class InsertMethod implements Method {
             body.addContext("propertyName", propertyName);
 
             if (isEntityValue || isPrimitiveValue || isUnionValue) {
+                JavaClassSource dataModelUtilSource = ctx.getJavaIndex().lookupClass(ctx.getDataModelUtilFQCN());
+                target.addImport(dataModelUtilSource);
+
                 body.ifElse(resolvedType.isMapType(), () -> {
-                    JavaClassSource dataModelUtilSource = ctx.getJavaIndex().lookupClass(ctx.getDataModelUtilFQCN());
-                    target.addImport(dataModelUtilSource);
                     target.addImport(LinkedHashMap.class);
                     return """
 if (this.${fieldName} == null) {
     this.${fieldName} = new LinkedHashMap<>();
-    this.${fieldName}.put(name, value);
-} else {
-    this.${fieldName} = DataModelUtil.insertMapEntry(this.${fieldName}, name, value, atIndex);
 }
+this.${fieldName} = DataModelUtil.insertMapEntry(this.${fieldName}, name, value, atIndex);
 """;
                 }, () -> {
-                    JavaClassSource dataModelUtilSource = ctx.getJavaIndex().lookupClass(ctx.getDataModelUtilFQCN());
-                    target.addImport(dataModelUtilSource);
                     target.addImport(ArrayList.class);
                     return """
 if (this.${fieldName} == null) {
     this.${fieldName} = new ArrayList<>();
-    this.${fieldName}.add(value);
-} else {
-    this.${fieldName} = DataModelUtil.insertListEntry(this.${fieldName}, value, atIndex);
 }
+this.${fieldName} = DataModelUtil.insertListEntry(this.${fieldName}, value, atIndex);
 """;
                 });
 

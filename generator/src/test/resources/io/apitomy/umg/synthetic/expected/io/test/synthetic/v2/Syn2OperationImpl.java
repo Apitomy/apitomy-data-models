@@ -99,10 +99,8 @@ public class Syn2OperationImpl extends NodeImpl implements Syn2Operation {
 	public void insertParameter(SynItem value, int atIndex) {
 		if (this.parameters == null) {
 			this.parameters = new ArrayList<>();
-			this.parameters.add(value);
-		} else {
-			this.parameters = DataModelUtil.insertListEntry(this.parameters, value, atIndex);
 		}
+		this.parameters = DataModelUtil.insertListEntry(this.parameters, value, atIndex);
 		if (value != null) {
 			DataModelUtil.setParent(value, this, "parameters", ParentPropertyType.array);
 		}
@@ -139,10 +137,8 @@ public class Syn2OperationImpl extends NodeImpl implements Syn2Operation {
 	public void insertExtension(String name, JsonNode value, int atIndex) {
 		if (this.extensions == null) {
 			this.extensions = new LinkedHashMap<>();
-			this.extensions.put(name, value);
-		} else {
-			this.extensions = DataModelUtil.insertMapEntry(this.extensions, name, value, atIndex);
 		}
+		this.extensions = DataModelUtil.insertMapEntry(this.extensions, name, value, atIndex);
 	}
 
 	@Override

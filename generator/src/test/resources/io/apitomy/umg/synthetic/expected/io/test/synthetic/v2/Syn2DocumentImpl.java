@@ -106,10 +106,8 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	public void insertItem(SynItem value, int atIndex) {
 		if (this.items == null) {
 			this.items = new ArrayList<>();
-			this.items.add(value);
-		} else {
-			this.items = DataModelUtil.insertListEntry(this.items, value, atIndex);
 		}
+		this.items = DataModelUtil.insertListEntry(this.items, value, atIndex);
 		if (value != null) {
 			DataModelUtil.setParent(value, this, "items", ParentPropertyType.array);
 		}
@@ -180,10 +178,8 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	public void insertWebhook(String name, Syn2PathItem value, int atIndex) {
 		if (this.webhooks == null) {
 			this.webhooks = new LinkedHashMap<>();
-			this.webhooks.put(name, value);
-		} else {
-			this.webhooks = DataModelUtil.insertMapEntry(this.webhooks, name, value, atIndex);
 		}
+		this.webhooks = DataModelUtil.insertMapEntry(this.webhooks, name, value, atIndex);
 		if (value != null) {
 			DataModelUtil.setParentMap(value, this, "webhooks", ParentPropertyType.map, name);
 		}
@@ -255,10 +251,8 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	public void insertExtension(String name, JsonNode value, int atIndex) {
 		if (this.extensions == null) {
 			this.extensions = new LinkedHashMap<>();
-			this.extensions.put(name, value);
-		} else {
-			this.extensions = DataModelUtil.insertMapEntry(this.extensions, name, value, atIndex);
 		}
+		this.extensions = DataModelUtil.insertMapEntry(this.extensions, name, value, atIndex);
 	}
 
 	@Override

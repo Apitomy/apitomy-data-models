@@ -103,53 +103,23 @@ export class JsonUtil {
         return value;
     }
 
-    public static allMatch(array: any, expectedType: string): boolean {
+    public static allMatch(array: any, expectedType: JsonUtil.JsonType): boolean {
         if (array == null || !Array.isArray(array)) {
             return false;
         }
         for (let i: number = 0; i < array.length; i++) {
-            const item: any = array[i];
-            if (expectedType === "string") {
-                if (typeof item !== "string") return false;
-            } else if (expectedType === "boolean") {
-                if (typeof item !== "boolean") return false;
-            } else if (expectedType === "number") {
-                if (typeof item !== "number") return false;
-            } else if (expectedType === "integer") {
-                if (typeof item !== "number" || !Number.isInteger(item)) return false;
-            } else if (expectedType === "object") {
-                if (typeof item !== "object" || Array.isArray(item)) return false;
-            } else if (expectedType === "any") {
-                if (item == null) return false;
-            } else {
-                return false;
-            }
+            if (!expectedType.matches(array[i])) return false;
         }
         return true;
     }
 
-    public static allValuesMatch(obj: any, expectedType: string): boolean {
+    public static allValuesMatch(obj: any, expectedType: JsonUtil.JsonType): boolean {
         if (obj == null) {
             return false;
         }
         const fieldNames: string[] = JsonUtil.keys(obj);
         for (let i: number = 0; i < fieldNames.length; i++) {
-            const item: any = obj[fieldNames[i]];
-            if (expectedType === "string") {
-                if (typeof item !== "string") return false;
-            } else if (expectedType === "boolean") {
-                if (typeof item !== "boolean") return false;
-            } else if (expectedType === "number") {
-                if (typeof item !== "number") return false;
-            } else if (expectedType === "integer") {
-                if (typeof item !== "number" || !Number.isInteger(item)) return false;
-            } else if (expectedType === "object") {
-                if (typeof item !== "object" || Array.isArray(item)) return false;
-            } else if (expectedType === "any") {
-                if (item == null) return false;
-            } else {
-                return false;
-            }
+            if (!expectedType.matches(obj[fieldNames[i]])) return false;
         }
         return true;
     }
@@ -254,4 +224,25 @@ export class JsonUtil {
         return value;
     }
 
+}
+
+export namespace JsonUtil {
+    export class JsonType {
+        public static STRING: JsonType = new JsonType((v: any) => typeof v === "string");
+        public static BOOLEAN: JsonType = new JsonType((v: any) => typeof v === "boolean");
+        public static NUMBER: JsonType = new JsonType((v: any) => typeof v === "number");
+        public static INTEGER: JsonType = new JsonType((v: any) => typeof v === "number" && Number.isInteger(v));
+        public static OBJECT: JsonType = new JsonType((v: any) => typeof v === "object" && !Array.isArray(v));
+        public static ANY: JsonType = new JsonType((v: any) => v != null);
+
+        private readonly matcher: (value: any) => boolean;
+
+        private constructor(matcher: (value: any) => boolean) {
+            this.matcher = matcher;
+        }
+
+        public matches(node: any): boolean {
+            return this.matcher(node);
+        }
+    }
 }

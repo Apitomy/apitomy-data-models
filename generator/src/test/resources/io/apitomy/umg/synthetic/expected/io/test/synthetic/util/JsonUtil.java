@@ -152,65 +152,48 @@ public class JsonUtil {
 		return object;
 	}
 
-	public static boolean allMatch(JsonNode array, String expectedType) {
+	public enum JsonType {
+		STRING, BOOLEAN, NUMBER, INTEGER, OBJECT, ANY;
+
+		public boolean matches(JsonNode node) {
+			switch (this) {
+				case STRING :
+					return node.isTextual();
+				case BOOLEAN :
+					return node.isBoolean();
+				case NUMBER :
+					return node.isNumber();
+				case INTEGER :
+					return node.isInt();
+				case OBJECT :
+					return node.isObject();
+				case ANY :
+					return !node.isNull();
+				default :
+					return false;
+			}
+		}
+	}
+
+	public static boolean allMatch(JsonNode array, JsonType expectedType) {
 		if (array == null || !array.isArray()) {
 			return false;
 		}
 		ArrayNode arrayNode = (ArrayNode) array;
 		for (int i = 0; i < arrayNode.size(); i++) {
-			JsonNode item = arrayNode.get(i);
-			if ("string".equals(expectedType)) {
-				if (!item.isTextual())
-					return false;
-			} else if ("boolean".equals(expectedType)) {
-				if (!item.isBoolean())
-					return false;
-			} else if ("number".equals(expectedType)) {
-				if (!item.isNumber())
-					return false;
-			} else if ("integer".equals(expectedType)) {
-				if (!item.isInt())
-					return false;
-			} else if ("object".equals(expectedType)) {
-				if (!item.isObject())
-					return false;
-			} else if ("any".equals(expectedType)) {
-				if (item.isNull())
-					return false;
-			} else {
+			if (!expectedType.matches(arrayNode.get(i)))
 				return false;
-			}
 		}
 		return true;
 	}
 
-	public static boolean allValuesMatch(ObjectNode obj, String expectedType) {
+	public static boolean allValuesMatch(ObjectNode obj, JsonType expectedType) {
 		if (obj == null) {
 			return false;
 		}
 		for (String fieldName : keys(obj)) {
-			JsonNode item = obj.get(fieldName);
-			if ("string".equals(expectedType)) {
-				if (!item.isTextual())
-					return false;
-			} else if ("boolean".equals(expectedType)) {
-				if (!item.isBoolean())
-					return false;
-			} else if ("number".equals(expectedType)) {
-				if (!item.isNumber())
-					return false;
-			} else if ("integer".equals(expectedType)) {
-				if (!item.isInt())
-					return false;
-			} else if ("object".equals(expectedType)) {
-				if (!item.isObject())
-					return false;
-			} else if ("any".equals(expectedType)) {
-				if (item.isNull())
-					return false;
-			} else {
+			if (!expectedType.matches(obj.get(fieldName)))
 				return false;
-			}
 		}
 		return true;
 	}
