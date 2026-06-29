@@ -65,11 +65,13 @@ public class ReadRegexPropertyBlock extends CodeBlock {
         readerClassSource.addImport(List.class);
         readerClassSource.addImport(JsonNode.class);
 
-        body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
-        body.addContext("entityJavaType", resolved.javaInterface().getName());
-        body.addContext("createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()));
-        body.addContext("readMethodName", ReaderMethod.methodName(resolved.entityModel().getName()));
-        body.addContext("addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getCollection())));
+        body.addContext(Map.of(
+                "propertyRegex", encodeRegex(extractRegex(property.getName())),
+                "entityJavaType", resolved.javaInterface().getName(),
+                "createMethodName", new FactoryMethod(resolved.entityModel().getName()).getName(),
+                "readMethodName", new ReaderMethod(resolved.entityModel().getName()).getName(),
+                "addMethodName", new AddMethod(prop.getCtx().singularize(property.getCollection())).getName()
+        ));
 
         body.appendBlock("""
 {
@@ -92,10 +94,12 @@ public class ReadRegexPropertyBlock extends CodeBlock {
         readerClassSource.addImport(List.class);
         readerClassSource.addImport(JsonNode.class);
 
-        body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
-        body.addContext("isCheckMethod", PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), prop.getCtx(), readerClassSource));
-        body.addContext("toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), prop.getCtx(), readerClassSource));
-        body.addContext("addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getCollection())));
+        body.addContext(Map.of(
+                "propertyRegex", encodeRegex(extractRegex(property.getName())),
+                "isCheckMethod", PrimitiveTypeHelper.determineIsCheckMethod(property.getResolvedType(), prop.getCtx(), readerClassSource),
+                "toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(property.getResolvedType(), prop.getCtx(), readerClassSource),
+                "addMethodName", new AddMethod(prop.getCtx().singularize(property.getCollection())).getName()
+        ));
 
         body.appendBlock("""
 {
@@ -118,11 +122,13 @@ public class ReadRegexPropertyBlock extends CodeBlock {
         readerClassSource.addImport(JsonNode.class);
 
         Type listValueType = ((io.apitomy.umg.models.concept.type.ListType) property.getResolvedType()).getValueType();
-        body.addContext("expectedType", PrimitiveTypeHelper.determineExpectedTypeString(listValueType, prop.getCtx()));
-        body.addContext("toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(listValueType, prop.getCtx(), readerClassSource));
-        body.addContext("elementValueType", PrimitiveTypeHelper.determineValueType(listValueType, prop.getCtx(), readerClassSource));
-        body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
-        body.addContext("addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getCollection())));
+        body.addContext(Map.of(
+                "expectedType", PrimitiveTypeHelper.determineExpectedTypeString(listValueType, prop.getCtx()),
+                "toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(listValueType, prop.getCtx(), readerClassSource),
+                "elementValueType", PrimitiveTypeHelper.determineValueType(listValueType, prop.getCtx(), readerClassSource),
+                "propertyRegex", encodeRegex(extractRegex(property.getName())),
+                "addMethodName", new AddMethod(prop.getCtx().singularize(property.getCollection())).getName()
+        ));
 
         body.appendBlock("""
 {
@@ -151,11 +157,13 @@ public class ReadRegexPropertyBlock extends CodeBlock {
         readerClassSource.addImport(LinkedHashMap.class);
 
         Type mapValueType = ((io.apitomy.umg.models.concept.type.MapType) property.getResolvedType()).getValueType();
-        body.addContext("expectedType", PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, prop.getCtx()));
-        body.addContext("toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(mapValueType, prop.getCtx(), readerClassSource));
-        body.addContext("elementValueType", PrimitiveTypeHelper.determineValueType(mapValueType, prop.getCtx(), readerClassSource));
-        body.addContext("propertyRegex", encodeRegex(extractRegex(property.getName())));
-        body.addContext("addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getCollection())));
+        body.addContext(Map.of(
+                "expectedType", PrimitiveTypeHelper.determineExpectedTypeString(mapValueType, prop.getCtx()),
+                "toConversionMethod", PrimitiveTypeHelper.determineToConversionMethod(mapValueType, prop.getCtx(), readerClassSource),
+                "elementValueType", PrimitiveTypeHelper.determineValueType(mapValueType, prop.getCtx(), readerClassSource),
+                "propertyRegex", encodeRegex(extractRegex(property.getName())),
+                "addMethodName", new AddMethod(prop.getCtx().singularize(property.getCollection())).getName()
+        ));
 
         body.appendBlock("""
 {

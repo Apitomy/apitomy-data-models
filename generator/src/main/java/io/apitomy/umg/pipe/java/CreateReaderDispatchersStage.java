@@ -114,7 +114,7 @@ public class CreateReaderDispatchersStage extends AbstractVisitorStage {
 
             // Create the method body.
             BodyBuilder body = new BodyBuilder();
-            body.addContext("readMethodName", ReaderMethod.methodName(entityName));
+            body.addContext("readMethodName", new ReaderMethod(entityName).getName());
             body.addContext("javaEntityType", javaEntityType.getName());
             body.append("this.reader.${readMethodName}(this.json, (${javaEntityType}) node);");
             methodSource.setBody(body.toString());

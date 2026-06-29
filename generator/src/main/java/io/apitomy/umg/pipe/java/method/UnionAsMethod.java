@@ -48,23 +48,11 @@ public class UnionAsMethod implements Method {
         this.javaType = javaType;
     }
 
-    /**
-     * Returns the union "as" method name for the given component name.
-     */
-    public static String methodName(String componentName) {
-        return "as" + componentName;
-    }
 
-    /**
-     * Returns the union "as" method name for the given variant type.
-     */
-    public static String methodName(Type variantType) {
-        return "as" + JavaTypeFactory.getUnionComponentName(variantType);
-    }
 
     @Override
     public String getName() {
-        return methodName(componentName);
+        return "as" + componentName;
     }
 
     @Override

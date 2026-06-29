@@ -60,8 +60,8 @@ public class CloneUnionPropertyBlock extends CodeBlock {
                 .collect(Collectors.toList());
         body.forEach(sortedTypes, (loopCtx, nestedType, isFirst) -> {
             String typeName = AbstractJavaStage.getTypeName(nestedType);
-            String isMethodName = UnionIsMethod.methodName(typeName);
-            String asMethodName = UnionAsMethod.methodName(typeName);
+            String isMethodName = new UnionIsMethod(typeName).getName();
+            String asMethodName = new UnionAsMethod(typeName).getName();
 
             loopCtx.set("isMethodName", isMethodName);
             loopCtx.set("asMethodName", asMethodName);
@@ -147,7 +147,7 @@ public class CloneUnionPropertyBlock extends CodeBlock {
                             clonerClassSource.addImport(List.class);
                             clonerClassSource.addImport(ArrayList.class);
                             loopCtx.set("listItemType", listItemEntitySource.getName());
-                            loopCtx.set("createMethodName", FactoryMethod.methodName(listItemEntity.getName()));
+                            loopCtx.set("createMethodName", new FactoryMethod(listItemEntity.getName()).getName());
                             loopCtx.set("cloneMethodName", CloneEntityPropertyBlock.cloneMethodName(listItemEntity));
                             loopCtx.set("unionValueClassName", unionValueClass.getName());
                             return """

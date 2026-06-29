@@ -60,12 +60,14 @@ public class CloneRegexPropertyBlock extends CodeBlock {
         clonerClassSource.addImport(commonEntityTypeJavaModel);
         clonerClassSource.addImport(Map.class);
 
-        body.addContext("entityJavaType", resolved.javaInterface().getName());
-        body.addContext("commonEntityType", commonEntityTypeJavaModel.getName());
-        body.addContext("getterMethodName", GetterMethod.methodName(property));
-        body.addContext("createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()));
-        body.addContext("cloneMethodName", ClonerMethod.methodName(resolved.entityModel().getName()));
-        body.addContext("addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getCollection())));
+        body.addContext(Map.of(
+                "entityJavaType", resolved.javaInterface().getName(),
+                "commonEntityType", commonEntityTypeJavaModel.getName(),
+                "getterMethodName", new GetterMethod(property).getName(),
+                "createMethodName", new FactoryMethod(resolved.entityModel().getName()).getName(),
+                "cloneMethodName", new ClonerMethod(resolved.entityModel().getName()).getName(),
+                "addMethodName", new AddMethod(prop.getCtx().singularize(property.getCollection())).getName()
+        ));
 
         body.appendBlock("""
 {
@@ -86,9 +88,11 @@ public class CloneRegexPropertyBlock extends CodeBlock {
         clonerClassSource.addImport(Map.class);
         clonerClassSource.addImport(List.class);
 
-        body.addContext("getterMethodName", GetterMethod.methodName(property));
-        body.addContext("addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getCollection())));
-        body.addContext("valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), prop.getCtx(), clonerClassSource));
+        body.addContext(Map.of(
+                "getterMethodName", new GetterMethod(property).getName(),
+                "addMethodName", new AddMethod(prop.getCtx().singularize(property.getCollection())).getName(),
+                "valueType", PrimitiveTypeHelper.determineValueType(property.getResolvedType(), prop.getCtx(), clonerClassSource)
+        ));
 
         body.appendBlock("""
 {

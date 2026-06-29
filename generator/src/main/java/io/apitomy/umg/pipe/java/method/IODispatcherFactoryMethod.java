@@ -1,6 +1,7 @@
 package io.apitomy.umg.pipe.java.method;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaEnumSource;
@@ -64,11 +65,13 @@ public class IODispatcherFactoryMethod implements Method {
         String visitorName = rootVisitorInterfaceSource.getName();
 
         BodyBuilder body = new BodyBuilder();
-        body.addContext("visitorName", visitorName);
-        body.addContext("interfaceName", "Model" + label);
-        body.addContext("factoryClassName", "Model" + label + "Factory");
-        body.addContext("createMethodName", "createModel" + label);
-        body.addContext("varName", varName);
+        body.addContext(Map.of(
+                "visitorName", visitorName,
+                "interfaceName", "Model" + label,
+                "factoryClassName", "Model" + label + "Factory",
+                "createMethodName", "createModel" + label,
+                "varName", varName
+        ));
 
         body.append("${interfaceName} ${varName} = ${factoryClassName}.${createMethodName}(modelType);");
         body.append("${visitorName} visitor = null;");
@@ -86,9 +89,11 @@ public class IODispatcherFactoryMethod implements Method {
             classSource.addImport(dispatcherSource);
 
             String modelTypeValue = specVersion.getPrefix().toUpperCase();
-            body.addContext("modelTypeValue", modelTypeValue);
-            body.addContext("ioClassName", ioSource.getName());
-            body.addContext("dispatcherClassName", dispatcherSource.getName());
+            body.addContext(Map.of(
+                    "modelTypeValue", modelTypeValue,
+                    "ioClassName", ioSource.getName(),
+                    "dispatcherClassName", dispatcherSource.getName()
+            ));
 
             body.append("    case ${modelTypeValue}:");
             body.append("        visitor = new ${dispatcherClassName}(json, (${ioClassName}) ${varName});");
