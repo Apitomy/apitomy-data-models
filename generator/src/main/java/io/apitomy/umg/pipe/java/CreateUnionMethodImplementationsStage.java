@@ -1,6 +1,5 @@
 package io.apitomy.umg.pipe.java;
 
-import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.type.EntityType;
 import io.apitomy.umg.models.concept.type.ListType;
 import io.apitomy.umg.models.concept.type.MapType;
@@ -17,7 +16,6 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Generates is/as method implementations on union value classes and entity impl classes.
@@ -84,7 +82,6 @@ public class CreateUnionMethodImplementationsStage extends AbstractJavaStage {
         for (Type variantType : allVariants) {
             String typeName = JavaTypeFactory.getUnionComponentName(variantType);
             String isMethodName = UnionIsMethod.methodName(typeName);
-            String asMethodName = UnionAsMethod.methodName(typeName);
 
             if (implSource.hasMethodSignature(isMethodName)) {
                 continue;
@@ -95,26 +92,11 @@ public class CreateUnionMethodImplementationsStage extends AbstractJavaStage {
             boolean isActive = isSameVariant(activeVariant, variantType);
 
             // isXxx method
-            MethodSource<JavaClassSource> isMethod = implSource.addMethod()
-                    .setName(isMethodName).setReturnType(boolean.class).setPublic();
-            isMethod.addAnnotation(Override.class);
-            isMethod.setBody(isActive ? "return true;" : "return false;");
+            new UnionIsMethod(typeName, isActive).writeTo(implSource);
 
             // asXxx method
-            MethodSource<JavaClassSource> asMethod = implSource.addMethod()
-                    .setName(asMethodName).setReturnType(asMethodReturnType).setPublic();
-            asMethod.addAnnotation(Override.class);
-            jt.addImportsTo(implSource);
-
-            if (isActive) {
-                if (activeVariant instanceof EntityType) {
-                    asMethod.setBody("return this;");
-                } else {
-                    asMethod.setBody("return getValue();");
-                }
-            } else {
-                asMethod.setBody("throw new ClassCastException();");
-            }
+            boolean entityVariant = variantType instanceof EntityType;
+            new UnionAsMethod(typeName, asMethodReturnType, isActive, entityVariant, jt).writeTo(implSource);
         }
 
         // Add unionValue() for entity impls
