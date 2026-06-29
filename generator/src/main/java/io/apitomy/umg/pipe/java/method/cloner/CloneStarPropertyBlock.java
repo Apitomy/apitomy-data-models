@@ -63,14 +63,15 @@ public class CloneStarPropertyBlock extends CodeBlock {
 {
     List<String> itemNames = source.getItemNames();
     if (itemNames != null) {
-        itemNames.forEach(name -> {
+        for (int _idx = 0; _idx < itemNames.size(); _idx++) {
+            String name = itemNames.get(_idx);
             ${entityJavaType} srcItem = (${entityJavaType}) source.getItem(name);
             if (srcItem != null) {
                 ${entityJavaType} tgtItem = (${entityJavaType}) target.${createMethodName}();
                 this.${cloneMethodName}(srcItem, tgtItem);
                 target.addItem(name, tgtItem);
             }
-        });
+        }
     }
 }
 """);
@@ -83,9 +84,10 @@ public class CloneStarPropertyBlock extends CodeBlock {
 {
     List<String> itemNames = source.getItemNames();
     if (itemNames != null) {
-        itemNames.forEach(name -> {
+        for (int _idx = 0; _idx < itemNames.size(); _idx++) {
+            String name = itemNames.get(_idx);
             target.addItem(name, source.getItem(name));
-        });
+        }
     }
 }
 """);

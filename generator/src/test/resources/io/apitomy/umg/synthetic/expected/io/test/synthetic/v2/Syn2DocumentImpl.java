@@ -89,10 +89,10 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	@Override
 	public void clearItems() {
 		if (this.items != null) {
-			this.items.forEach(item -> {
+			for (Object item : this.items) {
 				if (item != null)
-					item.detach();
-			});
+					((Node) item).detach();
+			}
 			this.items.clear();
 		}
 	}
@@ -170,10 +170,10 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 	@Override
 	public void clearWebhooks() {
 		if (this.webhooks != null) {
-			this.webhooks.values().forEach(item -> {
+			for (Object item : this.webhooks.values()) {
 				if (item != null)
-					item.detach();
-			});
+					((Node) item).detach();
+			}
 			this.webhooks.clear();
 		}
 	}

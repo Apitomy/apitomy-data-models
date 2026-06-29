@@ -37,11 +37,12 @@ public class Syn1ModelCloner {
 		{
 			List<? extends SynItem> srcList = source.getItems();
 			if (srcList != null && !srcList.isEmpty()) {
-				srcList.forEach(srcItem -> {
+				for (int _idx = 0; _idx < srcList.size(); _idx++) {
+					Syn1Item srcItem = (Syn1Item) srcList.get(_idx);
 					Syn1Item tgtItem = (Syn1Item) target.createItem();
-					this.cloneItem((Syn1Item) srcItem, tgtItem);
+					this.cloneItem(srcItem, tgtItem);
 					target.addItem(tgtItem);
-				});
+				}
 			}
 		}
 		{
@@ -73,20 +74,22 @@ public class Syn1ModelCloner {
 			Map<String, JsonNode> srcMap = source.getExtensions();
 			if (srcMap != null && !srcMap.isEmpty()) {
 				List<String> keys = new java.util.ArrayList<>(srcMap.keySet());
-				keys.forEach(name -> {
+				for (int _idx = 0; _idx < keys.size(); _idx++) {
+					String name = keys.get(_idx);
 					target.addExtension(name, srcMap.get(name));
-				});
+				}
 			}
 		}
 		{
 			List<String> extraPropertyNames = source.getExtraPropertyNames();
 			if (extraPropertyNames != null) {
-				extraPropertyNames.forEach(name -> {
+				for (int _idx = 0; _idx < extraPropertyNames.size(); _idx++) {
+					String name = extraPropertyNames.get(_idx);
 					JsonNode value = source.getExtraProperty(name);
 					if (value != null) {
 						target.addExtraProperty(name, JsonUtil.clone(value));
 					}
-				});
+				}
 			}
 		}
 	}
@@ -104,20 +107,22 @@ public class Syn1ModelCloner {
 			Map<String, JsonNode> srcMap = source.getExtensions();
 			if (srcMap != null && !srcMap.isEmpty()) {
 				List<String> keys = new java.util.ArrayList<>(srcMap.keySet());
-				keys.forEach(name -> {
+				for (int _idx = 0; _idx < keys.size(); _idx++) {
+					String name = keys.get(_idx);
 					target.addExtension(name, srcMap.get(name));
-				});
+				}
 			}
 		}
 		{
 			List<String> extraPropertyNames = source.getExtraPropertyNames();
 			if (extraPropertyNames != null) {
-				extraPropertyNames.forEach(name -> {
+				for (int _idx = 0; _idx < extraPropertyNames.size(); _idx++) {
+					String name = extraPropertyNames.get(_idx);
 					JsonNode value = source.getExtraProperty(name);
 					if (value != null) {
 						target.addExtraProperty(name, JsonUtil.clone(value));
 					}
-				});
+				}
 			}
 		}
 	}
@@ -129,12 +134,13 @@ public class Syn1ModelCloner {
 		{
 			List<String> extraPropertyNames = source.getExtraPropertyNames();
 			if (extraPropertyNames != null) {
-				extraPropertyNames.forEach(name -> {
+				for (int _idx = 0; _idx < extraPropertyNames.size(); _idx++) {
+					String name = extraPropertyNames.get(_idx);
 					JsonNode value = source.getExtraProperty(name);
 					if (value != null) {
 						target.addExtraProperty(name, JsonUtil.clone(value));
 					}
-				});
+				}
 			}
 		}
 	}
@@ -177,20 +183,22 @@ public class Syn1ModelCloner {
 			Map<String, JsonNode> srcMap = source.getExtensions();
 			if (srcMap != null && !srcMap.isEmpty()) {
 				List<String> keys = new java.util.ArrayList<>(srcMap.keySet());
-				keys.forEach(name -> {
+				for (int _idx = 0; _idx < keys.size(); _idx++) {
+					String name = keys.get(_idx);
 					target.addExtension(name, srcMap.get(name));
-				});
+				}
 			}
 		}
 		{
 			List<String> extraPropertyNames = source.getExtraPropertyNames();
 			if (extraPropertyNames != null) {
-				extraPropertyNames.forEach(name -> {
+				for (int _idx = 0; _idx < extraPropertyNames.size(); _idx++) {
+					String name = extraPropertyNames.get(_idx);
 					JsonNode value = source.getExtraProperty(name);
 					if (value != null) {
 						target.addExtraProperty(name, JsonUtil.clone(value));
 					}
-				});
+				}
 			}
 		}
 	}
@@ -208,11 +216,12 @@ public class Syn1ModelCloner {
 				}
 				if (srcUnion.isSchemaList()) {
 					List<Syn1Schema> clonedList = new ArrayList<>();
-					srcUnion.asSchemaList().forEach(srcItem -> {
+					for (int _idx = 0; _idx < srcUnion.asSchemaList().size(); _idx++) {
+						Syn1Schema srcItem = (Syn1Schema) srcUnion.asSchemaList().get(_idx);
 						Syn1Schema tgtItem = (Syn1Schema) target.createSchema();
-						this.cloneSchema((Syn1Schema) srcItem, tgtItem);
+						this.cloneSchema(srcItem, tgtItem);
 						clonedList.add(tgtItem);
-					});
+					}
 					@SuppressWarnings({"unchecked", "rawtypes"})
 					SchemaListUnionValueImpl unionValue = new SchemaListUnionValueImpl((List) clonedList);
 					target.setItems(unionValue);
@@ -225,7 +234,7 @@ public class Syn1ModelCloner {
 		{
 			Map<String, BooleanSchemaUnion> srcMap = source.getProperties();
 			if (srcMap != null && !srcMap.isEmpty()) {
-				srcMap.keySet().forEach(key -> {
+				for (String key : srcMap.keySet()) {
 					BooleanSchemaUnion srcUnion = srcMap.get(key);
 					if (srcUnion.isSchema()) {
 						Syn1Schema tgtItem = new Syn1SchemaImpl();
@@ -235,13 +244,14 @@ public class Syn1ModelCloner {
 					if (srcUnion.isBoolean()) {
 						target.addProperty(key, new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
-				});
+				}
 			}
 		}
 		{
 			List<BooleanSchemaUnion> srcList = source.getAllOf();
 			if (srcList != null && !srcList.isEmpty()) {
-				srcList.forEach(srcUnion -> {
+				for (int _idx = 0; _idx < srcList.size(); _idx++) {
+					BooleanSchemaUnion srcUnion = srcList.get(_idx);
 					if (srcUnion.isSchema()) {
 						Syn1Schema tgtItem = new Syn1SchemaImpl();
 						this.cloneSchema((Syn1Schema) srcUnion.asSchema(), tgtItem);
@@ -250,13 +260,13 @@ public class Syn1ModelCloner {
 					if (srcUnion.isBoolean()) {
 						target.addAllOf(new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
-				});
+				}
 			}
 		}
 		{
 			Map<String, BooleanSchemaUnion> srcMap = source.getDefinitions();
 			if (srcMap != null && !srcMap.isEmpty()) {
-				srcMap.keySet().forEach(key -> {
+				for (String key : srcMap.keySet()) {
 					BooleanSchemaUnion srcUnion = srcMap.get(key);
 					if (srcUnion.isSchema()) {
 						Syn1Schema tgtItem = new Syn1SchemaImpl();
@@ -266,13 +276,13 @@ public class Syn1ModelCloner {
 					if (srcUnion.isBoolean()) {
 						target.addDefinition(key, new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
-				});
+				}
 			}
 		}
 		{
 			Map<String, SchemaOrBoolean> srcMap = source.getNestedSchemas();
 			if (srcMap != null && !srcMap.isEmpty()) {
-				srcMap.keySet().forEach(key -> {
+				for (String key : srcMap.keySet()) {
 					SchemaOrBoolean srcUnion = srcMap.get(key);
 					if (srcUnion.isSchema()) {
 						Syn1Schema tgtItem = new Syn1SchemaImpl();
@@ -282,13 +292,14 @@ public class Syn1ModelCloner {
 					if (srcUnion.isBoolean()) {
 						target.addNestedSchema(key, new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
-				});
+				}
 			}
 		}
 		{
 			List<SchemaOrBoolean> srcList = source.getComposedSchemas();
 			if (srcList != null && !srcList.isEmpty()) {
-				srcList.forEach(srcUnion -> {
+				for (int _idx = 0; _idx < srcList.size(); _idx++) {
+					SchemaOrBoolean srcUnion = srcList.get(_idx);
 					if (srcUnion.isSchema()) {
 						Syn1Schema tgtItem = new Syn1SchemaImpl();
 						this.cloneSchema((Syn1Schema) srcUnion.asSchema(), tgtItem);
@@ -297,7 +308,7 @@ public class Syn1ModelCloner {
 					if (srcUnion.isBoolean()) {
 						target.addComposedSchema(new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
-				});
+				}
 			}
 		}
 		target.setMinLength(source.getMinLength());
@@ -312,20 +323,22 @@ public class Syn1ModelCloner {
 			Map<String, JsonNode> srcMap = source.getExtensions();
 			if (srcMap != null && !srcMap.isEmpty()) {
 				List<String> keys = new java.util.ArrayList<>(srcMap.keySet());
-				keys.forEach(name -> {
+				for (int _idx = 0; _idx < keys.size(); _idx++) {
+					String name = keys.get(_idx);
 					target.addExtension(name, srcMap.get(name));
-				});
+				}
 			}
 		}
 		{
 			List<String> extraPropertyNames = source.getExtraPropertyNames();
 			if (extraPropertyNames != null) {
-				extraPropertyNames.forEach(name -> {
+				for (int _idx = 0; _idx < extraPropertyNames.size(); _idx++) {
+					String name = extraPropertyNames.get(_idx);
 					JsonNode value = source.getExtraProperty(name);
 					if (value != null) {
 						target.addExtraProperty(name, JsonUtil.clone(value));
 					}
-				});
+				}
 			}
 		}
 	}
@@ -334,34 +347,37 @@ public class Syn1ModelCloner {
 		{
 			List<String> itemNames = source.getItemNames();
 			if (itemNames != null) {
-				itemNames.forEach(name -> {
+				for (int _idx = 0; _idx < itemNames.size(); _idx++) {
+					String name = itemNames.get(_idx);
 					Syn1PathItem srcItem = (Syn1PathItem) source.getItem(name);
 					if (srcItem != null) {
 						Syn1PathItem tgtItem = (Syn1PathItem) target.createPathItem();
 						this.clonePathItem(srcItem, tgtItem);
 						target.addItem(name, tgtItem);
 					}
-				});
+				}
 			}
 		}
 		{
 			Map<String, JsonNode> srcMap = source.getExtensions();
 			if (srcMap != null && !srcMap.isEmpty()) {
 				List<String> keys = new java.util.ArrayList<>(srcMap.keySet());
-				keys.forEach(name -> {
+				for (int _idx = 0; _idx < keys.size(); _idx++) {
+					String name = keys.get(_idx);
 					target.addExtension(name, srcMap.get(name));
-				});
+				}
 			}
 		}
 		{
 			List<String> extraPropertyNames = source.getExtraPropertyNames();
 			if (extraPropertyNames != null) {
-				extraPropertyNames.forEach(name -> {
+				for (int _idx = 0; _idx < extraPropertyNames.size(); _idx++) {
+					String name = extraPropertyNames.get(_idx);
 					JsonNode value = source.getExtraProperty(name);
 					if (value != null) {
 						target.addExtraProperty(name, JsonUtil.clone(value));
 					}
-				});
+				}
 			}
 		}
 	}
@@ -391,20 +407,22 @@ public class Syn1ModelCloner {
 			Map<String, JsonNode> srcMap = source.getExtensions();
 			if (srcMap != null && !srcMap.isEmpty()) {
 				List<String> keys = new java.util.ArrayList<>(srcMap.keySet());
-				keys.forEach(name -> {
+				for (int _idx = 0; _idx < keys.size(); _idx++) {
+					String name = keys.get(_idx);
 					target.addExtension(name, srcMap.get(name));
-				});
+				}
 			}
 		}
 		{
 			List<String> extraPropertyNames = source.getExtraPropertyNames();
 			if (extraPropertyNames != null) {
-				extraPropertyNames.forEach(name -> {
+				for (int _idx = 0; _idx < extraPropertyNames.size(); _idx++) {
+					String name = extraPropertyNames.get(_idx);
 					JsonNode value = source.getExtraProperty(name);
 					if (value != null) {
 						target.addExtraProperty(name, JsonUtil.clone(value));
 					}
-				});
+				}
 			}
 		}
 	}
@@ -421,31 +439,34 @@ public class Syn1ModelCloner {
 		{
 			List<? extends SynItem> srcList = source.getParameters();
 			if (srcList != null && !srcList.isEmpty()) {
-				srcList.forEach(srcItem -> {
+				for (int _idx = 0; _idx < srcList.size(); _idx++) {
+					Syn1Item srcItem = (Syn1Item) srcList.get(_idx);
 					Syn1Item tgtItem = (Syn1Item) target.createItem();
-					this.cloneItem((Syn1Item) srcItem, tgtItem);
+					this.cloneItem(srcItem, tgtItem);
 					target.addParameter(tgtItem);
-				});
+				}
 			}
 		}
 		{
 			Map<String, JsonNode> srcMap = source.getExtensions();
 			if (srcMap != null && !srcMap.isEmpty()) {
 				List<String> keys = new java.util.ArrayList<>(srcMap.keySet());
-				keys.forEach(name -> {
+				for (int _idx = 0; _idx < keys.size(); _idx++) {
+					String name = keys.get(_idx);
 					target.addExtension(name, srcMap.get(name));
-				});
+				}
 			}
 		}
 		{
 			List<String> extraPropertyNames = source.getExtraPropertyNames();
 			if (extraPropertyNames != null) {
-				extraPropertyNames.forEach(name -> {
+				for (int _idx = 0; _idx < extraPropertyNames.size(); _idx++) {
+					String name = extraPropertyNames.get(_idx);
 					JsonNode value = source.getExtraProperty(name);
 					if (value != null) {
 						target.addExtraProperty(name, JsonUtil.clone(value));
 					}
-				});
+				}
 			}
 		}
 	}
