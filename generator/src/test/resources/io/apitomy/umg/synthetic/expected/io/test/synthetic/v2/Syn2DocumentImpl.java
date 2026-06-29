@@ -102,6 +102,14 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 		}
 	}
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	@Override
 	public void insertItem(SynItem value, int atIndex) {
 		if (this.items == null) {
@@ -174,6 +182,14 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 		}
 	}
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	@Override
 	public void insertWebhook(String name, Syn2PathItem value, int atIndex) {
 		if (this.webhooks == null) {
@@ -247,6 +263,14 @@ public class Syn2DocumentImpl extends NodeImpl implements Syn2Document {
 		}
 	}
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	@Override
 	public void insertExtension(String name, JsonNode value, int atIndex) {
 		if (this.extensions == null) {

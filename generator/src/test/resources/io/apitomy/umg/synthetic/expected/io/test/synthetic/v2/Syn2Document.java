@@ -16,6 +16,14 @@ public interface Syn2Document extends SynDocument, Syn2Extensible {
 
 	public void removeWebhook(String name);
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	public void insertWebhook(String name, Syn2PathItem value, int atIndex);
 
 	public Map<String, JsonNode> getExtensions();
@@ -26,5 +34,13 @@ public interface Syn2Document extends SynDocument, Syn2Extensible {
 
 	public void removeExtension(String name);
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	public void insertExtension(String name, JsonNode value, int atIndex);
 }

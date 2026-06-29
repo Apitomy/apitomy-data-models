@@ -18,5 +18,13 @@ public interface Syn1PathItem extends SynPathItem, Syn1Extensible, Syn1Reference
 
 	public void removeExtension(String name);
 
+	/**
+	 * Inserts an item at the given index.
+	 * 
+	 * @param atIndex
+	 *            insertion position: &lt;= 0 inserts at the beginning, &gt;= size
+	 *            inserts at the end, otherwise inserts at the given position
+	 *            shifting existing items to the right
+	 */
 	public void insertExtension(String name, JsonNode value, int atIndex);
 }
