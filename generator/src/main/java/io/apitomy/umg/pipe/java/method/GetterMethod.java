@@ -8,7 +8,7 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
-import io.apitomy.umg.models.concept.type.Type;
+
 
 /**
  * Generates a getter method: signature, return type, @Override (for impl), and
@@ -27,27 +27,24 @@ public class GetterMethod implements Method {
     }
 
     /**
-     * Returns the getter method name for the given property name and type.
+     * Naming-only constructor — use when only getName() is needed.
      */
-    public static String methodName(String propertyName, Type type) {
-        boolean isBool = type.isPrimitiveType() && type.getName().equals("boolean");
-        return (isBool ? "is" : "get") + StringUtils.capitalize(propertyName);
+    public GetterMethod(PropertyModel property) {
+        this.property = property;
+        this.propertyWithOrigin = null;
+        this.ctx = null;
     }
 
-    /**
-     * Returns the getter method name for the given property.
-     */
-    public static String methodName(PropertyModel property) {
+
+
+    @Override
+    public String getName() {
         String name = property.getName();
         if (name.startsWith("/")) {
             name = property.getCollection();
         }
-        return methodName(name, property.getResolvedType());
-    }
-
-    @Override
-    public String getName() {
-        return methodName(property);
+        boolean isBool = property.getResolvedType().isPrimitiveType() && property.getResolvedType().getName().equals("boolean");
+        return (isBool ? "is" : "get") + StringUtils.capitalize(name);
     }
 
     @Override

@@ -69,9 +69,9 @@ public class CloneMapPropertyBlock extends CodeBlock {
                     "getterMethodName", prop.getGetterName(),
                     "entityJavaType", resolved.javaInterface().getName(),
                     "commonEntityType", commonEntityTypeJavaModel.getName(),
-                    "createMethodName", FactoryMethod.methodName(entityTypeName),
-                    "cloneMethodName", ClonerMethod.methodName(entityTypeName),
-                    "addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getName()))
+                    "createMethodName", new FactoryMethod(entityTypeName).getName(),
+                    "cloneMethodName", new ClonerMethod(entityTypeName).getName(),
+                    "addMethodName", new AddMethod(prop.getCtx().singularize(property.getName())).getName()
             ));
 
             body.appendBlock("""

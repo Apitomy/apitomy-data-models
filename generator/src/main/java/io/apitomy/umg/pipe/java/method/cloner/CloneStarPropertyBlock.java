@@ -1,6 +1,7 @@
 package io.apitomy.umg.pipe.java.method.cloner;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaSource;
@@ -52,9 +53,11 @@ public class CloneStarPropertyBlock extends CodeBlock {
         clonerClassSource.addImport(resolved.javaInterface());
         clonerClassSource.addImport(List.class);
 
-        body.addContext("entityJavaType", resolved.javaInterface().getName());
-        body.addContext("createMethodName", FactoryMethod.methodName(resolved.entityModel().getName()));
-        body.addContext("cloneMethodName", ClonerMethod.methodName(resolved.entityModel().getName()));
+        body.addContext(Map.of(
+                "entityJavaType", resolved.javaInterface().getName(),
+                "createMethodName", new FactoryMethod(resolved.entityModel().getName()).getName(),
+                "cloneMethodName", new ClonerMethod(resolved.entityModel().getName()).getName()
+        ));
 
         body.appendBlock("""
 {

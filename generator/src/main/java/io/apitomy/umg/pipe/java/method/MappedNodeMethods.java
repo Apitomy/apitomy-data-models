@@ -119,12 +119,14 @@ public class MappedNodeMethods {
         body.append("this._items.put(name, item);");
         if (entityProperty) {
             addParentTrackingImports(javaEntity);
-            body.append("if (item != null) {");
-            body.append("    ((NodeImpl) item)._setParent(this);");
-            body.append("    ((NodeImpl) item)._setParentPropertyName(null);");
-            body.append("    ((NodeImpl) item)._setParentPropertyType(ParentPropertyType.map);");
-            body.append("    ((NodeImpl) item)._setMapPropertyName(name);");
-            body.append("}");
+            body.appendBlock("""
+if (item != null) {
+    ((NodeImpl) item)._setParent(this);
+    ((NodeImpl) item)._setParentPropertyName(null);
+    ((NodeImpl) item)._setParentPropertyType(ParentPropertyType.map);
+    ((NodeImpl) item)._setMapPropertyName(name);
+}
+""");
         }
         method.setBody(body.toString());
     }
@@ -143,12 +145,14 @@ public class MappedNodeMethods {
         body.append("this._items = DataModelUtil.insertMapEntry(this._items, name, item, atIndex);");
         if (entityProperty) {
             addParentTrackingImports(javaEntity);
-            body.append("if (item != null) {");
-            body.append("    ((NodeImpl) item)._setParent(this);");
-            body.append("    ((NodeImpl) item)._setParentPropertyName(null);");
-            body.append("    ((NodeImpl) item)._setParentPropertyType(ParentPropertyType.map);");
-            body.append("    ((NodeImpl) item)._setMapPropertyName(name);");
-            body.append("}");
+            body.appendBlock("""
+if (item != null) {
+    ((NodeImpl) item)._setParent(this);
+    ((NodeImpl) item)._setParentPropertyName(null);
+    ((NodeImpl) item)._setParentPropertyType(ParentPropertyType.map);
+    ((NodeImpl) item)._setMapPropertyName(name);
+}
+""");
         }
         method.setBody(body.toString());
     }

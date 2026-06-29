@@ -133,7 +133,7 @@ public class CreateTraversersStage extends AbstractVisitorStage {
             PropertyModel property = _property;
 
             body.addContext("propertyName", property.getName());
-            body.addContext("propertyGetter", GetterMethod.methodName(property));
+            body.addContext("propertyGetter", new GetterMethod(property).getName());
 
             if (isUnion(property)) {
                 body.append("this.traverseUnion(\"${propertyName}\", model.${propertyGetter}());");

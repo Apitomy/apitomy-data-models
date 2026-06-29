@@ -33,7 +33,7 @@ public class ReadUnionPropertyBlock extends CodeBlock {
         Type resolved = property.getResolvedType();
         var nsModel = prop.getPropertyWithOrigin().getOrigin().getNamespace();
         var jt = prop.getCtx().getJavaTypeFactory().createJavaType(resolved, nsModel);
-        String readMethodName = ReaderMethod.methodName(jt.getSimpleName());
+        String readMethodName = new ReaderMethod(jt.getSimpleName()).getName();
 
         readerClassSource.addImport(JsonNode.class);
         jt.addImportsTo(readerClassSource);

@@ -46,21 +46,23 @@ public class CloneUnionMapPropertyBlock extends CodeBlock {
         body.addContext(Map.of(
                 "unionJavaType", unionJavaType.getSimpleName(),
                 "getterMethodName", prop.getGetterName(),
-                "addMethodName", AddMethod.methodName(prop.getCtx().singularize(property.getName()))
+                "addMethodName", new AddMethod(prop.getCtx().singularize(property.getName())).getName()
         ));
 
-        body.append("{");
-        body.append("    Map<String, ${unionJavaType}> srcMap = source.${getterMethodName}();");
-        body.append("    if (srcMap != null && !srcMap.isEmpty()) {");
-        body.append("        srcMap.keySet().forEach(key -> {");
-        body.append("            ${unionJavaType} srcUnion = srcMap.get(key);");
+        body.appendBlock("""
+{
+    Map<String, ${unionJavaType}> srcMap = source.${getterMethodName}();
+    if (srcMap != null && !srcMap.isEmpty()) {
+        srcMap.keySet().forEach(key -> {
+            ${unionJavaType} srcUnion = srcMap.get(key);
+""");
 
         effectiveUnionType.getTypes().stream()
                 .sorted(UnionVariantComparator.INSTANCE)
                 .forEach(nestedType -> {
             String typeName = AbstractJavaStage.getTypeName(nestedType);
-            String isMethodName = UnionIsMethod.methodName(typeName);
-            String asMethodName = UnionAsMethod.methodName(typeName);
+            String isMethodName = new UnionIsMethod(typeName).getName();
+            String asMethodName = new UnionAsMethod(typeName).getName();
 
             body.addContext("isMethodName", isMethodName);
             body.addContext("asMethodName", asMethodName);
