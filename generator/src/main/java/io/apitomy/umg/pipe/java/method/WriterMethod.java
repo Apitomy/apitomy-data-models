@@ -29,9 +29,24 @@ import io.apitomy.umg.models.java.type.JavaTypeFactory;
 public class WriterMethod implements Method {
 
     private final String entityName;
+    private final SpecificationVersion specVersion;
+    private final UnionType unionType;
+    private final CodeGenContext ctx;
 
     public WriterMethod(String entityName) {
         this.entityName = entityName;
+        this.specVersion = null;
+        this.unionType = null;
+        this.ctx = null;
+    }
+
+    public WriterMethod(SpecificationVersion specVersion, UnionType unionType, CodeGenContext ctx) {
+        NamespaceModel nsModel = ctx.getConceptIndex().lookupNamespace(specVersion.getNamespace());
+        JavaType jt = ctx.getJavaTypeFactory().createJavaType(unionType, nsModel);
+        this.entityName = jt.getSimpleName();
+        this.specVersion = specVersion;
+        this.unionType = unionType;
+        this.ctx = ctx;
     }
 
     /**
@@ -53,17 +68,14 @@ public class WriterMethod implements Method {
 
     @Override
     public void writeTo(JavaSource<?> target) {
-        throw new UnsupportedOperationException(
-                "WriterMethod requires additional context; use writeTo(JavaClassSource, SpecificationVersion, UnionType, CodeGenContext) instead");
+        if (specVersion == null || unionType == null || ctx == null) {
+            throw new UnsupportedOperationException(
+                    "WriterMethod requires full context constructor for writeTo");
+        }
+        writeUnionWriterMethod((JavaClassSource) target);
     }
 
-    /**
-     * Generates the full union writer dispatch method on the given writer class.
-     * Creates a method {@code writeUnionName(UnionType union)} that dispatches
-     * to the correct variant writer based on is/as methods.
-     */
-    public void writeTo(JavaClassSource writerClassSource, SpecificationVersion specVersion,
-                        UnionType unionType, CodeGenContext ctx) {
+    private void writeUnionWriterMethod(JavaClassSource writerClassSource) {
         String namespace = specVersion.getNamespace();
         NamespaceModel nsModel = ctx.getConceptIndex().lookupNamespace(namespace);
         JavaType jt = ctx.getJavaTypeFactory().createJavaType(unionType, nsModel);
