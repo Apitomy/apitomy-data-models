@@ -105,6 +105,26 @@ public class CodeGenContext {
         return rootNamespace + ".ModelType";
     }
 
+    public String getModelReaderInterfaceFQN() {
+        return rootNamespace + ".io.ModelReader";
+    }
+
+    public String getModelWriterInterfaceFQN() {
+        return rootNamespace + ".io.ModelWriter";
+    }
+
+    public String getModelClonerInterfaceFQN() {
+        return rootNamespace + ".io.ModelCloner";
+    }
+
+    public String getRootVisitorInterfaceFQN() {
+        return rootNamespace + ".visitors.Visitor";
+    }
+
+    public SpecificationIndex getSpecIndex() {
+        return specIndex;
+    }
+
     /**
      * Resolves the package for union value impl classes, preferring the common-entity
      * namespace when a variant references a common entity.
