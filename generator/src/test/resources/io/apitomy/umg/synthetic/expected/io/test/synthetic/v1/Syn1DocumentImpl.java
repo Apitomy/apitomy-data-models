@@ -108,7 +108,7 @@ public class Syn1DocumentImpl extends NodeImpl implements Syn1Document {
 		if (this.items == null) {
 			this.items = new ArrayList<>();
 		}
-		this.items = DataModelUtil.insertListEntry(this.items, value, atIndex);
+		DataModelUtil.insertListEntry(this.items, value, atIndex);
 		DataModelUtil.setParent(value, this, "items", ParentPropertyType.array);
 	}
 
