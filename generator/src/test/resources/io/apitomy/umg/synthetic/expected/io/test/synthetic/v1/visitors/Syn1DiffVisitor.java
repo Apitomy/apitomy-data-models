@@ -23,7 +23,7 @@ import io.test.synthetic.visitors.diff.DiffVisitor;
 import java.util.List;
 import java.util.Map;
 
-public abstract class Syn1DiffVisitor extends DiffVisitor {
+public abstract class Syn1DiffVisitor<P> extends DiffVisitor {
 
 	public boolean visitDocument(Syn1Document original, Syn1Document updated) {
 		return true;
@@ -35,7 +35,7 @@ public abstract class Syn1DiffVisitor extends DiffVisitor {
 	public void diffDocumentInfo(SynInfo original, SynInfo updated) {
 	}
 
-	public void diffDocumentItems(CollectionDiff<Object, SynItem> diff) {
+	public void diffDocumentItems(CollectionDiff<P, SynItem> diff) {
 	}
 
 	public void visitDocumentItemsItem(SynItem original, SynItem updated) {
@@ -126,31 +126,31 @@ public abstract class Syn1DiffVisitor extends DiffVisitor {
 	public void diffSchemaItems(BooleanSchemaSchemaListUnion original, BooleanSchemaSchemaListUnion updated) {
 	}
 
-	public void diffSchemaProperties(CollectionDiff<Object, BooleanSchemaUnion> diff) {
+	public void diffSchemaProperties(CollectionDiff<P, BooleanSchemaUnion> diff) {
 	}
 
 	public void visitSchemaProperties(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
-	public void diffSchemaAllOf(CollectionDiff<Object, BooleanSchemaUnion> diff) {
+	public void diffSchemaAllOf(CollectionDiff<P, BooleanSchemaUnion> diff) {
 	}
 
 	public void visitSchemaAllOfItem(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
-	public void diffSchemaDefinitions(CollectionDiff<Object, BooleanSchemaUnion> diff) {
+	public void diffSchemaDefinitions(CollectionDiff<P, BooleanSchemaUnion> diff) {
 	}
 
 	public void visitSchemaDefinitions(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
-	public void diffSchemaNestedSchemas(CollectionDiff<Object, SchemaOrBoolean> diff) {
+	public void diffSchemaNestedSchemas(CollectionDiff<P, SchemaOrBoolean> diff) {
 	}
 
 	public void visitSchemaNestedSchemas(SchemaOrBoolean original, SchemaOrBoolean updated) {
 	}
 
-	public void diffSchemaComposedSchemas(CollectionDiff<Object, SchemaOrBoolean> diff) {
+	public void diffSchemaComposedSchemas(CollectionDiff<P, SchemaOrBoolean> diff) {
 	}
 
 	public void visitSchemaComposedSchemasItem(SchemaOrBoolean original, SchemaOrBoolean updated) {
@@ -201,7 +201,7 @@ public abstract class Syn1DiffVisitor extends DiffVisitor {
 	public void diffOperationTags(List<String> original, List<String> updated) {
 	}
 
-	public void diffOperationParameters(CollectionDiff<Object, SynItem> diff) {
+	public void diffOperationParameters(CollectionDiff<P, SynItem> diff) {
 	}
 
 	public void visitOperationParametersItem(SynItem original, SynItem updated) {
