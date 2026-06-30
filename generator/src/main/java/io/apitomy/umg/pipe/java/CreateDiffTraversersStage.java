@@ -18,6 +18,7 @@ import io.apitomy.umg.models.concept.type.MapType;
 import io.apitomy.umg.models.java.type.JavaType;
 import io.apitomy.umg.models.java.type.JavaTypeFactory;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
+import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
 
 /**
@@ -203,7 +204,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
 
                 body.append("{");
                 body.append("    CollectionDiff<P," + valueTypeStr + "> diff = this.pairList(\"${propertyName}\", original.${getter}(), updated.${getter}());");
-                body.append("    visitor.${diffMethod}(diff);");
+                body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}(), diff);");
                 body.append("    for (CollectionDiff.MatchedPair<P, " + valueTypeStr + "> pair : diff.getMatched()) {");
                 body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 if (isEntityList(property)) {
@@ -219,14 +220,14 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 valueJt.addImportsTo(classSource);
 
                 String valueTypeStr = valueJt.toJavaTypeString();
-                String visitMethod = "visit" + entityName + fieldSuffix;
+                String visitMethod = "visit" + entityName + singularize(fieldSuffix);
                 body.addContext("valueType", valueTypeStr);
                 body.addContext("visitMethod2", visitMethod);
                 body.addContext("propertyName", property.getName());
 
                 body.append("{");
                 body.append("    CollectionDiff<P," + valueTypeStr + "> diff = this.pairMap(\"${propertyName}\", original.${getter}(), updated.${getter}());");
-                body.append("    visitor.${diffMethod}(diff);");
+                body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}(), diff);");
                 body.append("    for (CollectionDiff.MatchedPair<P, " + valueTypeStr + "> pair : diff.getMatched()) {");
                 body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 if (isEntityMap(property)) {
@@ -256,5 +257,9 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
             return name;
         }
         return StringUtils.capitalize(name);
+    }
+
+    private static String singularize(String name) {
+        return CodeGenContext.singularize(name);
     }
 }
