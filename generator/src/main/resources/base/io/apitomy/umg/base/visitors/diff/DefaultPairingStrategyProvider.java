@@ -7,11 +7,11 @@ public class DefaultPairingStrategyProvider implements PairingStrategyProvider<D
 
     @Override
     public <V> MapPairingStrategy<DefaultPairingKey, V> getMapStrategy(String propertyName) {
-        return new KeyPairingStrategy<>();
+        return new DefaultMapPairingStrategy<>();
     }
 
     @Override
     public <V> ListPairingStrategy<DefaultPairingKey, V> getListStrategy(String propertyName) {
-        return new IndexPairingStrategy<>();
+        return new DefaultListPairingStrategy<>();
     }
 }
