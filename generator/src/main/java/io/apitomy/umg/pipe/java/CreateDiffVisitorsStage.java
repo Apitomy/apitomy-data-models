@@ -40,6 +40,8 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
                 .setPublic()
                 .setAbstract(true);
 
+        classSource.addTypeVariable("P");
+
         String baseFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.DiffVisitor";
         JavaClassSource baseSource = getState().getJavaIndex().lookupClass(baseFQN);
         classSource.addImport(baseSource);
@@ -163,13 +165,13 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
                 + ".visitors.diff.CollectionDiff";
         classSource.addImport(collectionDiffFQN);
 
-        // diff method: diffEntityField(CollectionDiff<Object,ValueType> diff)
+        // diff method: diffEntityField(CollectionDiff<P,ValueType> diff)
         String diffMethodName = "diff" + entityName + fieldSuffix;
         MethodSource<JavaClassSource> diffMethod = classSource.addMethod()
                 .setName(diffMethodName)
                 .setReturnTypeVoid()
                 .setPublic();
-        diffMethod.addParameter("CollectionDiff<Object," + valueJt.toJavaTypeString() + ">", "diff");
+        diffMethod.addParameter("CollectionDiff<P," + valueJt.toJavaTypeString() + ">", "diff");
         diffMethod.setBody("");
 
         String visitMethodName = "visit" + entityName + fieldSuffix + "Item";
@@ -192,13 +194,13 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
                 + ".visitors.diff.CollectionDiff";
         classSource.addImport(collectionDiffFQN);
 
-        // diff method: diffEntityField(CollectionDiff<Object,ValueType> diff)
+        // diff method: diffEntityField(CollectionDiff<P,ValueType> diff)
         String diffMethodName = "diff" + entityName + fieldSuffix;
         MethodSource<JavaClassSource> diffMethod = classSource.addMethod()
                 .setName(diffMethodName)
                 .setReturnTypeVoid()
                 .setPublic();
-        diffMethod.addParameter("CollectionDiff<Object," + valueJt.toJavaTypeString() + ">", "diff");
+        diffMethod.addParameter("CollectionDiff<P," + valueJt.toJavaTypeString() + ">", "diff");
         diffMethod.setBody("");
 
         String visitMethodName = "visit" + entityName + fieldSuffix;
