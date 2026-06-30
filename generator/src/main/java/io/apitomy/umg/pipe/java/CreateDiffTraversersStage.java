@@ -53,7 +53,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
         String baseFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.AbstractDiffTraverser";
         JavaClassSource baseSource = getState().getJavaIndex().lookupClass(baseFQN);
         classSource.addImport(baseSource);
-        classSource.setSuperType("AbstractDiffTraverser<" + visitorClassName + ">");
+        classSource.setSuperType("AbstractDiffTraverser<Object, " + visitorClassName + ">");
 
         // Import CollectionDiff for collection field handling
         String collectionDiffFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.CollectionDiff";
@@ -76,7 +76,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
         MethodSource<JavaClassSource> constructor2 = classSource.addMethod()
                 .setConstructor(true).setPublic();
         constructor2.addParameter(visitorClassName, "visitor");
-        constructor2.addParameter("PairingStrategyProvider", "pairingProvider");
+        constructor2.addParameter("PairingStrategyProvider<Object>", "pairingProvider");
         constructor2.setBody("super(visitor, pairingProvider);");
 
         java.util.Set<String> createdMethods = new java.util.HashSet<>();
@@ -201,9 +201,9 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 body.addContext("propertyName", property.getName());
 
                 body.append("{");
-                body.append("    CollectionDiff<Integer, " + valueTypeStr + "> diff = this.pairList(\"${propertyName}\", original.${getter}(), updated.${getter}());");
+                body.append("    CollectionDiff<Object," + valueTypeStr + "> diff = this.pairList(\"${propertyName}\", original.${getter}(), updated.${getter}());");
                 body.append("    visitor.${diffMethod}(diff);");
-                body.append("    for (CollectionDiff.MatchedPair<Integer, " + valueTypeStr + "> pair : diff.getMatched()) {");
+                body.append("    for (CollectionDiff.MatchedPair<Object, " + valueTypeStr + "> pair : diff.getMatched()) {");
                 body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 if (isEntityList(property)) {
                     body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
@@ -224,9 +224,9 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 body.addContext("propertyName", property.getName());
 
                 body.append("{");
-                body.append("    CollectionDiff<String, " + valueTypeStr + "> diff = this.pairMap(\"${propertyName}\", original.${getter}(), updated.${getter}());");
+                body.append("    CollectionDiff<Object," + valueTypeStr + "> diff = this.pairMap(\"${propertyName}\", original.${getter}(), updated.${getter}());");
                 body.append("    visitor.${diffMethod}(diff);");
-                body.append("    for (CollectionDiff.MatchedPair<String, " + valueTypeStr + "> pair : diff.getMatched()) {");
+                body.append("    for (CollectionDiff.MatchedPair<Object, " + valueTypeStr + "> pair : diff.getMatched()) {");
                 body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 if (isEntityMap(property)) {
                     body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");

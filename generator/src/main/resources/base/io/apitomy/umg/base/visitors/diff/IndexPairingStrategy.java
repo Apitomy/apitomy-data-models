@@ -7,19 +7,19 @@ import java.util.Map;
 /**
  * Default list pairing strategy — pairs entries by index.
  */
-public class IndexPairingStrategy<V> implements ListPairingStrategy<Integer, V> {
+public class IndexPairingStrategy<V> implements ListPairingStrategy<DefaultPairingKey, V> {
 
     @Override
-    public CollectionDiff<Integer, V> pair(List<V> original, List<V> updated) {
-        return CollectionDiff.pairByKey(toIndexMap(original), toIndexMap(updated));
+    public CollectionDiff<DefaultPairingKey, V> pair(List<V> original, List<V> updated) {
+        return CollectionDiff.pairByKey(toPairingKeyMap(original), toPairingKeyMap(updated));
     }
 
-    private static <V> Map<Integer, V> toIndexMap(List<V> list) {
+    private static <V> Map<DefaultPairingKey, V> toPairingKeyMap(List<V> list) {
         if (list == null) return new LinkedHashMap<>();
-        Map<Integer, V> map = new LinkedHashMap<>();
+        Map<DefaultPairingKey, V> res = new LinkedHashMap<>();
         for (int i = 0; i < list.size(); i++) {
-            map.put(i, list.get(i));
+            res.put(new DefaultPairingKey(i), list.get(i));
         }
-        return map;
+        return res;
     }
 }
