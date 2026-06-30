@@ -25,13 +25,13 @@ import io.test.synthetic.visitors.diff.PairingStrategyProvider;
 import java.util.List;
 import java.util.Map;
 
-public class Syn1DiffTraverser extends AbstractDiffTraverser<Syn1DiffVisitor> {
+public class Syn1DiffTraverser extends AbstractDiffTraverser<Object, Syn1DiffVisitor> {
 
 	public Syn1DiffTraverser(Syn1DiffVisitor visitor) {
 		super(visitor);
 	}
 
-	public Syn1DiffTraverser(Syn1DiffVisitor visitor, PairingStrategyProvider pairingProvider) {
+	public Syn1DiffTraverser(Syn1DiffVisitor visitor, PairingStrategyProvider<Object> pairingProvider) {
 		super(visitor, pairingProvider);
 	}
 
@@ -70,9 +70,9 @@ public class Syn1DiffTraverser extends AbstractDiffTraverser<Syn1DiffVisitor> {
 			traverseNode(original.getInfo(), updated.getInfo());
 		}
 		{
-			CollectionDiff<Integer, SynItem> diff = this.pairList("items", original.getItems(), updated.getItems());
+			CollectionDiff<Object, SynItem> diff = this.pairList("items", original.getItems(), updated.getItems());
 			visitor.diffDocumentItems(diff);
-			for (CollectionDiff.MatchedPair<Integer, SynItem> pair : diff.getMatched()) {
+			for (CollectionDiff.MatchedPair<Object, SynItem> pair : diff.getMatched()) {
 				visitor.visitDocumentItemsItem(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
 					traverseNode(pair.getOriginal(), pair.getUpdated());
@@ -145,42 +145,42 @@ public class Syn1DiffTraverser extends AbstractDiffTraverser<Syn1DiffVisitor> {
 		visitor.diffSchemaType(original.getType(), updated.getType());
 		visitor.diffSchemaItems(original.getItems(), updated.getItems());
 		{
-			CollectionDiff<String, BooleanSchemaUnion> diff = this.pairMap("properties", original.getProperties(),
+			CollectionDiff<Object, BooleanSchemaUnion> diff = this.pairMap("properties", original.getProperties(),
 					updated.getProperties());
 			visitor.diffSchemaProperties(diff);
-			for (CollectionDiff.MatchedPair<String, BooleanSchemaUnion> pair : diff.getMatched()) {
+			for (CollectionDiff.MatchedPair<Object, BooleanSchemaUnion> pair : diff.getMatched()) {
 				visitor.visitSchemaProperties(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		{
-			CollectionDiff<Integer, BooleanSchemaUnion> diff = this.pairList("allOf", original.getAllOf(),
+			CollectionDiff<Object, BooleanSchemaUnion> diff = this.pairList("allOf", original.getAllOf(),
 					updated.getAllOf());
 			visitor.diffSchemaAllOf(diff);
-			for (CollectionDiff.MatchedPair<Integer, BooleanSchemaUnion> pair : diff.getMatched()) {
+			for (CollectionDiff.MatchedPair<Object, BooleanSchemaUnion> pair : diff.getMatched()) {
 				visitor.visitSchemaAllOfItem(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		{
-			CollectionDiff<String, BooleanSchemaUnion> diff = this.pairMap("definitions", original.getDefinitions(),
+			CollectionDiff<Object, BooleanSchemaUnion> diff = this.pairMap("definitions", original.getDefinitions(),
 					updated.getDefinitions());
 			visitor.diffSchemaDefinitions(diff);
-			for (CollectionDiff.MatchedPair<String, BooleanSchemaUnion> pair : diff.getMatched()) {
+			for (CollectionDiff.MatchedPair<Object, BooleanSchemaUnion> pair : diff.getMatched()) {
 				visitor.visitSchemaDefinitions(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		{
-			CollectionDiff<String, SchemaOrBoolean> diff = this.pairMap("nestedSchemas", original.getNestedSchemas(),
+			CollectionDiff<Object, SchemaOrBoolean> diff = this.pairMap("nestedSchemas", original.getNestedSchemas(),
 					updated.getNestedSchemas());
 			visitor.diffSchemaNestedSchemas(diff);
-			for (CollectionDiff.MatchedPair<String, SchemaOrBoolean> pair : diff.getMatched()) {
+			for (CollectionDiff.MatchedPair<Object, SchemaOrBoolean> pair : diff.getMatched()) {
 				visitor.visitSchemaNestedSchemas(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		{
-			CollectionDiff<Integer, SchemaOrBoolean> diff = this.pairList("composedSchemas",
+			CollectionDiff<Object, SchemaOrBoolean> diff = this.pairList("composedSchemas",
 					original.getComposedSchemas(), updated.getComposedSchemas());
 			visitor.diffSchemaComposedSchemas(diff);
-			for (CollectionDiff.MatchedPair<Integer, SchemaOrBoolean> pair : diff.getMatched()) {
+			for (CollectionDiff.MatchedPair<Object, SchemaOrBoolean> pair : diff.getMatched()) {
 				visitor.visitSchemaComposedSchemasItem(pair.getOriginal(), pair.getUpdated());
 			}
 		}
@@ -232,10 +232,10 @@ public class Syn1DiffTraverser extends AbstractDiffTraverser<Syn1DiffVisitor> {
 		visitor.diffOperationSummary(original.getSummary(), updated.getSummary());
 		visitor.diffOperationTags(original.getTags(), updated.getTags());
 		{
-			CollectionDiff<Integer, SynItem> diff = this.pairList("parameters", original.getParameters(),
+			CollectionDiff<Object, SynItem> diff = this.pairList("parameters", original.getParameters(),
 					updated.getParameters());
 			visitor.diffOperationParameters(diff);
-			for (CollectionDiff.MatchedPair<Integer, SynItem> pair : diff.getMatched()) {
+			for (CollectionDiff.MatchedPair<Object, SynItem> pair : diff.getMatched()) {
 				visitor.visitOperationParametersItem(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
 					traverseNode(pair.getOriginal(), pair.getUpdated());

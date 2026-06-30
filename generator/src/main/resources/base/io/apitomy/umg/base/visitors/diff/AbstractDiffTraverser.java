@@ -12,27 +12,28 @@ import io.apitomy.umg.base.Node;
  *
  * @param <V> the spec-version-specific DiffVisitor subclass
  */
-public class AbstractDiffTraverser<V extends DiffVisitor> {
+public class AbstractDiffTraverser<P, V extends DiffVisitor> {
 
     protected final V visitor;
-    protected final PairingStrategyProvider pairingProvider;
+    protected final PairingStrategyProvider<P> pairingProvider;
 
+    @SuppressWarnings("unchecked")
     protected AbstractDiffTraverser(V visitor) {
-        this(visitor, new DefaultPairingStrategyProvider());
+        this(visitor, (PairingStrategyProvider<P>) (PairingStrategyProvider<?>) new DefaultPairingStrategyProvider());
     }
 
-    protected AbstractDiffTraverser(V visitor, PairingStrategyProvider pairingProvider) {
+    protected AbstractDiffTraverser(V visitor, PairingStrategyProvider<P> pairingProvider) {
         this.visitor = visitor;
         this.pairingProvider = pairingProvider;
     }
 
-    protected <T> CollectionDiff<String, T> pairMap(String propertyName, Map<String, T> original, Map<String, T> updated) {
-        MapPairingStrategy<String, T> strategy = pairingProvider.getMapStrategy(propertyName);
+    protected <T> CollectionDiff<P, T> pairMap(String propertyName, Map<String, T> original, Map<String, T> updated) {
+        MapPairingStrategy<P, T> strategy = pairingProvider.getMapStrategy(propertyName);
         return strategy.pair(original, updated);
     }
 
-    protected <T> CollectionDiff<Integer, T> pairList(String propertyName, List<T> original, List<T> updated) {
-        ListPairingStrategy<Integer, T> strategy = pairingProvider.getListStrategy(propertyName);
+    protected <T> CollectionDiff<P, T> pairList(String propertyName, List<T> original, List<T> updated) {
+        ListPairingStrategy<P, T> strategy = pairingProvider.getListStrategy(propertyName);
         return strategy.pair(original, updated);
     }
 

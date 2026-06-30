@@ -35,7 +35,7 @@ public abstract class Syn1DiffVisitor extends DiffVisitor {
 	public void diffDocumentInfo(SynInfo original, SynInfo updated) {
 	}
 
-	public void diffDocumentItems(CollectionDiff<Integer, SynItem> diff) {
+	public void diffDocumentItems(CollectionDiff<Object, SynItem> diff) {
 	}
 
 	public void visitDocumentItemsItem(SynItem original, SynItem updated) {
@@ -126,31 +126,31 @@ public abstract class Syn1DiffVisitor extends DiffVisitor {
 	public void diffSchemaItems(BooleanSchemaSchemaListUnion original, BooleanSchemaSchemaListUnion updated) {
 	}
 
-	public void diffSchemaProperties(CollectionDiff<String, BooleanSchemaUnion> diff) {
+	public void diffSchemaProperties(CollectionDiff<Object, BooleanSchemaUnion> diff) {
 	}
 
 	public void visitSchemaProperties(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
-	public void diffSchemaAllOf(CollectionDiff<Integer, BooleanSchemaUnion> diff) {
+	public void diffSchemaAllOf(CollectionDiff<Object, BooleanSchemaUnion> diff) {
 	}
 
 	public void visitSchemaAllOfItem(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
-	public void diffSchemaDefinitions(CollectionDiff<String, BooleanSchemaUnion> diff) {
+	public void diffSchemaDefinitions(CollectionDiff<Object, BooleanSchemaUnion> diff) {
 	}
 
 	public void visitSchemaDefinitions(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
-	public void diffSchemaNestedSchemas(CollectionDiff<String, SchemaOrBoolean> diff) {
+	public void diffSchemaNestedSchemas(CollectionDiff<Object, SchemaOrBoolean> diff) {
 	}
 
 	public void visitSchemaNestedSchemas(SchemaOrBoolean original, SchemaOrBoolean updated) {
 	}
 
-	public void diffSchemaComposedSchemas(CollectionDiff<Integer, SchemaOrBoolean> diff) {
+	public void diffSchemaComposedSchemas(CollectionDiff<Object, SchemaOrBoolean> diff) {
 	}
 
 	public void visitSchemaComposedSchemasItem(SchemaOrBoolean original, SchemaOrBoolean updated) {
@@ -201,7 +201,7 @@ public abstract class Syn1DiffVisitor extends DiffVisitor {
 	public void diffOperationTags(List<String> original, List<String> updated) {
 	}
 
-	public void diffOperationParameters(CollectionDiff<Integer, SynItem> diff) {
+	public void diffOperationParameters(CollectionDiff<Object, SynItem> diff) {
 	}
 
 	public void visitOperationParametersItem(SynItem original, SynItem updated) {
