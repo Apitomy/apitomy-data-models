@@ -1,8 +1,8 @@
 package io.apitomy.umg.pipe.java;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
@@ -11,14 +11,19 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import io.apitomy.umg.beans.SpecificationVersion;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
+import io.apitomy.umg.models.concept.NamespaceModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
+import io.apitomy.umg.models.concept.type.ListType;
+import io.apitomy.umg.models.concept.type.MapType;
+import io.apitomy.umg.models.java.type.JavaType;
+import io.apitomy.umg.models.java.type.JavaTypeFactory;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
 import io.apitomy.umg.pipe.java.method.GetterMethod;
 
 /**
  * Creates a DiffTraverser for each specification version. A DiffTraverser walks two
- * trees of the same spec version in parallel, dispatching field-level diffs to a
- * DiffVisitor.
+ * trees of the same spec version in parallel, dispatching field-level diffs to the
+ * generated per-spec DiffVisitor's typed methods.
  */
 public class CreateDiffTraversersStage extends AbstractJavaStage {
 
@@ -38,23 +43,31 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 .setName(className)
                 .setPublic();
 
+        // Resolve the generated per-spec visitor
+        String visitorClassName = specVer.getPrefix() + "DiffVisitor";
+        String visitorFQN = packageName + "." + visitorClassName;
+        JavaClassSource visitorSource = getState().getJavaIndex().lookupClass(visitorFQN);
+        classSource.addImport(visitorSource);
+
+        // Extend AbstractDiffTraverser<SpecDiffVisitor>
         String baseFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.AbstractDiffTraverser";
         JavaClassSource baseSource = getState().getJavaIndex().lookupClass(baseFQN);
         classSource.addImport(baseSource);
-        classSource.extendSuperType(baseSource);
+        classSource.setSuperType("AbstractDiffTraverser<" + visitorClassName + ">");
 
-        String diffVisitorFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.DiffVisitor";
-        JavaClassSource diffVisitorSource = getState().getJavaIndex().lookupClass(diffVisitorFQN);
-        classSource.addImport(diffVisitorSource);
-
-        MethodSource<JavaClassSource> constructor = classSource.addMethod()
-                .setConstructor(true).setPublic();
-        constructor.addParameter("DiffVisitor", "visitor");
-        constructor.setBody("super(visitor);");
+        // Import CollectionDiff for collection field handling
+        String collectionDiffFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.CollectionDiff";
+        classSource.addImport(collectionDiffFQN);
 
         String nodeFQN = getNodeEntityInterfaceFQN();
         JavaInterfaceSource nodeSource = getState().getJavaIndex().lookupInterface(nodeFQN);
         classSource.addImport(nodeSource);
+
+        // Constructor
+        MethodSource<JavaClassSource> constructor = classSource.addMethod()
+                .setConstructor(true).setPublic();
+        constructor.addParameter(visitorClassName, "visitor");
+        constructor.setBody("super(visitor);");
 
         java.util.Set<String> createdMethods = new java.util.HashSet<>();
 
@@ -123,7 +136,8 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
         classSource.addImport(javaEntity);
 
         String entityType = javaEntity.getName();
-        String methodName = "traverse" + entityModel.getName();
+        String entityName = entityModel.getName();
+        String methodName = "traverse" + entityName;
 
         MethodSource<JavaClassSource> method = classSource.addMethod()
                 .setName(methodName)
@@ -135,10 +149,12 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
         Collection<PropertyModelWithOrigin> allProperties =
                 getState().getConceptIndex().getAllEntityProperties(entityModel);
 
+        JavaTypeFactory jtf = getJavaTypeFactory();
         BodyBuilder body = new BodyBuilder();
 
         body.append("if (original == null && updated == null) return;");
-        body.append("if (!visitor.visitEntityPair(original, updated)) return;");
+        body.addContext("visitMethod", "visit" + entityName);
+        body.append("if (!visitor.${visitMethod}(original, updated)) return;");
         body.append("if (original == null || updated == null) return;");
 
         for (PropertyModelWithOrigin propWithOrigin : allProperties) {
@@ -148,22 +164,86 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
             }
 
             String getter = new GetterMethod(property).getName();
-            body.addContext("propertyName", property.getName());
+            String fieldSuffix = fieldMethodSuffix(property);
+            String diffMethod = "diff" + entityName + fieldSuffix;
+
             body.addContext("getter", getter);
+            body.addContext("diffMethod", diffMethod);
+
+            NamespaceModel ns = propWithOrigin.getOrigin().getNamespace();
 
             if (isEntity(property)) {
-                body.append("this.diffEntityField(\"${propertyName}\", original.${getter}(), updated.${getter}());");
+                JavaType jt = jtf.createJavaType(property.getResolvedType(), ns);
+                jt.addImportsTo(classSource);
+                body.append("visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
+                body.append("if (original.${getter}() != null && updated.${getter}() != null) {");
+                body.append("    traverseNode(original.${getter}(), updated.${getter}());");
+                body.append("}");
             } else if (isEntityList(property) || isUnionList(property)) {
-                body.append("this.diffList(\"${propertyName}\", original.${getter}(), updated.${getter}());");
+                ListType listType = (ListType) property.getResolvedType();
+                JavaType valueJt = jtf.createJavaType(listType.getValueType(), ns);
+                valueJt.addImportsTo(classSource);
+
+                String valueTypeStr = valueJt.toJavaTypeString();
+                String visitMethod = "visit" + entityName + fieldSuffix + "Item";
+                body.addContext("valueType", valueTypeStr);
+                body.addContext("visitMethod2", visitMethod);
+                body.addContext("propertyName", property.getName());
+
+                body.append("{");
+                body.append("    CollectionDiff<Integer, " + valueTypeStr + "> diff = this.pairList(\"${propertyName}\", original.${getter}(), updated.${getter}());");
+                body.append("    visitor.${diffMethod}(diff);");
+                body.append("    for (CollectionDiff.MatchedPair<Integer, " + valueTypeStr + "> pair : diff.getMatched()) {");
+                body.append("        visitor.${visitMethod2}(pair.getKey(), pair.getOriginal(), pair.getUpdated());");
+                if (isEntityList(property)) {
+                    body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
+                    body.append("            traverseNode(pair.getOriginal(), pair.getUpdated());");
+                    body.append("        }");
+                }
+                body.append("    }");
+                body.append("}");
             } else if (isEntityMap(property) || isUnionMap(property)) {
-                body.append("this.diffMap(\"${propertyName}\", original.${getter}(), updated.${getter}());");
+                MapType mapType = (MapType) property.getResolvedType();
+                JavaType valueJt = jtf.createJavaType(mapType.getValueType(), ns);
+                valueJt.addImportsTo(classSource);
+
+                String valueTypeStr = valueJt.toJavaTypeString();
+                String visitMethod = "visit" + entityName + fieldSuffix;
+                body.addContext("valueType", valueTypeStr);
+                body.addContext("visitMethod2", visitMethod);
+                body.addContext("propertyName", property.getName());
+
+                body.append("{");
+                body.append("    CollectionDiff<String, " + valueTypeStr + "> diff = this.pairMap(\"${propertyName}\", original.${getter}(), updated.${getter}());");
+                body.append("    visitor.${diffMethod}(diff);");
+                body.append("    for (CollectionDiff.MatchedPair<String, " + valueTypeStr + "> pair : diff.getMatched()) {");
+                body.append("        visitor.${visitMethod2}(pair.getKey(), pair.getOriginal(), pair.getUpdated());");
+                if (isEntityMap(property)) {
+                    body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
+                    body.append("            traverseNode(pair.getOriginal(), pair.getUpdated());");
+                    body.append("        }");
+                }
+                body.append("    }");
+                body.append("}");
             } else if (isUnion(property)) {
-                body.append("this.diffUnionField(\"${propertyName}\", original.${getter}(), updated.${getter}());");
+                JavaType jt = jtf.createJavaType(property.getResolvedType(), ns);
+                jt.addImportsTo(classSource);
+                body.append("visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
             } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
-                body.append("visitor.diffPrimitive(\"${propertyName}\", original.${getter}(), updated.${getter}());");
+                JavaType jt = jtf.createJavaType(property.getResolvedType(), ns);
+                jt.addImportsTo(classSource);
+                body.append("visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
             }
         }
 
         method.setBody(body.toString());
+    }
+
+    private String fieldMethodSuffix(PropertyModel property) {
+        String name = property.getName();
+        if (name.startsWith("$")) {
+            return name;
+        }
+        return StringUtils.capitalize(name);
     }
 }
