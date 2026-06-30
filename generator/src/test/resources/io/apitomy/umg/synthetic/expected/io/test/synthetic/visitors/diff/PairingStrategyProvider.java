@@ -5,9 +5,9 @@ package io.test.synthetic.visitors.diff;
  * a custom provider to the DiffTraverser constructor to control how map and
  * list fields are paired.
  */
-public interface PairingStrategyProvider {
+public interface PairingStrategyProvider<P> {
 
-	<V> MapPairingStrategy<String, V> getMapStrategy(String propertyName);
+	<V> MapPairingStrategy<P, V> getMapStrategy(String propertyName);
 
-	<V> ListPairingStrategy<Integer, V> getListStrategy(String propertyName);
+	<V> ListPairingStrategy<P, V> getListStrategy(String propertyName);
 }

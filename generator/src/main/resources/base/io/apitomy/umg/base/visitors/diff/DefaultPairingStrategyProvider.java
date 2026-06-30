@@ -3,15 +3,15 @@ package io.apitomy.umg.base.visitors.diff;
 /**
  * Default provider: key-based pairing for maps, index-based for lists.
  */
-public class DefaultPairingStrategyProvider implements PairingStrategyProvider {
+public class DefaultPairingStrategyProvider implements PairingStrategyProvider<DefaultPairingKey> {
 
     @Override
-    public <V> MapPairingStrategy<String, V> getMapStrategy(String propertyName) {
+    public <V> MapPairingStrategy<DefaultPairingKey, V> getMapStrategy(String propertyName) {
         return new KeyPairingStrategy<>();
     }
 
     @Override
-    public <V> ListPairingStrategy<Integer, V> getListStrategy(String propertyName) {
+    public <V> ListPairingStrategy<DefaultPairingKey, V> getListStrategy(String propertyName) {
         return new IndexPairingStrategy<>();
     }
 }
