@@ -63,11 +63,21 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
         JavaInterfaceSource nodeSource = getState().getJavaIndex().lookupInterface(nodeFQN);
         classSource.addImport(nodeSource);
 
-        // Constructor
+        // Import PairingStrategyProvider
+        String providerFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.PairingStrategyProvider";
+        classSource.addImport(providerFQN);
+
+        // Constructors
         MethodSource<JavaClassSource> constructor = classSource.addMethod()
                 .setConstructor(true).setPublic();
         constructor.addParameter(visitorClassName, "visitor");
         constructor.setBody("super(visitor);");
+
+        MethodSource<JavaClassSource> constructor2 = classSource.addMethod()
+                .setConstructor(true).setPublic();
+        constructor2.addParameter(visitorClassName, "visitor");
+        constructor2.addParameter("PairingStrategyProvider", "pairingProvider");
+        constructor2.setBody("super(visitor, pairingProvider);");
 
         java.util.Set<String> createdMethods = new java.util.HashSet<>();
 
