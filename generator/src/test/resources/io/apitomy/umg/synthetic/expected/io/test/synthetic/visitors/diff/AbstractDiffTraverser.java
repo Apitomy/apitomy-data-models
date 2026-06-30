@@ -23,7 +23,8 @@ public class AbstractDiffTraverser<V extends DiffVisitor> {
 	@SuppressWarnings("unchecked")
 	protected <T> CollectionDiff<String, T> pairMap(String propertyName, Map<String, T> original,
 			Map<String, T> updated) {
-		MapPairingStrategy<T> strategy = (MapPairingStrategy<T>) visitor.getMapPairingStrategy(propertyName);
+		MapPairingStrategy<String, T> strategy = (MapPairingStrategy<String, T>) visitor
+				.getMapPairingStrategy(propertyName);
 		if (strategy == null) {
 			strategy = new KeyPairingStrategy<>();
 		}
@@ -32,7 +33,8 @@ public class AbstractDiffTraverser<V extends DiffVisitor> {
 
 	@SuppressWarnings("unchecked")
 	protected <T> CollectionDiff<Integer, T> pairList(String propertyName, List<T> original, List<T> updated) {
-		ListPairingStrategy<T> strategy = (ListPairingStrategy<T>) visitor.getListPairingStrategy(propertyName);
+		ListPairingStrategy<Integer, T> strategy = (ListPairingStrategy<Integer, T>) visitor
+				.getListPairingStrategy(propertyName);
 		if (strategy == null) {
 			strategy = new IndexPairingStrategy<>();
 		}

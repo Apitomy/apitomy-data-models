@@ -4,8 +4,11 @@ import java.util.List;
 
 /**
  * Strategy for pairing entries from two lists.
+ *
+ * @param <P> the pairing key type (e.g., Integer for index-based pairing)
+ * @param <V> the value type
  */
-public interface ListPairingStrategy<V> {
+public interface ListPairingStrategy<P, V> {
 
-    CollectionDiff<Integer, V> pair(List<V> original, List<V> updated);
+    CollectionDiff<P, V> pair(List<V> original, List<V> updated);
 }
