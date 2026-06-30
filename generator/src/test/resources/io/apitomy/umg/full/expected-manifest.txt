@@ -1430,11 +1430,10 @@ io/apitomy/datamodels/models/visitors/TraversingVisitor.java
 io/apitomy/datamodels/models/visitors/Visitor.java
 io/apitomy/datamodels/models/visitors/diff/AbstractDiffTraverser.java
 io/apitomy/datamodels/models/visitors/diff/CollectionDiff.java
+io/apitomy/datamodels/models/visitors/diff/DefaultListPairingStrategy.java
+io/apitomy/datamodels/models/visitors/diff/DefaultMapPairingStrategy.java
 io/apitomy/datamodels/models/visitors/diff/DefaultPairingKey.java
 io/apitomy/datamodels/models/visitors/diff/DefaultPairingStrategyProvider.java
-io/apitomy/datamodels/models/visitors/diff/DiffVisitor.java
-io/apitomy/datamodels/models/visitors/diff/IndexPairingStrategy.java
-io/apitomy/datamodels/models/visitors/diff/KeyPairingStrategy.java
 io/apitomy/datamodels/models/visitors/diff/ListPairingStrategy.java
 io/apitomy/datamodels/models/visitors/diff/MapPairingStrategy.java
 io/apitomy/datamodels/models/visitors/diff/PairingStrategyProvider.java

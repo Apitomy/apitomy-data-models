@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Default list pairing strategy — pairs entries by index.
  */
-public class IndexPairingStrategy<V> implements ListPairingStrategy<DefaultPairingKey, V> {
+public class DefaultListPairingStrategy<V> implements ListPairingStrategy<DefaultPairingKey, V> {
 
     @Override
     public CollectionDiff<DefaultPairingKey, V> pair(List<V> original, List<V> updated) {

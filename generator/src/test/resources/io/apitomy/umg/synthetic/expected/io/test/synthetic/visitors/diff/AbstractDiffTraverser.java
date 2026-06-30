@@ -1,6 +1,8 @@
 package io.test.synthetic.visitors.diff;
 
+import io.test.synthetic.Any;
 import io.test.synthetic.Node;
+import io.test.synthetic.union.Union;
 import java.util.List;
 import java.util.Map;
 
@@ -9,22 +11,34 @@ import java.util.Map;
  * logic. Subclasses (generated per spec version) provide entity-specific field
  * iteration and call typed visitor methods.
  *
+ * @param <P>
+ *            the pairing key type
  * @param <V>
  *            the spec-version-specific DiffVisitor subclass
  */
-public class AbstractDiffTraverser<P, V extends DiffVisitor> {
+public class AbstractDiffTraverser<P, V> {
 
 	protected final V visitor;
 	protected final PairingStrategyProvider<P> pairingProvider;
 
 	@SuppressWarnings("unchecked")
 	protected AbstractDiffTraverser(V visitor) {
-		this(visitor, (PairingStrategyProvider<P>) (PairingStrategyProvider<?>) new DefaultPairingStrategyProvider());
+		this.visitor = visitor;
+		this.pairingProvider = (PairingStrategyProvider<P>) new DefaultPairingStrategyProvider();
 	}
 
 	protected AbstractDiffTraverser(V visitor, PairingStrategyProvider<P> pairingProvider) {
 		this.visitor = visitor;
 		this.pairingProvider = pairingProvider;
+	}
+
+	/**
+	 * Public entry point — accepts Any (Node or Union).
+	 */
+	public void traverse(Any original, Any updated) {
+		if (original instanceof Node || updated instanceof Node) {
+			traverseNode((Node) original, (Node) updated);
+		}
 	}
 
 	protected <T> CollectionDiff<P, T> pairMap(String propertyName, Map<String, T> original, Map<String, T> updated) {
