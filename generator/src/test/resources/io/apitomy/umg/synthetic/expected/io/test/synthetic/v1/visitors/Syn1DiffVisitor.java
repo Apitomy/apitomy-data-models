@@ -19,11 +19,10 @@ import io.test.synthetic.v1.Syn1PathItem;
 import io.test.synthetic.v1.Syn1Paths;
 import io.test.synthetic.v1.Syn1Schema;
 import io.test.synthetic.visitors.diff.CollectionDiff;
-import io.test.synthetic.visitors.diff.DiffVisitor;
 import java.util.List;
 import java.util.Map;
 
-public abstract class Syn1DiffVisitor<P> extends DiffVisitor {
+public abstract class Syn1DiffVisitor<P> {
 
 	public boolean visitDocument(Syn1Document original, Syn1Document updated) {
 		return true;
