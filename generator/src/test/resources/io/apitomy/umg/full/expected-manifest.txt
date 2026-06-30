@@ -1435,4 +1435,3 @@ io/apitomy/datamodels/models/visitors/diff/IndexPairingStrategy.java
 io/apitomy/datamodels/models/visitors/diff/KeyPairingStrategy.java
 io/apitomy/datamodels/models/visitors/diff/ListPairingStrategy.java
 io/apitomy/datamodels/models/visitors/diff/MapPairingStrategy.java
-io/apitomy/datamodels/models/visitors/diff/PairingStrategy.java

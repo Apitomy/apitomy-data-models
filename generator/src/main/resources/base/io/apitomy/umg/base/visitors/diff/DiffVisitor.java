@@ -11,7 +11,7 @@ public abstract class DiffVisitor {
      * Returns the map pairing strategy for a map field, or null to use the default
      * (key-based pairing).
      */
-    public MapPairingStrategy<?> getMapPairingStrategy(String propertyName) {
+    public MapPairingStrategy<?, ?> getMapPairingStrategy(String propertyName) {
         return null;
     }
 
@@ -19,7 +19,7 @@ public abstract class DiffVisitor {
      * Returns the list pairing strategy for a list field, or null to use the default
      * (index-based pairing).
      */
-    public ListPairingStrategy<?> getListPairingStrategy(String propertyName) {
+    public ListPairingStrategy<?, ?> getListPairingStrategy(String propertyName) {
         return null;
     }
 }
