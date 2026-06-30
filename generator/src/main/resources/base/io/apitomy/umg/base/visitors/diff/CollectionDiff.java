@@ -1,7 +1,11 @@
 package io.apitomy.umg.base.visitors.diff;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Result of pairing two collections. Contains entries that were added, removed,
@@ -37,6 +41,37 @@ public class CollectionDiff<K, V> {
 
     public boolean hasChanges() {
         return !added.isEmpty() || !removed.isEmpty();
+    }
+
+    /**
+     * Pairs two maps by key. Entries with matching keys are paired;
+     * keys in only one map are classified as added or removed.
+     */
+    public static <K, V> CollectionDiff<K, V> pairByKey(Map<K, V> original, Map<K, V> updated) {
+        Map<K, V> orig = original != null ? original : new LinkedHashMap<>();
+        Map<K, V> upd = updated != null ? updated : new LinkedHashMap<>();
+
+        Set<K> allKeys = new LinkedHashSet<>();
+        allKeys.addAll(orig.keySet());
+        allKeys.addAll(upd.keySet());
+
+        List<Entry<K, V>> added = new ArrayList<>();
+        List<Entry<K, V>> removed = new ArrayList<>();
+        List<MatchedPair<K, V>> matched = new ArrayList<>();
+
+        for (K key : allKeys) {
+            boolean inOrig = orig.containsKey(key);
+            boolean inUpd = upd.containsKey(key);
+            if (inOrig && inUpd) {
+                matched.add(new MatchedPair<>(key, orig.get(key), upd.get(key)));
+            } else if (inUpd) {
+                added.add(new Entry<>(key, upd.get(key)));
+            } else {
+                removed.add(new Entry<>(key, orig.get(key)));
+            }
+        }
+
+        return new CollectionDiff<>(added, removed, matched);
     }
 
     public static class Entry<K, V> {
