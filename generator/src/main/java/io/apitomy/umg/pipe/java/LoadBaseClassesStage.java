@@ -69,6 +69,8 @@ public class LoadBaseClassesStage extends AbstractStage {
                     "io.apitomy.umg.base.union.MapUnionValue",
                     "io.apitomy.umg.base.union.PrimitiveUnionValue",
                     "io.apitomy.umg.base.union.StringListUnionValue",
+                    "io.apitomy.umg.base.visitors.diff.ListPairingStrategy",
+                    "io.apitomy.umg.base.visitors.diff.MapPairingStrategy",
                     "io.apitomy.umg.base.visitors.diff.PairingStrategy",
                     "io.apitomy.umg.base.union.Union",
                     "io.apitomy.umg.base.union.UnionValue"
