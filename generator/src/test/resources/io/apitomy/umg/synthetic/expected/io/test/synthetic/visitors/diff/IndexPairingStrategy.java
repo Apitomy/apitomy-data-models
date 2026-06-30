@@ -1,40 +1,18 @@
 package io.test.synthetic.visitors.diff;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Pairs list entries by index. Items at the same index are paired; extra items
- * in the longer list are added/removed.
+ * Pairs list entries by index. Converts lists to index-keyed maps, then
+ * delegates to the shared pairing logic.
  */
 public class IndexPairingStrategy<V> implements PairingStrategy<Integer, V> {
 
 	@Override
 	public CollectionDiff<Integer, V> pair(Map<Integer, V> original, Map<Integer, V> updated) {
-		Map<Integer, V> orig = original != null ? original : new LinkedHashMap<>();
-		Map<Integer, V> upd = updated != null ? updated : new LinkedHashMap<>();
-
-		int maxIndex = Math.max(orig.size(), upd.size());
-
-		List<CollectionDiff.Entry<Integer, V>> added = new ArrayList<>();
-		List<CollectionDiff.Entry<Integer, V>> removed = new ArrayList<>();
-		List<CollectionDiff.MatchedPair<Integer, V>> matched = new ArrayList<>();
-
-		for (int i = 0; i < maxIndex; i++) {
-			boolean inOrig = orig.containsKey(i);
-			boolean inUpd = upd.containsKey(i);
-			if (inOrig && inUpd) {
-				matched.add(new CollectionDiff.MatchedPair<>(i, orig.get(i), upd.get(i)));
-			} else if (inUpd) {
-				added.add(new CollectionDiff.Entry<>(i, upd.get(i)));
-			} else {
-				removed.add(new CollectionDiff.Entry<>(i, orig.get(i)));
-			}
-		}
-
-		return new CollectionDiff<>(added, removed, matched);
+		return PairingStrategy.pairByKey(original, updated);
 	}
 
 	/**

@@ -1,6 +1,16 @@
 package io.test.synthetic.v2.visitors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.test.synthetic.BooleanSchemaSchemaListUnion;
+import io.test.synthetic.BooleanSchemaUnion;
 import io.test.synthetic.Node;
+import io.test.synthetic.SchemaOrBoolean;
+import io.test.synthetic.SynContact;
+import io.test.synthetic.SynInfo;
+import io.test.synthetic.SynItem;
+import io.test.synthetic.SynOperation;
+import io.test.synthetic.SynSchema;
 import io.test.synthetic.v2.Syn2Contact;
 import io.test.synthetic.v2.Syn2Document;
 import io.test.synthetic.v2.Syn2Info;
@@ -10,11 +20,13 @@ import io.test.synthetic.v2.Syn2PathItem;
 import io.test.synthetic.v2.Syn2Paths;
 import io.test.synthetic.v2.Syn2Schema;
 import io.test.synthetic.visitors.diff.AbstractDiffTraverser;
-import io.test.synthetic.visitors.diff.DiffVisitor;
+import io.test.synthetic.visitors.diff.CollectionDiff;
+import java.util.List;
+import java.util.Map;
 
-public class Syn2DiffTraverser extends AbstractDiffTraverser {
+public class Syn2DiffTraverser extends AbstractDiffTraverser<Syn2DiffVisitor> {
 
-	public Syn2DiffTraverser(DiffVisitor visitor) {
+	public Syn2DiffTraverser(Syn2DiffVisitor visitor) {
 		super(visitor);
 	}
 
@@ -43,89 +55,152 @@ public class Syn2DiffTraverser extends AbstractDiffTraverser {
 	public void traverseDocument(Syn2Document original, Syn2Document updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitEntityPair(original, updated))
+		if (!visitor.visitDocument(original, updated))
 			return;
 		if (original == null || updated == null)
 			return;
-		visitor.diffPrimitive("version", original.getVersion(), updated.getVersion());
-		this.diffEntityField("info", original.getInfo(), updated.getInfo());
-		this.diffList("items", original.getItems(), updated.getItems());
-		visitor.diffPrimitive("tags", original.getTags(), updated.getTags());
-		visitor.diffPrimitive("metadata", original.getMetadata(), updated.getMetadata());
-		this.diffMap("webhooks", original.getWebhooks(), updated.getWebhooks());
-		this.diffUnionField("additionalSchema", original.getAdditionalSchema(), updated.getAdditionalSchema());
+		visitor.diffDocumentVersion(original.getVersion(), updated.getVersion());
+		visitor.diffDocumentInfo(original.getInfo(), updated.getInfo());
+		if (original.getInfo() != null && updated.getInfo() != null) {
+			traverseNode(original.getInfo(), updated.getInfo());
+		}
+		{
+			CollectionDiff<Integer, SynItem> diff = this.pairList("items", original.getItems(), updated.getItems());
+			visitor.diffDocumentItems(diff);
+			for (CollectionDiff.MatchedPair<Integer, SynItem> pair : diff.getMatched()) {
+				visitor.visitDocumentItemsItem(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+				if (pair.getOriginal() != null && pair.getUpdated() != null) {
+					traverseNode(pair.getOriginal(), pair.getUpdated());
+				}
+			}
+		}
+		visitor.diffDocumentTags(original.getTags(), updated.getTags());
+		visitor.diffDocumentMetadata(original.getMetadata(), updated.getMetadata());
+		{
+			CollectionDiff<String, Syn2PathItem> diff = this.pairMap("webhooks", original.getWebhooks(),
+					updated.getWebhooks());
+			visitor.diffDocumentWebhooks(diff);
+			for (CollectionDiff.MatchedPair<String, Syn2PathItem> pair : diff.getMatched()) {
+				visitor.visitDocumentWebhooks(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+				if (pair.getOriginal() != null && pair.getUpdated() != null) {
+					traverseNode(pair.getOriginal(), pair.getUpdated());
+				}
+			}
+		}
+		visitor.diffDocumentAdditionalSchema(original.getAdditionalSchema(), updated.getAdditionalSchema());
 	}
 
 	public void traverseInfo(Syn2Info original, Syn2Info updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitEntityPair(original, updated))
+		if (!visitor.visitInfo(original, updated))
 			return;
 		if (original == null || updated == null)
 			return;
-		visitor.diffPrimitive("name", original.getName(), updated.getName());
-		this.diffEntityField("contact", original.getContact(), updated.getContact());
-		visitor.diffPrimitive("version", original.getVersion(), updated.getVersion());
-		visitor.diffPrimitive("license", original.getLicense(), updated.getLicense());
+		visitor.diffInfoName(original.getName(), updated.getName());
+		visitor.diffInfoContact(original.getContact(), updated.getContact());
+		if (original.getContact() != null && updated.getContact() != null) {
+			traverseNode(original.getContact(), updated.getContact());
+		}
+		visitor.diffInfoVersion(original.getVersion(), updated.getVersion());
+		visitor.diffInfoLicense(original.getLicense(), updated.getLicense());
 	}
 
 	public void traverseContact(Syn2Contact original, Syn2Contact updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitEntityPair(original, updated))
+		if (!visitor.visitContact(original, updated))
 			return;
 		if (original == null || updated == null)
 			return;
-		visitor.diffPrimitive("name", original.getName(), updated.getName());
-		visitor.diffPrimitive("email", original.getEmail(), updated.getEmail());
-		visitor.diffPrimitive("url", original.getUrl(), updated.getUrl());
+		visitor.diffContactName(original.getName(), updated.getName());
+		visitor.diffContactEmail(original.getEmail(), updated.getEmail());
+		visitor.diffContactUrl(original.getUrl(), updated.getUrl());
 	}
 
 	public void traverseItem(Syn2Item original, Syn2Item updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitEntityPair(original, updated))
+		if (!visitor.visitItem(original, updated))
 			return;
 		if (original == null || updated == null)
 			return;
-		visitor.diffPrimitive("$ref", original.get$ref(), updated.get$ref());
-		visitor.diffPrimitive("description", original.getDescription(), updated.getDescription());
-		visitor.diffPrimitive("required", original.isRequired(), updated.isRequired());
-		visitor.diffPrimitive("order", original.getOrder(), updated.getOrder());
-		visitor.diffPrimitive("weight", original.getWeight(), updated.getWeight());
-		visitor.diffPrimitive("extra", original.getExtra(), updated.getExtra());
-		visitor.diffPrimitive("raw", original.getRaw(), updated.getRaw());
-		this.diffEntityField("schema", original.getSchema(), updated.getSchema());
-		visitor.diffPrimitive("examples", original.getExamples(), updated.getExamples());
-		this.diffUnionField("defaultValue", original.getDefaultValue(), updated.getDefaultValue());
-		visitor.diffPrimitive("title", original.getTitle(), updated.getTitle());
-		visitor.diffPrimitive("deprecated", original.isDeprecated(), updated.isDeprecated());
+		visitor.diffItem$ref(original.get$ref(), updated.get$ref());
+		visitor.diffItemDescription(original.getDescription(), updated.getDescription());
+		visitor.diffItemRequired(original.isRequired(), updated.isRequired());
+		visitor.diffItemOrder(original.getOrder(), updated.getOrder());
+		visitor.diffItemWeight(original.getWeight(), updated.getWeight());
+		visitor.diffItemExtra(original.getExtra(), updated.getExtra());
+		visitor.diffItemRaw(original.getRaw(), updated.getRaw());
+		visitor.diffItemSchema(original.getSchema(), updated.getSchema());
+		if (original.getSchema() != null && updated.getSchema() != null) {
+			traverseNode(original.getSchema(), updated.getSchema());
+		}
+		visitor.diffItemExamples(original.getExamples(), updated.getExamples());
+		visitor.diffItemDefaultValue(original.getDefaultValue(), updated.getDefaultValue());
+		visitor.diffItemTitle(original.getTitle(), updated.getTitle());
+		visitor.diffItemDeprecated(original.isDeprecated(), updated.isDeprecated());
 	}
 
 	public void traverseSchema(Syn2Schema original, Syn2Schema updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitEntityPair(original, updated))
+		if (!visitor.visitSchema(original, updated))
 			return;
 		if (original == null || updated == null)
 			return;
-		visitor.diffPrimitive("$ref", original.get$ref(), updated.get$ref());
-		visitor.diffPrimitive("type", original.getType(), updated.getType());
-		this.diffUnionField("items", original.getItems(), updated.getItems());
-		this.diffMap("properties", original.getProperties(), updated.getProperties());
-		this.diffList("allOf", original.getAllOf(), updated.getAllOf());
-		this.diffMap("definitions", original.getDefinitions(), updated.getDefinitions());
-		this.diffMap("nestedSchemas", original.getNestedSchemas(), updated.getNestedSchemas());
-		this.diffList("composedSchemas", original.getComposedSchemas(), updated.getComposedSchemas());
-		visitor.diffPrimitive("minLength", original.getMinLength(), updated.getMinLength());
-		visitor.diffPrimitive("maxLength", original.getMaxLength(), updated.getMaxLength());
-		visitor.diffPrimitive("enum", original.getEnum(), updated.getEnum());
+		visitor.diffSchema$ref(original.get$ref(), updated.get$ref());
+		visitor.diffSchemaType(original.getType(), updated.getType());
+		visitor.diffSchemaItems(original.getItems(), updated.getItems());
+		{
+			CollectionDiff<String, BooleanSchemaUnion> diff = this.pairMap("properties", original.getProperties(),
+					updated.getProperties());
+			visitor.diffSchemaProperties(diff);
+			for (CollectionDiff.MatchedPair<String, BooleanSchemaUnion> pair : diff.getMatched()) {
+				visitor.visitSchemaProperties(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+			}
+		}
+		{
+			CollectionDiff<Integer, BooleanSchemaUnion> diff = this.pairList("allOf", original.getAllOf(),
+					updated.getAllOf());
+			visitor.diffSchemaAllOf(diff);
+			for (CollectionDiff.MatchedPair<Integer, BooleanSchemaUnion> pair : diff.getMatched()) {
+				visitor.visitSchemaAllOfItem(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+			}
+		}
+		{
+			CollectionDiff<String, BooleanSchemaUnion> diff = this.pairMap("definitions", original.getDefinitions(),
+					updated.getDefinitions());
+			visitor.diffSchemaDefinitions(diff);
+			for (CollectionDiff.MatchedPair<String, BooleanSchemaUnion> pair : diff.getMatched()) {
+				visitor.visitSchemaDefinitions(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+			}
+		}
+		{
+			CollectionDiff<String, SchemaOrBoolean> diff = this.pairMap("nestedSchemas", original.getNestedSchemas(),
+					updated.getNestedSchemas());
+			visitor.diffSchemaNestedSchemas(diff);
+			for (CollectionDiff.MatchedPair<String, SchemaOrBoolean> pair : diff.getMatched()) {
+				visitor.visitSchemaNestedSchemas(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+			}
+		}
+		{
+			CollectionDiff<Integer, SchemaOrBoolean> diff = this.pairList("composedSchemas",
+					original.getComposedSchemas(), updated.getComposedSchemas());
+			visitor.diffSchemaComposedSchemas(diff);
+			for (CollectionDiff.MatchedPair<Integer, SchemaOrBoolean> pair : diff.getMatched()) {
+				visitor.visitSchemaComposedSchemasItem(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+			}
+		}
+		visitor.diffSchemaMinLength(original.getMinLength(), updated.getMinLength());
+		visitor.diffSchemaMaxLength(original.getMaxLength(), updated.getMaxLength());
+		visitor.diffSchemaEnum(original.getEnum(), updated.getEnum());
 	}
 
 	public void traversePaths(Syn2Paths original, Syn2Paths updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitEntityPair(original, updated))
+		if (!visitor.visitPaths(original, updated))
 			return;
 		if (original == null || updated == null)
 			return;
@@ -134,28 +209,50 @@ public class Syn2DiffTraverser extends AbstractDiffTraverser {
 	public void traversePathItem(Syn2PathItem original, Syn2PathItem updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitEntityPair(original, updated))
+		if (!visitor.visitPathItem(original, updated))
 			return;
 		if (original == null || updated == null)
 			return;
-		visitor.diffPrimitive("$ref", original.get$ref(), updated.get$ref());
-		visitor.diffPrimitive("summary", original.getSummary(), updated.getSummary());
-		this.diffEntityField("get", original.getGet(), updated.getGet());
-		this.diffEntityField("put", original.getPut(), updated.getPut());
-		this.diffEntityField("post", original.getPost(), updated.getPost());
-		this.diffEntityField("delete", original.getDelete(), updated.getDelete());
+		visitor.diffPathItem$ref(original.get$ref(), updated.get$ref());
+		visitor.diffPathItemSummary(original.getSummary(), updated.getSummary());
+		visitor.diffPathItemGet(original.getGet(), updated.getGet());
+		if (original.getGet() != null && updated.getGet() != null) {
+			traverseNode(original.getGet(), updated.getGet());
+		}
+		visitor.diffPathItemPut(original.getPut(), updated.getPut());
+		if (original.getPut() != null && updated.getPut() != null) {
+			traverseNode(original.getPut(), updated.getPut());
+		}
+		visitor.diffPathItemPost(original.getPost(), updated.getPost());
+		if (original.getPost() != null && updated.getPost() != null) {
+			traverseNode(original.getPost(), updated.getPost());
+		}
+		visitor.diffPathItemDelete(original.getDelete(), updated.getDelete());
+		if (original.getDelete() != null && updated.getDelete() != null) {
+			traverseNode(original.getDelete(), updated.getDelete());
+		}
 	}
 
 	public void traverseOperation(Syn2Operation original, Syn2Operation updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitEntityPair(original, updated))
+		if (!visitor.visitOperation(original, updated))
 			return;
 		if (original == null || updated == null)
 			return;
-		visitor.diffPrimitive("operationId", original.getOperationId(), updated.getOperationId());
-		visitor.diffPrimitive("summary", original.getSummary(), updated.getSummary());
-		visitor.diffPrimitive("tags", original.getTags(), updated.getTags());
-		this.diffList("parameters", original.getParameters(), updated.getParameters());
+		visitor.diffOperationOperationId(original.getOperationId(), updated.getOperationId());
+		visitor.diffOperationSummary(original.getSummary(), updated.getSummary());
+		visitor.diffOperationTags(original.getTags(), updated.getTags());
+		{
+			CollectionDiff<Integer, SynItem> diff = this.pairList("parameters", original.getParameters(),
+					updated.getParameters());
+			visitor.diffOperationParameters(diff);
+			for (CollectionDiff.MatchedPair<Integer, SynItem> pair : diff.getMatched()) {
+				visitor.visitOperationParametersItem(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+				if (pair.getOriginal() != null && pair.getUpdated() != null) {
+					traverseNode(pair.getOriginal(), pair.getUpdated());
+				}
+			}
+		}
 	}
 }
