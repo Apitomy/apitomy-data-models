@@ -15,28 +15,24 @@ import io.apitomy.umg.base.Node;
 public class AbstractDiffTraverser<V extends DiffVisitor> {
 
     protected final V visitor;
+    protected final PairingStrategyProvider pairingProvider;
 
     protected AbstractDiffTraverser(V visitor) {
-        this.visitor = visitor;
+        this(visitor, new DefaultPairingStrategyProvider());
     }
 
-    @SuppressWarnings("unchecked")
+    protected AbstractDiffTraverser(V visitor, PairingStrategyProvider pairingProvider) {
+        this.visitor = visitor;
+        this.pairingProvider = pairingProvider;
+    }
+
     protected <T> CollectionDiff<String, T> pairMap(String propertyName, Map<String, T> original, Map<String, T> updated) {
-        MapPairingStrategy<String, T> strategy =
-                (MapPairingStrategy<String, T>) visitor.getMapPairingStrategy(propertyName);
-        if (strategy == null) {
-            strategy = new KeyPairingStrategy<>();
-        }
+        MapPairingStrategy<String, T> strategy = pairingProvider.getMapStrategy(propertyName);
         return strategy.pair(original, updated);
     }
 
-    @SuppressWarnings("unchecked")
     protected <T> CollectionDiff<Integer, T> pairList(String propertyName, List<T> original, List<T> updated) {
-        ListPairingStrategy<Integer, T> strategy =
-                (ListPairingStrategy<Integer, T>) visitor.getListPairingStrategy(propertyName);
-        if (strategy == null) {
-            strategy = new IndexPairingStrategy<>();
-        }
+        ListPairingStrategy<Integer, T> strategy = pairingProvider.getListStrategy(propertyName);
         return strategy.pair(original, updated);
     }
 
