@@ -43,11 +43,6 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
 
         classSource.addTypeVariable("P");
 
-        String baseFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.DiffVisitor";
-        JavaClassSource baseSource = getState().getJavaIndex().lookupClass(baseFQN);
-        classSource.addImport(baseSource);
-        classSource.extendSuperType(baseSource);
-
         JavaTypeFactory jtf = getJavaTypeFactory();
 
         specVer.getEntities().forEach(entity -> {
