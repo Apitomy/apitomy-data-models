@@ -5,20 +5,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Pairs list entries by index. Converts lists to index-keyed maps,
- * then delegates to the shared pairing logic.
+ * Default list pairing strategy — pairs entries by index.
  */
-public class IndexPairingStrategy<V> implements PairingStrategy<Integer, V> {
+public class IndexPairingStrategy<V> implements ListPairingStrategy<V> {
 
     @Override
-    public CollectionDiff<Integer, V> pair(Map<Integer, V> original, Map<Integer, V> updated) {
-        return PairingStrategy.pairByKey(original, updated);
+    public CollectionDiff<Integer, V> pair(List<V> original, List<V> updated) {
+        return CollectionDiff.pairByKey(toIndexMap(original), toIndexMap(updated));
     }
 
-    /**
-     * Converts a list to an index-keyed map for use with this strategy.
-     */
-    public static <V> Map<Integer, V> toIndexMap(List<V> list) {
+    private static <V> Map<Integer, V> toIndexMap(List<V> list) {
         if (list == null) return new LinkedHashMap<>();
         Map<Integer, V> map = new LinkedHashMap<>();
         for (int i = 0; i < list.size(); i++) {
