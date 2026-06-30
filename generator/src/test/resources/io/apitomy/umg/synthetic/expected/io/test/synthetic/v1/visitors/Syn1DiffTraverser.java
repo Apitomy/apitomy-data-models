@@ -21,6 +21,7 @@ import io.test.synthetic.v1.Syn1Paths;
 import io.test.synthetic.v1.Syn1Schema;
 import io.test.synthetic.visitors.diff.AbstractDiffTraverser;
 import io.test.synthetic.visitors.diff.CollectionDiff;
+import io.test.synthetic.visitors.diff.PairingStrategyProvider;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,10 @@ public class Syn1DiffTraverser extends AbstractDiffTraverser<Syn1DiffVisitor> {
 
 	public Syn1DiffTraverser(Syn1DiffVisitor visitor) {
 		super(visitor);
+	}
+
+	public Syn1DiffTraverser(Syn1DiffVisitor visitor, PairingStrategyProvider pairingProvider) {
+		super(visitor, pairingProvider);
 	}
 
 	@Override
