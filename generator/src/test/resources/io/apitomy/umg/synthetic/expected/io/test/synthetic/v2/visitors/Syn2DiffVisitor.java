@@ -38,7 +38,7 @@ public abstract class Syn2DiffVisitor extends DiffVisitor {
 	public void diffDocumentItems(CollectionDiff<Integer, SynItem> diff) {
 	}
 
-	public void visitDocumentItemsItem(Integer index, SynItem original, SynItem updated) {
+	public void visitDocumentItemsItem(SynItem original, SynItem updated) {
 	}
 
 	public void diffDocumentTags(List<String> original, List<String> updated) {
@@ -50,7 +50,7 @@ public abstract class Syn2DiffVisitor extends DiffVisitor {
 	public void diffDocumentWebhooks(CollectionDiff<String, Syn2PathItem> diff) {
 	}
 
-	public void visitDocumentWebhooks(String key, Syn2PathItem original, Syn2PathItem updated) {
+	public void visitDocumentWebhooks(Syn2PathItem original, Syn2PathItem updated) {
 	}
 
 	public void diffDocumentAdditionalSchema(SchemaOrBoolean original, SchemaOrBoolean updated) {
@@ -141,31 +141,31 @@ public abstract class Syn2DiffVisitor extends DiffVisitor {
 	public void diffSchemaProperties(CollectionDiff<String, BooleanSchemaUnion> diff) {
 	}
 
-	public void visitSchemaProperties(String key, BooleanSchemaUnion original, BooleanSchemaUnion updated) {
+	public void visitSchemaProperties(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
 	public void diffSchemaAllOf(CollectionDiff<Integer, BooleanSchemaUnion> diff) {
 	}
 
-	public void visitSchemaAllOfItem(Integer index, BooleanSchemaUnion original, BooleanSchemaUnion updated) {
+	public void visitSchemaAllOfItem(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
 	public void diffSchemaDefinitions(CollectionDiff<String, BooleanSchemaUnion> diff) {
 	}
 
-	public void visitSchemaDefinitions(String key, BooleanSchemaUnion original, BooleanSchemaUnion updated) {
+	public void visitSchemaDefinitions(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
 	public void diffSchemaNestedSchemas(CollectionDiff<String, SchemaOrBoolean> diff) {
 	}
 
-	public void visitSchemaNestedSchemas(String key, SchemaOrBoolean original, SchemaOrBoolean updated) {
+	public void visitSchemaNestedSchemas(SchemaOrBoolean original, SchemaOrBoolean updated) {
 	}
 
 	public void diffSchemaComposedSchemas(CollectionDiff<Integer, SchemaOrBoolean> diff) {
 	}
 
-	public void visitSchemaComposedSchemasItem(Integer index, SchemaOrBoolean original, SchemaOrBoolean updated) {
+	public void visitSchemaComposedSchemasItem(SchemaOrBoolean original, SchemaOrBoolean updated) {
 	}
 
 	public void diffSchemaMinLength(Integer original, Integer updated) {
@@ -219,6 +219,6 @@ public abstract class Syn2DiffVisitor extends DiffVisitor {
 	public void diffOperationParameters(CollectionDiff<Integer, SynItem> diff) {
 	}
 
-	public void visitOperationParametersItem(Integer index, SynItem original, SynItem updated) {
+	public void visitOperationParametersItem(SynItem original, SynItem updated) {
 	}
 }

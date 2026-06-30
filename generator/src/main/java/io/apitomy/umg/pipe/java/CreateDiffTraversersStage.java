@@ -194,7 +194,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 body.append("    CollectionDiff<Integer, " + valueTypeStr + "> diff = this.pairList(\"${propertyName}\", original.${getter}(), updated.${getter}());");
                 body.append("    visitor.${diffMethod}(diff);");
                 body.append("    for (CollectionDiff.MatchedPair<Integer, " + valueTypeStr + "> pair : diff.getMatched()) {");
-                body.append("        visitor.${visitMethod2}(pair.getKey(), pair.getOriginal(), pair.getUpdated());");
+                body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 if (isEntityList(property)) {
                     body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
                     body.append("            traverseNode(pair.getOriginal(), pair.getUpdated());");
@@ -217,7 +217,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 body.append("    CollectionDiff<String, " + valueTypeStr + "> diff = this.pairMap(\"${propertyName}\", original.${getter}(), updated.${getter}());");
                 body.append("    visitor.${diffMethod}(diff);");
                 body.append("    for (CollectionDiff.MatchedPair<String, " + valueTypeStr + "> pair : diff.getMatched()) {");
-                body.append("        visitor.${visitMethod2}(pair.getKey(), pair.getOriginal(), pair.getUpdated());");
+                body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 if (isEntityMap(property)) {
                     body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
                     body.append("            traverseNode(pair.getOriginal(), pair.getUpdated());");
