@@ -35,7 +35,7 @@ public abstract class Syn2DiffVisitor<P> extends DiffVisitor {
 	public void diffDocumentInfo(SynInfo original, SynInfo updated) {
 	}
 
-	public void diffDocumentItems(CollectionDiff<P, SynItem> diff) {
+	public void diffDocumentItems(List<SynItem> original, List<SynItem> updated, CollectionDiff<P, SynItem> diff) {
 	}
 
 	public void visitDocumentItemsItem(SynItem original, SynItem updated) {
@@ -47,10 +47,11 @@ public abstract class Syn2DiffVisitor<P> extends DiffVisitor {
 	public void diffDocumentMetadata(Map<String, String> original, Map<String, String> updated) {
 	}
 
-	public void diffDocumentWebhooks(CollectionDiff<P, Syn2PathItem> diff) {
+	public void diffDocumentWebhooks(Map<String, Syn2PathItem> original, Map<String, Syn2PathItem> updated,
+			CollectionDiff<P, Syn2PathItem> diff) {
 	}
 
-	public void visitDocumentWebhooks(Syn2PathItem original, Syn2PathItem updated) {
+	public void visitDocumentWebhook(Syn2PathItem original, Syn2PathItem updated) {
 	}
 
 	public void diffDocumentAdditionalSchema(SchemaOrBoolean original, SchemaOrBoolean updated) {
@@ -138,31 +139,36 @@ public abstract class Syn2DiffVisitor<P> extends DiffVisitor {
 	public void diffSchemaItems(BooleanSchemaSchemaListUnion original, BooleanSchemaSchemaListUnion updated) {
 	}
 
-	public void diffSchemaProperties(CollectionDiff<P, BooleanSchemaUnion> diff) {
+	public void diffSchemaProperties(Map<String, BooleanSchemaUnion> original, Map<String, BooleanSchemaUnion> updated,
+			CollectionDiff<P, BooleanSchemaUnion> diff) {
 	}
 
-	public void visitSchemaProperties(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
+	public void visitSchemaProperty(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
-	public void diffSchemaAllOf(CollectionDiff<P, BooleanSchemaUnion> diff) {
+	public void diffSchemaAllOf(List<BooleanSchemaUnion> original, List<BooleanSchemaUnion> updated,
+			CollectionDiff<P, BooleanSchemaUnion> diff) {
 	}
 
 	public void visitSchemaAllOfItem(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
-	public void diffSchemaDefinitions(CollectionDiff<P, BooleanSchemaUnion> diff) {
+	public void diffSchemaDefinitions(Map<String, BooleanSchemaUnion> original, Map<String, BooleanSchemaUnion> updated,
+			CollectionDiff<P, BooleanSchemaUnion> diff) {
 	}
 
-	public void visitSchemaDefinitions(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
+	public void visitSchemaDefinition(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
-	public void diffSchemaNestedSchemas(CollectionDiff<P, SchemaOrBoolean> diff) {
+	public void diffSchemaNestedSchemas(Map<String, SchemaOrBoolean> original, Map<String, SchemaOrBoolean> updated,
+			CollectionDiff<P, SchemaOrBoolean> diff) {
 	}
 
-	public void visitSchemaNestedSchemas(SchemaOrBoolean original, SchemaOrBoolean updated) {
+	public void visitSchemaNestedSchema(SchemaOrBoolean original, SchemaOrBoolean updated) {
 	}
 
-	public void diffSchemaComposedSchemas(CollectionDiff<P, SchemaOrBoolean> diff) {
+	public void diffSchemaComposedSchemas(List<SchemaOrBoolean> original, List<SchemaOrBoolean> updated,
+			CollectionDiff<P, SchemaOrBoolean> diff) {
 	}
 
 	public void visitSchemaComposedSchemasItem(SchemaOrBoolean original, SchemaOrBoolean updated) {
@@ -216,7 +222,8 @@ public abstract class Syn2DiffVisitor<P> extends DiffVisitor {
 	public void diffOperationTags(List<String> original, List<String> updated) {
 	}
 
-	public void diffOperationParameters(CollectionDiff<P, SynItem> diff) {
+	public void diffOperationParameters(List<SynItem> original, List<SynItem> updated,
+			CollectionDiff<P, SynItem> diff) {
 	}
 
 	public void visitOperationParametersItem(SynItem original, SynItem updated) {
