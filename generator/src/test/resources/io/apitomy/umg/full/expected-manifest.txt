@@ -179,6 +179,7 @@ io/apitomy/datamodels/models/asyncapi/v2x/v20/io/AsyncApi20ModelReaderDispatcher
 io/apitomy/datamodels/models/asyncapi/v2x/v20/io/AsyncApi20ModelWriter.java
 io/apitomy/datamodels/models/asyncapi/v2x/v20/io/AsyncApi20ModelWriterDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v20/visitors/AsyncApi20DiffTraverser.java
+io/apitomy/datamodels/models/asyncapi/v2x/v20/visitors/AsyncApi20DiffVisitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v20/visitors/AsyncApi20Traverser.java
 io/apitomy/datamodels/models/asyncapi/v2x/v20/visitors/AsyncApi20Visitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v20/visitors/AsyncApi20VisitorAdapter.java
@@ -252,6 +253,7 @@ io/apitomy/datamodels/models/asyncapi/v2x/v21/io/AsyncApi21ModelReaderDispatcher
 io/apitomy/datamodels/models/asyncapi/v2x/v21/io/AsyncApi21ModelWriter.java
 io/apitomy/datamodels/models/asyncapi/v2x/v21/io/AsyncApi21ModelWriterDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v21/visitors/AsyncApi21DiffTraverser.java
+io/apitomy/datamodels/models/asyncapi/v2x/v21/visitors/AsyncApi21DiffVisitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v21/visitors/AsyncApi21Traverser.java
 io/apitomy/datamodels/models/asyncapi/v2x/v21/visitors/AsyncApi21Visitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v21/visitors/AsyncApi21VisitorAdapter.java
@@ -327,6 +329,7 @@ io/apitomy/datamodels/models/asyncapi/v2x/v22/io/AsyncApi22ModelReaderDispatcher
 io/apitomy/datamodels/models/asyncapi/v2x/v22/io/AsyncApi22ModelWriter.java
 io/apitomy/datamodels/models/asyncapi/v2x/v22/io/AsyncApi22ModelWriterDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v22/visitors/AsyncApi22DiffTraverser.java
+io/apitomy/datamodels/models/asyncapi/v2x/v22/visitors/AsyncApi22DiffVisitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v22/visitors/AsyncApi22Traverser.java
 io/apitomy/datamodels/models/asyncapi/v2x/v22/visitors/AsyncApi22Visitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v22/visitors/AsyncApi22VisitorAdapter.java
@@ -402,6 +405,7 @@ io/apitomy/datamodels/models/asyncapi/v2x/v23/io/AsyncApi23ModelReaderDispatcher
 io/apitomy/datamodels/models/asyncapi/v2x/v23/io/AsyncApi23ModelWriter.java
 io/apitomy/datamodels/models/asyncapi/v2x/v23/io/AsyncApi23ModelWriterDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v23/visitors/AsyncApi23DiffTraverser.java
+io/apitomy/datamodels/models/asyncapi/v2x/v23/visitors/AsyncApi23DiffVisitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v23/visitors/AsyncApi23Traverser.java
 io/apitomy/datamodels/models/asyncapi/v2x/v23/visitors/AsyncApi23Visitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v23/visitors/AsyncApi23VisitorAdapter.java
@@ -477,6 +481,7 @@ io/apitomy/datamodels/models/asyncapi/v2x/v24/io/AsyncApi24ModelReaderDispatcher
 io/apitomy/datamodels/models/asyncapi/v2x/v24/io/AsyncApi24ModelWriter.java
 io/apitomy/datamodels/models/asyncapi/v2x/v24/io/AsyncApi24ModelWriterDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v24/visitors/AsyncApi24DiffTraverser.java
+io/apitomy/datamodels/models/asyncapi/v2x/v24/visitors/AsyncApi24DiffVisitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v24/visitors/AsyncApi24Traverser.java
 io/apitomy/datamodels/models/asyncapi/v2x/v24/visitors/AsyncApi24Visitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v24/visitors/AsyncApi24VisitorAdapter.java
@@ -552,6 +557,7 @@ io/apitomy/datamodels/models/asyncapi/v2x/v25/io/AsyncApi25ModelReaderDispatcher
 io/apitomy/datamodels/models/asyncapi/v2x/v25/io/AsyncApi25ModelWriter.java
 io/apitomy/datamodels/models/asyncapi/v2x/v25/io/AsyncApi25ModelWriterDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v25/visitors/AsyncApi25DiffTraverser.java
+io/apitomy/datamodels/models/asyncapi/v2x/v25/visitors/AsyncApi25DiffVisitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v25/visitors/AsyncApi25Traverser.java
 io/apitomy/datamodels/models/asyncapi/v2x/v25/visitors/AsyncApi25Visitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v25/visitors/AsyncApi25VisitorAdapter.java
@@ -627,6 +633,7 @@ io/apitomy/datamodels/models/asyncapi/v2x/v26/io/AsyncApi26ModelReaderDispatcher
 io/apitomy/datamodels/models/asyncapi/v2x/v26/io/AsyncApi26ModelWriter.java
 io/apitomy/datamodels/models/asyncapi/v2x/v26/io/AsyncApi26ModelWriterDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v2x/v26/visitors/AsyncApi26DiffTraverser.java
+io/apitomy/datamodels/models/asyncapi/v2x/v26/visitors/AsyncApi26DiffVisitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v26/visitors/AsyncApi26Traverser.java
 io/apitomy/datamodels/models/asyncapi/v2x/v26/visitors/AsyncApi26Visitor.java
 io/apitomy/datamodels/models/asyncapi/v2x/v26/visitors/AsyncApi26VisitorAdapter.java
@@ -744,6 +751,7 @@ io/apitomy/datamodels/models/asyncapi/v3x/v30/io/AsyncApi30ModelReaderDispatcher
 io/apitomy/datamodels/models/asyncapi/v3x/v30/io/AsyncApi30ModelWriter.java
 io/apitomy/datamodels/models/asyncapi/v3x/v30/io/AsyncApi30ModelWriterDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v3x/v30/visitors/AsyncApi30DiffTraverser.java
+io/apitomy/datamodels/models/asyncapi/v3x/v30/visitors/AsyncApi30DiffVisitor.java
 io/apitomy/datamodels/models/asyncapi/v3x/v30/visitors/AsyncApi30Traverser.java
 io/apitomy/datamodels/models/asyncapi/v3x/v30/visitors/AsyncApi30Visitor.java
 io/apitomy/datamodels/models/asyncapi/v3x/v30/visitors/AsyncApi30VisitorAdapter.java
@@ -824,6 +832,7 @@ io/apitomy/datamodels/models/asyncapi/v3x/v31/io/AsyncApi31ModelReaderDispatcher
 io/apitomy/datamodels/models/asyncapi/v3x/v31/io/AsyncApi31ModelWriter.java
 io/apitomy/datamodels/models/asyncapi/v3x/v31/io/AsyncApi31ModelWriterDispatcher.java
 io/apitomy/datamodels/models/asyncapi/v3x/v31/visitors/AsyncApi31DiffTraverser.java
+io/apitomy/datamodels/models/asyncapi/v3x/v31/visitors/AsyncApi31DiffVisitor.java
 io/apitomy/datamodels/models/asyncapi/v3x/v31/visitors/AsyncApi31Traverser.java
 io/apitomy/datamodels/models/asyncapi/v3x/v31/visitors/AsyncApi31Visitor.java
 io/apitomy/datamodels/models/asyncapi/v3x/v31/visitors/AsyncApi31VisitorAdapter.java
@@ -856,6 +865,7 @@ io/apitomy/datamodels/models/jsonschema/draft/draft4/io/JD4ModelReaderDispatcher
 io/apitomy/datamodels/models/jsonschema/draft/draft4/io/JD4ModelWriter.java
 io/apitomy/datamodels/models/jsonschema/draft/draft4/io/JD4ModelWriterDispatcher.java
 io/apitomy/datamodels/models/jsonschema/draft/draft4/visitors/JD4DiffTraverser.java
+io/apitomy/datamodels/models/jsonschema/draft/draft4/visitors/JD4DiffVisitor.java
 io/apitomy/datamodels/models/jsonschema/draft/draft4/visitors/JD4Traverser.java
 io/apitomy/datamodels/models/jsonschema/draft/draft4/visitors/JD4Visitor.java
 io/apitomy/datamodels/models/jsonschema/draft/draft4/visitors/JD4VisitorAdapter.java
@@ -869,6 +879,7 @@ io/apitomy/datamodels/models/jsonschema/draft/draft6/io/JD6ModelReaderDispatcher
 io/apitomy/datamodels/models/jsonschema/draft/draft6/io/JD6ModelWriter.java
 io/apitomy/datamodels/models/jsonschema/draft/draft6/io/JD6ModelWriterDispatcher.java
 io/apitomy/datamodels/models/jsonschema/draft/draft6/visitors/JD6DiffTraverser.java
+io/apitomy/datamodels/models/jsonschema/draft/draft6/visitors/JD6DiffVisitor.java
 io/apitomy/datamodels/models/jsonschema/draft/draft6/visitors/JD6Traverser.java
 io/apitomy/datamodels/models/jsonschema/draft/draft6/visitors/JD6Visitor.java
 io/apitomy/datamodels/models/jsonschema/draft/draft6/visitors/JD6VisitorAdapter.java
@@ -882,6 +893,7 @@ io/apitomy/datamodels/models/jsonschema/draft/draft7/io/JD7ModelReaderDispatcher
 io/apitomy/datamodels/models/jsonschema/draft/draft7/io/JD7ModelWriter.java
 io/apitomy/datamodels/models/jsonschema/draft/draft7/io/JD7ModelWriterDispatcher.java
 io/apitomy/datamodels/models/jsonschema/draft/draft7/visitors/JD7DiffTraverser.java
+io/apitomy/datamodels/models/jsonschema/draft/draft7/visitors/JD7DiffVisitor.java
 io/apitomy/datamodels/models/jsonschema/draft/draft7/visitors/JD7Traverser.java
 io/apitomy/datamodels/models/jsonschema/draft/draft7/visitors/JD7Visitor.java
 io/apitomy/datamodels/models/jsonschema/draft/draft7/visitors/JD7VisitorAdapter.java
@@ -898,6 +910,7 @@ io/apitomy/datamodels/models/jsonschema/modern/v201909/io/JM201909ModelReaderDis
 io/apitomy/datamodels/models/jsonschema/modern/v201909/io/JM201909ModelWriter.java
 io/apitomy/datamodels/models/jsonschema/modern/v201909/io/JM201909ModelWriterDispatcher.java
 io/apitomy/datamodels/models/jsonschema/modern/v201909/visitors/JM201909DiffTraverser.java
+io/apitomy/datamodels/models/jsonschema/modern/v201909/visitors/JM201909DiffVisitor.java
 io/apitomy/datamodels/models/jsonschema/modern/v201909/visitors/JM201909Traverser.java
 io/apitomy/datamodels/models/jsonschema/modern/v201909/visitors/JM201909Visitor.java
 io/apitomy/datamodels/models/jsonschema/modern/v201909/visitors/JM201909VisitorAdapter.java
@@ -911,6 +924,7 @@ io/apitomy/datamodels/models/jsonschema/modern/v202012/io/JM202012ModelReaderDis
 io/apitomy/datamodels/models/jsonschema/modern/v202012/io/JM202012ModelWriter.java
 io/apitomy/datamodels/models/jsonschema/modern/v202012/io/JM202012ModelWriterDispatcher.java
 io/apitomy/datamodels/models/jsonschema/modern/v202012/visitors/JM202012DiffTraverser.java
+io/apitomy/datamodels/models/jsonschema/modern/v202012/visitors/JM202012DiffVisitor.java
 io/apitomy/datamodels/models/jsonschema/modern/v202012/visitors/JM202012Traverser.java
 io/apitomy/datamodels/models/jsonschema/modern/v202012/visitors/JM202012Visitor.java
 io/apitomy/datamodels/models/jsonschema/modern/v202012/visitors/JM202012VisitorAdapter.java
@@ -1049,6 +1063,7 @@ io/apitomy/datamodels/models/openapi/v2x/v20/io/OpenApi20ModelReaderDispatcher.j
 io/apitomy/datamodels/models/openapi/v2x/v20/io/OpenApi20ModelWriter.java
 io/apitomy/datamodels/models/openapi/v2x/v20/io/OpenApi20ModelWriterDispatcher.java
 io/apitomy/datamodels/models/openapi/v2x/v20/visitors/OpenApi20DiffTraverser.java
+io/apitomy/datamodels/models/openapi/v2x/v20/visitors/OpenApi20DiffVisitor.java
 io/apitomy/datamodels/models/openapi/v2x/v20/visitors/OpenApi20Traverser.java
 io/apitomy/datamodels/models/openapi/v2x/v20/visitors/OpenApi20Visitor.java
 io/apitomy/datamodels/models/openapi/v2x/v20/visitors/OpenApi20VisitorAdapter.java
@@ -1160,6 +1175,7 @@ io/apitomy/datamodels/models/openapi/v3x/v30/io/OpenApi30ModelReaderDispatcher.j
 io/apitomy/datamodels/models/openapi/v3x/v30/io/OpenApi30ModelWriter.java
 io/apitomy/datamodels/models/openapi/v3x/v30/io/OpenApi30ModelWriterDispatcher.java
 io/apitomy/datamodels/models/openapi/v3x/v30/visitors/OpenApi30DiffTraverser.java
+io/apitomy/datamodels/models/openapi/v3x/v30/visitors/OpenApi30DiffVisitor.java
 io/apitomy/datamodels/models/openapi/v3x/v30/visitors/OpenApi30Traverser.java
 io/apitomy/datamodels/models/openapi/v3x/v30/visitors/OpenApi30Visitor.java
 io/apitomy/datamodels/models/openapi/v3x/v30/visitors/OpenApi30VisitorAdapter.java
@@ -1235,6 +1251,7 @@ io/apitomy/datamodels/models/openapi/v3x/v31/io/OpenApi31ModelReaderDispatcher.j
 io/apitomy/datamodels/models/openapi/v3x/v31/io/OpenApi31ModelWriter.java
 io/apitomy/datamodels/models/openapi/v3x/v31/io/OpenApi31ModelWriterDispatcher.java
 io/apitomy/datamodels/models/openapi/v3x/v31/visitors/OpenApi31DiffTraverser.java
+io/apitomy/datamodels/models/openapi/v3x/v31/visitors/OpenApi31DiffVisitor.java
 io/apitomy/datamodels/models/openapi/v3x/v31/visitors/OpenApi31Traverser.java
 io/apitomy/datamodels/models/openapi/v3x/v31/visitors/OpenApi31Visitor.java
 io/apitomy/datamodels/models/openapi/v3x/v31/visitors/OpenApi31VisitorAdapter.java
@@ -1322,6 +1339,7 @@ io/apitomy/datamodels/models/openrpc/v1x/v13/io/OpenRpc13ModelReaderDispatcher.j
 io/apitomy/datamodels/models/openrpc/v1x/v13/io/OpenRpc13ModelWriter.java
 io/apitomy/datamodels/models/openrpc/v1x/v13/io/OpenRpc13ModelWriterDispatcher.java
 io/apitomy/datamodels/models/openrpc/v1x/v13/visitors/OpenRpc13DiffTraverser.java
+io/apitomy/datamodels/models/openrpc/v1x/v13/visitors/OpenRpc13DiffVisitor.java
 io/apitomy/datamodels/models/openrpc/v1x/v13/visitors/OpenRpc13Traverser.java
 io/apitomy/datamodels/models/openrpc/v1x/v13/visitors/OpenRpc13Visitor.java
 io/apitomy/datamodels/models/openrpc/v1x/v13/visitors/OpenRpc13VisitorAdapter.java
@@ -1367,6 +1385,7 @@ io/apitomy/datamodels/models/openrpc/v1x/v14/io/OpenRpc14ModelReaderDispatcher.j
 io/apitomy/datamodels/models/openrpc/v1x/v14/io/OpenRpc14ModelWriter.java
 io/apitomy/datamodels/models/openrpc/v1x/v14/io/OpenRpc14ModelWriterDispatcher.java
 io/apitomy/datamodels/models/openrpc/v1x/v14/visitors/OpenRpc14DiffTraverser.java
+io/apitomy/datamodels/models/openrpc/v1x/v14/visitors/OpenRpc14DiffVisitor.java
 io/apitomy/datamodels/models/openrpc/v1x/v14/visitors/OpenRpc14Traverser.java
 io/apitomy/datamodels/models/openrpc/v1x/v14/visitors/OpenRpc14Visitor.java
 io/apitomy/datamodels/models/openrpc/v1x/v14/visitors/OpenRpc14VisitorAdapter.java
