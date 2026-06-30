@@ -172,13 +172,11 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         diffMethod.addParameter("CollectionDiff<Integer, " + valueJt.toJavaTypeString() + ">", "diff");
         diffMethod.setBody("");
 
-        // visit method: visitEntityFieldItem(Integer index, ValueType original, ValueType updated)
         String visitMethodName = "visit" + entityName + fieldSuffix + "Item";
         MethodSource<JavaClassSource> visitMethod = classSource.addMethod()
                 .setName(visitMethodName)
                 .setReturnTypeVoid()
                 .setPublic();
-        visitMethod.addParameter("Integer", "index");
         visitMethod.addParameter(valueJt.toJavaTypeString(), "original");
         visitMethod.addParameter(valueJt.toJavaTypeString(), "updated");
         visitMethod.setBody("");
@@ -203,14 +201,11 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         diffMethod.addParameter("CollectionDiff<String, " + valueJt.toJavaTypeString() + ">", "diff");
         diffMethod.setBody("");
 
-        // visit method: visitEntityField(String key, ValueType original, ValueType updated)
-        String singularFieldSuffix = fieldSuffix;
-        String visitMethodName = "visit" + entityName + singularFieldSuffix;
+        String visitMethodName = "visit" + entityName + fieldSuffix;
         MethodSource<JavaClassSource> visitMethod = classSource.addMethod()
                 .setName(visitMethodName)
                 .setReturnTypeVoid()
                 .setPublic();
-        visitMethod.addParameter("String", "key");
         visitMethod.addParameter(valueJt.toJavaTypeString(), "original");
         visitMethod.addParameter(valueJt.toJavaTypeString(), "updated");
         visitMethod.setBody("");

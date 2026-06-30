@@ -68,7 +68,7 @@ public class Syn2DiffTraverser extends AbstractDiffTraverser<Syn2DiffVisitor> {
 			CollectionDiff<Integer, SynItem> diff = this.pairList("items", original.getItems(), updated.getItems());
 			visitor.diffDocumentItems(diff);
 			for (CollectionDiff.MatchedPair<Integer, SynItem> pair : diff.getMatched()) {
-				visitor.visitDocumentItemsItem(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+				visitor.visitDocumentItemsItem(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
 					traverseNode(pair.getOriginal(), pair.getUpdated());
 				}
@@ -81,7 +81,7 @@ public class Syn2DiffTraverser extends AbstractDiffTraverser<Syn2DiffVisitor> {
 					updated.getWebhooks());
 			visitor.diffDocumentWebhooks(diff);
 			for (CollectionDiff.MatchedPair<String, Syn2PathItem> pair : diff.getMatched()) {
-				visitor.visitDocumentWebhooks(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+				visitor.visitDocumentWebhooks(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
 					traverseNode(pair.getOriginal(), pair.getUpdated());
 				}
@@ -157,7 +157,7 @@ public class Syn2DiffTraverser extends AbstractDiffTraverser<Syn2DiffVisitor> {
 					updated.getProperties());
 			visitor.diffSchemaProperties(diff);
 			for (CollectionDiff.MatchedPair<String, BooleanSchemaUnion> pair : diff.getMatched()) {
-				visitor.visitSchemaProperties(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+				visitor.visitSchemaProperties(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		{
@@ -165,7 +165,7 @@ public class Syn2DiffTraverser extends AbstractDiffTraverser<Syn2DiffVisitor> {
 					updated.getAllOf());
 			visitor.diffSchemaAllOf(diff);
 			for (CollectionDiff.MatchedPair<Integer, BooleanSchemaUnion> pair : diff.getMatched()) {
-				visitor.visitSchemaAllOfItem(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+				visitor.visitSchemaAllOfItem(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		{
@@ -173,7 +173,7 @@ public class Syn2DiffTraverser extends AbstractDiffTraverser<Syn2DiffVisitor> {
 					updated.getDefinitions());
 			visitor.diffSchemaDefinitions(diff);
 			for (CollectionDiff.MatchedPair<String, BooleanSchemaUnion> pair : diff.getMatched()) {
-				visitor.visitSchemaDefinitions(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+				visitor.visitSchemaDefinitions(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		{
@@ -181,7 +181,7 @@ public class Syn2DiffTraverser extends AbstractDiffTraverser<Syn2DiffVisitor> {
 					updated.getNestedSchemas());
 			visitor.diffSchemaNestedSchemas(diff);
 			for (CollectionDiff.MatchedPair<String, SchemaOrBoolean> pair : diff.getMatched()) {
-				visitor.visitSchemaNestedSchemas(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+				visitor.visitSchemaNestedSchemas(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		{
@@ -189,7 +189,7 @@ public class Syn2DiffTraverser extends AbstractDiffTraverser<Syn2DiffVisitor> {
 					original.getComposedSchemas(), updated.getComposedSchemas());
 			visitor.diffSchemaComposedSchemas(diff);
 			for (CollectionDiff.MatchedPair<Integer, SchemaOrBoolean> pair : diff.getMatched()) {
-				visitor.visitSchemaComposedSchemasItem(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+				visitor.visitSchemaComposedSchemasItem(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		visitor.diffSchemaMinLength(original.getMinLength(), updated.getMinLength());
@@ -248,7 +248,7 @@ public class Syn2DiffTraverser extends AbstractDiffTraverser<Syn2DiffVisitor> {
 					updated.getParameters());
 			visitor.diffOperationParameters(diff);
 			for (CollectionDiff.MatchedPair<Integer, SynItem> pair : diff.getMatched()) {
-				visitor.visitOperationParametersItem(pair.getKey(), pair.getOriginal(), pair.getUpdated());
+				visitor.visitOperationParametersItem(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
 					traverseNode(pair.getOriginal(), pair.getUpdated());
 				}
