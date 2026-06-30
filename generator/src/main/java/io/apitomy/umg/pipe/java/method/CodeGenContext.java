@@ -262,7 +262,7 @@ public class CodeGenContext {
         return PrimitiveTypeUtil.primitiveTypeToClass(type);
     }
 
-    public String singularize(String name) {
+    public static String singularize(String name) {
         return inflector.singularize(name);
     }
 

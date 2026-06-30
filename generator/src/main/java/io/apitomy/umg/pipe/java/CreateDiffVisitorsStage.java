@@ -8,6 +8,7 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
 import io.apitomy.umg.beans.SpecificationVersion;
+import io.apitomy.umg.pipe.java.method.CodeGenContext;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.NamespaceModel;
@@ -165,12 +166,15 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
                 + ".visitors.diff.CollectionDiff";
         classSource.addImport(collectionDiffFQN);
 
-        // diff method: diffEntityField(CollectionDiff<P,ValueType> diff)
+        classSource.addImport(java.util.List.class);
+
         String diffMethodName = "diff" + entityName + fieldSuffix;
         MethodSource<JavaClassSource> diffMethod = classSource.addMethod()
                 .setName(diffMethodName)
                 .setReturnTypeVoid()
                 .setPublic();
+        diffMethod.addParameter("List<" + valueJt.toJavaTypeString() + ">", "original");
+        diffMethod.addParameter("List<" + valueJt.toJavaTypeString() + ">", "updated");
         diffMethod.addParameter("CollectionDiff<P," + valueJt.toJavaTypeString() + ">", "diff");
         diffMethod.setBody("");
 
@@ -193,17 +197,20 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         String collectionDiffFQN = getState().getConfig().getRootNamespace()
                 + ".visitors.diff.CollectionDiff";
         classSource.addImport(collectionDiffFQN);
+        classSource.addImport(java.util.Map.class);
 
-        // diff method: diffEntityField(CollectionDiff<P,ValueType> diff)
         String diffMethodName = "diff" + entityName + fieldSuffix;
         MethodSource<JavaClassSource> diffMethod = classSource.addMethod()
                 .setName(diffMethodName)
                 .setReturnTypeVoid()
                 .setPublic();
+        diffMethod.addParameter("Map<String," + valueJt.toJavaTypeString() + ">", "original");
+        diffMethod.addParameter("Map<String," + valueJt.toJavaTypeString() + ">", "updated");
         diffMethod.addParameter("CollectionDiff<P," + valueJt.toJavaTypeString() + ">", "diff");
         diffMethod.setBody("");
 
-        String visitMethodName = "visit" + entityName + fieldSuffix;
+        String singularSuffix = singularize(fieldSuffix);
+        String visitMethodName = "visit" + entityName + singularSuffix;
         MethodSource<JavaClassSource> visitMethod = classSource.addMethod()
                 .setName(visitMethodName)
                 .setReturnTypeVoid()
@@ -211,6 +218,10 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         visitMethod.addParameter(valueJt.toJavaTypeString(), "original");
         visitMethod.addParameter(valueJt.toJavaTypeString(), "updated");
         visitMethod.setBody("");
+    }
+
+    private static String singularize(String name) {
+        return CodeGenContext.singularize(name);
     }
 
     /**
