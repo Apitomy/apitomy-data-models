@@ -6,9 +6,9 @@ import java.util.Map;
  * Strategy for pairing entries from two maps.
  *
  * @param <P> the pairing key type (e.g., String for key-based pairing)
- * @param <T> the value type
+ * @param <V> the value type
  */
-public interface MapPairingStrategy<P extends PairingKey, T> {
+public interface MapPairingStrategy<P extends PairingKey, V> {
 
-    CollectionDiff<P, T> pair(Map<String, T> original, Map<String, T> updated);
+    CollectionDiff<P, V> pair(Map<String, V> original, Map<String, V> updated);
 }
