@@ -3,33 +3,42 @@ package io.test.synthetic.visitors.diff;
 import java.util.Objects;
 
 /**
- * Default provider: key-based pairing for maps, index-based for lists.
+ * Default pairing key for index-based (lists) and key-based (maps) pairing. For
+ * the default strategies, original and updated positions are the same (same
+ * index or same key).
  */
-public class DefaultPairingKey {
+public class DefaultPairingKey implements PairingKey {
 
-	private Type type;
-	private Integer index;
-	private String key;
+	private final Integer index;
+	private final String key;
 
 	public DefaultPairingKey(int index) {
-		type = Type.INDEX;
 		this.index = index;
+		this.key = null;
 	}
 
 	public DefaultPairingKey(String key) {
-		type = Type.KEY;
+		this.index = null;
 		this.key = key;
 	}
 
-	public Type getType() {
-		return type;
-	}
-
-	public Integer getIndex() {
+	@Override
+	public Integer getOriginalIndex() {
 		return index;
 	}
 
-	public String getKey() {
+	@Override
+	public Integer getUpdatedIndex() {
+		return index;
+	}
+
+	@Override
+	public String getOriginalKey() {
+		return key;
+	}
+
+	@Override
+	public String getUpdatedKey() {
 		return key;
 	}
 
@@ -38,15 +47,16 @@ public class DefaultPairingKey {
 		if (!(o instanceof DefaultPairingKey))
 			return false;
 		DefaultPairingKey that = (DefaultPairingKey) o;
-		return type == that.type && Objects.equals(index, that.index) && Objects.equals(key, that.key);
+		return Objects.equals(index, that.index) && Objects.equals(key, that.key);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(type, index, key);
+		return Objects.hash(index, key);
 	}
 
-	public enum Type {
-		INDEX, KEY
+	@Override
+	public String toString() {
+		return key != null ? key : String.valueOf(index);
 	}
 }
