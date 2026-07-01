@@ -1428,6 +1428,7 @@ io/apitomy/datamodels/models/visitors/TraversalStepType.java
 io/apitomy/datamodels/models/visitors/Traverser.java
 io/apitomy/datamodels/models/visitors/TraversingVisitor.java
 io/apitomy/datamodels/models/visitors/Visitor.java
+io/apitomy/datamodels/models/visitors/convert/AbstractConversionTraverser.java
 io/apitomy/datamodels/models/visitors/diff/AbstractDiffTraverser.java
 io/apitomy/datamodels/models/visitors/diff/CollectionDiff.java
 io/apitomy/datamodels/models/visitors/diff/DefaultListPairingStrategy.java
