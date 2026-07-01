@@ -58,6 +58,8 @@ import io.apitomy.umg.pipe.java.CreateReaderFactoryStage;
 import io.apitomy.umg.pipe.java.CreateReadersStage;
 import io.apitomy.umg.pipe.java.CreateTestFixturesStage;
 import io.apitomy.umg.pipe.java.CreateTraitInterfacesStage;
+import io.apitomy.umg.pipe.java.CreateConversionTraversersStage;
+import io.apitomy.umg.pipe.java.CreateConversionVisitorsStage;
 import io.apitomy.umg.pipe.java.CreateDiffTraversersStage;
 import io.apitomy.umg.pipe.java.CreateDiffVisitorsStage;
 import io.apitomy.umg.pipe.java.CreateTraversersStage;
@@ -167,6 +169,8 @@ public class UnifiedModelGenerator {
         pipe.addStage(new CreateTraversersStage());
         pipe.addStage(new CreateDiffVisitorsStage());
         pipe.addStage(new CreateDiffTraversersStage());
+        pipe.addStage(new CreateConversionVisitorsStage());
+        pipe.addStage(new CreateConversionTraversersStage());
         pipe.addStage(new CreateReaderFactoryStage());
         pipe.addStage(new CreateWriterFactoryStage());
         pipe.addStage(new CreateClonerFactoryStage());

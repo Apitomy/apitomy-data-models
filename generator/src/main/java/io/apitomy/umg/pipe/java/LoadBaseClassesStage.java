@@ -38,6 +38,7 @@ public class LoadBaseClassesStage extends AbstractStage {
                     "io.apitomy.umg.base.visitors.TraversalStep",
                     "io.apitomy.umg.base.visitors.TraversalContextImpl",
                     "io.apitomy.umg.base.visitors.ReverseTraverser",
+                    "io.apitomy.umg.base.visitors.convert.AbstractConversionTraverser",
                     "io.apitomy.umg.base.visitors.diff.AbstractDiffTraverser",
                     "io.apitomy.umg.base.visitors.diff.CollectionDiff",
                     "io.apitomy.umg.base.visitors.diff.DefaultPairingKey",

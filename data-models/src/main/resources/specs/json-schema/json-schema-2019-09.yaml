@@ -7,6 +7,7 @@ prefix: JM201909
 namespace: io.apitomy.datamodels.models.jsonschema.modern.v201909
 majorVersionPrefix: JM
 majorVersionNamespace: io.apitomy.datamodels.models.jsonschema.modern
+conversionTarget: compound
 
 traits:
   - name: Referenceable
