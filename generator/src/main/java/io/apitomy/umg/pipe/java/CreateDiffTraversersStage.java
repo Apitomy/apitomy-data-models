@@ -294,7 +294,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 body.append("    CollectionDiff<P," + valueTypeStr + "> diff = this.pairMap(\"${propertyName}\", original.${getter}(), updated.${getter}());");
                 body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}(), diff);");
                 body.append("    for (CollectionDiff.MatchedPair<P, " + valueTypeStr + "> pair : diff.getMatched()) {");
-                body.append("        pushMapIndex(pair.getKey());");
+                body.append("        pushMapKey(pair.getKey());");
                 body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 if (isEntityMap(property)) {
                     body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");

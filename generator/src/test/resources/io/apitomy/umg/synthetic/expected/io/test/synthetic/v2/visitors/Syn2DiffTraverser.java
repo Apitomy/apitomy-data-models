@@ -115,7 +115,7 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 					updated.getWebhooks());
 			visitor.diffDocumentWebhooks(original.getWebhooks(), updated.getWebhooks(), diff);
 			for (CollectionDiff.MatchedPair<P, Syn2PathItem> pair : diff.getMatched()) {
-				pushMapIndex(pair.getKey());
+				pushMapKey(pair.getKey());
 				visitor.visitDocumentWebhook(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
 					traverse(pair.getOriginal(), pair.getUpdated());
@@ -290,7 +290,7 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 					updated.getProperties());
 			visitor.diffSchemaProperties(original.getProperties(), updated.getProperties(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
-				pushMapIndex(pair.getKey());
+				pushMapKey(pair.getKey());
 				visitor.visitSchemaProperty(pair.getOriginal(), pair.getUpdated());
 				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 				pop();
@@ -316,7 +316,7 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 					updated.getDefinitions());
 			visitor.diffSchemaDefinitions(original.getDefinitions(), updated.getDefinitions(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
-				pushMapIndex(pair.getKey());
+				pushMapKey(pair.getKey());
 				visitor.visitSchemaDefinition(pair.getOriginal(), pair.getUpdated());
 				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 				pop();
@@ -329,7 +329,7 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 					updated.getNestedSchemas());
 			visitor.diffSchemaNestedSchemas(original.getNestedSchemas(), updated.getNestedSchemas(), diff);
 			for (CollectionDiff.MatchedPair<P, SchemaOrBoolean> pair : diff.getMatched()) {
-				pushMapIndex(pair.getKey());
+				pushMapKey(pair.getKey());
 				visitor.visitSchemaNestedSchema(pair.getOriginal(), pair.getUpdated());
 				this.traverseSchemaOrBoolean(pair.getOriginal(), pair.getUpdated());
 				pop();
