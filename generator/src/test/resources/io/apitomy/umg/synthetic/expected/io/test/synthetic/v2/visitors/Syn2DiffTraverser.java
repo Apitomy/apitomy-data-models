@@ -2,6 +2,7 @@ package io.test.synthetic.v2.visitors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.test.synthetic.Any;
 import io.test.synthetic.BooleanSchemaSchemaListUnion;
 import io.test.synthetic.BooleanSchemaUnion;
 import io.test.synthetic.Node;
@@ -36,9 +37,18 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 	}
 
 	@Override
-	protected void traverseNode(Node original, Node updated) {
-		Node target = original != null ? original : updated;
-		if (target instanceof Syn2Document) {
+	public void traverse(Any original, Any updated) {
+		Any target = original != null ? original : updated;
+		if (target == null)
+			return;
+		if (target instanceof SchemaOrBoolean) {
+			this.traverseSchemaOrBoolean((SchemaOrBoolean) original, (SchemaOrBoolean) updated);
+		} else if (target instanceof BooleanSchemaSchemaListUnion) {
+			this.traverseBooleanSchemaSchemaListUnion((BooleanSchemaSchemaListUnion) original,
+					(BooleanSchemaSchemaListUnion) updated);
+		} else if (target instanceof BooleanSchemaUnion) {
+			this.traverseBooleanSchemaUnion((BooleanSchemaUnion) original, (BooleanSchemaUnion) updated);
+		} else if (target instanceof Syn2Document) {
 			this.traverseDocument((Syn2Document) original, (Syn2Document) updated);
 		} else if (target instanceof Syn2Info) {
 			this.traverseInfo((Syn2Info) original, (Syn2Info) updated);
@@ -67,7 +77,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 		visitor.diffDocumentVersion(original.getVersion(), updated.getVersion());
 		visitor.diffDocumentInfo(original.getInfo(), updated.getInfo());
 		if (original.getInfo() != null && updated.getInfo() != null) {
-			traverseNode(original.getInfo(), updated.getInfo());
+			traverse(original.getInfo(), updated.getInfo());
 		}
 		{
 			CollectionDiff<P, SynItem> diff = this.pairList("items", original.getItems(), updated.getItems());
@@ -75,7 +85,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 			for (CollectionDiff.MatchedPair<P, SynItem> pair : diff.getMatched()) {
 				visitor.visitDocumentItemsItem(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
-					traverseNode(pair.getOriginal(), pair.getUpdated());
+					traverse(pair.getOriginal(), pair.getUpdated());
 				}
 			}
 		}
@@ -88,7 +98,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 			for (CollectionDiff.MatchedPair<P, Syn2PathItem> pair : diff.getMatched()) {
 				visitor.visitDocumentWebhook(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
-					traverseNode(pair.getOriginal(), pair.getUpdated());
+					traverse(pair.getOriginal(), pair.getUpdated());
 				}
 			}
 		}
@@ -106,7 +116,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 		visitor.diffInfoName(original.getName(), updated.getName());
 		visitor.diffInfoContact(original.getContact(), updated.getContact());
 		if (original.getContact() != null && updated.getContact() != null) {
-			traverseNode(original.getContact(), updated.getContact());
+			traverse(original.getContact(), updated.getContact());
 		}
 		visitor.diffInfoVersion(original.getVersion(), updated.getVersion());
 		visitor.diffInfoLicense(original.getLicense(), updated.getLicense());
@@ -140,7 +150,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 		visitor.diffItemRaw(original.getRaw(), updated.getRaw());
 		visitor.diffItemSchema(original.getSchema(), updated.getSchema());
 		if (original.getSchema() != null && updated.getSchema() != null) {
-			traverseNode(original.getSchema(), updated.getSchema());
+			traverse(original.getSchema(), updated.getSchema());
 		}
 		visitor.diffItemExamples(original.getExamples(), updated.getExamples());
 		visitor.diffItemDefaultValue(original.getDefaultValue(), updated.getDefaultValue());
@@ -230,19 +240,19 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 		visitor.diffPathItemSummary(original.getSummary(), updated.getSummary());
 		visitor.diffPathItemGet(original.getGet(), updated.getGet());
 		if (original.getGet() != null && updated.getGet() != null) {
-			traverseNode(original.getGet(), updated.getGet());
+			traverse(original.getGet(), updated.getGet());
 		}
 		visitor.diffPathItemPut(original.getPut(), updated.getPut());
 		if (original.getPut() != null && updated.getPut() != null) {
-			traverseNode(original.getPut(), updated.getPut());
+			traverse(original.getPut(), updated.getPut());
 		}
 		visitor.diffPathItemPost(original.getPost(), updated.getPost());
 		if (original.getPost() != null && updated.getPost() != null) {
-			traverseNode(original.getPost(), updated.getPost());
+			traverse(original.getPost(), updated.getPost());
 		}
 		visitor.diffPathItemDelete(original.getDelete(), updated.getDelete());
 		if (original.getDelete() != null && updated.getDelete() != null) {
-			traverseNode(original.getDelete(), updated.getDelete());
+			traverse(original.getDelete(), updated.getDelete());
 		}
 	}
 
@@ -263,7 +273,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 			for (CollectionDiff.MatchedPair<P, SynItem> pair : diff.getMatched()) {
 				visitor.visitOperationParametersItem(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
-					traverseNode(pair.getOriginal(), pair.getUpdated());
+					traverse(pair.getOriginal(), pair.getUpdated());
 				}
 			}
 		}

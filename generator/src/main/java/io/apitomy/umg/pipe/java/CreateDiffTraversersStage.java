@@ -83,7 +83,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
 
         java.util.Set<String> createdMethods = new java.util.HashSet<>();
 
-        createTraverseNodeDispatch(specVer, classSource, createdMethods);
+        createTraverseDispatch(specVer, classSource, createdMethods);
 
         specVer.getEntities().forEach(entity -> {
             EntityModel entityModel = getState().getConceptIndex()
@@ -113,24 +113,54 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
         getState().getJavaIndex().index(classSource);
     }
 
-    private void createTraverseNodeDispatch(SpecificationVersion specVer, JavaClassSource classSource,
+    private void createTraverseDispatch(SpecificationVersion specVer, JavaClassSource classSource,
             java.util.Set<String> createdMethods) {
-        createdMethods.add("traverseNode");
+        createdMethods.add("traverse");
+
+        String anyFQN = getState().getConfig().getRootNamespace() + ".Any";
+        classSource.addImport(anyFQN);
+
         MethodSource<JavaClassSource> method = classSource.addMethod()
-                .setName("traverseNode")
+                .setName("traverse")
                 .setReturnTypeVoid()
-                .setProtected();
-        method.addParameter("Node", "original");
-        method.addParameter("Node", "updated");
+                .setPublic();
+        method.addParameter("Any", "original");
+        method.addParameter("Any", "updated");
         method.addAnnotation(Override.class);
 
         BodyBuilder body = new BodyBuilder();
-        body.append("Node target = original != null ? original : updated;");
+        body.append("Any target = original != null ? original : updated;");
+        body.append("if (target == null) return;");
 
         boolean first = true;
+        String namespace = specVer.getNamespace();
+        var nsModel = getState().getConceptIndex().lookupNamespace(namespace);
+
+        // Union types first — they encompass entity types
+        for (var type : getState().getConceptIndex().findTypes(namespace)) {
+            if (!(type instanceof io.apitomy.umg.models.concept.type.UnionType)) continue;
+            var unionType = (io.apitomy.umg.models.concept.type.UnionType) type;
+            var jt = getJavaTypeFactory().createJavaType(unionType, nsModel);
+            jt.addImportsTo(classSource);
+            String unionTypeName = jt.getSimpleName();
+
+            body.addContext("unionType", unionTypeName);
+            String methodName = "traverse" + unionTypeName;
+            body.addContext("methodName", methodName);
+
+            if (first) {
+                body.append("if (target instanceof ${unionType}) {");
+                first = false;
+            } else {
+                body.append("} else if (target instanceof ${unionType}) {");
+            }
+            body.append("    this.${methodName}((${unionType}) original, (${unionType}) updated);");
+        }
+
+        // Entity types not covered by unions
         for (var entity : specVer.getEntities()) {
             EntityModel entityModel = getState().getConceptIndex()
-                    .lookupEntity(specVer.getNamespace() + "." + entity.getName());
+                    .lookupEntity(namespace + "." + entity.getName());
             if (entityModel == null) continue;
 
             JavaInterfaceSource javaEntity = lookupJavaEntity(entityModel);
@@ -149,6 +179,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
             }
             body.append("    this.${methodName}((${entityType}) original, (${entityType}) updated);");
         }
+
         if (!first) {
             body.append("}");
         }
@@ -203,7 +234,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 jt.addImportsTo(classSource);
                 body.append("visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
                 body.append("if (original.${getter}() != null && updated.${getter}() != null) {");
-                body.append("    traverseNode(original.${getter}(), updated.${getter}());");
+                body.append("    traverse(original.${getter}(), updated.${getter}());");
                 body.append("}");
             } else if (isEntityList(property) || isUnionList(property)) {
                 ListType listType = (ListType) property.getResolvedType();
@@ -223,7 +254,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 if (isEntityList(property)) {
                     body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
-                    body.append("            traverseNode(pair.getOriginal(), pair.getUpdated());");
+                    body.append("            traverse(pair.getOriginal(), pair.getUpdated());");
                     body.append("        }");
                 } else if (isUnionList(property)) {
                     ListType lt = (ListType) property.getResolvedType();
@@ -252,7 +283,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 if (isEntityMap(property)) {
                     body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
-                    body.append("            traverseNode(pair.getOriginal(), pair.getUpdated());");
+                    body.append("            traverse(pair.getOriginal(), pair.getUpdated());");
                     body.append("        }");
                 } else if (isUnionMap(property)) {
                     MapType mt = (MapType) property.getResolvedType();
