@@ -6,12 +6,12 @@ package io.test.synthetic.visitors.diff;
 public class DefaultPairingStrategyProvider implements PairingStrategyProvider<DefaultPairingKey> {
 
 	@Override
-	public <V> MapPairingStrategy<DefaultPairingKey, V> getMapStrategy(String propertyName) {
+	public <T> MapPairingStrategy<DefaultPairingKey, T> getMapStrategy(String propertyName) {
 		return new DefaultMapPairingStrategy<>();
 	}
 
 	@Override
-	public <V> ListPairingStrategy<DefaultPairingKey, V> getListStrategy(String propertyName) {
+	public <T> ListPairingStrategy<DefaultPairingKey, T> getListStrategy(String propertyName) {
 		return new DefaultListPairingStrategy<>();
 	}
 }

@@ -7,18 +7,18 @@ import java.util.Map;
 /**
  * Default map pairing strategy — pairs entries by key.
  */
-public class DefaultMapPairingStrategy<V> implements MapPairingStrategy<DefaultPairingKey, V> {
+public class DefaultMapPairingStrategy<T> implements MapPairingStrategy<DefaultPairingKey, T> {
 
 	@Override
-	public CollectionDiff<DefaultPairingKey, V> pair(Map<String, V> original, Map<String, V> updated) {
+	public CollectionDiff<DefaultPairingKey, T> pair(Map<String, T> original, Map<String, T> updated) {
 		return CollectionDiff.pairByKey(toPairingKeyMap(original), toPairingKeyMap(updated));
 	}
 
-	private static <V> Map<DefaultPairingKey, V> toPairingKeyMap(Map<String, V> map) {
+	private static <T> Map<DefaultPairingKey, T> toPairingKeyMap(Map<String, T> map) {
 		if (map == null)
 			return new LinkedHashMap<>();
-		Map<DefaultPairingKey, V> res = new LinkedHashMap<>();
-		for (Map.Entry<String, V> entry : map.entrySet()) {
+		Map<DefaultPairingKey, T> res = new LinkedHashMap<>();
+		for (Map.Entry<String, T> entry : map.entrySet()) {
 			res.put(new DefaultPairingKey(entry.getKey()), entry.getValue());
 		}
 		return res;
