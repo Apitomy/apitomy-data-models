@@ -194,6 +194,9 @@
                                 <exclude>**/visitors/diff/**</exclude>
                                 <exclude>**/*DiffTraverser.java</exclude>
                                 <exclude>**/*DiffVisitor.java</exclude>
+                                <exclude>**/visitors/convert/**</exclude>
+                                <exclude>**/*ConversionTraverser.java</exclude>
+                                <exclude>**/*ConversionVisitor.java</exclude>
                             </excludes>
                         </configuration>
                         <executions>

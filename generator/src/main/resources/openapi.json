@@ -201,6 +201,10 @@
                     },
                     "root": {
                         "$ref": "#/components/schemas/Root"
+                    },
+                    "conversionTarget": {
+                        "description": "Version name of the target spec to convert to",
+                        "type": "string"
                     }
                 },
                 "example": {
