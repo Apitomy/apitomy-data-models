@@ -56,8 +56,6 @@ public class Syn1DiffTraverser<P> extends AbstractDiffTraverser<P, Syn1DiffVisit
 			this.traverseContact((Syn1Contact) original, (Syn1Contact) updated);
 		} else if (target instanceof Syn1Item) {
 			this.traverseItem((Syn1Item) original, (Syn1Item) updated);
-		} else if (target instanceof Syn1Schema) {
-			this.traverseSchema((Syn1Schema) original, (Syn1Schema) updated);
 		} else if (target instanceof Syn1Paths) {
 			this.traversePaths((Syn1Paths) original, (Syn1Paths) updated);
 		} else if (target instanceof Syn1PathItem) {
