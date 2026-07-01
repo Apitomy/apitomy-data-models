@@ -157,11 +157,24 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
             body.append("    this.${methodName}((${unionType}) original, (${unionType}) updated);");
         }
 
+        // Collect entity names that are variants of unions (already dispatched above)
+        java.util.Set<String> unionEntityNames = new java.util.HashSet<>();
+        for (var type : getState().getConceptIndex().findTypes(namespace)) {
+            if (type instanceof io.apitomy.umg.models.concept.type.UnionType) {
+                for (var variant : ((io.apitomy.umg.models.concept.type.UnionType) type).getTypes()) {
+                    if (variant.isEntityType()) {
+                        unionEntityNames.add(variant.getName());
+                    }
+                }
+            }
+        }
+
         // Entity types not covered by unions
         for (var entity : specVer.getEntities()) {
             EntityModel entityModel = getState().getConceptIndex()
                     .lookupEntity(namespace + "." + entity.getName());
             if (entityModel == null) continue;
+            if (unionEntityNames.contains(entityModel.getName())) continue;
 
             JavaInterfaceSource javaEntity = lookupJavaEntity(entityModel);
             classSource.addImport(javaEntity);
