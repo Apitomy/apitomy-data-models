@@ -23,7 +23,7 @@ import io.test.synthetic.visitors.diff.PairingKey;
 import java.util.List;
 import java.util.Map;
 
-public abstract class Syn2DiffVisitor<P> {
+public abstract class Syn2DiffVisitor<P extends PairingKey> {
 
 	public boolean visitDocument(Syn2Document original, Syn2Document updated) {
 		return true;

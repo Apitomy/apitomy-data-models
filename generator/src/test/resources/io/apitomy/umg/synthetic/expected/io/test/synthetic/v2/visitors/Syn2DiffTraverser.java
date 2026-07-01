@@ -26,7 +26,7 @@ import io.test.synthetic.visitors.diff.PairingStrategyProvider;
 import java.util.List;
 import java.util.Map;
 
-public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisitor<P>> {
+public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTraverser<P, Syn2DiffVisitor<P>> {
 
 	public Syn2DiffTraverser(Syn2DiffVisitor<P> visitor) {
 		super(visitor);
@@ -90,7 +90,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 			CollectionDiff<P, SynItem> diff = this.pairList("items", original.getItems(), updated.getItems());
 			visitor.diffDocumentItems(original.getItems(), updated.getItems(), diff);
 			for (CollectionDiff.MatchedPair<P, SynItem> pair : diff.getMatched()) {
-				pushElement((PairingKey) pair.getKey());
+				pushListIndex(pair.getKey());
 				visitor.visitDocumentItemsItem(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
 					traverse(pair.getOriginal(), pair.getUpdated());
@@ -115,7 +115,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 					updated.getWebhooks());
 			visitor.diffDocumentWebhooks(original.getWebhooks(), updated.getWebhooks(), diff);
 			for (CollectionDiff.MatchedPair<P, Syn2PathItem> pair : diff.getMatched()) {
-				pushElement((PairingKey) pair.getKey());
+				pushMapIndex(pair.getKey());
 				visitor.visitDocumentWebhook(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
 					traverse(pair.getOriginal(), pair.getUpdated());
@@ -290,7 +290,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 					updated.getProperties());
 			visitor.diffSchemaProperties(original.getProperties(), updated.getProperties(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
-				pushElement((PairingKey) pair.getKey());
+				pushMapIndex(pair.getKey());
 				visitor.visitSchemaProperty(pair.getOriginal(), pair.getUpdated());
 				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 				pop();
@@ -303,7 +303,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 					updated.getAllOf());
 			visitor.diffSchemaAllOf(original.getAllOf(), updated.getAllOf(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
-				pushElement((PairingKey) pair.getKey());
+				pushListIndex(pair.getKey());
 				visitor.visitSchemaAllOfItem(pair.getOriginal(), pair.getUpdated());
 				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 				pop();
@@ -316,7 +316,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 					updated.getDefinitions());
 			visitor.diffSchemaDefinitions(original.getDefinitions(), updated.getDefinitions(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
-				pushElement((PairingKey) pair.getKey());
+				pushMapIndex(pair.getKey());
 				visitor.visitSchemaDefinition(pair.getOriginal(), pair.getUpdated());
 				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 				pop();
@@ -329,7 +329,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 					updated.getNestedSchemas());
 			visitor.diffSchemaNestedSchemas(original.getNestedSchemas(), updated.getNestedSchemas(), diff);
 			for (CollectionDiff.MatchedPair<P, SchemaOrBoolean> pair : diff.getMatched()) {
-				pushElement((PairingKey) pair.getKey());
+				pushMapIndex(pair.getKey());
 				visitor.visitSchemaNestedSchema(pair.getOriginal(), pair.getUpdated());
 				this.traverseSchemaOrBoolean(pair.getOriginal(), pair.getUpdated());
 				pop();
@@ -342,7 +342,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 					updated.getComposedSchemas());
 			visitor.diffSchemaComposedSchemas(original.getComposedSchemas(), updated.getComposedSchemas(), diff);
 			for (CollectionDiff.MatchedPair<P, SchemaOrBoolean> pair : diff.getMatched()) {
-				pushElement((PairingKey) pair.getKey());
+				pushListIndex(pair.getKey());
 				visitor.visitSchemaComposedSchemasItem(pair.getOriginal(), pair.getUpdated());
 				this.traverseSchemaOrBoolean(pair.getOriginal(), pair.getUpdated());
 				pop();
@@ -454,7 +454,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 					updated.getParameters());
 			visitor.diffOperationParameters(original.getParameters(), updated.getParameters(), diff);
 			for (CollectionDiff.MatchedPair<P, SynItem> pair : diff.getMatched()) {
-				pushElement((PairingKey) pair.getKey());
+				pushListIndex(pair.getKey());
 				visitor.visitOperationParametersItem(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
 					traverse(pair.getOriginal(), pair.getUpdated());

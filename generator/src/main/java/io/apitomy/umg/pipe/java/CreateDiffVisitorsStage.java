@@ -43,7 +43,7 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
 
         String pairingKeyFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.PairingKey";
         classSource.addImport(pairingKeyFQN);
-        classSource.addTypeVariable("P");
+        classSource.addTypeVariable("P").setBounds("PairingKey");
 
         JavaTypeFactory jtf = getJavaTypeFactory();
 
