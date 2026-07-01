@@ -225,6 +225,12 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                     body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
                     body.append("            traverseNode(pair.getOriginal(), pair.getUpdated());");
                     body.append("        }");
+                } else if (isUnionList(property)) {
+                    ListType lt = (ListType) property.getResolvedType();
+                    JavaType unionJt = jtf.createJavaType(lt.getValueType(), ns);
+                    String traverseUnion = "traverse" + unionJt.getSimpleName();
+                    body.addContext("traverseUnion", traverseUnion);
+                    body.append("        this.${traverseUnion}(pair.getOriginal(), pair.getUpdated());");
                 }
                 body.append("    }");
                 body.append("}");
@@ -248,6 +254,12 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                     body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
                     body.append("            traverseNode(pair.getOriginal(), pair.getUpdated());");
                     body.append("        }");
+                } else if (isUnionMap(property)) {
+                    MapType mt = (MapType) property.getResolvedType();
+                    JavaType unionJt = jtf.createJavaType(mt.getValueType(), ns);
+                    String traverseUnion = "traverse" + unionJt.getSimpleName();
+                    body.addContext("traverseUnion", traverseUnion);
+                    body.append("        this.${traverseUnion}(pair.getOriginal(), pair.getUpdated());");
                 }
                 body.append("    }");
                 body.append("}");

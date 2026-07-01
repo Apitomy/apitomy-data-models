@@ -166,6 +166,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 			visitor.diffSchemaProperties(original.getProperties(), updated.getProperties(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
 				visitor.visitSchemaProperty(pair.getOriginal(), pair.getUpdated());
+				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		{
@@ -174,6 +175,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 			visitor.diffSchemaAllOf(original.getAllOf(), updated.getAllOf(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
 				visitor.visitSchemaAllOfItem(pair.getOriginal(), pair.getUpdated());
+				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		{
@@ -182,6 +184,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 			visitor.diffSchemaDefinitions(original.getDefinitions(), updated.getDefinitions(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
 				visitor.visitSchemaDefinition(pair.getOriginal(), pair.getUpdated());
+				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		{
@@ -190,6 +193,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 			visitor.diffSchemaNestedSchemas(original.getNestedSchemas(), updated.getNestedSchemas(), diff);
 			for (CollectionDiff.MatchedPair<P, SchemaOrBoolean> pair : diff.getMatched()) {
 				visitor.visitSchemaNestedSchema(pair.getOriginal(), pair.getUpdated());
+				this.traverseSchemaOrBoolean(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		{
@@ -198,6 +202,7 @@ public class Syn2DiffTraverser<P> extends AbstractDiffTraverser<P, Syn2DiffVisit
 			visitor.diffSchemaComposedSchemas(original.getComposedSchemas(), updated.getComposedSchemas(), diff);
 			for (CollectionDiff.MatchedPair<P, SchemaOrBoolean> pair : diff.getMatched()) {
 				visitor.visitSchemaComposedSchemasItem(pair.getOriginal(), pair.getUpdated());
+				this.traverseSchemaOrBoolean(pair.getOriginal(), pair.getUpdated());
 			}
 		}
 		visitor.diffSchemaMinLength(original.getMinLength(), updated.getMinLength());
