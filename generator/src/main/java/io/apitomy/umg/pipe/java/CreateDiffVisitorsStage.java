@@ -56,6 +56,28 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
             createPropertyMethods(classSource, entityModel, jtf);
         });
 
+        // Create diff methods for union types
+        String namespace = specVer.getNamespace();
+        var nsModel = getState().getConceptIndex().lookupNamespace(namespace);
+        getState().getConceptIndex().findTypes(namespace).stream()
+                .filter(t -> t instanceof io.apitomy.umg.models.concept.type.UnionType)
+                .map(t -> (io.apitomy.umg.models.concept.type.UnionType) t)
+                .forEach(unionType -> {
+                    var jt = jtf.createJavaType(unionType, nsModel);
+                    jt.addImportsTo(classSource);
+                    String unionTypeName = jt.getSimpleName();
+                    String methodName = "diff" + unionTypeName;
+                    if (!hasMethod(classSource, methodName)) {
+                        MethodSource<JavaClassSource> method = classSource.addMethod()
+                                .setName(methodName)
+                                .setReturnTypeVoid()
+                                .setPublic();
+                        method.addParameter(jt.toJavaTypeString(), "original");
+                        method.addParameter(jt.toJavaTypeString(), "updated");
+                        method.setBody("");
+                    }
+                });
+
         getState().getJavaIndex().index(classSource);
     }
 
@@ -229,5 +251,9 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
             return name;
         }
         return StringUtils.capitalize(name);
+    }
+
+    private boolean hasMethod(JavaClassSource classSource, String methodName) {
+        return classSource.getMethods().stream().anyMatch(m -> m.getName().equals(methodName));
     }
 }
