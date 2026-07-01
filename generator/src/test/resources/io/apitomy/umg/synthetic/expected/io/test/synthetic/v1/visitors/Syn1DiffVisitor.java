@@ -19,6 +19,7 @@ import io.test.synthetic.v1.Syn1PathItem;
 import io.test.synthetic.v1.Syn1Paths;
 import io.test.synthetic.v1.Syn1Schema;
 import io.test.synthetic.visitors.diff.CollectionDiff;
+import io.test.synthetic.visitors.diff.PairingKey;
 import java.util.List;
 import java.util.Map;
 
