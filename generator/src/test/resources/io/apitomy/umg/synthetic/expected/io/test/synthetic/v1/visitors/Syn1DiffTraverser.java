@@ -82,6 +82,7 @@ public class Syn1DiffTraverser<P> extends AbstractDiffTraverser<P, Syn1DiffVisit
 		visitor.diffDocumentTags(original.getTags(), updated.getTags());
 		visitor.diffDocumentMetadata(original.getMetadata(), updated.getMetadata());
 		visitor.diffDocumentAdditionalSchema(original.getAdditionalSchema(), updated.getAdditionalSchema());
+		this.traverseSchemaOrBoolean(original.getAdditionalSchema(), updated.getAdditionalSchema());
 	}
 
 	public void traverseInfo(Syn1Info original, Syn1Info updated) {
@@ -131,6 +132,7 @@ public class Syn1DiffTraverser<P> extends AbstractDiffTraverser<P, Syn1DiffVisit
 		}
 		visitor.diffItemExamples(original.getExamples(), updated.getExamples());
 		visitor.diffItemDefaultValue(original.getDefaultValue(), updated.getDefaultValue());
+		this.traverseBooleanSchemaUnion(original.getDefaultValue(), updated.getDefaultValue());
 		visitor.diffItemTitle(original.getTitle(), updated.getTitle());
 	}
 
@@ -144,6 +146,7 @@ public class Syn1DiffTraverser<P> extends AbstractDiffTraverser<P, Syn1DiffVisit
 		visitor.diffSchema$ref(original.get$ref(), updated.get$ref());
 		visitor.diffSchemaType(original.getType(), updated.getType());
 		visitor.diffSchemaItems(original.getItems(), updated.getItems());
+		this.traverseBooleanSchemaSchemaListUnion(original.getItems(), updated.getItems());
 		{
 			CollectionDiff<P, BooleanSchemaUnion> diff = this.pairMap("properties", original.getProperties(),
 					updated.getProperties());
@@ -241,6 +244,34 @@ public class Syn1DiffTraverser<P> extends AbstractDiffTraverser<P, Syn1DiffVisit
 					traverseNode(pair.getOriginal(), pair.getUpdated());
 				}
 			}
+		}
+	}
+
+	public void traverseSchemaOrBoolean(SchemaOrBoolean original, SchemaOrBoolean updated) {
+		if (original == null && updated == null)
+			return;
+		visitor.diffSchemaOrBoolean(original, updated);
+		if (original instanceof Syn1Schema && updated instanceof Syn1Schema) {
+			this.traverseSchema((Syn1Schema) original, (Syn1Schema) updated);
+		}
+	}
+
+	public void traverseBooleanSchemaSchemaListUnion(BooleanSchemaSchemaListUnion original,
+			BooleanSchemaSchemaListUnion updated) {
+		if (original == null && updated == null)
+			return;
+		visitor.diffBooleanSchemaSchemaListUnion(original, updated);
+		if (original instanceof Syn1Schema && updated instanceof Syn1Schema) {
+			this.traverseSchema((Syn1Schema) original, (Syn1Schema) updated);
+		}
+	}
+
+	public void traverseBooleanSchemaUnion(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
+		if (original == null && updated == null)
+			return;
+		visitor.diffBooleanSchemaUnion(original, updated);
+		if (original instanceof Syn1Schema && updated instanceof Syn1Schema) {
+			this.traverseSchema((Syn1Schema) original, (Syn1Schema) updated);
 		}
 	}
 }

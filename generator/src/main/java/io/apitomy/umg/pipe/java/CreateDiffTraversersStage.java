@@ -96,6 +96,20 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
             }
         });
 
+        // Create traverse methods for union types that contain entities
+        String namespace = specVer.getNamespace();
+        var nsModel = getState().getConceptIndex().lookupNamespace(namespace);
+        getState().getConceptIndex().findTypes(namespace).stream()
+                .filter(t -> t instanceof io.apitomy.umg.models.concept.type.UnionType)
+                .map(t -> (io.apitomy.umg.models.concept.type.UnionType) t)
+                .forEach(unionType -> {
+                    var jt = getJavaTypeFactory().createJavaType(unionType, nsModel);
+                    String unionMethodName = "traverse" + jt.getSimpleName();
+                    if (createdMethods.add(unionMethodName)) {
+                        createUnionTraverseMethod(classSource, unionType, jt, namespace);
+                    }
+                });
+
         getState().getJavaIndex().index(classSource);
     }
 
@@ -240,7 +254,10 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
             } else if (isUnion(property)) {
                 JavaType jt = jtf.createJavaType(property.getResolvedType(), ns);
                 jt.addImportsTo(classSource);
+                String traverseUnion = "traverse" + jt.getSimpleName();
+                body.addContext("traverseUnion", traverseUnion);
                 body.append("visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
+                body.append("this.${traverseUnion}(original.${getter}(), updated.${getter}());");
             } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
                 JavaType jt = jtf.createJavaType(property.getResolvedType(), ns);
                 jt.addImportsTo(classSource);
@@ -257,6 +274,49 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
             return name;
         }
         return StringUtils.capitalize(name);
+    }
+
+    private void createUnionTraverseMethod(JavaClassSource classSource,
+            io.apitomy.umg.models.concept.type.UnionType unionType,
+            JavaType unionJt, String namespace) {
+        String unionTypeName = unionJt.getSimpleName();
+        String methodName = "traverse" + unionTypeName;
+        String diffMethodName = "diff" + unionTypeName;
+
+        unionJt.addImportsTo(classSource);
+
+        MethodSource<JavaClassSource> method = classSource.addMethod()
+                .setName(methodName)
+                .setReturnTypeVoid()
+                .setPublic();
+        method.addParameter(unionJt.toJavaTypeString(), "original");
+        method.addParameter(unionJt.toJavaTypeString(), "updated");
+
+        BodyBuilder body = new BodyBuilder();
+        body.append("if (original == null && updated == null) return;");
+        body.addContext("diffMethod", diffMethodName);
+        body.append("visitor.${diffMethod}(original, updated);");
+
+        // Auto-recurse into entity variants when both sides are the same entity type
+        for (var variantType : unionType.getTypes()) {
+            if (variantType.isEntityType()) {
+                var entity = ((io.apitomy.umg.models.concept.type.EntityType) variantType).getEntity();
+                if (entity == null) {
+                    entity = getState().getConceptIndex().lookupEntity(namespace, variantType.getName());
+                }
+                if (entity != null) {
+                    var entityInterface = lookupJavaEntity(entity);
+                    classSource.addImport(entityInterface);
+                    body.addContext("entityType", entityInterface.getName());
+                    body.addContext("traverseEntity", "traverse" + entity.getName());
+                    body.append("if (original instanceof ${entityType} && updated instanceof ${entityType}) {");
+                    body.append("    this.${traverseEntity}((${entityType}) original, (${entityType}) updated);");
+                    body.append("}");
+                }
+            }
+        }
+
+        method.setBody(body.toString());
     }
 
     private static String singularize(String name) {
