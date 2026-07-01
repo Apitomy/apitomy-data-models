@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.apitomy.umg.base.Any;
-import io.apitomy.umg.base.Node;
-import io.apitomy.umg.base.union.Union;
 
 /**
  * Base class for generated diff traversers. Provides shared collection pairing logic.
@@ -33,11 +31,10 @@ public class AbstractDiffTraverser<P, V> {
 
     /**
      * Public entry point — accepts Any (Node or Union).
+     * Generated subclasses override this with type-based dispatch
+     * to union traverse methods and entity traverse methods.
      */
     public void traverse(Any original, Any updated) {
-        if (original instanceof Node || updated instanceof Node) {
-            traverseNode((Node) original, (Node) updated);
-        }
     }
 
     protected <T> CollectionDiff<P, T> pairMap(String propertyName, Map<String, T> original, Map<String, T> updated) {
@@ -50,10 +47,4 @@ public class AbstractDiffTraverser<P, V> {
         return strategy.pair(original, updated);
     }
 
-    /**
-     * Dispatches to the correct entity-specific traverse method.
-     * Generated subclasses override this with type-based dispatch.
-     */
-    protected void traverseNode(Node original, Node updated) {
-    }
 }

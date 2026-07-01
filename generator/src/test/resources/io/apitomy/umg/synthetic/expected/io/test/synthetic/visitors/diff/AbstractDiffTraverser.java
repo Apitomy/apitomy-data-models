@@ -1,8 +1,6 @@
 package io.test.synthetic.visitors.diff;
 
 import io.test.synthetic.Any;
-import io.test.synthetic.Node;
-import io.test.synthetic.union.Union;
 import java.util.List;
 import java.util.Map;
 
@@ -33,12 +31,11 @@ public class AbstractDiffTraverser<P, V> {
 	}
 
 	/**
-	 * Public entry point — accepts Any (Node or Union).
+	 * Public entry point — accepts Any (Node or Union). Generated subclasses
+	 * override this with type-based dispatch to union traverse methods and entity
+	 * traverse methods.
 	 */
 	public void traverse(Any original, Any updated) {
-		if (original instanceof Node || updated instanceof Node) {
-			traverseNode((Node) original, (Node) updated);
-		}
 	}
 
 	protected <T> CollectionDiff<P, T> pairMap(String propertyName, Map<String, T> original, Map<String, T> updated) {
@@ -51,10 +48,4 @@ public class AbstractDiffTraverser<P, V> {
 		return strategy.pair(original, updated);
 	}
 
-	/**
-	 * Dispatches to the correct entity-specific traverse method. Generated
-	 * subclasses override this with type-based dispatch.
-	 */
-	protected void traverseNode(Node original, Node updated) {
-	}
 }
