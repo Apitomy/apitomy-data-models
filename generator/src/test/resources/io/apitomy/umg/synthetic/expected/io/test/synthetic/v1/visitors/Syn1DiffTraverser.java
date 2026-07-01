@@ -26,7 +26,7 @@ import io.test.synthetic.visitors.diff.PairingStrategyProvider;
 import java.util.List;
 import java.util.Map;
 
-public class Syn1DiffTraverser<P extends PairingKey> extends AbstractDiffTraverser<P, Syn1DiffVisitor<P>> {
+public class Syn1DiffTraverser<P> extends AbstractDiffTraverser<P, Syn1DiffVisitor<P>> {
 
 	public Syn1DiffTraverser(Syn1DiffVisitor<P> visitor) {
 		super(visitor);
@@ -90,7 +90,7 @@ public class Syn1DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			CollectionDiff<P, SynItem> diff = this.pairList("items", original.getItems(), updated.getItems());
 			visitor.diffDocumentItems(original.getItems(), updated.getItems(), diff);
 			for (CollectionDiff.MatchedPair<P, SynItem> pair : diff.getMatched()) {
-				pushListIndex(pair.getKey());
+				pushElement((PairingKey) pair.getKey());
 				visitor.visitDocumentItemsItem(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
 					traverse(pair.getOriginal(), pair.getUpdated());
@@ -265,7 +265,7 @@ public class Syn1DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 					updated.getProperties());
 			visitor.diffSchemaProperties(original.getProperties(), updated.getProperties(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
-				pushMapKey(pair.getKey());
+				pushElement((PairingKey) pair.getKey());
 				visitor.visitSchemaProperty(pair.getOriginal(), pair.getUpdated());
 				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 				pop();
@@ -278,7 +278,7 @@ public class Syn1DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 					updated.getAllOf());
 			visitor.diffSchemaAllOf(original.getAllOf(), updated.getAllOf(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
-				pushListIndex(pair.getKey());
+				pushElement((PairingKey) pair.getKey());
 				visitor.visitSchemaAllOfItem(pair.getOriginal(), pair.getUpdated());
 				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 				pop();
@@ -291,7 +291,7 @@ public class Syn1DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 					updated.getDefinitions());
 			visitor.diffSchemaDefinitions(original.getDefinitions(), updated.getDefinitions(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
-				pushMapKey(pair.getKey());
+				pushElement((PairingKey) pair.getKey());
 				visitor.visitSchemaDefinition(pair.getOriginal(), pair.getUpdated());
 				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 				pop();
@@ -304,7 +304,7 @@ public class Syn1DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 					updated.getNestedSchemas());
 			visitor.diffSchemaNestedSchemas(original.getNestedSchemas(), updated.getNestedSchemas(), diff);
 			for (CollectionDiff.MatchedPair<P, SchemaOrBoolean> pair : diff.getMatched()) {
-				pushMapKey(pair.getKey());
+				pushElement((PairingKey) pair.getKey());
 				visitor.visitSchemaNestedSchema(pair.getOriginal(), pair.getUpdated());
 				this.traverseSchemaOrBoolean(pair.getOriginal(), pair.getUpdated());
 				pop();
@@ -317,7 +317,7 @@ public class Syn1DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 					updated.getComposedSchemas());
 			visitor.diffSchemaComposedSchemas(original.getComposedSchemas(), updated.getComposedSchemas(), diff);
 			for (CollectionDiff.MatchedPair<P, SchemaOrBoolean> pair : diff.getMatched()) {
-				pushListIndex(pair.getKey());
+				pushElement((PairingKey) pair.getKey());
 				visitor.visitSchemaComposedSchemasItem(pair.getOriginal(), pair.getUpdated());
 				this.traverseSchemaOrBoolean(pair.getOriginal(), pair.getUpdated());
 				pop();
@@ -421,7 +421,7 @@ public class Syn1DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 					updated.getParameters());
 			visitor.diffOperationParameters(original.getParameters(), updated.getParameters(), diff);
 			for (CollectionDiff.MatchedPair<P, SynItem> pair : diff.getMatched()) {
-				pushListIndex(pair.getKey());
+				pushElement((PairingKey) pair.getKey());
 				visitor.visitOperationParametersItem(pair.getOriginal(), pair.getUpdated());
 				if (pair.getOriginal() != null && pair.getUpdated() != null) {
 					traverse(pair.getOriginal(), pair.getUpdated());

@@ -15,7 +15,7 @@ import java.util.Map;
  * @param <V>
  *            the spec-version-specific DiffVisitor subclass
  */
-public class AbstractDiffTraverser<P extends PairingKey, V> {
+public class AbstractDiffTraverser<P, V> {
 
 	protected final V visitor;
 	protected final PairingStrategyProvider<P> pairingProvider;
@@ -54,20 +54,20 @@ public class AbstractDiffTraverser<P extends PairingKey, V> {
 		updatedContext.pushProperty(propertyName);
 	}
 
-	protected void pushMapKey(PairingKey key) {
-		if (key.getOriginalKey() == null || key.getUpdatedKey() == null) {
-			throw new IllegalStateException("Map pairing key must have both original and updated keys");
+	/**
+	 * Push collection element positions onto the respective contexts.
+	 */
+	protected void pushElement(PairingKey key) {
+		if (key.getOriginalKey() != null) {
+			originalContext.pushMapIndex(key.getOriginalKey());
+		} else if (key.getOriginalIndex() != null) {
+			originalContext.pushListIndex(key.getOriginalIndex());
 		}
-		originalContext.pushMapIndex(key.getOriginalKey());
-		updatedContext.pushMapIndex(key.getUpdatedKey());
-	}
-
-	protected void pushListIndex(PairingKey key) {
-		if (key.getOriginalIndex() == null || key.getUpdatedIndex() == null) {
-			throw new IllegalStateException("List pairing key must have both original and updated indices");
+		if (key.getUpdatedKey() != null) {
+			updatedContext.pushMapIndex(key.getUpdatedKey());
+		} else if (key.getUpdatedIndex() != null) {
+			updatedContext.pushListIndex(key.getUpdatedIndex());
 		}
-		originalContext.pushListIndex(key.getOriginalIndex());
-		updatedContext.pushListIndex(key.getUpdatedIndex());
 	}
 
 	/**
