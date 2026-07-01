@@ -9,3 +9,4 @@ versions:
   - $ref: ./json-schema/json-schema-draft-7.yaml
   - $ref: ./json-schema/json-schema-2019-09.yaml
   - $ref: ./json-schema/json-schema-2020-12.yaml
+  - $ref: ./json-schema/json-schema-compound.yaml
