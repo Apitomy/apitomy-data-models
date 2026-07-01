@@ -10,7 +10,7 @@ import java.util.Map;
  * @param <V>
  *            the value type
  */
-public interface MapPairingStrategy<P, V> {
+public interface MapPairingStrategy<P extends PairingKey, V> {
 
 	CollectionDiff<P, V> pair(Map<String, V> original, Map<String, V> updated);
 }

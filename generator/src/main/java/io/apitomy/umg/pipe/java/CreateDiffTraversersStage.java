@@ -56,7 +56,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
         classSource.addImport(baseSource);
         String pairingKeyFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.PairingKey";
         classSource.addImport(pairingKeyFQN);
-        classSource.addTypeVariable("P");
+        classSource.addTypeVariable("P").setBounds("PairingKey");
         classSource.setSuperType("AbstractDiffTraverser<P, " + visitorClassName + "<P>>");
 
         // Import CollectionDiff for collection field handling
@@ -265,7 +265,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 body.append("    CollectionDiff<P," + valueTypeStr + "> diff = this.pairList(\"${propertyName}\", original.${getter}(), updated.${getter}());");
                 body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}(), diff);");
                 body.append("    for (CollectionDiff.MatchedPair<P, " + valueTypeStr + "> pair : diff.getMatched()) {");
-                body.append("        pushElement((PairingKey) pair.getKey());");
+                body.append("        pushListIndex(pair.getKey());");
                 body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 if (isEntityList(property)) {
                     body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
@@ -294,7 +294,7 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 body.append("    CollectionDiff<P," + valueTypeStr + "> diff = this.pairMap(\"${propertyName}\", original.${getter}(), updated.${getter}());");
                 body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}(), diff);");
                 body.append("    for (CollectionDiff.MatchedPair<P, " + valueTypeStr + "> pair : diff.getMatched()) {");
-                body.append("        pushElement((PairingKey) pair.getKey());");
+                body.append("        pushMapIndex(pair.getKey());");
                 body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 if (isEntityMap(property)) {
                     body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");

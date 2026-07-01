@@ -10,7 +10,7 @@ import java.util.List;
  * @param <V>
  *            the value type
  */
-public interface ListPairingStrategy<P, V> {
+public interface ListPairingStrategy<P extends PairingKey, V> {
 
 	CollectionDiff<P, V> pair(List<V> original, List<V> updated);
 }
