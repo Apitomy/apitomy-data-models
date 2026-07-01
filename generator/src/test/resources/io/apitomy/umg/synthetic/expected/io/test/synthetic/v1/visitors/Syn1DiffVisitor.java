@@ -211,4 +211,14 @@ public abstract class Syn1DiffVisitor<P> {
 
 	public void visitOperationParametersItem(SynItem original, SynItem updated) {
 	}
+
+	public void diffSchemaOrBoolean(SchemaOrBoolean original, SchemaOrBoolean updated) {
+	}
+
+	public void diffBooleanSchemaSchemaListUnion(BooleanSchemaSchemaListUnion original,
+			BooleanSchemaSchemaListUnion updated) {
+	}
+
+	public void diffBooleanSchemaUnion(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
+	}
 }
