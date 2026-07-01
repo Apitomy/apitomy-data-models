@@ -5,7 +5,7 @@ package io.apitomy.umg.base.visitors.diff;
  * Pass a custom provider to the DiffTraverser constructor to control how
  * map and list fields are paired.
  */
-public interface PairingStrategyProvider<P> {
+public interface PairingStrategyProvider<P extends PairingKey> {
 
     <V> MapPairingStrategy<P, V> getMapStrategy(String propertyName);
 
