@@ -1436,4 +1436,5 @@ io/apitomy/datamodels/models/visitors/diff/DefaultPairingKey.java
 io/apitomy/datamodels/models/visitors/diff/DefaultPairingStrategyProvider.java
 io/apitomy/datamodels/models/visitors/diff/ListPairingStrategy.java
 io/apitomy/datamodels/models/visitors/diff/MapPairingStrategy.java
+io/apitomy/datamodels/models/visitors/diff/PairingKey.java
 io/apitomy/datamodels/models/visitors/diff/PairingStrategyProvider.java

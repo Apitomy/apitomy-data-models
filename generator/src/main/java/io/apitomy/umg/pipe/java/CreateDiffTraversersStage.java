@@ -54,16 +54,14 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
         String baseFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.AbstractDiffTraverser";
         JavaClassSource baseSource = getState().getJavaIndex().lookupClass(baseFQN);
         classSource.addImport(baseSource);
+        String pairingKeyFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.PairingKey";
+        classSource.addImport(pairingKeyFQN);
         classSource.addTypeVariable("P");
         classSource.setSuperType("AbstractDiffTraverser<P, " + visitorClassName + "<P>>");
 
         // Import CollectionDiff for collection field handling
         String collectionDiffFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.CollectionDiff";
         classSource.addImport(collectionDiffFQN);
-
-        String nodeFQN = getNodeEntityInterfaceFQN();
-        JavaInterfaceSource nodeSource = getState().getJavaIndex().lookupInterface(nodeFQN);
-        classSource.addImport(nodeSource);
 
         // Import PairingStrategyProvider
         String providerFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.PairingStrategyProvider";
@@ -239,16 +237,20 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
 
             body.addContext("getter", getter);
             body.addContext("diffMethod", diffMethod);
+            body.addContext("propertyNameLiteral", property.getName());
 
             NamespaceModel ns = propWithOrigin.getOrigin().getNamespace();
+
+            body.append("{");
+            body.append("    pushProperty(\"${propertyNameLiteral}\");");
 
             if (isEntity(property)) {
                 JavaType jt = jtf.createJavaType(property.getResolvedType(), ns);
                 jt.addImportsTo(classSource);
-                body.append("visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
-                body.append("if (original.${getter}() != null && updated.${getter}() != null) {");
-                body.append("    traverse(original.${getter}(), updated.${getter}());");
-                body.append("}");
+                body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
+                body.append("    if (original.${getter}() != null && updated.${getter}() != null) {");
+                body.append("        traverse(original.${getter}(), updated.${getter}());");
+                body.append("    }");
             } else if (isEntityList(property) || isUnionList(property)) {
                 ListType listType = (ListType) property.getResolvedType();
                 JavaType valueJt = jtf.createJavaType(listType.getValueType(), ns);
@@ -260,10 +262,10 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 body.addContext("visitMethod2", visitMethod);
                 body.addContext("propertyName", property.getName());
 
-                body.append("{");
                 body.append("    CollectionDiff<P," + valueTypeStr + "> diff = this.pairList(\"${propertyName}\", original.${getter}(), updated.${getter}());");
                 body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}(), diff);");
                 body.append("    for (CollectionDiff.MatchedPair<P, " + valueTypeStr + "> pair : diff.getMatched()) {");
+                body.append("        pushElement((PairingKey) pair.getKey());");
                 body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 if (isEntityList(property)) {
                     body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
@@ -276,8 +278,8 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                     body.addContext("traverseUnion", traverseUnion);
                     body.append("        this.${traverseUnion}(pair.getOriginal(), pair.getUpdated());");
                 }
+                body.append("        pop();");
                 body.append("    }");
-                body.append("}");
             } else if (isEntityMap(property) || isUnionMap(property)) {
                 MapType mapType = (MapType) property.getResolvedType();
                 JavaType valueJt = jtf.createJavaType(mapType.getValueType(), ns);
@@ -289,10 +291,10 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 body.addContext("visitMethod2", visitMethod);
                 body.addContext("propertyName", property.getName());
 
-                body.append("{");
                 body.append("    CollectionDiff<P," + valueTypeStr + "> diff = this.pairMap(\"${propertyName}\", original.${getter}(), updated.${getter}());");
                 body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}(), diff);");
                 body.append("    for (CollectionDiff.MatchedPair<P, " + valueTypeStr + "> pair : diff.getMatched()) {");
+                body.append("        pushElement((PairingKey) pair.getKey());");
                 body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 if (isEntityMap(property)) {
                     body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
@@ -305,20 +307,23 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                     body.addContext("traverseUnion", traverseUnion);
                     body.append("        this.${traverseUnion}(pair.getOriginal(), pair.getUpdated());");
                 }
+                body.append("        pop();");
                 body.append("    }");
-                body.append("}");
             } else if (isUnion(property)) {
                 JavaType jt = jtf.createJavaType(property.getResolvedType(), ns);
                 jt.addImportsTo(classSource);
                 String traverseUnion = "traverse" + jt.getSimpleName();
                 body.addContext("traverseUnion", traverseUnion);
-                body.append("visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
-                body.append("this.${traverseUnion}(original.${getter}(), updated.${getter}());");
+                body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
+                body.append("    this.${traverseUnion}(original.${getter}(), updated.${getter}());");
             } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
                 JavaType jt = jtf.createJavaType(property.getResolvedType(), ns);
                 jt.addImportsTo(classSource);
-                body.append("visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
+                body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
             }
+
+            body.append("    pop();");
+            body.append("}");
         }
 
         method.setBody(body.toString());
