@@ -53,7 +53,7 @@ public class AbstractDiffTraverser<P extends PairingKey, V> {
         updatedContext.pushProperty(propertyName);
     }
 
-    protected void pushMapIndex(PairingKey key) {
+    protected void pushMapKey(PairingKey key) {
         if (key.getOriginalKey() == null || key.getUpdatedKey() == null) {
             throw new IllegalStateException("Map pairing key must have both original and updated keys");
         }

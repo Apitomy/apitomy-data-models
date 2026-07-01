@@ -7,7 +7,7 @@ package io.test.synthetic.visitors.diff;
  */
 public interface PairingStrategyProvider<P extends PairingKey> {
 
-	<V> MapPairingStrategy<P, V> getMapStrategy(String propertyName);
+	<T> MapPairingStrategy<P, T> getMapStrategy(String propertyName);
 
-	<V> ListPairingStrategy<P, V> getListStrategy(String propertyName);
+	<T> ListPairingStrategy<P, T> getListStrategy(String propertyName);
 }
