@@ -1,0 +1,202 @@
+{
+  "tests": [
+    {
+      "id": "d4: exclusiveMinimum boolean true",
+      "modelType": "JD4",
+      "input": {
+        "exclusiveMinimum": true,
+        "minimum": 5
+      },
+      "expected": {
+        "exclusiveMinimum": true,
+        "minimum": 5
+      }
+    },
+    {
+      "id": "d4: exclusiveMinimum boolean false",
+      "modelType": "JD4",
+      "input": {
+        "exclusiveMinimum": false,
+        "minimum": 5
+      },
+      "expected": {
+        "exclusiveMinimum": false,
+        "minimum": 5
+      }
+    },
+    {
+      "id": "d4: exclusiveMaximum boolean",
+      "modelType": "JD4",
+      "input": {
+        "exclusiveMaximum": true,
+        "maximum": 100
+      },
+      "expected": {
+        "exclusiveMaximum": true,
+        "maximum": 100
+      }
+    },
+    {
+      "id": "d6: exclusiveMinimum number",
+      "modelType": "JD6",
+      "input": {
+        "exclusiveMinimum": 5
+      },
+      "expected": {
+        "exclusiveMinimum": 5
+      }
+    },
+    {
+      "id": "d6: exclusiveMaximum number",
+      "modelType": "JD6",
+      "input": {
+        "exclusiveMaximum": 100
+      },
+      "expected": {
+        "exclusiveMaximum": 100
+      }
+    },
+    {
+      "id": "d4: id preserved as id",
+      "modelType": "JD4",
+      "input": {
+        "id": "http://example.com/schema"
+      },
+      "expected": {
+        "id": "http://example.com/schema"
+      }
+    },
+    {
+      "id": "d7: $id preserved",
+      "modelType": "JD7",
+      "input": {
+        "$id": "http://example.com/schema"
+      },
+      "expected": {
+        "$id": "http://example.com/schema"
+      }
+    },
+    {
+      "id": "d4: definitions preserved",
+      "modelType": "JD4",
+      "input": {
+        "definitions": {
+          "foo": { "type": "string" }
+        }
+      },
+      "expected": {
+        "definitions": {
+          "foo": { "type": "string" }
+        }
+      }
+    },
+    {
+      "id": "2020-12: $defs preserved",
+      "modelType": "JM202012",
+      "input": {
+        "$defs": {
+          "bar": { "type": "number" }
+        }
+      },
+      "expected": {
+        "$defs": {
+          "bar": { "type": "number" }
+        }
+      }
+    },
+    {
+      "id": "d7: if/then/else preserved",
+      "modelType": "JD7",
+      "input": {
+        "if": { "type": "string" },
+        "then": { "minLength": 1 },
+        "else": { "type": "number" }
+      },
+      "expected": {
+        "if": { "type": "string" },
+        "then": { "minLength": 1 },
+        "else": { "type": "number" }
+      }
+    },
+    {
+      "id": "d7: all common properties",
+      "modelType": "JD7",
+      "input": {
+        "title": "Test",
+        "description": "A test schema",
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "age": { "type": "integer", "minimum": 0 }
+        },
+        "required": ["name"],
+        "additionalProperties": false
+      },
+      "expected": {
+        "title": "Test",
+        "description": "A test schema",
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "age": { "type": "integer", "minimum": 0 }
+        },
+        "required": ["name"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "id": "2020-12: prefixItems + items",
+      "modelType": "JM202012",
+      "input": {
+        "prefixItems": [
+          { "type": "string" },
+          { "type": "number" }
+        ],
+        "items": { "type": "boolean" }
+      },
+      "expected": {
+        "prefixItems": [
+          { "type": "string" },
+          { "type": "number" }
+        ],
+        "items": { "type": "boolean" }
+      }
+    },
+    {
+      "id": "d4: boolean schema true",
+      "modelType": "JD4",
+      "input": true,
+      "expected": true
+    },
+    {
+      "id": "d4: boolean schema false",
+      "modelType": "JD4",
+      "input": false,
+      "expected": false
+    },
+    {
+      "id": "2019-09: $recursiveRef",
+      "modelType": "JM201909",
+      "input": {
+        "$recursiveRef": "#",
+        "$recursiveAnchor": true
+      },
+      "expected": {
+        "$recursiveRef": "#",
+        "$recursiveAnchor": true
+      }
+    },
+    {
+      "id": "2020-12: $dynamicRef",
+      "modelType": "JM202012",
+      "input": {
+        "$dynamicRef": "#foo",
+        "$dynamicAnchor": "foo"
+      },
+      "expected": {
+        "$dynamicRef": "#foo",
+        "$dynamicAnchor": "foo"
+      }
+    }
+  ]
+}
