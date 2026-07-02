@@ -45,7 +45,7 @@ public class CreateConversionVisitorsStage extends AbstractJavaStage {
         }
 
         String packageName = getTraverserPackageName(specVer);
-        String className = specVer.getPrefix() + "ConversionVisitor";
+        String className = specVer.getPrefix() + "To" + targetSpecVer.getPrefix() + "ConversionVisitor";
 
         debug("Creating conversion visitor: " + className);
 
@@ -70,6 +70,27 @@ public class CreateConversionVisitorsStage extends AbstractJavaStage {
             createEntityVisitMethod(classSource, sourceEntityModel, targetEntityModel, targetSpecVer);
             createPropertyMethods(classSource, sourceEntityModel, targetEntityModel, targetSpecVer, jtf);
         });
+
+        // Union convert methods
+        String namespace = specVer.getNamespace();
+        var nsModel = getState().getConceptIndex().lookupNamespace(namespace);
+        getState().getConceptIndex().findTypes(namespace).stream()
+                .filter(t -> t instanceof io.apitomy.umg.models.concept.type.UnionType)
+                .map(t -> (io.apitomy.umg.models.concept.type.UnionType) t)
+                .forEach(unionType -> {
+                    var jt = jtf.createJavaType(unionType, nsModel);
+                    jt.addImportsTo(classSource);
+                    String unionTypeName = jt.getSimpleName();
+                    String methodName = "convert" + unionTypeName;
+                    if (!hasMethod(classSource, methodName)) {
+                        MethodSource<JavaClassSource> method = classSource.addMethod()
+                                .setName(methodName)
+                                .setReturnType(jt.toJavaTypeString())
+                                .setPublic();
+                        method.addParameter(jt.toJavaTypeString(), "source");
+                        method.setBody("return source;");
+                    }
+                });
 
         getState().getJavaIndex().index(classSource);
     }
@@ -205,11 +226,11 @@ public class CreateConversionVisitorsStage extends AbstractJavaStage {
                 method.setBody("target." + setterName + "(value);");
             } else {
                 // Different types: empty body (override needed)
-                method.setBody("");
+                method.setBody("// Type mismatch — custom conversion required");
             }
         } else {
             // No matching target field: empty body (field dropped)
-            method.setBody("");
+            method.setBody("// Field not present in target — dropped during conversion");
         }
     }
 
@@ -263,13 +284,13 @@ public class CreateConversionVisitorsStage extends AbstractJavaStage {
                                 + " v : value) { target." + adderName + "(v); } }");
                     }
                 } else {
-                    method.setBody("");
+                    method.setBody("// Type mismatch — custom conversion required");
                 }
             } else {
-                method.setBody("");
+                method.setBody("// Type mismatch — custom conversion required");
             }
         } else {
-            method.setBody("");
+            method.setBody("// Field not present in target — dropped during conversion");
         }
     }
 
@@ -324,13 +345,13 @@ public class CreateConversionVisitorsStage extends AbstractJavaStage {
                                 + adderName + "(e.getKey(), e.getValue()); } }");
                     }
                 } else {
-                    method.setBody("");
+                    method.setBody("// Type mismatch — custom conversion required");
                 }
             } else {
-                method.setBody("");
+                method.setBody("// Type mismatch — custom conversion required");
             }
         } else {
-            method.setBody("");
+            method.setBody("// Field not present in target — dropped during conversion");
         }
     }
 
