@@ -226,11 +226,13 @@ public class CreateConversionVisitorsStage extends AbstractJavaStage {
                 method.setBody("target." + setterName + "(value);");
             } else {
                 // Different types: empty body (override needed)
-                method.setBody("// Type mismatch — custom conversion required");
+                method.setBody("");
+                method.getJavaDoc().setText("Type mismatch — custom conversion required.");
             }
         } else {
             // No matching target field: empty body (field dropped)
-            method.setBody("// Field not present in target — dropped during conversion");
+            method.setBody("");
+            method.getJavaDoc().setText("Field not present in target — dropped during conversion.");
         }
     }
 
@@ -284,13 +286,16 @@ public class CreateConversionVisitorsStage extends AbstractJavaStage {
                                 + " v : value) { target." + adderName + "(v); } }");
                     }
                 } else {
-                    method.setBody("// Type mismatch — custom conversion required");
+                    method.setBody("");
+                method.getJavaDoc().setText("Type mismatch — custom conversion required.");
                 }
             } else {
-                method.setBody("// Type mismatch — custom conversion required");
+                method.setBody("");
+                method.getJavaDoc().setText("Type mismatch — custom conversion required.");
             }
         } else {
-            method.setBody("// Field not present in target — dropped during conversion");
+            method.setBody("");
+            method.getJavaDoc().setText("Field not present in target — dropped during conversion.");
         }
     }
 
@@ -345,13 +350,16 @@ public class CreateConversionVisitorsStage extends AbstractJavaStage {
                                 + adderName + "(e.getKey(), e.getValue()); } }");
                     }
                 } else {
-                    method.setBody("// Type mismatch — custom conversion required");
+                    method.setBody("");
+                method.getJavaDoc().setText("Type mismatch — custom conversion required.");
                 }
             } else {
-                method.setBody("// Type mismatch — custom conversion required");
+                method.setBody("");
+                method.getJavaDoc().setText("Type mismatch — custom conversion required.");
             }
         } else {
-            method.setBody("// Field not present in target — dropped during conversion");
+            method.setBody("");
+            method.getJavaDoc().setText("Field not present in target — dropped during conversion.");
         }
     }
 
