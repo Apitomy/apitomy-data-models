@@ -47,7 +47,7 @@ public class CreateConversionTraversersStage extends AbstractJavaStage {
         }
 
         String packageName = getTraverserPackageName(specVer);
-        String className = specVer.getPrefix() + "ConversionTraverser";
+        String className = specVer.getPrefix() + "To" + targetSpecVer.getPrefix() + "ConversionTraverser";
 
         debug("Creating conversion traverser: " + className);
 
@@ -57,7 +57,7 @@ public class CreateConversionTraversersStage extends AbstractJavaStage {
                 .setPublic();
 
         // Resolve the generated per-spec visitor
-        String visitorClassName = specVer.getPrefix() + "ConversionVisitor";
+        String visitorClassName = specVer.getPrefix() + "To" + targetSpecVer.getPrefix() + "ConversionVisitor";
         String visitorFQN = packageName + "." + visitorClassName;
         JavaClassSource visitorSource = getState().getJavaIndex().lookupClass(visitorFQN);
         classSource.addImport(visitorSource);
@@ -256,7 +256,7 @@ public class CreateConversionTraversersStage extends AbstractJavaStage {
         body.append("if (source == null) return null;");
         body.addContext("visitMethod", "visit" + entityName);
         body.addContext("returnType", returnType);
-        body.append(returnType + " target = (" + returnType + ") visitor.${visitMethod}(source);");
+        body.append(returnType + " target = visitor.${visitMethod}(source);");
         body.append("if (target == null) return null;");
 
         for (PropertyModelWithOrigin propWithOrigin : sourceProperties) {
@@ -474,7 +474,14 @@ public class CreateConversionTraversersStage extends AbstractJavaStage {
         BodyBuilder body = new BodyBuilder();
         body.append("if (source == null) return null;");
 
-        // For entity variants: convert via the entity converter
+        // Let visitor transform the union value before recursing (e.g., true → {})
+        String visitorConvertMethod = "convert" + unionTypeName;
+        body.addContext("visitorConvertMethod", visitorConvertMethod);
+        body.addContext("unionType", unionJt.toJavaTypeString());
+        body.append("${unionType} converted = visitor.${visitorConvertMethod}(source);");
+        body.append("if (converted == null) return null;");
+
+        // For entity variants: recurse into the converted value
         for (var variantType : unionType.getTypes()) {
             if (variantType.isEntityType()) {
                 var entity = ((io.apitomy.umg.models.concept.type.EntityType) variantType).getEntity();
@@ -487,16 +494,20 @@ public class CreateConversionTraversersStage extends AbstractJavaStage {
                     classSource.addImport(entityInterface);
                     body.addContext("entityType", entityInterface.getName());
                     body.addContext("convertEntity", "convert" + entity.getName());
-                    body.append("if (source instanceof ${entityType}) {");
-                    body.append("    return ${convertEntity}((${entityType}) source);");
+                    body.append("if (converted instanceof ${entityType}) {");
+                    body.append("    return ${convertEntity}((${entityType}) converted);");
                     body.append("}");
                 }
             }
         }
 
-        // For primitive variants, pass through
+        // For primitive variants, return the visitor-converted value
         body.addContext("returnType", returnType);
-        body.append("return (" + returnType + ") source;");
+        if (returnType.equals(unionJt.toJavaTypeString())) {
+            body.append("return converted;");
+        } else {
+            body.append("return (" + returnType + ") converted;");
+        }
 
         method.setBody(body.toString());
     }
