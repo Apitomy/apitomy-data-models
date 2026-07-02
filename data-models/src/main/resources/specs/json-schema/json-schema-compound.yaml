@@ -1,13 +1,17 @@
-name: JSON Schema 2019-09
-version: 2019-09
+name: JSON Schema Compound
+version: compound
 versions:
-  - version: 2019-09
-    url: https://json-schema.org/draft/2019-09/json-schema-core.html
-prefix: JM201909
-namespace: io.apitomy.datamodels.models.jsonschema.modern.v201909
-majorVersionPrefix: JM
-majorVersionNamespace: io.apitomy.datamodels.models.jsonschema.modern
-conversionTarget: compound
+  - version: compound
+    url: https://json-schema.org/
+prefix: JC
+namespace: io.apitomy.datamodels.models.jsonschema.compound
+majorVersionPrefix: JC
+majorVersionNamespace: io.apitomy.datamodels.models.jsonschema.compound
+
+# Synthetic compound schema merging all properties from all JSON Schema drafts
+# (draft-4, draft-6, draft-7, 2019-09, 2020-12) into a single entity.
+# Used for cross-version compatibility checking — converters map each draft
+# version to this compound type, then the diff visitor compares compound-to-compound.
 
 traits:
   - name: Referenceable
@@ -18,6 +22,8 @@ traits:
 typeAliases:
   - name: JsonSchema
     type: boolean|FullSchema
+  - name: Dependency
+    type: FullSchema|[string]
 
 root:
   type: JsonSchema
@@ -27,20 +33,37 @@ entities:
     traits:
       - Referenceable
     properties:
+      # --- Identification (superset of id, $id, $anchor, $schema, $comment) ---
+      - name: id
+        type: string
+        # d4 only; renamed to $id in d6+
       - name: '$id'
         type: string
+        # d6+
       - name: '$schema'
         type: string
       - name: '$anchor'
         type: string
-      - name: '$recursiveRef'
-        type: string
-      - name: '$recursiveAnchor'
-        type: boolean
+        # 2019-09+
       - name: '$comment'
         type: string
-      - name: '$defs'
-        type: '{JsonSchema}'
+        # d7+
+
+      # --- Dynamic references (2019-09, 2020-12) ---
+      - name: '$recursiveRef'
+        type: string
+        # 2019-09 only
+      - name: '$recursiveAnchor'
+        type: boolean
+        # 2019-09 only
+      - name: '$dynamicRef'
+        type: string
+        # 2020-12 only
+      - name: '$dynamicAnchor'
+        type: string
+        # 2020-12 only
+
+      # --- Metadata ---
       - name: title
         type: string
       - name: description
@@ -49,20 +72,37 @@ entities:
         type: any
       - name: examples
         type: '[any]'
+        # d6+
       - name: readOnly
         type: boolean
+        # d7+
       - name: writeOnly
         type: boolean
+        # d7+
       - name: deprecated
         type: boolean
+        # 2019-09+
+
+      # --- Definitions (superset of definitions, $defs) ---
+      - name: definitions
+        type: '{JsonSchema}'
+        # d4-d7
+      - name: '$defs'
+        type: '{JsonSchema}'
+        # 2019-09+
+
+      # --- Type & enum ---
       - name: type
         type: 'string|[string]'
       - name: enum
         type: '[any]'
       - name: const
         type: any
+        # d6+
       - name: format
         type: string
+
+      # --- Composition ---
       - name: allOf
         type: '[JsonSchema]'
       - name: anyOf
@@ -71,22 +111,30 @@ entities:
         type: '[JsonSchema]'
       - name: not
         type: JsonSchema
+
+      # --- Conditionals (d7+) ---
       - name: if
         type: JsonSchema
       - name: then
         type: JsonSchema
       - name: else
         type: JsonSchema
+
+      # --- Numeric validation ---
       - name: multipleOf
         type: number
       - name: minimum
         type: number
       - name: maximum
         type: number
+      # exclusiveMinimum/Maximum use the widest type (boolean in d4, number in d6+)
+      # Converters map d4 boolean to the compound union type
       - name: exclusiveMinimum
-        type: number
+        type: 'boolean|number'
       - name: exclusiveMaximum
-        type: number
+        type: 'boolean|number'
+
+      # --- String validation ---
       - name: minLength
         type: integer
       - name: maxLength
@@ -95,14 +143,24 @@ entities:
         type: string
       - name: contentMediaType
         type: string
+        # d7+
       - name: contentEncoding
         type: string
+        # d7+
       - name: contentSchema
         type: JsonSchema
+        # 2019-09+
+
+      # --- Array validation ---
+      # items uses the widest type (union of all forms across drafts)
       - name: items
         type: 'boolean|FullSchema|[FullSchema]'
       - name: additionalItems
         type: JsonSchema
+        # d4-2019-09
+      - name: prefixItems
+        type: '[JsonSchema]'
+        # 2020-12 only
       - name: minItems
         type: integer
       - name: maxItems
@@ -111,12 +169,18 @@ entities:
         type: boolean
       - name: contains
         type: JsonSchema
+        # d6+
       - name: minContains
         type: integer
+        # 2020-12 only
       - name: maxContains
         type: integer
+        # 2020-12 only
       - name: unevaluatedItems
         type: JsonSchema
+        # 2020-12 only
+
+      # --- Object validation ---
       - name: properties
         type: '{JsonSchema}'
       - name: patternProperties
@@ -129,14 +193,22 @@ entities:
         type: integer
       - name: maxProperties
         type: integer
+      - name: dependencies
+        type: '{Dependency}'
+        # d4-d7
       - name: dependentSchemas
         type: '{JsonSchema}'
+        # 2019-09+
       - name: dependentRequired
         type: '{any}'
+        # 2019-09+
       - name: propertyNames
         type: JsonSchema
+        # d6+
       - name: unevaluatedProperties
         type: JsonSchema
+        # 2020-12 only
+
     propertyOrder:
       - $Referenceable
       - $this
