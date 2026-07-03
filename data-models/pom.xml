@@ -191,6 +191,7 @@
                                 <exclude>**/_*/**</exclude>
                                 <exclude>**/jsonschema/compat/**</exclude>
                                 <exclude>**/jsonschema/ref/**</exclude>
+                                <exclude>**/jsonschema/convert/**</exclude>
                                 <exclude>**/visitors/diff/**</exclude>
                                 <exclude>**/*DiffTraverser.java</exclude>
                                 <exclude>**/*DiffVisitor.java</exclude>
