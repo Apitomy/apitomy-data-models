@@ -247,10 +247,14 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
             if (isEntity(property)) {
                 JavaType jt = jtf.createJavaType(property.getResolvedType(), ns);
                 jt.addImportsTo(classSource);
-                body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
-                body.append("    if (original.${getter}() != null && updated.${getter}() != null) {");
-                body.append("        traverse(original.${getter}(), updated.${getter}());");
+                String afterDiffMethod = "afterDiff" + entityName + fieldSuffix;
+                body.addContext("afterDiffMethod", afterDiffMethod);
+                body.append("    if (visitor.${diffMethod}(original.${getter}(), updated.${getter}())) {");
+                body.append("        if (original.${getter}() != null && updated.${getter}() != null) {");
+                body.append("            traverse(original.${getter}(), updated.${getter}());");
+                body.append("        }");
                 body.append("    }");
+                body.append("    visitor.${afterDiffMethod}(original.${getter}(), updated.${getter}());");
             } else if (isEntityList(property) || isUnionList(property)) {
                 ListType listType = (ListType) property.getResolvedType();
                 JavaType valueJt = jtf.createJavaType(listType.getValueType(), ns);
@@ -258,26 +262,30 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
 
                 String valueTypeStr = valueJt.toJavaTypeString();
                 String visitMethod = "visit" + entityName + fieldSuffix + "Item";
+                String afterVisitMethod = "afterVisit" + entityName + fieldSuffix + "Item";
                 body.addContext("valueType", valueTypeStr);
                 body.addContext("visitMethod2", visitMethod);
+                body.addContext("afterVisitMethod2", afterVisitMethod);
                 body.addContext("propertyName", property.getName());
 
                 body.append("    CollectionDiff<P," + valueTypeStr + "> diff = this.pairList(\"${propertyName}\", original.${getter}(), updated.${getter}());");
                 body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}(), diff);");
                 body.append("    for (CollectionDiff.MatchedPair<P, " + valueTypeStr + "> pair : diff.getMatched()) {");
                 body.append("        pushListIndex(pair.getKey());");
-                body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
+                body.append("        if (visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated())) {");
                 if (isEntityList(property)) {
-                    body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
-                    body.append("            traverse(pair.getOriginal(), pair.getUpdated());");
-                    body.append("        }");
+                    body.append("            if (pair.getOriginal() != null && pair.getUpdated() != null) {");
+                    body.append("                traverse(pair.getOriginal(), pair.getUpdated());");
+                    body.append("            }");
                 } else if (isUnionList(property)) {
                     ListType lt = (ListType) property.getResolvedType();
                     JavaType unionJt = jtf.createJavaType(lt.getValueType(), ns);
                     String traverseUnion = "traverse" + unionJt.getSimpleName();
                     body.addContext("traverseUnion", traverseUnion);
-                    body.append("        this.${traverseUnion}(pair.getOriginal(), pair.getUpdated());");
+                    body.append("            this.${traverseUnion}(pair.getOriginal(), pair.getUpdated());");
                 }
+                body.append("        }");
+                body.append("        visitor.${afterVisitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 body.append("        pop();");
                 body.append("    }");
             } else if (isEntityMap(property) || isUnionMap(property)) {
@@ -286,36 +294,45 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 valueJt.addImportsTo(classSource);
 
                 String valueTypeStr = valueJt.toJavaTypeString();
-                String visitMethod = "visit" + entityName + singularize(fieldSuffix);
+                String singularSuffix = singularize(fieldSuffix);
+                String visitMethod = "visit" + entityName + singularSuffix;
+                String afterVisitMethod = "afterVisit" + entityName + singularSuffix;
                 body.addContext("valueType", valueTypeStr);
                 body.addContext("visitMethod2", visitMethod);
+                body.addContext("afterVisitMethod2", afterVisitMethod);
                 body.addContext("propertyName", property.getName());
 
                 body.append("    CollectionDiff<P," + valueTypeStr + "> diff = this.pairMap(\"${propertyName}\", original.${getter}(), updated.${getter}());");
                 body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}(), diff);");
                 body.append("    for (CollectionDiff.MatchedPair<P, " + valueTypeStr + "> pair : diff.getMatched()) {");
                 body.append("        pushMapKey(pair.getKey());");
-                body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
+                body.append("        if (visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated())) {");
                 if (isEntityMap(property)) {
-                    body.append("        if (pair.getOriginal() != null && pair.getUpdated() != null) {");
-                    body.append("            traverse(pair.getOriginal(), pair.getUpdated());");
-                    body.append("        }");
+                    body.append("            if (pair.getOriginal() != null && pair.getUpdated() != null) {");
+                    body.append("                traverse(pair.getOriginal(), pair.getUpdated());");
+                    body.append("            }");
                 } else if (isUnionMap(property)) {
                     MapType mt = (MapType) property.getResolvedType();
                     JavaType unionJt = jtf.createJavaType(mt.getValueType(), ns);
                     String traverseUnion = "traverse" + unionJt.getSimpleName();
                     body.addContext("traverseUnion", traverseUnion);
-                    body.append("        this.${traverseUnion}(pair.getOriginal(), pair.getUpdated());");
+                    body.append("            this.${traverseUnion}(pair.getOriginal(), pair.getUpdated());");
                 }
+                body.append("        }");
+                body.append("        visitor.${afterVisitMethod2}(pair.getOriginal(), pair.getUpdated());");
                 body.append("        pop();");
                 body.append("    }");
             } else if (isUnion(property)) {
                 JavaType jt = jtf.createJavaType(property.getResolvedType(), ns);
                 jt.addImportsTo(classSource);
                 String traverseUnion = "traverse" + jt.getSimpleName();
+                String afterDiffMethod = "afterDiff" + entityName + fieldSuffix;
                 body.addContext("traverseUnion", traverseUnion);
-                body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
-                body.append("    this.${traverseUnion}(original.${getter}(), updated.${getter}());");
+                body.addContext("afterDiffMethod", afterDiffMethod);
+                body.append("    if (visitor.${diffMethod}(original.${getter}(), updated.${getter}())) {");
+                body.append("        this.${traverseUnion}(original.${getter}(), updated.${getter}());");
+                body.append("    }");
+                body.append("    visitor.${afterDiffMethod}(original.${getter}(), updated.${getter}());");
             } else if (isPrimitive(property) || isPrimitiveList(property) || isPrimitiveMap(property)) {
                 JavaType jt = jtf.createJavaType(property.getResolvedType(), ns);
                 jt.addImportsTo(classSource);
@@ -325,6 +342,9 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
             body.append("    pop();");
             body.append("}");
         }
+
+        body.addContext("afterVisitEntity", "afterVisit" + entityName);
+        body.append("visitor.${afterVisitEntity}(original, updated);");
 
         method.setBody(body.toString());
     }
