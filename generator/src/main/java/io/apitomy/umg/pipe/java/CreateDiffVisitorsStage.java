@@ -95,6 +95,15 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         method.addParameter(javaEntity.getName(), "original");
         method.addParameter(javaEntity.getName(), "updated");
         method.setBody("return true;");
+
+        String afterMethodName = "afterVisit" + entityModel.getName();
+        MethodSource<JavaClassSource> afterMethod = classSource.addMethod()
+                .setName(afterMethodName)
+                .setReturnTypeVoid()
+                .setPublic();
+        afterMethod.addParameter(javaEntity.getName(), "original");
+        afterMethod.addParameter(javaEntity.getName(), "updated");
+        afterMethod.setBody("");
     }
 
     private void createPropertyMethods(JavaClassSource classSource, EntityModel entityModel,
@@ -153,11 +162,20 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         String methodName = "diff" + entityName + fieldSuffix;
         MethodSource<JavaClassSource> method = classSource.addMethod()
                 .setName(methodName)
-                .setReturnTypeVoid()
+                .setReturnType(boolean.class)
                 .setPublic();
         method.addParameter(jt.toJavaTypeString(), "original");
         method.addParameter(jt.toJavaTypeString(), "updated");
-        method.setBody("");
+        method.setBody("return true;");
+
+        String afterMethodName = "afterDiff" + entityName + fieldSuffix;
+        MethodSource<JavaClassSource> afterMethod = classSource.addMethod()
+                .setName(afterMethodName)
+                .setReturnTypeVoid()
+                .setPublic();
+        afterMethod.addParameter(jt.toJavaTypeString(), "original");
+        afterMethod.addParameter(jt.toJavaTypeString(), "updated");
+        afterMethod.setBody("");
     }
 
     private void createUnionFieldMethod(JavaClassSource classSource, String entityName,
@@ -168,11 +186,20 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         String methodName = "diff" + entityName + fieldSuffix;
         MethodSource<JavaClassSource> method = classSource.addMethod()
                 .setName(methodName)
-                .setReturnTypeVoid()
+                .setReturnType(boolean.class)
                 .setPublic();
         method.addParameter(jt.toJavaTypeString(), "original");
         method.addParameter(jt.toJavaTypeString(), "updated");
-        method.setBody("");
+        method.setBody("return true;");
+
+        String afterMethodName = "afterDiff" + entityName + fieldSuffix;
+        MethodSource<JavaClassSource> afterMethod = classSource.addMethod()
+                .setName(afterMethodName)
+                .setReturnTypeVoid()
+                .setPublic();
+        afterMethod.addParameter(jt.toJavaTypeString(), "original");
+        afterMethod.addParameter(jt.toJavaTypeString(), "updated");
+        afterMethod.setBody("");
     }
 
     private void createListFieldMethods(JavaClassSource classSource, String entityName,
@@ -200,11 +227,20 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         String visitMethodName = "visit" + entityName + fieldSuffix + "Item";
         MethodSource<JavaClassSource> visitMethod = classSource.addMethod()
                 .setName(visitMethodName)
-                .setReturnTypeVoid()
+                .setReturnType(boolean.class)
                 .setPublic();
         visitMethod.addParameter(valueJt.toJavaTypeString(), "original");
         visitMethod.addParameter(valueJt.toJavaTypeString(), "updated");
-        visitMethod.setBody("");
+        visitMethod.setBody("return true;");
+
+        String afterVisitMethodName = "afterVisit" + entityName + fieldSuffix + "Item";
+        MethodSource<JavaClassSource> afterVisitMethod = classSource.addMethod()
+                .setName(afterVisitMethodName)
+                .setReturnTypeVoid()
+                .setPublic();
+        afterVisitMethod.addParameter(valueJt.toJavaTypeString(), "original");
+        afterVisitMethod.addParameter(valueJt.toJavaTypeString(), "updated");
+        afterVisitMethod.setBody("");
     }
 
     private void createMapFieldMethods(JavaClassSource classSource, String entityName,
@@ -232,11 +268,20 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         String visitMethodName = "visit" + entityName + singularSuffix;
         MethodSource<JavaClassSource> visitMethod = classSource.addMethod()
                 .setName(visitMethodName)
-                .setReturnTypeVoid()
+                .setReturnType(boolean.class)
                 .setPublic();
         visitMethod.addParameter(valueJt.toJavaTypeString(), "original");
         visitMethod.addParameter(valueJt.toJavaTypeString(), "updated");
-        visitMethod.setBody("");
+        visitMethod.setBody("return true;");
+
+        String afterVisitMethodName = "afterVisit" + entityName + singularSuffix;
+        MethodSource<JavaClassSource> afterVisitMethod = classSource.addMethod()
+                .setName(afterVisitMethodName)
+                .setReturnTypeVoid()
+                .setPublic();
+        afterVisitMethod.addParameter(valueJt.toJavaTypeString(), "original");
+        afterVisitMethod.addParameter(valueJt.toJavaTypeString(), "updated");
+        afterVisitMethod.setBody("");
     }
 
     private static String singularize(String name) {
