@@ -8,6 +8,8 @@ import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefTraversal;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
+import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
+import io.apitomy.datamodels.models.jsonschema.compound.visitors.JCDiffTraverser;
 
 import java.util.Set;
 
@@ -69,7 +71,53 @@ public final class JsonSchemaCompatibilityChecker {
         flagModernVersions(ctx, originalModelType);
         flagModernVersions(ctx, updatedModelType);
 
-        SchemaDiffVisitor.diffSchemas(ctx, originalCompound, updatedCompound);
+        CompoundSchemaDiffVisitor.diffSchemas(ctx, originalCompound, updatedCompound);
+        return ctx;
+    }
+
+    /**
+     * Check backward compatibility using the compound traverser (visitor-driven approach).
+     * <p>
+     * This uses {@link CompoundSchemaDiffVisitor} with {@link JCDiffTraverser} instead of
+     * the old type-dispatching approach (SchemaDiffVisitor + ObjectSchemaDiff/ArraySchemaDiff/etc.).
+     */
+    public DiffContext checkWithCompoundTraverser(String originalSchemaJson, String updatedSchemaJson) {
+        return checkWithCompoundTraverser(originalSchemaJson, updatedSchemaJson,
+                JsonSchemaRefResolverChain.withDefaults());
+    }
+
+    /**
+     * Check backward compatibility using a custom reference resolver and the compound traverser.
+     */
+    public DiffContext checkWithCompoundTraverser(String originalSchemaJson, String updatedSchemaJson,
+                                                  JsonSchemaRefResolver resolver) {
+        java.util.Objects.requireNonNull(resolver, "resolver must not be null");
+        var originalParsed = parseSchema(originalSchemaJson);
+        var updatedParsed = parseSchema(updatedSchemaJson);
+
+        var originalModelType = originalParsed.root().modelType();
+        var updatedModelType = updatedParsed.root().modelType();
+
+        if (!allowCrossVersionChecking && originalModelType != updatedModelType) {
+            throw new IllegalArgumentException(
+                    "Cross-version checking is not enabled. Original: " + originalModelType
+                    + ", Updated: " + updatedModelType
+                    + ". Use allowCrossVersionChecking(true) to enable.");
+        }
+
+        // Convert both schemas to compound type
+        var originalCompound = toCompoundFullSchema(originalParsed, originalModelType);
+        var updatedCompound = toCompoundFullSchema(updatedParsed, updatedModelType);
+
+        var refTraversal = new JsonSchemaRefTraversal(resolver);
+        var ctx = DiffContext.createRootContext("", null, refTraversal);
+
+        flagModernVersions(ctx, originalModelType);
+        flagModernVersions(ctx, updatedModelType);
+
+        var visitor = new CompoundSchemaDiffVisitor(ctx);
+        var traverser = new JCDiffTraverser<>(visitor);
+        traverser.traverseFullSchema((JCFullSchema) originalCompound, (JCFullSchema) updatedCompound);
         return ctx;
     }
 
