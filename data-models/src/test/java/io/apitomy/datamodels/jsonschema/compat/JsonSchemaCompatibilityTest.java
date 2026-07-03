@@ -143,6 +143,102 @@ public class JsonSchemaCompatibilityTest {
         Assertions.assertTrue(JsonSchemaCompatibilityChecker.isFullyCompatible(original, updated));
     }
 
+    // ======================== Compound traverser tests ========================
+
+    @Test
+    public void testCompoundTraverserTestData() throws Exception {
+        var testData = readResource("compatibility-test-data.json");
+        var root = MAPPER.readTree(testData);
+        var tests = root.get("tests");
+
+        var failed = new ArrayList<String>();
+        var passed = 0;
+        var skipped = 0;
+
+        for (var testCase : tests) {
+            var id = testCase.get("id").asText();
+            var enabled = testCase.get("enabled").asBoolean();
+            if (!enabled) {
+                skipped++;
+                continue;
+            }
+
+            var originalNode = testCase.get("original");
+            var updatedNode = testCase.get("updated");
+            var expectedCompat = testCase.get("compatibility").asText();
+
+            var original = nodeToSchemaString(originalNode);
+            var updated = nodeToSchemaString(updatedNode);
+
+            if (original == null || updated == null) {
+                skipped++;
+                continue;
+            }
+
+            try {
+                var checker = new JsonSchemaCompatibilityChecker()
+                        .allowCrossVersionChecking(true);
+                var backwardResult = checker.checkWithCompoundTraverser(original, updated);
+                var forwardResult = checker.checkWithCompoundTraverser(updated, original);
+
+                var backwardOk = backwardResult.foundAllDifferencesAreCompatible();
+                var forwardOk = forwardResult.foundAllDifferencesAreCompatible();
+
+                var success = switch (expectedCompat) {
+                    case "backward" -> backwardOk && !forwardOk;
+                    case "both" -> backwardOk && forwardOk;
+                    case "none" -> !backwardOk && !forwardOk;
+                    default -> throw new IllegalArgumentException("Unknown compatibility: " + expectedCompat);
+                };
+
+                if (success) {
+                    passed++;
+                } else {
+                    var hasUnsupported = backwardResult.hasUnsupportedFeatures()
+                            || forwardResult.hasUnsupportedFeatures();
+                    failed.add("%s (expected=%s, backward=%s, forward=%s, unsupported=%s)"
+                            .formatted(id, expectedCompat, backwardOk, forwardOk, hasUnsupported));
+                }
+            } catch (IllegalArgumentException e) {
+                throw e;
+            } catch (Exception e) {
+                failed.add("%s (exception: %s)".formatted(id, e.getMessage()));
+            }
+        }
+
+        System.out.printf("[CompoundTraverser] Results: %d passed, %d failed, %d skipped out of %d total%n",
+                passed, failed.size(), skipped, tests.size());
+
+        if (!failed.isEmpty()) {
+            System.out.println("[CompoundTraverser] Failed tests:");
+            failed.forEach(f -> System.out.println("  - " + f));
+        }
+
+        Assertions.assertTrue(
+                failed.isEmpty(),
+                "[CompoundTraverser] %d test cases failed:\n%s".formatted(failed.size(), String.join("\n", failed)));
+    }
+
+    @Test
+    public void testCompoundTraverserSimpleBackwardCompatible() {
+        var original = "{%s, \"type\": \"string\", \"minLength\": 10}".formatted(D7);
+        var updated = "{%s, \"type\": \"string\", \"minLength\": 5}".formatted(D7);
+        var checker = new JsonSchemaCompatibilityChecker().allowCrossVersionChecking(true);
+        var result = checker.checkWithCompoundTraverser(original, updated);
+        Assertions.assertTrue(result.foundAllDifferencesAreCompatible(),
+                "minLength decrease should be backward compatible. Diffs: " + result.getDiffs());
+    }
+
+    @Test
+    public void testCompoundTraverserSimpleBackwardIncompatible() {
+        var original = "{%s, \"type\": \"string\", \"minLength\": 5}".formatted(D7);
+        var updated = "{%s, \"type\": \"string\", \"minLength\": 10}".formatted(D7);
+        var checker = new JsonSchemaCompatibilityChecker().allowCrossVersionChecking(true);
+        var result = checker.checkWithCompoundTraverser(original, updated);
+        Assertions.assertFalse(result.foundAllDifferencesAreCompatible(),
+                "minLength increase should be backward incompatible. Diffs: " + result.getDiffs());
+    }
+
     private static String nodeToSchemaString(JsonNode node) {
         if (node.isBoolean()) {
             // Boolean schemas (true/false) — not supported as top-level documents yet
