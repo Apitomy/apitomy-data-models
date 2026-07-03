@@ -49,14 +49,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     private JFullSchema currentOriginal;
     private JFullSchema currentUpdated;
 
-    /**
-     * Counter for suppressing the traverser's auto-recursion into sub-schemas.
-     * Incremented when our diff methods handle comparison themselves (composition items,
-     * not, if/then/else, contains, etc.). Decremented in {@link #visitFullSchema}
-     * or {@link #diffJsonSchema} when the traverser auto-recurses.
-     */
-    private int suppressAutoRecursionCount;
-
     public CompoundSchemaDiffVisitor(DiffContext ctx) {
         this.ctx = ctx;
     }
@@ -157,14 +149,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
     @Override
     public boolean visitFullSchema(JCFullSchema original, JCFullSchema updated) {
-        // When auto-recursion is suppressed (composition items, not, if/then/else, etc.),
-        // don't produce any diffs from the traverser's auto-recursion —
-        // our field-level methods handle it.
-        if (suppressAutoRecursionCount > 0) {
-            suppressAutoRecursionCount--;
-            return false;
-        }
-
         // Store for cross-field logic
         this.currentOriginal = original;
         this.currentUpdated = updated;
@@ -273,37 +257,28 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // Union visit methods
     // -----------------------------------------------------------------------
 
-    @Override
-    public void diffJsonSchema(JsonSchema original, JsonSchema updated) {
-        // When suppressing auto-recursion for non-JCFullSchema pairs (boolean schemas),
-        // visitFullSchema won't be called to decrement the counter, so we do it here.
-        if (suppressAutoRecursionCount > 0
-                && (!(original instanceof JCFullSchema) || !(updated instanceof JCFullSchema))) {
-            suppressAutoRecursionCount--;
-        }
-    }
+    // Collection item visitors: skip auto-recursion because the collection-level
+    // diff methods (diffFullSchemaProperties, diffFullSchemaAllOf, etc.) handle
+    // comparison with custom matching logic (e.g., key-based property matching,
+    // compatibility-based composition matching).
 
     @Override
-    public void diffBooleanFullSchemaFullSchemaListUnion(
-            BooleanFullSchemaFullSchemaListUnion original,
-            BooleanFullSchemaFullSchemaListUnion updated) {
-        // Same as diffJsonSchema — handle counter decrement for non-JCFullSchema pairs
-        // (e.g., when items is a tuple list, not a single schema).
-        if (suppressAutoRecursionCount > 0
-                && (!(original instanceof JCFullSchema) || !(updated instanceof JCFullSchema))) {
-            suppressAutoRecursionCount--;
-        }
-    }
+    public boolean visitFullSchemaProperty(JsonSchema original, JsonSchema updated) { return false; }
 
     @Override
-    public void diffDependency(Dependency original, Dependency updated) {
-        // Handle counter decrement for non-JCFullSchema dependency pairs
-        // (e.g., string-list dependencies).
-        if (suppressAutoRecursionCount > 0
-                && (!(original instanceof JCFullSchema) || !(updated instanceof JCFullSchema))) {
-            suppressAutoRecursionCount--;
-        }
-    }
+    public boolean visitFullSchemaPatternProperty(JsonSchema original, JsonSchema updated) { return false; }
+
+    @Override
+    public boolean visitFullSchemaDependency(Dependency original, Dependency updated) { return false; }
+
+    @Override
+    public boolean visitFullSchemaAllOfItem(JsonSchema original, JsonSchema updated) { return false; }
+
+    @Override
+    public boolean visitFullSchemaAnyOfItem(JsonSchema original, JsonSchema updated) { return false; }
+
+    @Override
+    public boolean visitFullSchemaOneOfItem(JsonSchema original, JsonSchema updated) { return false; }
 
     // -----------------------------------------------------------------------
     // String type fields
@@ -719,7 +694,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                                          Map<String, JsonSchema> updated,
                                          CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
         // Suppress auto-recursion for matched property schemas — we handle it ourselves
-        suppressAutoRecursionCount += diff.getMatched().size();
         if (original == null && updated == null) return;
 
         var origKeys = original != null ? new HashSet<>(original.keySet()) : new HashSet<String>();
@@ -851,7 +825,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                                                 Map<String, JsonSchema> updated,
                                                 CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
         // Suppress auto-recursion for matched pattern property schemas
-        suppressAutoRecursionCount += diff.getMatched().size();
         if (original == null && updated == null) return;
 
         var origKeys = original != null ? new HashSet<>(original.keySet()) : new HashSet<String>();
@@ -897,7 +870,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                                            Map<String, Dependency> updated,
                                            CollectionDiff<DefaultPairingKey, Dependency> diff) {
         // Suppress auto-recursion for matched dependencies
-        suppressAutoRecursionCount += diff.getMatched().size();
         if (original == null && updated == null) return;
 
         var origKeys = original != null
@@ -962,7 +934,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                                     CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
         // Suppress auto-recursion: the traverser will iterate diff.getMatched() and
         // call traverseJsonSchema for each pair. We handle matching in diffCompositionList.
-        suppressAutoRecursionCount += diff.getMatched().size();
 
         // Cross-field transition detection: check if composition keyword changed
         if (currentOriginal != null && currentUpdated != null) {
@@ -991,7 +962,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     @Override
     public void diffFullSchemaAnyOf(List<JsonSchema> original, List<JsonSchema> updated,
                                     CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
-        suppressAutoRecursionCount += diff.getMatched().size();
         if (currentOriginal != null && currentUpdated != null) {
             var origAllOf = currentOriginal.getAllOf();
             var origOneOf = currentOriginal.getOneOf();
@@ -1027,7 +997,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     @Override
     public void diffFullSchemaOneOf(List<JsonSchema> original, List<JsonSchema> updated,
                                     CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
-        suppressAutoRecursionCount += diff.getMatched().size();
         if (currentOriginal != null && currentUpdated != null) {
             var origAnyOf = currentOriginal.getAnyOf();
             var updAnyOf = currentUpdated.getAnyOf();
