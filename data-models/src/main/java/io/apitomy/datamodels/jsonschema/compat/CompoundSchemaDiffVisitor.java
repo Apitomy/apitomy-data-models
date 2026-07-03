@@ -422,7 +422,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     }
 
     @Override
-    public void diffFullSchemaExclusiveMinimum(BooleanNumberUnion original, BooleanNumberUnion updated) {
+    public boolean diffFullSchemaExclusiveMinimum(BooleanNumberUnion original, BooleanNumberUnion updated) {
         var origIsD4 = original != null && original.isBoolean();
         var updIsD4 = updated != null && updated.isBoolean();
 
@@ -454,10 +454,11 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     NUMBER_TYPE_EXCLUSIVE_MINIMUM_ADDED, NUMBER_TYPE_EXCLUSIVE_MINIMUM_REMOVED,
                     NUMBER_TYPE_EXCLUSIVE_MINIMUM_INCREASED, NUMBER_TYPE_EXCLUSIVE_MINIMUM_DECREASED);
         }
+        return true;
     }
 
     @Override
-    public void diffFullSchemaExclusiveMaximum(BooleanNumberUnion original, BooleanNumberUnion updated) {
+    public boolean diffFullSchemaExclusiveMaximum(BooleanNumberUnion original, BooleanNumberUnion updated) {
         var origIsD4 = original != null && original.isBoolean();
         var updIsD4 = updated != null && updated.isBoolean();
 
@@ -489,6 +490,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     NUMBER_TYPE_EXCLUSIVE_MAXIMUM_ADDED, NUMBER_TYPE_EXCLUSIVE_MAXIMUM_REMOVED,
                     NUMBER_TYPE_EXCLUSIVE_MAXIMUM_INCREASED, NUMBER_TYPE_EXCLUSIVE_MAXIMUM_DECREASED);
         }
+        return true;
     }
 
     @Override
@@ -528,11 +530,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     }
 
     @Override
-    public void diffFullSchemaItems(BooleanFullSchemaFullSchemaListUnion original,
+    public boolean diffFullSchemaItems(BooleanFullSchemaFullSchemaListUnion original,
                                     BooleanFullSchemaFullSchemaListUnion updated) {
-        // Suppress auto-recursion for items — we handle comparison ourselves
-        if (original != null || updated != null) suppressAutoRecursionCount++;
-        if (original == null && updated == null) return;
+        if (original == null && updated == null) return false;
 
         if (original != null && updated != null) {
             if (original.isFullSchema() && updated.isFullSchema()) {
@@ -554,6 +554,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             diffAddedRemoved(ctx, original, updated,
                     ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED, ARRAY_TYPE_ALL_ITEM_SCHEMA_REMOVED);
         }
+        return false;
     }
 
     @SuppressWarnings("unchecked")
@@ -626,10 +627,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     }
 
     @Override
-    public void diffFullSchemaAdditionalItems(JsonSchema original, JsonSchema updated) {
-        // Suppress auto-recursion — we handle the comparison ourselves
-        if (original != null || updated != null) suppressAutoRecursionCount++;
-        if (original == null && updated == null) return;
+    public boolean diffFullSchemaAdditionalItems(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) return false;
 
         var origPermits = original == null || (original.isBoolean() ? original.asBoolean() : true);
         var updPermits = updated == null || (updated.isBoolean() ? updated.asBoolean() : true);
@@ -662,25 +661,25 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         } else if ((original == null || (origIsBoolean && origPermits)) && updIsSchema) {
             ctx.addDifference(ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED, original, updated);
         }
+        return false;
     }
 
     @Override
-    public void diffFullSchemaContains(JsonSchema original, JsonSchema updated) {
-        // Suppress auto-recursion — we handle the comparison ourselves
-        if (original != null || updated != null) suppressAutoRecursionCount++;
-        if (original == null && updated == null) return;
+    public boolean diffFullSchemaContains(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) return false;
         if (original == null) {
             ctx.addDifference(ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_ADDED, null, updated);
-            return;
+            return false;
         }
         if (updated == null) {
             ctx.addDifference(ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_REMOVED, original, null);
-            return;
+            return false;
         }
         var subCtx = ctx.sub("contains");
         if (!isUnionSchemaCompatible(subCtx, original, updated, true)) {
             subCtx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, original, updated);
         }
+        return false;
     }
 
     // -----------------------------------------------------------------------
@@ -803,10 +802,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     }
 
     @Override
-    public void diffFullSchemaAdditionalProperties(JsonSchema original, JsonSchema updated) {
-        // Suppress auto-recursion — we handle the comparison ourselves
-        if (original != null || updated != null) suppressAutoRecursionCount++;
-        if (original == null && updated == null) return;
+    public boolean diffFullSchemaAdditionalProperties(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) return false;
 
         var origPermits = permitsAdditional(original);
         var updPermits = permitsAdditional(updated);
@@ -846,6 +843,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_EXTENDED, original, updated);
             }
         }
+        return false;
     }
 
     @Override
@@ -882,10 +880,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     }
 
     @Override
-    public void diffFullSchemaPropertyNames(JsonSchema original, JsonSchema updated) {
-        // Suppress auto-recursion — compareSchema handles the comparison
-        if (original != null || updated != null) suppressAutoRecursionCount++;
-        if (original == null && updated == null) return;
+    public boolean diffFullSchemaPropertyNames(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) return false;
         compareSchema(ctx, original, updated,
                 OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_ADDED,
                 OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_REMOVED,
@@ -893,6 +889,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD,
                 OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD,
                 OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_NONE);
+        return false;
     }
 
     @Override
@@ -1103,16 +1100,15 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     @Override
-    public void diffFullSchemaNot(JsonSchema original, JsonSchema updated) {
-        // Suppress auto-recursion — compareSchema handles the comparison
-        if (original != null || updated != null) suppressAutoRecursionCount++;
-        if (original == null && updated == null) return;
+    public boolean diffFullSchemaNot(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) return false;
         compareSchema(ctx, original, updated,
                 SUBSCHEMA_TYPE_CHANGED, SUBSCHEMA_TYPE_CHANGED,
                 NOT_TYPE_SCHEMA_COMPATIBLE_BOTH,
                 NOT_TYPE_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD,
                 NOT_TYPE_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD,
                 NOT_TYPE_SCHEMA_COMPATIBLE_NONE);
+        return false;
     }
 
     // -----------------------------------------------------------------------
@@ -1122,39 +1118,39 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     @Override
-    public void diffFullSchemaIf(JsonSchema original, JsonSchema updated) {
-        if (original != null || updated != null) suppressAutoRecursionCount++;
-        if (original == null && updated == null) return;
+    public boolean diffFullSchemaIf(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) return false;
         compareSchema(ctx, original, updated,
                 CONDITIONAL_TYPE_IF_SCHEMA_ADDED, CONDITIONAL_TYPE_IF_SCHEMA_REMOVED,
                 CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_BOTH,
                 CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD,
                 CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD,
                 CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_NONE);
+        return false;
     }
 
     @Override
-    public void diffFullSchemaThen(JsonSchema original, JsonSchema updated) {
-        if (original != null || updated != null) suppressAutoRecursionCount++;
-        if (original == null && updated == null) return;
+    public boolean diffFullSchemaThen(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) return false;
         compareSchema(ctx, original, updated,
                 CONDITIONAL_TYPE_THEN_SCHEMA_ADDED, CONDITIONAL_TYPE_THEN_SCHEMA_REMOVED,
                 CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_BOTH,
                 CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD,
                 CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD,
                 CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_NONE);
+        return false;
     }
 
     @Override
-    public void diffFullSchemaElse(JsonSchema original, JsonSchema updated) {
-        if (original != null || updated != null) suppressAutoRecursionCount++;
-        if (original == null && updated == null) return;
+    public boolean diffFullSchemaElse(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) return false;
         compareSchema(ctx, original, updated,
                 CONDITIONAL_TYPE_ELSE_SCHEMA_ADDED, CONDITIONAL_TYPE_ELSE_SCHEMA_REMOVED,
                 CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_BOTH,
                 CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD,
                 CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD,
                 CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_NONE);
+        return false;
     }
 
     // -----------------------------------------------------------------------
@@ -1232,7 +1228,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     @Override
-    public void diffFullSchemaType(
+    public boolean diffFullSchemaType(
             io.apitomy.datamodels.models.union.StringStringListUnion original,
             io.apitomy.datamodels.models.union.StringStringListUnion updated) {
         // Type change detection is handled in visitFullSchema.
@@ -1251,6 +1247,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                         NUMBER_TYPE_INTEGER_REQUIRED_UNCHANGED);
             }
         }
+        return true;
     }
 
     // -----------------------------------------------------------------------
@@ -1306,15 +1303,15 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     @Override
-    public void diffFullSchemaContentSchema(JsonSchema original, JsonSchema updated) {
-        if (original != null || updated != null) suppressAutoRecursionCount++;
-        if (original == null && updated == null) return;
+    public boolean diffFullSchemaContentSchema(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) return false;
         if (original != null && updated != null) {
             var subCtx = ctx.sub("contentSchema");
             if (!isUnionSchemaCompatible(subCtx, original, updated, true)) {
                 subCtx.addDifference(SUBSCHEMA_TYPE_CHANGED, original, updated);
             }
         }
+        return false;
     }
 
     // -----------------------------------------------------------------------

@@ -79,10 +79,12 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("info");
-			visitor.diffDocumentInfo(original.getInfo(), updated.getInfo());
-			if (original.getInfo() != null && updated.getInfo() != null) {
-				traverse(original.getInfo(), updated.getInfo());
+			if (visitor.diffDocumentInfo(original.getInfo(), updated.getInfo())) {
+				if (original.getInfo() != null && updated.getInfo() != null) {
+					traverse(original.getInfo(), updated.getInfo());
+				}
 			}
+			visitor.afterDiffDocumentInfo(original.getInfo(), updated.getInfo());
 			pop();
 		}
 		{
@@ -91,10 +93,12 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffDocumentItems(original.getItems(), updated.getItems(), diff);
 			for (CollectionDiff.MatchedPair<P, SynItem> pair : diff.getMatched()) {
 				pushListIndex(pair.getKey());
-				visitor.visitDocumentItemsItem(pair.getOriginal(), pair.getUpdated());
-				if (pair.getOriginal() != null && pair.getUpdated() != null) {
-					traverse(pair.getOriginal(), pair.getUpdated());
+				if (visitor.visitDocumentItemsItem(pair.getOriginal(), pair.getUpdated())) {
+					if (pair.getOriginal() != null && pair.getUpdated() != null) {
+						traverse(pair.getOriginal(), pair.getUpdated());
+					}
 				}
+				visitor.afterVisitDocumentItemsItem(pair.getOriginal(), pair.getUpdated());
 				pop();
 			}
 			pop();
@@ -116,20 +120,25 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffDocumentWebhooks(original.getWebhooks(), updated.getWebhooks(), diff);
 			for (CollectionDiff.MatchedPair<P, Syn2PathItem> pair : diff.getMatched()) {
 				pushMapKey(pair.getKey());
-				visitor.visitDocumentWebhook(pair.getOriginal(), pair.getUpdated());
-				if (pair.getOriginal() != null && pair.getUpdated() != null) {
-					traverse(pair.getOriginal(), pair.getUpdated());
+				if (visitor.visitDocumentWebhook(pair.getOriginal(), pair.getUpdated())) {
+					if (pair.getOriginal() != null && pair.getUpdated() != null) {
+						traverse(pair.getOriginal(), pair.getUpdated());
+					}
 				}
+				visitor.afterVisitDocumentWebhook(pair.getOriginal(), pair.getUpdated());
 				pop();
 			}
 			pop();
 		}
 		{
 			pushProperty("additionalSchema");
-			visitor.diffDocumentAdditionalSchema(original.getAdditionalSchema(), updated.getAdditionalSchema());
-			this.traverseSchemaOrBoolean(original.getAdditionalSchema(), updated.getAdditionalSchema());
+			if (visitor.diffDocumentAdditionalSchema(original.getAdditionalSchema(), updated.getAdditionalSchema())) {
+				this.traverseSchemaOrBoolean(original.getAdditionalSchema(), updated.getAdditionalSchema());
+			}
+			visitor.afterDiffDocumentAdditionalSchema(original.getAdditionalSchema(), updated.getAdditionalSchema());
 			pop();
 		}
+		visitor.afterVisitDocument(original, updated);
 	}
 
 	public void traverseInfo(Syn2Info original, Syn2Info updated) {
@@ -146,10 +155,12 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("contact");
-			visitor.diffInfoContact(original.getContact(), updated.getContact());
-			if (original.getContact() != null && updated.getContact() != null) {
-				traverse(original.getContact(), updated.getContact());
+			if (visitor.diffInfoContact(original.getContact(), updated.getContact())) {
+				if (original.getContact() != null && updated.getContact() != null) {
+					traverse(original.getContact(), updated.getContact());
+				}
 			}
+			visitor.afterDiffInfoContact(original.getContact(), updated.getContact());
 			pop();
 		}
 		{
@@ -162,6 +173,7 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffInfoLicense(original.getLicense(), updated.getLicense());
 			pop();
 		}
+		visitor.afterVisitInfo(original, updated);
 	}
 
 	public void traverseContact(Syn2Contact original, Syn2Contact updated) {
@@ -186,6 +198,7 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffContactUrl(original.getUrl(), updated.getUrl());
 			pop();
 		}
+		visitor.afterVisitContact(original, updated);
 	}
 
 	public void traverseItem(Syn2Item original, Syn2Item updated) {
@@ -232,10 +245,12 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("schema");
-			visitor.diffItemSchema(original.getSchema(), updated.getSchema());
-			if (original.getSchema() != null && updated.getSchema() != null) {
-				traverse(original.getSchema(), updated.getSchema());
+			if (visitor.diffItemSchema(original.getSchema(), updated.getSchema())) {
+				if (original.getSchema() != null && updated.getSchema() != null) {
+					traverse(original.getSchema(), updated.getSchema());
+				}
 			}
+			visitor.afterDiffItemSchema(original.getSchema(), updated.getSchema());
 			pop();
 		}
 		{
@@ -245,8 +260,10 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("defaultValue");
-			visitor.diffItemDefaultValue(original.getDefaultValue(), updated.getDefaultValue());
-			this.traverseBooleanSchemaUnion(original.getDefaultValue(), updated.getDefaultValue());
+			if (visitor.diffItemDefaultValue(original.getDefaultValue(), updated.getDefaultValue())) {
+				this.traverseBooleanSchemaUnion(original.getDefaultValue(), updated.getDefaultValue());
+			}
+			visitor.afterDiffItemDefaultValue(original.getDefaultValue(), updated.getDefaultValue());
 			pop();
 		}
 		{
@@ -259,6 +276,7 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffItemDeprecated(original.isDeprecated(), updated.isDeprecated());
 			pop();
 		}
+		visitor.afterVisitItem(original, updated);
 	}
 
 	public void traverseSchema(Syn2Schema original, Syn2Schema updated) {
@@ -280,8 +298,10 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("items");
-			visitor.diffSchemaItems(original.getItems(), updated.getItems());
-			this.traverseBooleanSchemaSchemaListUnion(original.getItems(), updated.getItems());
+			if (visitor.diffSchemaItems(original.getItems(), updated.getItems())) {
+				this.traverseBooleanSchemaSchemaListUnion(original.getItems(), updated.getItems());
+			}
+			visitor.afterDiffSchemaItems(original.getItems(), updated.getItems());
 			pop();
 		}
 		{
@@ -291,8 +311,10 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffSchemaProperties(original.getProperties(), updated.getProperties(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
 				pushMapKey(pair.getKey());
-				visitor.visitSchemaProperty(pair.getOriginal(), pair.getUpdated());
-				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
+				if (visitor.visitSchemaProperty(pair.getOriginal(), pair.getUpdated())) {
+					this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
+				}
+				visitor.afterVisitSchemaProperty(pair.getOriginal(), pair.getUpdated());
 				pop();
 			}
 			pop();
@@ -304,8 +326,10 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffSchemaAllOf(original.getAllOf(), updated.getAllOf(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
 				pushListIndex(pair.getKey());
-				visitor.visitSchemaAllOfItem(pair.getOriginal(), pair.getUpdated());
-				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
+				if (visitor.visitSchemaAllOfItem(pair.getOriginal(), pair.getUpdated())) {
+					this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
+				}
+				visitor.afterVisitSchemaAllOfItem(pair.getOriginal(), pair.getUpdated());
 				pop();
 			}
 			pop();
@@ -317,8 +341,10 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffSchemaDefinitions(original.getDefinitions(), updated.getDefinitions(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
 				pushMapKey(pair.getKey());
-				visitor.visitSchemaDefinition(pair.getOriginal(), pair.getUpdated());
-				this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
+				if (visitor.visitSchemaDefinition(pair.getOriginal(), pair.getUpdated())) {
+					this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
+				}
+				visitor.afterVisitSchemaDefinition(pair.getOriginal(), pair.getUpdated());
 				pop();
 			}
 			pop();
@@ -330,8 +356,10 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffSchemaNestedSchemas(original.getNestedSchemas(), updated.getNestedSchemas(), diff);
 			for (CollectionDiff.MatchedPair<P, SchemaOrBoolean> pair : diff.getMatched()) {
 				pushMapKey(pair.getKey());
-				visitor.visitSchemaNestedSchema(pair.getOriginal(), pair.getUpdated());
-				this.traverseSchemaOrBoolean(pair.getOriginal(), pair.getUpdated());
+				if (visitor.visitSchemaNestedSchema(pair.getOriginal(), pair.getUpdated())) {
+					this.traverseSchemaOrBoolean(pair.getOriginal(), pair.getUpdated());
+				}
+				visitor.afterVisitSchemaNestedSchema(pair.getOriginal(), pair.getUpdated());
 				pop();
 			}
 			pop();
@@ -343,8 +371,10 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffSchemaComposedSchemas(original.getComposedSchemas(), updated.getComposedSchemas(), diff);
 			for (CollectionDiff.MatchedPair<P, SchemaOrBoolean> pair : diff.getMatched()) {
 				pushListIndex(pair.getKey());
-				visitor.visitSchemaComposedSchemasItem(pair.getOriginal(), pair.getUpdated());
-				this.traverseSchemaOrBoolean(pair.getOriginal(), pair.getUpdated());
+				if (visitor.visitSchemaComposedSchemasItem(pair.getOriginal(), pair.getUpdated())) {
+					this.traverseSchemaOrBoolean(pair.getOriginal(), pair.getUpdated());
+				}
+				visitor.afterVisitSchemaComposedSchemasItem(pair.getOriginal(), pair.getUpdated());
 				pop();
 			}
 			pop();
@@ -364,6 +394,7 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffSchemaEnum(original.getEnum(), updated.getEnum());
 			pop();
 		}
+		visitor.afterVisitSchema(original, updated);
 	}
 
 	public void traversePaths(Syn2Paths original, Syn2Paths updated) {
@@ -373,6 +404,7 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			return;
 		if (original == null || updated == null)
 			return;
+		visitor.afterVisitPaths(original, updated);
 	}
 
 	public void traversePathItem(Syn2PathItem original, Syn2PathItem updated) {
@@ -394,36 +426,45 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("get");
-			visitor.diffPathItemGet(original.getGet(), updated.getGet());
-			if (original.getGet() != null && updated.getGet() != null) {
-				traverse(original.getGet(), updated.getGet());
+			if (visitor.diffPathItemGet(original.getGet(), updated.getGet())) {
+				if (original.getGet() != null && updated.getGet() != null) {
+					traverse(original.getGet(), updated.getGet());
+				}
 			}
+			visitor.afterDiffPathItemGet(original.getGet(), updated.getGet());
 			pop();
 		}
 		{
 			pushProperty("put");
-			visitor.diffPathItemPut(original.getPut(), updated.getPut());
-			if (original.getPut() != null && updated.getPut() != null) {
-				traverse(original.getPut(), updated.getPut());
+			if (visitor.diffPathItemPut(original.getPut(), updated.getPut())) {
+				if (original.getPut() != null && updated.getPut() != null) {
+					traverse(original.getPut(), updated.getPut());
+				}
 			}
+			visitor.afterDiffPathItemPut(original.getPut(), updated.getPut());
 			pop();
 		}
 		{
 			pushProperty("post");
-			visitor.diffPathItemPost(original.getPost(), updated.getPost());
-			if (original.getPost() != null && updated.getPost() != null) {
-				traverse(original.getPost(), updated.getPost());
+			if (visitor.diffPathItemPost(original.getPost(), updated.getPost())) {
+				if (original.getPost() != null && updated.getPost() != null) {
+					traverse(original.getPost(), updated.getPost());
+				}
 			}
+			visitor.afterDiffPathItemPost(original.getPost(), updated.getPost());
 			pop();
 		}
 		{
 			pushProperty("delete");
-			visitor.diffPathItemDelete(original.getDelete(), updated.getDelete());
-			if (original.getDelete() != null && updated.getDelete() != null) {
-				traverse(original.getDelete(), updated.getDelete());
+			if (visitor.diffPathItemDelete(original.getDelete(), updated.getDelete())) {
+				if (original.getDelete() != null && updated.getDelete() != null) {
+					traverse(original.getDelete(), updated.getDelete());
+				}
 			}
+			visitor.afterDiffPathItemDelete(original.getDelete(), updated.getDelete());
 			pop();
 		}
+		visitor.afterVisitPathItem(original, updated);
 	}
 
 	public void traverseOperation(Syn2Operation original, Syn2Operation updated) {
@@ -455,14 +496,17 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffOperationParameters(original.getParameters(), updated.getParameters(), diff);
 			for (CollectionDiff.MatchedPair<P, SynItem> pair : diff.getMatched()) {
 				pushListIndex(pair.getKey());
-				visitor.visitOperationParametersItem(pair.getOriginal(), pair.getUpdated());
-				if (pair.getOriginal() != null && pair.getUpdated() != null) {
-					traverse(pair.getOriginal(), pair.getUpdated());
+				if (visitor.visitOperationParametersItem(pair.getOriginal(), pair.getUpdated())) {
+					if (pair.getOriginal() != null && pair.getUpdated() != null) {
+						traverse(pair.getOriginal(), pair.getUpdated());
+					}
 				}
+				visitor.afterVisitOperationParametersItem(pair.getOriginal(), pair.getUpdated());
 				pop();
 			}
 			pop();
 		}
+		visitor.afterVisitOperation(original, updated);
 	}
 
 	public void traverseSchemaOrBoolean(SchemaOrBoolean original, SchemaOrBoolean updated) {
