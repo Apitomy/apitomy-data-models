@@ -1,6 +1,7 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
@@ -29,8 +30,8 @@ public class NumberSchemaDiff {
         var origExclMax = getEffectiveExclusiveMaximum(original);
         var updExclMax = getEffectiveExclusiveMaximum(updated);
 
-        var origMinimum = original.getMinimum();
-        var updMinimum = updated.getMinimum();
+        var origMinimum = getMinimum(original);
+        var updMinimum = getMinimum(updated);
         if (isDraft4(original) && Boolean.TRUE.equals(getDraft4ExclusiveMinimum(original))) {
             origMinimum = null;
         }
@@ -51,8 +52,8 @@ public class NumberSchemaDiff {
                 NUMBER_TYPE_MINIMUM_ADDED, NUMBER_TYPE_MINIMUM_REMOVED,
                 NUMBER_TYPE_MINIMUM_INCREASED, NUMBER_TYPE_MINIMUM_DECREASED);
 
-        var origMaximum = original.getMaximum();
-        var updMaximum = updated.getMaximum();
+        var origMaximum = getMaximum(original);
+        var updMaximum = getMaximum(updated);
         if (isDraft4(original) && Boolean.TRUE.equals(getDraft4ExclusiveMaximum(original))) {
             origMaximum = null;
         }
@@ -89,7 +90,7 @@ public class NumberSchemaDiff {
                     NUMBER_TYPE_IS_MINIMUM_EXCLUSIVE_UNCHANGED);
         } else if (isDraft4(original) && !isDraft4(updated)) {
             var origIsExcl = getDraft4ExclusiveMinimum(original);
-            var origMin = original.getMinimum();
+            var origMin = getMinimum(original);
             Number effectiveOrigExclMin = (Boolean.TRUE.equals(origIsExcl) && origMin != null) ? origMin : null;
             var updExcl = getExclusiveMinimumAsNumber(updated);
             diffNumber(ctx, effectiveOrigExclMin, updExcl,
@@ -98,7 +99,7 @@ public class NumberSchemaDiff {
         } else if (!isDraft4(original) && isDraft4(updated)) {
             var origExcl = getExclusiveMinimumAsNumber(original);
             var updIsExcl = getDraft4ExclusiveMinimum(updated);
-            var updMin = updated.getMinimum();
+            var updMin = getMinimum(updated);
             Number effectiveUpdExclMin = (Boolean.TRUE.equals(updIsExcl) && updMin != null) ? updMin : null;
             diffNumber(ctx, origExcl, effectiveUpdExclMin,
                     NUMBER_TYPE_EXCLUSIVE_MINIMUM_ADDED, NUMBER_TYPE_EXCLUSIVE_MINIMUM_REMOVED,
@@ -122,7 +123,7 @@ public class NumberSchemaDiff {
                     NUMBER_TYPE_IS_MAXIMUM_EXCLUSIVE_UNCHANGED);
         } else if (isDraft4(original) && !isDraft4(updated)) {
             var origIsExcl = getDraft4ExclusiveMaximum(original);
-            var origMax = original.getMaximum();
+            var origMax = getMaximum(original);
             Number effectiveOrigExclMax = (Boolean.TRUE.equals(origIsExcl) && origMax != null) ? origMax : null;
             var updExcl = getExclusiveMaximumAsNumber(updated);
             diffNumber(ctx, effectiveOrigExclMax, updExcl,
@@ -131,7 +132,7 @@ public class NumberSchemaDiff {
         } else if (!isDraft4(original) && isDraft4(updated)) {
             var origExcl = getExclusiveMaximumAsNumber(original);
             var updIsExcl = getDraft4ExclusiveMaximum(updated);
-            var updMax = updated.getMaximum();
+            var updMax = getMaximum(updated);
             Number effectiveUpdExclMax = (Boolean.TRUE.equals(updIsExcl) && updMax != null) ? updMax : null;
             diffNumber(ctx, origExcl, effectiveUpdExclMax,
                     NUMBER_TYPE_EXCLUSIVE_MAXIMUM_ADDED, NUMBER_TYPE_EXCLUSIVE_MAXIMUM_REMOVED,
@@ -197,7 +198,7 @@ public class NumberSchemaDiff {
     private static Number getEffectiveExclusiveMinimum(JFullSchema schema) {
         if (isDraft4(schema)) {
             if (Boolean.TRUE.equals(getDraft4ExclusiveMinimum(schema))) {
-                return schema.getMinimum();
+                return getMinimum(schema);
             }
             return null;
         }
@@ -207,11 +208,21 @@ public class NumberSchemaDiff {
     private static Number getEffectiveExclusiveMaximum(JFullSchema schema) {
         if (isDraft4(schema)) {
             if (Boolean.TRUE.equals(getDraft4ExclusiveMaximum(schema))) {
-                return schema.getMaximum();
+                return getMaximum(schema);
             }
             return null;
         }
         return getExclusiveMaximumAsNumber(schema);
+    }
+
+    private static Number getMinimum(JFullSchema schema) {
+        if (schema instanceof JDFullSchema d) return d.getMinimum();
+        return null;
+    }
+
+    private static Number getMaximum(JFullSchema schema) {
+        if (schema instanceof JDFullSchema d) return d.getMaximum();
+        return null;
     }
 
     private static java.math.BigDecimal toBigDecimal(Number n) {

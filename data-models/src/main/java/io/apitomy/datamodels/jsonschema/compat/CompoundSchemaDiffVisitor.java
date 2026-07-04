@@ -15,7 +15,7 @@ import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
 import io.apitomy.datamodels.models.jsonschema.modern.v201909.JM201909FullSchema;
 import io.apitomy.datamodels.models.jsonschema.modern.v202012.JM202012FullSchema;
-import io.apitomy.datamodels.models.union.BooleanNumberUnion;
+import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
 import io.apitomy.datamodels.models.visitors.diff.CollectionDiff;
 import io.apitomy.datamodels.models.visitors.diff.DefaultPairingKey;
 
@@ -232,8 +232,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 || schema.getRequired() != null
                 || schema.getMinLength() != null
                 || schema.getMaxLength() != null
-                || schema.getMinimum() != null
-                || schema.getMaximum() != null
                 || schema.getMinItems() != null
                 || schema.getMaxItems() != null
                 || schema.getMinProperties() != null
@@ -246,7 +244,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             return false;
         }
         if (schema instanceof JCFullSchema c
-                && (c.getItems() != null || c.getAdditionalItems() != null
+                && (c.getMinimum() != null || c.getMaximum() != null
+                    || c.getItems() != null || c.getAdditionalItems() != null
                     || c.getConst() != null)) {
             return false;
         }
@@ -331,141 +330,67 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     @Override
-    public void diffFullSchemaMinimum(Number original, Number updated) {
-        // Adjust for draft-4 exclusiveMinimum (boolean form) interaction
-        var adjOrig = original;
-        var adjUpd = updated;
-        if (currentOriginal != null && currentUpdated != null) {
-            var origExclMin = getEffectiveExclusiveMinimum(currentOriginal);
-            var updExclMin = getEffectiveExclusiveMinimum(currentUpdated);
-
-            if (isDraft4ExclusiveMinimum(currentOriginal)
-                    && Boolean.TRUE.equals(getDraft4ExclusiveMinimum(currentOriginal))) {
-                adjOrig = null;
-            }
-            if (isDraft4ExclusiveMinimum(currentUpdated)
-                    && Boolean.TRUE.equals(getDraft4ExclusiveMinimum(currentUpdated))) {
-                adjUpd = null;
-            }
-            if (adjOrig == null && adjUpd != null && origExclMin != null) {
-                if (toBigDecimal(origExclMin).compareTo(toBigDecimal(adjUpd)) >= 0) {
-                    adjUpd = null;
-                }
-            }
-            if (adjOrig != null && adjUpd == null && updExclMin != null) {
-                if (toBigDecimal(updExclMin).compareTo(toBigDecimal(adjOrig)) >= 0) {
-                    adjOrig = null;
-                }
-            }
+    public boolean diffFullSchemaMinimum(JCRangeValue original, JCRangeValue updated) {
+        if (original == null && updated == null) return false;
+        if (original == null) {
+            ctx.addDifference(NUMBER_TYPE_MINIMUM_ADDED, null, rangeToString(updated));
+            return false;
         }
-        diffNumber(ctx, adjOrig, adjUpd,
-                NUMBER_TYPE_MINIMUM_ADDED, NUMBER_TYPE_MINIMUM_REMOVED,
-                NUMBER_TYPE_MINIMUM_INCREASED, NUMBER_TYPE_MINIMUM_DECREASED);
+        if (updated == null) {
+            ctx.addDifference(NUMBER_TYPE_MINIMUM_REMOVED, rangeToString(original), null);
+            return false;
+        }
+        // Both present -- compare values
+        Number origVal = original.getValue();
+        Number updVal = updated.getValue();
+        if (origVal != null && updVal != null) {
+            int cmp = toBigDecimal(origVal).compareTo(toBigDecimal(updVal));
+            boolean origExcl = Boolean.TRUE.equals(original.isExclusive());
+            boolean updExcl = Boolean.TRUE.equals(updated.isExclusive());
+            if (cmp < 0 || (cmp == 0 && !origExcl && updExcl)) {
+                // minimum increased (tightened)
+                ctx.addDifference(NUMBER_TYPE_MINIMUM_INCREASED,
+                        rangeToString(original), rangeToString(updated));
+            } else if (cmp > 0 || (cmp == 0 && origExcl && !updExcl)) {
+                // minimum decreased (relaxed)
+                ctx.addDifference(NUMBER_TYPE_MINIMUM_DECREASED,
+                        rangeToString(original), rangeToString(updated));
+            }
+            // else: same value and exclusivity -- no diff
+        }
+        return false; // don't auto-recurse into RangeValue fields
     }
 
     @Override
-    public void diffFullSchemaMaximum(Number original, Number updated) {
-        // Adjust for draft-4 exclusiveMaximum (boolean form) interaction
-        var adjOrig = original;
-        var adjUpd = updated;
-        if (currentOriginal != null && currentUpdated != null) {
-            var origExclMax = getEffectiveExclusiveMaximum(currentOriginal);
-            var updExclMax = getEffectiveExclusiveMaximum(currentUpdated);
-
-            if (isDraft4ExclusiveMaximum(currentOriginal)
-                    && Boolean.TRUE.equals(getDraft4ExclusiveMaximum(currentOriginal))) {
-                adjOrig = null;
-            }
-            if (isDraft4ExclusiveMaximum(currentUpdated)
-                    && Boolean.TRUE.equals(getDraft4ExclusiveMaximum(currentUpdated))) {
-                adjUpd = null;
-            }
-            if (adjOrig == null && adjUpd != null && origExclMax != null) {
-                if (toBigDecimal(origExclMax).compareTo(toBigDecimal(adjUpd)) <= 0) {
-                    adjUpd = null;
-                }
-            }
-            if (adjOrig != null && adjUpd == null && updExclMax != null) {
-                if (toBigDecimal(updExclMax).compareTo(toBigDecimal(adjOrig)) <= 0) {
-                    adjOrig = null;
-                }
-            }
+    public boolean diffFullSchemaMaximum(JCRangeValue original, JCRangeValue updated) {
+        if (original == null && updated == null) return false;
+        if (original == null) {
+            ctx.addDifference(NUMBER_TYPE_MAXIMUM_ADDED, null, rangeToString(updated));
+            return false;
         }
-        diffNumber(ctx, adjOrig, adjUpd,
-                NUMBER_TYPE_MAXIMUM_ADDED, NUMBER_TYPE_MAXIMUM_REMOVED,
-                NUMBER_TYPE_MAXIMUM_INCREASED, NUMBER_TYPE_MAXIMUM_DECREASED);
-    }
-
-    @Override
-    public boolean diffFullSchemaExclusiveMinimum(BooleanNumberUnion original, BooleanNumberUnion updated) {
-        var origIsD4 = original != null && original.isBoolean();
-        var updIsD4 = updated != null && updated.isBoolean();
-
-        if (origIsD4 && updIsD4) {
-            diffBooleanTransition(ctx, original.asBoolean(), updated.asBoolean(), false,
-                    NUMBER_TYPE_IS_MINIMUM_EXCLUSIVE_FALSE_TO_TRUE,
-                    NUMBER_TYPE_IS_MINIMUM_EXCLUSIVE_TRUE_TO_FALSE,
-                    NUMBER_TYPE_IS_MINIMUM_EXCLUSIVE_UNCHANGED);
-        } else if (origIsD4 && !updIsD4) {
-            var origIsExcl = original.asBoolean();
-            var origMin = currentOriginal != null ? currentOriginal.getMinimum() : null;
-            Number effectiveOrigExclMin = (Boolean.TRUE.equals(origIsExcl) && origMin != null) ? origMin : null;
-            var updExcl = updated != null && updated.isNumber() ? updated.asNumber() : null;
-            diffNumber(ctx, effectiveOrigExclMin, updExcl,
-                    NUMBER_TYPE_EXCLUSIVE_MINIMUM_ADDED, NUMBER_TYPE_EXCLUSIVE_MINIMUM_REMOVED,
-                    NUMBER_TYPE_EXCLUSIVE_MINIMUM_INCREASED, NUMBER_TYPE_EXCLUSIVE_MINIMUM_DECREASED);
-        } else if (!origIsD4 && updIsD4) {
-            var origExcl = original != null && original.isNumber() ? original.asNumber() : null;
-            var updIsExcl = updated.asBoolean();
-            var updMin = currentUpdated != null ? currentUpdated.getMinimum() : null;
-            Number effectiveUpdExclMin = (Boolean.TRUE.equals(updIsExcl) && updMin != null) ? updMin : null;
-            diffNumber(ctx, origExcl, effectiveUpdExclMin,
-                    NUMBER_TYPE_EXCLUSIVE_MINIMUM_ADDED, NUMBER_TYPE_EXCLUSIVE_MINIMUM_REMOVED,
-                    NUMBER_TYPE_EXCLUSIVE_MINIMUM_INCREASED, NUMBER_TYPE_EXCLUSIVE_MINIMUM_DECREASED);
-        } else {
-            var origExcl = original != null && original.isNumber() ? original.asNumber() : null;
-            var updExcl = updated != null && updated.isNumber() ? updated.asNumber() : null;
-            diffNumber(ctx, origExcl, updExcl,
-                    NUMBER_TYPE_EXCLUSIVE_MINIMUM_ADDED, NUMBER_TYPE_EXCLUSIVE_MINIMUM_REMOVED,
-                    NUMBER_TYPE_EXCLUSIVE_MINIMUM_INCREASED, NUMBER_TYPE_EXCLUSIVE_MINIMUM_DECREASED);
+        if (updated == null) {
+            ctx.addDifference(NUMBER_TYPE_MAXIMUM_REMOVED, rangeToString(original), null);
+            return false;
         }
-        return true;
-    }
-
-    @Override
-    public boolean diffFullSchemaExclusiveMaximum(BooleanNumberUnion original, BooleanNumberUnion updated) {
-        var origIsD4 = original != null && original.isBoolean();
-        var updIsD4 = updated != null && updated.isBoolean();
-
-        if (origIsD4 && updIsD4) {
-            diffBooleanTransition(ctx, original.asBoolean(), updated.asBoolean(), false,
-                    NUMBER_TYPE_IS_MAXIMUM_EXCLUSIVE_FALSE_TO_TRUE,
-                    NUMBER_TYPE_IS_MAXIMUM_EXCLUSIVE_TRUE_TO_FALSE,
-                    NUMBER_TYPE_IS_MAXIMUM_EXCLUSIVE_UNCHANGED);
-        } else if (origIsD4 && !updIsD4) {
-            var origIsExcl = original.asBoolean();
-            var origMax = currentOriginal != null ? currentOriginal.getMaximum() : null;
-            Number effectiveOrigExclMax = (Boolean.TRUE.equals(origIsExcl) && origMax != null) ? origMax : null;
-            var updExcl = updated != null && updated.isNumber() ? updated.asNumber() : null;
-            diffNumber(ctx, effectiveOrigExclMax, updExcl,
-                    NUMBER_TYPE_EXCLUSIVE_MAXIMUM_ADDED, NUMBER_TYPE_EXCLUSIVE_MAXIMUM_REMOVED,
-                    NUMBER_TYPE_EXCLUSIVE_MAXIMUM_INCREASED, NUMBER_TYPE_EXCLUSIVE_MAXIMUM_DECREASED);
-        } else if (!origIsD4 && updIsD4) {
-            var origExcl = original != null && original.isNumber() ? original.asNumber() : null;
-            var updIsExcl = updated.asBoolean();
-            var updMax = currentUpdated != null ? currentUpdated.getMaximum() : null;
-            Number effectiveUpdExclMax = (Boolean.TRUE.equals(updIsExcl) && updMax != null) ? updMax : null;
-            diffNumber(ctx, origExcl, effectiveUpdExclMax,
-                    NUMBER_TYPE_EXCLUSIVE_MAXIMUM_ADDED, NUMBER_TYPE_EXCLUSIVE_MAXIMUM_REMOVED,
-                    NUMBER_TYPE_EXCLUSIVE_MAXIMUM_INCREASED, NUMBER_TYPE_EXCLUSIVE_MAXIMUM_DECREASED);
-        } else {
-            var origExcl = original != null && original.isNumber() ? original.asNumber() : null;
-            var updExcl = updated != null && updated.isNumber() ? updated.asNumber() : null;
-            diffNumber(ctx, origExcl, updExcl,
-                    NUMBER_TYPE_EXCLUSIVE_MAXIMUM_ADDED, NUMBER_TYPE_EXCLUSIVE_MAXIMUM_REMOVED,
-                    NUMBER_TYPE_EXCLUSIVE_MAXIMUM_INCREASED, NUMBER_TYPE_EXCLUSIVE_MAXIMUM_DECREASED);
+        // Both present -- compare values
+        Number origVal = original.getValue();
+        Number updVal = updated.getValue();
+        if (origVal != null && updVal != null) {
+            int cmp = toBigDecimal(origVal).compareTo(toBigDecimal(updVal));
+            boolean origExcl = Boolean.TRUE.equals(original.isExclusive());
+            boolean updExcl = Boolean.TRUE.equals(updated.isExclusive());
+            if (cmp > 0 || (cmp == 0 && !origExcl && updExcl)) {
+                // maximum decreased (tightened)
+                ctx.addDifference(NUMBER_TYPE_MAXIMUM_DECREASED,
+                        rangeToString(original), rangeToString(updated));
+            } else if (cmp < 0 || (cmp == 0 && origExcl && !updExcl)) {
+                // maximum increased (relaxed)
+                ctx.addDifference(NUMBER_TYPE_MAXIMUM_INCREASED,
+                        rangeToString(original), rangeToString(updated));
+            }
+            // else: same value and exclusivity -- no diff
         }
-        return true;
+        return false; // don't auto-recurse into RangeValue fields
     }
 
     @Override
@@ -1295,64 +1220,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // Helper methods from NumberSchemaDiff
     // -----------------------------------------------------------------------
 
-    private static boolean isDraft4ExclusiveMinimum(JFullSchema schema) {
-        if (schema instanceof JCFullSchema c) {
-            BooleanNumberUnion u = c.getExclusiveMinimum();
-            return u != null && u.isBoolean();
-        }
-        return false;
-    }
-
-    private static boolean isDraft4ExclusiveMaximum(JFullSchema schema) {
-        if (schema instanceof JCFullSchema c) {
-            BooleanNumberUnion u = c.getExclusiveMaximum();
-            return u != null && u.isBoolean();
-        }
-        return false;
-    }
-
-    private static Boolean getDraft4ExclusiveMinimum(JFullSchema schema) {
-        if (schema instanceof JCFullSchema c) {
-            BooleanNumberUnion u = c.getExclusiveMinimum();
-            if (u != null && u.isBoolean()) return u.asBoolean();
-        }
-        return null;
-    }
-
-    private static Boolean getDraft4ExclusiveMaximum(JFullSchema schema) {
-        if (schema instanceof JCFullSchema c) {
-            BooleanNumberUnion u = c.getExclusiveMaximum();
-            if (u != null && u.isBoolean()) return u.asBoolean();
-        }
-        return null;
-    }
-
-    private static Number getEffectiveExclusiveMinimum(JFullSchema schema) {
-        if (isDraft4ExclusiveMinimum(schema)) {
-            if (Boolean.TRUE.equals(getDraft4ExclusiveMinimum(schema))) {
-                return schema.getMinimum();
-            }
-            return null;
-        }
-        if (schema instanceof JCFullSchema c) {
-            BooleanNumberUnion u = c.getExclusiveMinimum();
-            if (u != null && u.isNumber()) return u.asNumber();
-        }
-        return null;
-    }
-
-    private static Number getEffectiveExclusiveMaximum(JFullSchema schema) {
-        if (isDraft4ExclusiveMaximum(schema)) {
-            if (Boolean.TRUE.equals(getDraft4ExclusiveMaximum(schema))) {
-                return schema.getMaximum();
-            }
-            return null;
-        }
-        if (schema instanceof JCFullSchema c) {
-            BooleanNumberUnion u = c.getExclusiveMaximum();
-            if (u != null && u.isNumber()) return u.asNumber();
-        }
-        return null;
+    private static String rangeToString(JCRangeValue range) {
+        if (range == null) return null;
+        String prefix = Boolean.TRUE.equals(range.isExclusive()) ? "exclusive " : "";
+        return prefix + range.getValue();
     }
 
     private static BigDecimal toBigDecimal(Number n) {

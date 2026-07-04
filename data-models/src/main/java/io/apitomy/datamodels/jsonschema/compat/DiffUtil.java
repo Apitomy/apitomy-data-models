@@ -4,6 +4,9 @@ import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.Referenceable;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
+import io.apitomy.datamodels.models.ModelType;
+import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
+import io.apitomy.datamodels.jsonschema.convert.CompoundSchemaConverter;
 import io.apitomy.datamodels.models.union.StringStringListUnion;
 
 import java.math.BigDecimal;
@@ -171,12 +174,47 @@ public final class DiffUtil {
     public static boolean isSchemaCompatible(DiffContext ctx, JFullSchema original, JFullSchema updated,
                                               boolean backward) {
         var subCtx = ctx.isolated();
-        if (backward) {
-            SchemaDiffVisitor.diffSchemas(subCtx, original, updated);
+        // If either schema is compound, convert the other and use the compound traverser.
+        // This is needed because converted schemas may have RangeValue-based min/max
+        // that the old SchemaDiffVisitor cannot access.
+        if (original instanceof JCFullSchema || updated instanceof JCFullSchema) {
+            var origCompound = ensureCompound(original);
+            var updCompound = ensureCompound(updated);
+            if (backward) {
+                CompoundSchemaDiffVisitor.diffSchemas(subCtx, origCompound, updCompound);
+            } else {
+                CompoundSchemaDiffVisitor.diffSchemas(subCtx, updCompound, origCompound);
+            }
         } else {
-            SchemaDiffVisitor.diffSchemas(subCtx, updated, original);
+            if (backward) {
+                SchemaDiffVisitor.diffSchemas(subCtx, original, updated);
+            } else {
+                SchemaDiffVisitor.diffSchemas(subCtx, updated, original);
+            }
         }
         return subCtx.foundAllDifferencesAreCompatible();
+    }
+
+    static JFullSchema ensureCompound(JFullSchema schema) {
+        if (schema instanceof JCFullSchema) return schema;
+        // Use instanceof checks to determine the model type, ignoring root().modelType()
+        // because sub-schemas may have a compound root after top-level conversion
+        // while themselves remaining draft-specific.
+        ModelType modelType = detectModelTypeByInstance(schema);
+        if (modelType != null) {
+            var converted = CompoundSchemaConverter.toCompound((JsonSchema) schema, modelType);
+            if (converted instanceof JFullSchema fs) return fs;
+        }
+        return schema;
+    }
+
+    private static ModelType detectModelTypeByInstance(JFullSchema schema) {
+        if (schema instanceof io.apitomy.datamodels.models.jsonschema.modern.v202012.JM202012FullSchema) return ModelType.JM202012;
+        if (schema instanceof io.apitomy.datamodels.models.jsonschema.modern.v201909.JM201909FullSchema) return ModelType.JM201909;
+        if (schema instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema) return ModelType.JD7;
+        if (schema instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema) return ModelType.JD6;
+        if (schema instanceof io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema) return ModelType.JD4;
+        return null;
     }
 
     public static boolean isUnionSchemaCompatible(DiffContext ctx, JsonSchema original,
