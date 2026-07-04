@@ -162,8 +162,6 @@ public class SchemaDiffVisitor {
                 || schema.getRequired() != null
                 || schema.getMinLength() != null
                 || schema.getMaxLength() != null
-                || schema.getMinimum() != null
-                || schema.getMaximum() != null
                 || schema.getMinItems() != null
                 || schema.getMaxItems() != null
                 || schema.getMinProperties() != null
@@ -177,7 +175,8 @@ public class SchemaDiffVisitor {
             return false;
         }
         if (schema instanceof JDFullSchema d
-                && (d.getItems() != null || d.getAdditionalItems() != null)) {
+                && (d.getMinimum() != null || d.getMaximum() != null
+                    || d.getItems() != null || d.getAdditionalItems() != null)) {
             return false;
         }
         return true;

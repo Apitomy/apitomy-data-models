@@ -29,6 +29,15 @@ root:
   type: JsonSchema
 
 entities:
+  - name: RangeValue
+    properties:
+      - name: value
+        type: number
+      - name: exclusive
+        type: boolean
+    propertyOrder:
+      - $this
+
   - name: FullSchema
     traits:
       - Referenceable
@@ -123,16 +132,14 @@ entities:
       # --- Numeric validation ---
       - name: multipleOf
         type: number
+      # minimum/maximum normalized to RangeValue during conversion.
+      # Combines value + exclusivity into a single field.
+      # d4's boolean exclusiveMinimum + minimum → single RangeValue.
+      # d6+ minimum/exclusiveMinimum → tighter bound as RangeValue.
       - name: minimum
-        type: number
+        type: RangeValue
       - name: maximum
-        type: number
-      # exclusiveMinimum/Maximum use the widest type (boolean in d4, number in d6+)
-      # Converters map d4 boolean to the compound union type
-      - name: exclusiveMinimum
-        type: 'boolean|number'
-      - name: exclusiveMaximum
-        type: 'boolean|number'
+        type: RangeValue
 
       # --- String validation ---
       - name: minLength

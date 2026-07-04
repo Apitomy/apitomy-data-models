@@ -8,8 +8,7 @@
         "minimum": 5
       },
       "expected": {
-        "exclusiveMinimum": true,
-        "minimum": 5
+        "minimum": { "value": 5, "exclusive": true }
       }
     },
     {
@@ -20,8 +19,7 @@
         "minimum": 5
       },
       "expected": {
-        "exclusiveMinimum": false,
-        "minimum": 5
+        "minimum": { "value": 5, "exclusive": false }
       }
     },
     {
@@ -32,8 +30,7 @@
         "maximum": 100
       },
       "expected": {
-        "exclusiveMaximum": true,
-        "maximum": 100
+        "maximum": { "value": 100, "exclusive": true }
       }
     },
     {
@@ -43,7 +40,7 @@
         "exclusiveMinimum": 5
       },
       "expected": {
-        "exclusiveMinimum": 5
+        "minimum": { "value": 5, "exclusive": true }
       }
     },
     {
@@ -53,7 +50,7 @@
         "exclusiveMaximum": 100
       },
       "expected": {
-        "exclusiveMaximum": 100
+        "maximum": { "value": 100, "exclusive": true }
       }
     },
     {
@@ -138,7 +135,7 @@
         "type": "object",
         "properties": {
           "name": { "type": "string", "minLength": 1 },
-          "age": { "type": "integer", "minimum": 0 }
+          "age": { "type": "integer", "minimum": { "value": 0, "exclusive": false } }
         },
         "required": ["name"],
         "additionalProperties": false
