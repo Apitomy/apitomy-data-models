@@ -173,26 +173,23 @@ public final class DiffUtil {
      */
     public static boolean isSchemaCompatible(DiffContext ctx, JFullSchema original, JFullSchema updated,
                                               boolean backward) {
-        var subCtx = ctx.isolated();
-        // If either schema is compound, convert the other and use the compound traverser.
-        // This is needed because converted schemas may have RangeValue-based min/max
-        // that the old SchemaDiffVisitor cannot access.
+        ctx.pushIsolatedScope();
         if (original instanceof JCFullSchema || updated instanceof JCFullSchema) {
             var origCompound = ensureCompound(original);
             var updCompound = ensureCompound(updated);
             if (backward) {
-                CompoundSchemaDiffVisitor.diffSchemas(subCtx, origCompound, updCompound);
+                CompoundSchemaDiffVisitor.diffSchemas(ctx, origCompound, updCompound);
             } else {
-                CompoundSchemaDiffVisitor.diffSchemas(subCtx, updCompound, origCompound);
+                CompoundSchemaDiffVisitor.diffSchemas(ctx, updCompound, origCompound);
             }
         } else {
             if (backward) {
-                SchemaDiffVisitor.diffSchemas(subCtx, original, updated);
+                SchemaDiffVisitor.diffSchemas(ctx, original, updated);
             } else {
-                SchemaDiffVisitor.diffSchemas(subCtx, updated, original);
+                SchemaDiffVisitor.diffSchemas(ctx, updated, original);
             }
         }
-        return subCtx.foundAllDifferencesAreCompatible();
+        return ctx.popScopeIsCompatible();
     }
 
     static JFullSchema ensureCompound(JFullSchema schema) {

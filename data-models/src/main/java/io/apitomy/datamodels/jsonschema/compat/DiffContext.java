@@ -7,12 +7,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 public class DiffContext {
 
     private final Set<Difference> diffs = new HashSet<>();
     private final List<String> unsupportedFeatures = new ArrayList<>();
+    private final Stack<Scope> scopeStack = new Stack<>();
+
+    private static class Scope {
+        final Set<Difference> diffs = new HashSet<>();
+        final boolean isolated;
+        Scope(boolean isolated) { this.isolated = isolated; }
+    }
     private final DiffContext parentContext;
     private final DiffContext rootContext;
     private final String pathUpdated;
@@ -49,14 +57,6 @@ public class DiffContext {
         }
     }
 
-    /**
-     * Create an isolated context for sub-schema comparison. Shares cycle detection
-     * (visited) and refTraversal, but collects diffs independently.
-     */
-    public DiffContext isolated() {
-        return new DiffContext(null, null, "", visited, refTraversal);
-    }
-
     public DiffContext sub(String pathFragment) {
         return new DiffContext(
                 rootContext != null ? rootContext : this,
@@ -75,6 +75,34 @@ public class DiffContext {
         return pathUpdated;
     }
 
+    /**
+     * Start a scope that collects diffs AND propagates them to the parent.
+     * Use with afterDiff callbacks to inspect results of auto-recursion.
+     */
+    public void pushScope() {
+        scopeStack.push(new Scope(false));
+    }
+
+    /**
+     * Start an isolated scope — diffs are collected but NOT propagated to the parent.
+     * Replaces the old {@link #isolated()} pattern for nested compatibility checks.
+     */
+    public void pushIsolatedScope() {
+        scopeStack.push(new Scope(true));
+    }
+
+    /**
+     * End the current scope and return whether all diffs collected in it
+     * are backward-compatible.
+     */
+    public boolean popScopeIsCompatible() {
+        if (scopeStack.isEmpty()) {
+            throw new IllegalStateException("No scope to pop");
+        }
+        Scope scope = scopeStack.pop();
+        return scope.diffs.stream().allMatch(d -> d.getDiffType().isBackwardsCompatible());
+    }
+
     public void addDifference(DiffType type, Object original, Object updated) {
         var difference = new Difference(
                 type, "",  pathUpdated,
@@ -85,6 +113,13 @@ public class DiffContext {
     }
 
     private void addToDifferenceSets(Difference difference) {
+        if (!scopeStack.isEmpty()) {
+            Scope activeScope = scopeStack.peek();
+            activeScope.diffs.add(difference);
+            if (activeScope.isolated) {
+                return;
+            }
+        }
         diffs.add(difference);
         if (parentContext != null) {
             parentContext.addToDifferenceSets(difference);
