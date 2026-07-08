@@ -119,7 +119,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
         var traversal = ctx.getRefTraversal();
         if (traversal == null) {
-            ctx.addUnsupported("$ref resolution not available: " + ref);
+            handleUnresolvableRef(ctx, "$ref resolution not available: " + ref);
             return schema;
         }
 
@@ -128,8 +128,20 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             return (JFullSchema) resolved.get();
         }
 
-        ctx.addUnsupported("Unresolvable $ref: " + ref);
+        handleUnresolvableRef(ctx, ref);
         return schema;
+    }
+
+    private static void handleUnresolvableRef(DiffContext ctx, String ref) {
+        switch (ctx.getUnresolvableRefStrategy()) {
+            case FAIL:
+                throw new UnresolvableRefException(ref);
+            case COLLECT:
+                ctx.addUnsupported("Unresolvable $ref: " + ref);
+                break;
+            case IGNORE:
+                break;
+        }
     }
 
     // -----------------------------------------------------------------------
