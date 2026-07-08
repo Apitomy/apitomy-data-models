@@ -25,28 +25,37 @@ public class DiffContext {
     private final DiffContext rootContext;
     private final String pathUpdated;
     private final JsonSchemaRefTraversal refTraversal;
+    private final UnresolvableRefStrategy unresolvableRefStrategy;
     // Shared by reference across all sub-contexts and isolated contexts
     final Set<String> visited;
 
     private DiffContext(DiffContext rootContext, DiffContext parentContext, String pathUpdated,
-                        Set<String> visited, JsonSchemaRefTraversal refTraversal) {
+                        Set<String> visited, JsonSchemaRefTraversal refTraversal,
+                        UnresolvableRefStrategy unresolvableRefStrategy) {
         this.rootContext = rootContext;
         this.parentContext = parentContext;
         this.pathUpdated = pathUpdated;
         this.visited = visited;
         this.refTraversal = refTraversal;
+        this.unresolvableRefStrategy = unresolvableRefStrategy;
     }
 
     public static DiffContext createRootContext() {
-        return createRootContext("", null, null);
+        return createRootContext("", null, null, UnresolvableRefStrategy.COLLECT);
     }
 
     public static DiffContext createRootContext(String basePath, Set<String> visited,
                                                 JsonSchemaRefTraversal refTraversal) {
+        return createRootContext(basePath, visited, refTraversal, UnresolvableRefStrategy.COLLECT);
+    }
+
+    public static DiffContext createRootContext(String basePath, Set<String> visited,
+                                                JsonSchemaRefTraversal refTraversal,
+                                                UnresolvableRefStrategy unresolvableRefStrategy) {
         if (visited == null) {
             visited = new HashSet<>();
         }
-        var root = new DiffContext(null, null, basePath, visited, refTraversal);
+        var root = new DiffContext(null, null, basePath, visited, refTraversal, unresolvableRefStrategy);
         root.initRootContext();
         return root;
     }
@@ -63,8 +72,13 @@ public class DiffContext {
                 this,
                 pathUpdated + "/" + pathFragment,
                 visited,
-                refTraversal
+                refTraversal,
+                unresolvableRefStrategy
         );
+    }
+
+    public UnresolvableRefStrategy getUnresolvableRefStrategy() {
+        return unresolvableRefStrategy;
     }
 
     public JsonSchemaRefTraversal getRefTraversal() {

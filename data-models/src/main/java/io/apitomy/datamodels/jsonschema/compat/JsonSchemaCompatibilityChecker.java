@@ -34,14 +34,17 @@ public final class JsonSchemaCompatibilityChecker {
 
     private final boolean allowCrossVersionChecking;
     private final JsonSchemaRefResolver refResolver;
+    private final UnresolvableRefStrategy unresolvableRefStrategy;
 
     /**
      * Package-private constructor — use {@link #builder()} to create instances.
      */
     JsonSchemaCompatibilityChecker(boolean allowCrossVersionChecking,
-                                   JsonSchemaRefResolver refResolver) {
+                                   JsonSchemaRefResolver refResolver,
+                                   UnresolvableRefStrategy unresolvableRefStrategy) {
         this.allowCrossVersionChecking = allowCrossVersionChecking;
         this.refResolver = refResolver;
+        this.unresolvableRefStrategy = unresolvableRefStrategy;
     }
 
     /**
@@ -125,7 +128,7 @@ public final class JsonSchemaCompatibilityChecker {
         var updatedCompound = toCompoundFullSchema(updatedParsed, updatedModelType);
 
         var refTraversal = new JsonSchemaRefTraversal(refResolver);
-        var ctx = DiffContext.createRootContext("", null, refTraversal);
+        var ctx = DiffContext.createRootContext("", null, refTraversal, unresolvableRefStrategy);
 
         // TODO: Modern version support — flag for now, remove when diff classes handle all keywords
         flagModernVersions(ctx, originalModelType);

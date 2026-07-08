@@ -19,6 +19,7 @@ public final class JsonSchemaCompatibilityCheckerBuilder {
 
     private boolean allowCrossVersionChecking = false;
     private JsonSchemaRefResolver refResolver = null;
+    private UnresolvableRefStrategy unresolvableRefStrategy = UnresolvableRefStrategy.COLLECT;
 
     JsonSchemaCompatibilityCheckerBuilder() {
     }
@@ -56,6 +57,22 @@ public final class JsonSchemaCompatibilityCheckerBuilder {
     }
 
     /**
+     * Set the strategy for handling unresolvable {@code $ref} values.
+     * <p>
+     * Defaults to {@link UnresolvableRefStrategy#COLLECT} which logs unresolvable
+     * references as unsupported features and continues the comparison.
+     *
+     * @param strategy the strategy to use
+     * @return this builder
+     * @see UnresolvableRefStrategy
+     */
+    public JsonSchemaCompatibilityCheckerBuilder onUnresolvableRef(UnresolvableRefStrategy strategy) {
+        java.util.Objects.requireNonNull(strategy, "strategy must not be null");
+        this.unresolvableRefStrategy = strategy;
+        return this;
+    }
+
+    /**
      * Builds an immutable {@link JsonSchemaCompatibilityChecker} with the
      * configured settings.
      *
@@ -64,6 +81,7 @@ public final class JsonSchemaCompatibilityCheckerBuilder {
     public JsonSchemaCompatibilityChecker build() {
         return new JsonSchemaCompatibilityChecker(
                 allowCrossVersionChecking,
-                refResolver != null ? refResolver : JsonSchemaRefResolverChain.withDefaults());
+                refResolver != null ? refResolver : JsonSchemaRefResolverChain.withDefaults(),
+                unresolvableRefStrategy);
     }
 }
