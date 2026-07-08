@@ -3757,6 +3757,98 @@
           "maximum": 42
         }
       }
+    },
+    {
+      "enabled": true,
+      "id": "Ref: unresolvable with COLLECT",
+      "config": { "onUnresolvableRef": "COLLECT" },
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "address": { "$ref": "http://missing.com/address.json" }
+        }
+      },
+      "updated": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "address": { "type": "object" }
+        }
+      },
+      "expected": {
+        "backward": { "compatible": true, "unsupportedFeatures": 1 }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Ref: unresolvable with FAIL",
+      "config": { "onUnresolvableRef": "FAIL" },
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$ref": "http://missing.com/schema.json"
+      },
+      "updated": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "string"
+      },
+      "expected": { "error": "UnresolvableRefException" }
+    },
+    {
+      "enabled": true,
+      "id": "Ref: unresolvable with IGNORE",
+      "config": { "onUnresolvableRef": "IGNORE" },
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "address": { "$ref": "http://missing.com/address.json" }
+        }
+      },
+      "updated": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "address": { "type": "object" }
+        }
+      },
+      "expected": {
+        "backward": { "compatible": true, "unsupportedFeatures": 0 }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Ref: resolvable external ref",
+      "externalRefs": {
+        "http://example.com/address.json": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": { "street": { "type": "string" } },
+          "required": ["street"]
+        }
+      },
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "home": { "$ref": "http://example.com/address.json" }
+        }
+      },
+      "updated": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "home": {
+            "type": "object",
+            "properties": { "street": { "type": "string" } },
+            "required": ["street"]
+          }
+        }
+      },
+      "expected": {
+        "backward": { "compatible": true },
+        "forward": { "compatible": true }
+      }
     }
   ]
 }
