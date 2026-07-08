@@ -60,6 +60,11 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         var resolvedOriginal = resolveIfRef(ctx, original);
         var resolvedUpdated = resolveIfRef(ctx, updated);
 
+        // If either side could not be resolved (COLLECT/IGNORE), skip comparison
+        if (resolvedOriginal == null || resolvedUpdated == null) {
+            return;
+        }
+
         // Convert to compound if needed (e.g., $ref resolved to draft-specific type)
         var compoundOriginal = toCompoundIfNeeded(resolvedOriginal);
         var compoundUpdated = toCompoundIfNeeded(resolvedUpdated);
@@ -118,18 +123,18 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         if (ref == null) return schema;
 
         var traversal = ctx.getRefTraversal();
-        if (traversal == null) {
-            handleUnresolvableRef(ctx, "$ref resolution not available: " + ref);
-            return schema;
+        if (traversal != null) {
+            var resolved = traversal.resolveRef(ref, schema);
+            if (resolved.isPresent()) {
+                return (JFullSchema) resolved.get();
+            }
         }
 
-        var resolved = traversal.resolveRef(ref, schema);
-        if (resolved.isPresent()) {
-            return (JFullSchema) resolved.get();
-        }
-
+        // Ref is unresolvable — apply strategy
         handleUnresolvableRef(ctx, ref);
-        return schema;
+        // For COLLECT and IGNORE, return null to signal caller to skip comparison.
+        // For FAIL, handleUnresolvableRef already threw.
+        return null;
     }
 
     private static void handleUnresolvableRef(DiffContext ctx, String ref) {
@@ -1167,10 +1172,16 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 : null;
 
         if (original != null && origResolved == null) {
-            ctx.addUnsupported("Unresolvable $ref: " + original);
+            handleUnresolvableRef(ctx, original);
+            if (ctx.getUnresolvableRefStrategy() != UnresolvableRefStrategy.FAIL) {
+                return;
+            }
         }
         if (updated != null && updResolved == null) {
-            ctx.addUnsupported("Unresolvable $ref: " + updated);
+            handleUnresolvableRef(ctx, updated);
+            if (ctx.getUnresolvableRefStrategy() != UnresolvableRefStrategy.FAIL) {
+                return;
+            }
         }
 
         if (origResolved != null && updResolved != null) {
