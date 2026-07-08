@@ -2,6 +2,10 @@ package io.apitomy.datamodels.jsonschema.compat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.apitomy.datamodels.jsonschema.ref.AnchorFragmentResolver;
+import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefResolverChain;
+import io.apitomy.datamodels.jsonschema.ref.MapResourceResolver;
+import io.apitomy.datamodels.jsonschema.ref.PointerFragmentResolver;
 import org.junit.jupiter.api.Assertions;
 
 import org.junit.jupiter.api.Test;
@@ -9,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JsonSchemaCompatibilityTest {
 
@@ -18,6 +24,44 @@ public class JsonSchemaCompatibilityTest {
             JsonSchemaCompatibilityChecker.builder()
                     .allowCrossVersionChecking(true)
                     .build();
+
+    // Cache checkers by config to reuse instances
+    private final Map<String, JsonSchemaCompatibilityChecker> checkerCache = new HashMap<>();
+
+    private JsonSchemaCompatibilityChecker getChecker(JsonNode configNode, JsonNode externalRefsNode) {
+        // Build cache key from config + externalRefs
+        String cacheKey = (configNode != null ? configNode.toString() : "default")
+                + (externalRefsNode != null ? externalRefsNode.toString() : "");
+
+        return checkerCache.computeIfAbsent(cacheKey, k -> {
+            var builder = JsonSchemaCompatibilityChecker.builder();
+
+            // Apply config
+            if (configNode != null) {
+                if (configNode.has("allowCrossVersionChecking"))
+                    builder.allowCrossVersionChecking(configNode.get("allowCrossVersionChecking").asBoolean());
+                if (configNode.has("onUnresolvableRef"))
+                    builder.onUnresolvableRef(UnresolvableRefStrategy.valueOf(configNode.get("onUnresolvableRef").asText()));
+            } else {
+                builder.allowCrossVersionChecking(true); // default for tests
+            }
+
+            // Apply external refs
+            if (externalRefsNode != null && externalRefsNode.isObject()) {
+                var mapBuilder = MapResourceResolver.builder();
+                externalRefsNode.fields().forEachRemaining(entry ->
+                        mapBuilder.addSchema(entry.getKey(), entry.getValue().toString()));
+
+                builder.refResolver(JsonSchemaRefResolverChain.builder()
+                        .addFragmentResolver(new PointerFragmentResolver())
+                        .addFragmentResolver(new AnchorFragmentResolver())
+                        .addResourceResolver(mapBuilder.build())
+                        .build());
+            }
+
+            return builder.build();
+        });
+    }
 
     @Test
     public void testCompatibilityTestData() throws Exception {
@@ -39,7 +83,6 @@ public class JsonSchemaCompatibilityTest {
 
             var originalNode = testCase.get("original");
             var updatedNode = testCase.get("updated");
-            var expectedCompat = testCase.get("compatibility").asText();
 
             var original = nodeToSchemaString(originalNode);
             var updated = nodeToSchemaString(updatedNode);
@@ -49,9 +92,63 @@ public class JsonSchemaCompatibilityTest {
                 continue;
             }
 
+            var configNode = testCase.get("config");
+            var externalRefsNode = testCase.get("externalRefs");
+            var expectedNode = testCase.get("expected");
+
+            var checker = getChecker(configNode, externalRefsNode);
+
+            // Check for expected error
+            if (expectedNode != null && expectedNode.has("error")) {
+                var expectedError = expectedNode.get("error").asText();
+                try {
+                    checker.checkBackward(original, updated);
+                    failed.add(id + " (expected error " + expectedError + " but none thrown)");
+                } catch (Exception e) {
+                    if (e.getClass().getSimpleName().equals(expectedError)) {
+                        passed++;
+                    } else {
+                        failed.add(id + " (expected " + expectedError + " but got " + e.getClass().getSimpleName() + ")");
+                    }
+                }
+                continue;
+            }
+
+            // Check with expected result structure
+            if (expectedNode != null) {
+                try {
+                    boolean success = true;
+                    if (expectedNode.has("backward")) {
+                        var result = checker.checkBackward(original, updated);
+                        var exp = expectedNode.get("backward");
+                        if (exp.has("compatible") && result.isCompatible() != exp.get("compatible").asBoolean()) {
+                            success = false;
+                        }
+                        if (exp.has("unsupportedFeatures") && result.getUnsupportedFeatures().size() != exp.get("unsupportedFeatures").asInt()) {
+                            success = false;
+                        }
+                    }
+                    if (expectedNode.has("forward")) {
+                        var result = checker.checkForward(original, updated);
+                        var exp = expectedNode.get("forward");
+                        if (exp.has("compatible") && result.isCompatible() != exp.get("compatible").asBoolean()) {
+                            success = false;
+                        }
+                    }
+                    if (success) passed++;
+                    else failed.add(id + " (expected result mismatch)");
+                } catch (Exception e) {
+                    failed.add(id + " (exception: " + e.getMessage() + ")");
+                }
+                continue;
+            }
+
+            // Legacy mode: use "compatibility" field
+            var expectedCompat = testCase.get("compatibility").asText();
+
             try {
-                var backwardResult = CHECKER.checkBackward(original, updated);
-                var forwardResult = CHECKER.checkForward(original, updated);
+                var backwardResult = checker.checkBackward(original, updated);
+                var forwardResult = checker.checkForward(original, updated);
 
                 var backwardOk = backwardResult.isCompatible();
                 var forwardOk = forwardResult.isCompatible();
@@ -168,7 +265,6 @@ public class JsonSchemaCompatibilityTest {
 
             var originalNode = testCase.get("original");
             var updatedNode = testCase.get("updated");
-            var expectedCompat = testCase.get("compatibility").asText();
 
             var original = nodeToSchemaString(originalNode);
             var updated = nodeToSchemaString(updatedNode);
@@ -178,9 +274,63 @@ public class JsonSchemaCompatibilityTest {
                 continue;
             }
 
+            var configNode = testCase.get("config");
+            var externalRefsNode = testCase.get("externalRefs");
+            var expectedNode = testCase.get("expected");
+
+            var checker = getChecker(configNode, externalRefsNode);
+
+            // Check for expected error
+            if (expectedNode != null && expectedNode.has("error")) {
+                var expectedError = expectedNode.get("error").asText();
+                try {
+                    checker.checkBackward(original, updated);
+                    failed.add(id + " (expected error " + expectedError + " but none thrown)");
+                } catch (Exception e) {
+                    if (e.getClass().getSimpleName().equals(expectedError)) {
+                        passed++;
+                    } else {
+                        failed.add(id + " (expected " + expectedError + " but got " + e.getClass().getSimpleName() + ")");
+                    }
+                }
+                continue;
+            }
+
+            // Check with expected result structure
+            if (expectedNode != null) {
+                try {
+                    boolean success = true;
+                    if (expectedNode.has("backward")) {
+                        var result = checker.checkBackward(original, updated);
+                        var exp = expectedNode.get("backward");
+                        if (exp.has("compatible") && result.isCompatible() != exp.get("compatible").asBoolean()) {
+                            success = false;
+                        }
+                        if (exp.has("unsupportedFeatures") && result.getUnsupportedFeatures().size() != exp.get("unsupportedFeatures").asInt()) {
+                            success = false;
+                        }
+                    }
+                    if (expectedNode.has("forward")) {
+                        var result = checker.checkForward(original, updated);
+                        var exp = expectedNode.get("forward");
+                        if (exp.has("compatible") && result.isCompatible() != exp.get("compatible").asBoolean()) {
+                            success = false;
+                        }
+                    }
+                    if (success) passed++;
+                    else failed.add(id + " (expected result mismatch)");
+                } catch (Exception e) {
+                    failed.add(id + " (exception: " + e.getMessage() + ")");
+                }
+                continue;
+            }
+
+            // Legacy mode: use "compatibility" field
+            var expectedCompat = testCase.get("compatibility").asText();
+
             try {
-                var backwardResult = CHECKER.checkBackward(original, updated);
-                var forwardResult = CHECKER.checkForward(original, updated);
+                var backwardResult = checker.checkBackward(original, updated);
+                var forwardResult = checker.checkForward(original, updated);
 
                 var backwardOk = backwardResult.isCompatible();
                 var forwardOk = forwardResult.isCompatible();

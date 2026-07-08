@@ -36,6 +36,11 @@ public class SchemaDiffVisitor {
         var resolvedOriginal = resolveIfRef(ctx, original);
         var resolvedUpdated = resolveIfRef(ctx, updated);
 
+        // If either side could not be resolved (COLLECT/IGNORE), skip comparison
+        if (resolvedOriginal == null || resolvedUpdated == null) {
+            return;
+        }
+
         // Cycle detection: prevent infinite recursion on the same node pair.
         // Uses identity hash — not collision-free but sufficient for practical recursive schemas.
         // The key is removed after comparison so the same pair can be compared
@@ -53,23 +58,43 @@ public class SchemaDiffVisitor {
         }
     }
 
+    /**
+     * Attempt to resolve a $ref on the given schema.
+     * Returns the resolved schema, the original schema if there is no $ref,
+     * or {@code null} if the ref is unresolvable and the strategy allows skipping.
+     */
     private static JFullSchema resolveIfRef(DiffContext ctx, JFullSchema schema) {
         var ref = DiffUtil.get$ref(schema);
         if (ref == null) return schema;
 
         var traversal = ctx.getRefTraversal();
-        if (traversal == null) {
-            ctx.addUnsupported("$ref resolution not available: " + ref);
-            return schema;
+        if (traversal != null) {
+            var resolved = traversal.resolveRef(ref, schema);
+            if (resolved.isPresent()) {
+                return (JFullSchema) resolved.get();
+            }
         }
 
-        var resolved = traversal.resolveRef(ref, schema);
-        if (resolved.isPresent()) {
-            return (JFullSchema) resolved.get();
+        // Ref is unresolvable — apply strategy
+        switch (ctx.getUnresolvableRefStrategy()) {
+            case FAIL -> throw new UnresolvableRefException(ref);
+            case COLLECT -> {
+                ctx.addUnsupported("Unresolvable $ref: " + ref);
+                return null; // signal caller to skip comparison
+            }
+            case IGNORE -> {
+                return null; // signal caller to skip comparison
+            }
         }
+        return schema; // unreachable, but satisfies compiler
+    }
 
-        ctx.addUnsupported("Unresolvable $ref: " + ref);
-        return schema;
+    private static void handleUnresolvableRef(DiffContext ctx, String ref) {
+        switch (ctx.getUnresolvableRefStrategy()) {
+            case FAIL -> throw new UnresolvableRefException(ref);
+            case COLLECT -> ctx.addUnsupported("Unresolvable $ref: " + ref);
+            case IGNORE -> { /* skip silently */ }
+        }
     }
 
     public void visit(JFullSchema updated) {
@@ -431,10 +456,17 @@ public class SchemaDiffVisitor {
                 : null;
 
         if (origRef != null && origResolved == null) {
-            ctx.addUnsupported("Unresolvable $ref: " + origRef);
+            handleUnresolvableRef(ctx, origRef);
+            // If strategy is COLLECT or IGNORE, skip further comparison for this ref
+            if (ctx.getUnresolvableRefStrategy() != UnresolvableRefStrategy.FAIL) {
+                return;
+            }
         }
         if (updRef != null && updResolved == null) {
-            ctx.addUnsupported("Unresolvable $ref: " + updRef);
+            handleUnresolvableRef(ctx, updRef);
+            if (ctx.getUnresolvableRefStrategy() != UnresolvableRefStrategy.FAIL) {
+                return;
+            }
         }
 
         // Compare resolved targets
