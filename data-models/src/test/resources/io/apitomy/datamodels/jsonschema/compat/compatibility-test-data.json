@@ -3121,7 +3121,7 @@
       "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
     },
     {
-      "enabled": false,
+      "enabled": true,
       "id": "References: $id",
       "compatibility": "both",
       "original": {
@@ -3177,9 +3177,7 @@
             ]
           }
         }
-      },
-      "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042",
-      "_note": "Disabled: $id anchor resolution broken after compound conversion (C41c known limitation)"
+      }
     },
     {
       "enabled": true,

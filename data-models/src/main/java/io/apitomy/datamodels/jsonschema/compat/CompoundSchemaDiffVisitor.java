@@ -10,11 +10,7 @@ import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.visitors.JCDiffTraverser;
 import io.apitomy.datamodels.models.jsonschema.compound.visitors.JCDiffVisitor;
-import io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
-import io.apitomy.datamodels.models.jsonschema.modern.v201909.JM201909FullSchema;
-import io.apitomy.datamodels.models.jsonschema.modern.v202012.JM202012FullSchema;
+
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
 import io.apitomy.datamodels.models.visitors.diff.CollectionDiff;
 import io.apitomy.datamodels.models.visitors.diff.DefaultPairingKey;
@@ -111,17 +107,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     }
 
     private static ModelType detectModelType(JFullSchema schema) {
-        // Check if schema has a root with modelType
         if (schema.root() != null && schema.root().modelType() != null) {
             return schema.root().modelType();
         }
-        // Fall back to instanceof checks
-        if (schema instanceof JM202012FullSchema) return ModelType.JM202012;
-        if (schema instanceof JM201909FullSchema) return ModelType.JM201909;
-        if (schema instanceof JD7FullSchema) return ModelType.JD7;
-        if (schema instanceof JD6FullSchema) return ModelType.JD6;
-        if (schema instanceof JD4FullSchema) return ModelType.JD4;
-        return null;
+        return DiffUtil.detectModelType(schema);
     }
 
     private static JFullSchema resolveIfRef(DiffContext ctx, JFullSchema schema) {
