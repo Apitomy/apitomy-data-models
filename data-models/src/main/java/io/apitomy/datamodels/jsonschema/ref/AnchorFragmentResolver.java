@@ -2,6 +2,7 @@ package io.apitomy.datamodels.jsonschema.ref;
 
 import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
+import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
@@ -106,6 +107,11 @@ public class AnchorFragmentResolver implements FragmentResolver {
     }
 
     private static Map<String, JsonSchema> getDefinitions(JFullSchema schema) {
+        if (schema instanceof JCFullSchema c) {
+            if (c.getDefinitions() != null) return convertDefinitions(c.getDefinitions());
+            if (c.get$defs() != null) return convertDefinitions(c.get$defs());
+            return null;
+        }
         if (schema instanceof JDFullSchema d) return d.getDefinitions() != null ? convertDefinitions(d.getDefinitions()) : null;
         // TODO: modern versions use $defs
         return null;
@@ -117,6 +123,7 @@ public class AnchorFragmentResolver implements FragmentResolver {
     }
 
     private static String getAnchor(Node node) {
+        if (node instanceof JCFullSchema c && c.get$anchor() != null) return c.get$anchor();
         if (node instanceof JMFullSchema d && d.get$anchor() != null) return d.get$anchor();
 
         var dollarId = getDollarId(node);
@@ -133,6 +140,7 @@ public class AnchorFragmentResolver implements FragmentResolver {
     }
 
     private static String getDollarId(Node node) {
+        if (node instanceof JCFullSchema c) return c.get$id();
         if (node instanceof JD6FullSchema d) return d.get$id();
         if (node instanceof JD7FullSchema d) return d.get$id();
         if (node instanceof JMFullSchema d) return d.get$id();
@@ -140,6 +148,7 @@ public class AnchorFragmentResolver implements FragmentResolver {
     }
 
     private static String getLegacyId(Node node) {
+        if (node instanceof JCFullSchema c) return c.getId();
         if (node instanceof JD4FullSchema d) return d.getId();
         return null;
     }

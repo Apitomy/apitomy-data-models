@@ -197,7 +197,7 @@ public final class DiffUtil {
         // Use instanceof checks to determine the model type, ignoring root().modelType()
         // because sub-schemas may have a compound root after top-level conversion
         // while themselves remaining draft-specific.
-        ModelType modelType = detectModelTypeByInstance(schema);
+        ModelType modelType = detectModelType(schema);
         if (modelType != null) {
             var converted = CompoundSchemaConverter.toCompound((JsonSchema) schema, modelType);
             if (converted instanceof JFullSchema fs) return fs;
@@ -205,13 +205,14 @@ public final class DiffUtil {
         return schema;
     }
 
-    private static ModelType detectModelTypeByInstance(JFullSchema schema) {
+    static ModelType detectModelType(JFullSchema schema) {
         if (schema instanceof io.apitomy.datamodels.models.jsonschema.modern.v202012.JM202012FullSchema) return ModelType.JM202012;
         if (schema instanceof io.apitomy.datamodels.models.jsonschema.modern.v201909.JM201909FullSchema) return ModelType.JM201909;
         if (schema instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema) return ModelType.JD7;
         if (schema instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema) return ModelType.JD6;
         if (schema instanceof io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema) return ModelType.JD4;
-        return null;
+        throw new IllegalArgumentException("Unhandled schema type: " + schema.getClass().getName()
+                + ". Add support for this type in detectModelTypeByInstance().");
     }
 
     public static boolean isUnionSchemaCompatible(DiffContext ctx, JsonSchema original,
