@@ -1,0 +1,1 @@
+[SVAR-003] |medium| {/servers[0]/variables[missingVar]->null} :: Server Variable "missingVar" is not found in the server url template.

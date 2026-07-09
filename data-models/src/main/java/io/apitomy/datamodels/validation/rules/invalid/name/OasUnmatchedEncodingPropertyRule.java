@@ -18,7 +18,7 @@ package io.apitomy.datamodels.validation.rules.invalid.name;
 
 import io.apitomy.datamodels.models.Schema;
 import io.apitomy.datamodels.models.openapi.OpenApiEncoding;
-import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30MediaType;
+import io.apitomy.datamodels.models.openapi.OpenApiMediaType;
 import io.apitomy.datamodels.validation.ValidationRuleMetaData;
 
 /**
@@ -54,7 +54,7 @@ public class OasUnmatchedEncodingPropertyRule extends OasInvalidPropertyNameRule
     @Override
     public void visitEncoding(OpenApiEncoding node) {
         String name = getEncodingName(node);
-        Schema schema = ((OpenApi30MediaType) (node.parent())).getSchema();
+        Schema schema = ((OpenApiMediaType) (node.parent())).getSchema();
 
         this.reportIfInvalid(isValidSchemaProperty(schema, name), node, name, map("name", name));
     }
