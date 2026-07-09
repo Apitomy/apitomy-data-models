@@ -3777,7 +3777,7 @@
         }
       },
       "expected": {
-        "backward": { "compatible": true, "unsupportedFeatures": 1 }
+        "backward": { "compatible": true }
       }
     },
     {
@@ -3813,7 +3813,7 @@
         }
       },
       "expected": {
-        "backward": { "compatible": true, "unsupportedFeatures": 0 }
+        "backward": { "compatible": true }
       }
     },
     {

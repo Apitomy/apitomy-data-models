@@ -5,6 +5,7 @@ import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
+import io.apitomy.datamodels.jsonschema.ref.UnresolvableRefStrategy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

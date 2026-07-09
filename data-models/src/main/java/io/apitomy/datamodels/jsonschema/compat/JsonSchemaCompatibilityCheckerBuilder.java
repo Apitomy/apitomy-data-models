@@ -1,7 +1,6 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
-import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefResolver;
-import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefResolverChain;
+import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefDereferencer;
 
 /**
  * Builder for {@link JsonSchemaCompatibilityChecker}.
@@ -9,17 +8,21 @@ import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefResolverChain;
  * Configure the checker and call {@link #build()} to create an immutable instance.
  *
  * <pre>{@code
+ * var deref = JsonSchemaRefDereferencer.builder()
+ *     .refResolver(myResolver)
+ *     .onUnresolvableRef(UnresolvableRefStrategy.FAIL)
+ *     .build();
+ *
  * var checker = JsonSchemaCompatibilityChecker.builder()
  *     .allowCrossVersionChecking(true)
- *     .refResolver(myResolver)
+ *     .dereferencer(deref)
  *     .build();
  * }</pre>
  */
 public final class JsonSchemaCompatibilityCheckerBuilder {
 
     private boolean allowCrossVersionChecking = false;
-    private JsonSchemaRefResolver refResolver = null;
-    private UnresolvableRefStrategy unresolvableRefStrategy = UnresolvableRefStrategy.COLLECT;
+    private JsonSchemaRefDereferencer dereferencer = null;
 
     JsonSchemaCompatibilityCheckerBuilder() {
     }
@@ -40,35 +43,19 @@ public final class JsonSchemaCompatibilityCheckerBuilder {
     }
 
     /**
-     * Set a custom reference resolver for resolving {@code $ref} values
-     * during comparison.
+     * Set a dereferencer for resolving {@code $ref} values before comparison.
      * <p>
-     * Defaults to {@link JsonSchemaRefResolverChain#withDefaults()} which handles
-     * JSON Pointer and anchor-based internal references.
+     * When set, all {@code $ref} nodes are resolved and inlined before the
+     * schemas are compared. When not set, {@code $ref} values are compared
+     * as plain strings — equal references are compatible, different references
+     * are incompatible.
      *
-     * @param resolver the reference resolver to use; must not be {@code null}
+     * @param dereferencer the dereferencer instance
      * @return this builder
-     * @throws NullPointerException if {@code resolver} is {@code null}
      */
-    public JsonSchemaCompatibilityCheckerBuilder refResolver(JsonSchemaRefResolver resolver) {
-        java.util.Objects.requireNonNull(resolver, "resolver must not be null");
-        this.refResolver = resolver;
-        return this;
-    }
-
-    /**
-     * Set the strategy for handling unresolvable {@code $ref} values.
-     * <p>
-     * Defaults to {@link UnresolvableRefStrategy#COLLECT} which logs unresolvable
-     * references as unsupported features and continues the comparison.
-     *
-     * @param strategy the strategy to use
-     * @return this builder
-     * @see UnresolvableRefStrategy
-     */
-    public JsonSchemaCompatibilityCheckerBuilder onUnresolvableRef(UnresolvableRefStrategy strategy) {
-        java.util.Objects.requireNonNull(strategy, "strategy must not be null");
-        this.unresolvableRefStrategy = strategy;
+    public JsonSchemaCompatibilityCheckerBuilder dereferencer(JsonSchemaRefDereferencer dereferencer) {
+        java.util.Objects.requireNonNull(dereferencer, "dereferencer must not be null");
+        this.dereferencer = dereferencer;
         return this;
     }
 
@@ -79,9 +66,6 @@ public final class JsonSchemaCompatibilityCheckerBuilder {
      * @return a new checker instance
      */
     public JsonSchemaCompatibilityChecker build() {
-        return new JsonSchemaCompatibilityChecker(
-                allowCrossVersionChecking,
-                refResolver != null ? refResolver : JsonSchemaRefResolverChain.withDefaults(),
-                unresolvableRefStrategy);
+        return new JsonSchemaCompatibilityChecker(allowCrossVersionChecking, dereferencer);
     }
 }

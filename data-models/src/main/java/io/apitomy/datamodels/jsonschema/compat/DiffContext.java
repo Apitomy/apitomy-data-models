@@ -1,6 +1,7 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
 import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefTraversal;
+import io.apitomy.datamodels.jsonschema.ref.UnresolvableRefStrategy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
