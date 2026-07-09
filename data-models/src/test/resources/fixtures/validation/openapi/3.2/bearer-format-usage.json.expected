@@ -1,0 +1,1 @@
+[SS-017] |medium| {/components/securitySchemes[apiKey]->bearerFormat} :: Security Scheme "Bearer Format" only allowed for HTTP Bearer auth scheme.

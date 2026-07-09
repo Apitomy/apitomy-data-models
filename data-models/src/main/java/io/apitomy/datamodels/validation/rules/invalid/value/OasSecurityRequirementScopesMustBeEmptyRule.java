@@ -19,13 +19,14 @@ package io.apitomy.datamodels.validation.rules.invalid.value;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.SecurityRequirement;
 import io.apitomy.datamodels.models.SecurityScheme;
 import io.apitomy.datamodels.models.openapi.OpenApiDocument;
 import io.apitomy.datamodels.models.openapi.v2x.v20.OpenApi20Document;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Document;
 import io.apitomy.datamodels.models.openapi.v3x.v31.OpenApi31Document;
+import io.apitomy.datamodels.models.openapi.v3x.v32.OpenApi32Document;
+import io.apitomy.datamodels.util.ModelTypeUtil;
 import io.apitomy.datamodels.validation.ValidationRuleMetaData;
 
 /**
@@ -43,20 +44,25 @@ public class OasSecurityRequirementScopesMustBeEmptyRule extends AbstractInvalid
     }
 
     private SecurityScheme findSecurityScheme(OpenApiDocument document, String schemeName) {
-        if (document.root().modelType() == ModelType.OPENAPI20) {
+        if (ModelTypeUtil.isOpenApi2Model(document)) {
             OpenApi20Document doc20 = (OpenApi20Document) document;
             if (hasValue(doc20.getSecurityDefinitions())) {
                 return doc20.getSecurityDefinitions().getItem(schemeName);
             }
-        } else if (document.root().modelType() == ModelType.OPENAPI30) {
+        } else if (ModelTypeUtil.isOpenApi30Model(document)) {
             OpenApi30Document doc30 = (OpenApi30Document) document;
             if (hasValue(doc30.getComponents()) && hasValue(doc30.getComponents().getSecuritySchemes())) {
                 return doc30.getComponents().getSecuritySchemes().get(schemeName);
             }
-        } else if (document.root().modelType() == ModelType.OPENAPI31) {
+        } else if (ModelTypeUtil.isOpenApi31Model(document)) {
             OpenApi31Document doc31 = (OpenApi31Document) document;
             if (hasValue(doc31.getComponents()) && hasValue(doc31.getComponents().getSecuritySchemes())) {
                 return doc31.getComponents().getSecuritySchemes().get(schemeName);
+            }
+        } else if (ModelTypeUtil.isOpenApi32Model(document)) {
+            OpenApi32Document doc32 = (OpenApi32Document) document;
+            if (hasValue(doc32.getComponents()) && hasValue(doc32.getComponents().getSecuritySchemes())) {
+                return doc32.getComponents().getSecuritySchemes().get(schemeName);
             }
         }
 
@@ -68,7 +74,7 @@ public class OasSecurityRequirementScopesMustBeEmptyRule extends AbstractInvalid
         List<String> allowedTypes = new ArrayList<>();
         allowedTypes.add("oauth2");
         String options = "\"oauth2\"";
-        if (node.root().modelType() == ModelType.OPENAPI30 || node.root().modelType() == ModelType.OPENAPI31) {
+        if (ModelTypeUtil.isOpenApi3Model(node)) {
             allowedTypes.add("openIdConnect");
             options = "\"oauth2\" or \"openIdConnect\"";
         }
