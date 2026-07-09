@@ -1,0 +1,39 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Unmatched Encoding Property Test",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/upload": {
+      "post": {
+        "operationId": "upload",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "missingProperty": {
+                  "contentType": "application/octet-stream"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}

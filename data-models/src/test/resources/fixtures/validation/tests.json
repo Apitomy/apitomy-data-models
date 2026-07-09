@@ -126,6 +126,8 @@
     { "name": "[OpenAPI 3.1] Issue 6612", "test": "openapi/3.1/issue-6612.json" },
     { "name": "[OpenAPI 3.1] Security Requirements", "test": "openapi/3.1/security-requirements.json" },
     { "name": "[OpenAPI 3.1] Discriminator Base Schema", "test": "openapi/3.1/discriminator-base-schema.json" },
+    { "name": "[OpenAPI 3.1] Server Variable Not Found in Template", "test": "openapi/3.1/server-var-not-in-template.json" },
+    { "name": "[OpenAPI 3.1] Unmatched Encoding Property", "test": "openapi/3.1/unmatched-encoding-property.json" },
 
     { "name": "[OpenAPI 3.2] Example Mutual Exclusivity", "test": "openapi/3.2/example-mutex.json" },
     { "name": "[OpenAPI 3.2] XML nodeType Validation", "test": "openapi/3.2/xml-node-type.json" },
