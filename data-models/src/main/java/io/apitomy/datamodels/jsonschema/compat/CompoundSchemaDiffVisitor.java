@@ -11,6 +11,7 @@ import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.visitors.JCDiffTraverser;
 import io.apitomy.datamodels.models.jsonschema.compound.visitors.JCDiffVisitor;
 
+import io.apitomy.datamodels.jsonschema.ref.UnresolvableRefStrategy;
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
 import io.apitomy.datamodels.models.visitors.diff.CollectionDiff;
 import io.apitomy.datamodels.models.visitors.diff.DefaultPairingKey;

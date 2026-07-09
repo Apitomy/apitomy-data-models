@@ -3,9 +3,11 @@ package io.apitomy.datamodels.jsonschema.compat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.apitomy.datamodels.jsonschema.ref.AnchorFragmentResolver;
+import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefDereferencer;
 import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefResolverChain;
 import io.apitomy.datamodels.jsonschema.ref.MapResourceResolver;
 import io.apitomy.datamodels.jsonschema.ref.PointerFragmentResolver;
+import io.apitomy.datamodels.jsonschema.ref.UnresolvableRefStrategy;
 import org.junit.jupiter.api.Assertions;
 
 import org.junit.jupiter.api.Test;
@@ -34,32 +36,38 @@ public class JsonSchemaCompatibilityTest {
                 + (externalRefsNode != null ? externalRefsNode.toString() : "");
 
         return checkerCache.computeIfAbsent(cacheKey, k -> {
-            var builder = JsonSchemaCompatibilityChecker.builder();
+            var checkerBuilder = JsonSchemaCompatibilityChecker.builder();
 
             // Apply config
             if (configNode != null) {
                 if (configNode.has("allowCrossVersionChecking"))
-                    builder.allowCrossVersionChecking(configNode.get("allowCrossVersionChecking").asBoolean());
-                if (configNode.has("onUnresolvableRef"))
-                    builder.onUnresolvableRef(UnresolvableRefStrategy.valueOf(configNode.get("onUnresolvableRef").asText()));
+                    checkerBuilder.allowCrossVersionChecking(configNode.get("allowCrossVersionChecking").asBoolean());
             } else {
-                builder.allowCrossVersionChecking(true); // default for tests
+                checkerBuilder.allowCrossVersionChecking(true); // default for tests
             }
 
-            // Apply external refs
+            // Build dereferencer with ref resolver and strategy
+            var derefBuilder = JsonSchemaRefDereferencer.builder();
+
+            if (configNode != null && configNode.has("onUnresolvableRef")) {
+                derefBuilder.onUnresolvableRef(
+                        UnresolvableRefStrategy.valueOf(configNode.get("onUnresolvableRef").asText()));
+            }
+
             if (externalRefsNode != null && externalRefsNode.isObject()) {
                 var mapBuilder = MapResourceResolver.builder();
                 externalRefsNode.fields().forEachRemaining(entry ->
                         mapBuilder.addSchema(entry.getKey(), entry.getValue().toString()));
 
-                builder.refResolver(JsonSchemaRefResolverChain.builder()
+                derefBuilder.refResolver(JsonSchemaRefResolverChain.builder()
                         .addFragmentResolver(new PointerFragmentResolver())
                         .addFragmentResolver(new AnchorFragmentResolver())
                         .addResourceResolver(mapBuilder.build())
                         .build());
             }
 
-            return builder.build();
+            checkerBuilder.dereferencer(derefBuilder.build());
+            return checkerBuilder.build();
         });
     }
 
