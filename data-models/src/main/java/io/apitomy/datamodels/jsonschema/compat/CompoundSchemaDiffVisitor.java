@@ -140,7 +140,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     private static void handleUnresolvableRef(DiffContext ctx, String ref) {
         switch (ctx.getUnresolvableRefStrategy()) {
             case FAIL:
-                throw new UnresolvableRefException(ref);
+                throw new JsonSchemaCompatibilityException("Unresolvable $ref: " + ref);
             case COLLECT:
                 ctx.addUnsupported("Unresolvable $ref: " + ref);
                 break;

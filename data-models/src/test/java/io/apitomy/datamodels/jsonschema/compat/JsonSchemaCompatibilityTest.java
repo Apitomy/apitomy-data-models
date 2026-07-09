@@ -100,16 +100,20 @@ public class JsonSchemaCompatibilityTest {
 
             // Check for expected error
             if (expectedNode != null && expectedNode.has("error")) {
-                var expectedError = expectedNode.get("error").asText();
+                var expectedErrorMessage = expectedNode.get("error").asText();
                 try {
                     checker.checkBackward(original, updated);
-                    failed.add(id + " (expected error " + expectedError + " but none thrown)");
-                } catch (Exception e) {
-                    if (e.getClass().getSimpleName().equals(expectedError)) {
+                    failed.add(id + " (expected error containing '" + expectedErrorMessage + "' but none thrown)");
+                } catch (JsonSchemaCompatibilityException e) {
+                    if (e.getMessage().contains(expectedErrorMessage)) {
                         passed++;
                     } else {
-                        failed.add(id + " (expected " + expectedError + " but got " + e.getClass().getSimpleName() + ")");
+                        failed.add(id + " (expected message containing '" + expectedErrorMessage
+                                + "' but got '" + e.getMessage() + "')");
                     }
+                } catch (Exception e) {
+                    failed.add(id + " (expected JsonSchemaCompatibilityException but got "
+                            + e.getClass().getSimpleName() + ": " + e.getMessage() + ")");
                 }
                 continue;
             }
@@ -282,16 +286,20 @@ public class JsonSchemaCompatibilityTest {
 
             // Check for expected error
             if (expectedNode != null && expectedNode.has("error")) {
-                var expectedError = expectedNode.get("error").asText();
+                var expectedErrorMessage = expectedNode.get("error").asText();
                 try {
                     checker.checkBackward(original, updated);
-                    failed.add(id + " (expected error " + expectedError + " but none thrown)");
-                } catch (Exception e) {
-                    if (e.getClass().getSimpleName().equals(expectedError)) {
+                    failed.add(id + " (expected error containing '" + expectedErrorMessage + "' but none thrown)");
+                } catch (JsonSchemaCompatibilityException e) {
+                    if (e.getMessage().contains(expectedErrorMessage)) {
                         passed++;
                     } else {
-                        failed.add(id + " (expected " + expectedError + " but got " + e.getClass().getSimpleName() + ")");
+                        failed.add(id + " (expected message containing '" + expectedErrorMessage
+                                + "' but got '" + e.getMessage() + "')");
                     }
+                } catch (Exception e) {
+                    failed.add(id + " (expected JsonSchemaCompatibilityException but got "
+                            + e.getClass().getSimpleName() + ": " + e.getMessage() + ")");
                 }
                 continue;
             }
