@@ -2,8 +2,7 @@ package io.apitomy.datamodels.jsonschema.compat;
 
 import io.apitomy.datamodels.Library;
 import io.apitomy.datamodels.jsonschema.convert.CompoundSchemaConverter;
-import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefResolver;
-import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefTraversal;
+import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefDereferencer;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
@@ -11,13 +10,18 @@ import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 /**
  * Entry point for JSON Schema compatibility checking.
  * <p>
- * Schemas are first converted to a compound schema type that merges all
- * draft-version properties, then compared using the diff visitor infrastructure.
+ * Schemas are parsed from JSON strings, optionally dereferenced, converted to a
+ * compound schema type that merges all draft-version properties, then compared
+ * using the diff visitor infrastructure.
+ * <p>
+ * The checker parses its own copies of the input JSON strings — the caller's
+ * data is never modified.
  * <p>
  * Use the {@link #builder()} method to create and configure an instance:
  * <pre>{@code
  * var checker = JsonSchemaCompatibilityChecker.builder()
  *     .allowCrossVersionChecking(true)
+ *     .dereferencer(deref)
  *     .build();
  *
  * CompatibilityCheckResult result = checker.checkBackward(original, updated);
@@ -33,18 +37,15 @@ import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 public final class JsonSchemaCompatibilityChecker {
 
     private final boolean allowCrossVersionChecking;
-    private final JsonSchemaRefResolver refResolver;
-    private final UnresolvableRefStrategy unresolvableRefStrategy;
+    private final JsonSchemaRefDereferencer dereferencer;
 
     /**
      * Package-private constructor — use {@link #builder()} to create instances.
      */
     JsonSchemaCompatibilityChecker(boolean allowCrossVersionChecking,
-                                   JsonSchemaRefResolver refResolver,
-                                   UnresolvableRefStrategy unresolvableRefStrategy) {
+                                   JsonSchemaRefDereferencer dereferencer) {
         this.allowCrossVersionChecking = allowCrossVersionChecking;
-        this.refResolver = refResolver;
-        this.unresolvableRefStrategy = unresolvableRefStrategy;
+        this.dereferencer = dereferencer;
     }
 
     /**
@@ -106,9 +107,6 @@ public final class JsonSchemaCompatibilityChecker {
 
     // --- Internal ---
 
-    /**
-     * Core check logic: parse, validate versions, convert to compound, diff.
-     */
     private DiffContext doCheck(String originalSchemaJson, String updatedSchemaJson) {
         var originalParsed = parseSchema(originalSchemaJson);
         var updatedParsed = parseSchema(updatedSchemaJson);
@@ -123,12 +121,19 @@ public final class JsonSchemaCompatibilityChecker {
                     + ". Use allowCrossVersionChecking(true) to enable.");
         }
 
+        var ctx = DiffContext.createRootContext();
+
+        // Dereference if configured
+        if (dereferencer != null) {
+            var origResult = dereferencer.dereference(originalParsed);
+            var updResult = dereferencer.dereference(updatedParsed);
+            origResult.unresolvedRefs().forEach(ctx::addUnsupported);
+            updResult.unresolvedRefs().forEach(ctx::addUnsupported);
+        }
+
         // Convert both schemas to compound type
         var originalCompound = toCompoundFullSchema(originalParsed, originalModelType);
         var updatedCompound = toCompoundFullSchema(updatedParsed, updatedModelType);
-
-        var refTraversal = new JsonSchemaRefTraversal(refResolver);
-        var ctx = DiffContext.createRootContext("", null, refTraversal, unresolvableRefStrategy);
 
         // TODO: Modern version support — flag for now, remove when diff classes handle all keywords
         flagModernVersions(ctx, originalModelType);
@@ -139,7 +144,6 @@ public final class JsonSchemaCompatibilityChecker {
     }
 
     private static JFullSchema toCompoundFullSchema(JFullSchema doc, ModelType modelType) {
-        // Convert to compound schema
         JsonSchema compound = CompoundSchemaConverter.toCompound((JsonSchema) doc, modelType);
         if (compound instanceof JFullSchema) {
             return (JFullSchema) compound;
@@ -161,5 +165,4 @@ public final class JsonSchemaCompatibilityChecker {
         }
         return jsonSchemaDoc;
     }
-
 }
