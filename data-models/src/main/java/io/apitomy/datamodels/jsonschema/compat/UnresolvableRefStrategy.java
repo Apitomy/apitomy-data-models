@@ -19,7 +19,7 @@ public enum UnresolvableRefStrategy {
     COLLECT,
 
     /**
-     * Throw an {@link UnresolvableRefException} immediately when an unresolvable
+     * Throw a {@link JsonSchemaCompatibilityException} immediately when an unresolvable
      * reference is encountered. Use this when all references are expected to be
      * resolvable and an unresolvable one indicates a configuration error.
      */

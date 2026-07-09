@@ -77,7 +77,7 @@ public class SchemaDiffVisitor {
 
         // Ref is unresolvable — apply strategy
         switch (ctx.getUnresolvableRefStrategy()) {
-            case FAIL -> throw new UnresolvableRefException(ref);
+            case FAIL -> throw new JsonSchemaCompatibilityException("Unresolvable $ref: " + ref);
             case COLLECT -> {
                 ctx.addUnsupported("Unresolvable $ref: " + ref);
                 return null; // signal caller to skip comparison
@@ -91,7 +91,7 @@ public class SchemaDiffVisitor {
 
     private static void handleUnresolvableRef(DiffContext ctx, String ref) {
         switch (ctx.getUnresolvableRefStrategy()) {
-            case FAIL -> throw new UnresolvableRefException(ref);
+            case FAIL -> throw new JsonSchemaCompatibilityException("Unresolvable $ref: " + ref);
             case COLLECT -> ctx.addUnsupported("Unresolvable $ref: " + ref);
             case IGNORE -> { /* skip silently */ }
         }
