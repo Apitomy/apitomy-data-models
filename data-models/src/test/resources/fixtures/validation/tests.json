@@ -135,6 +135,10 @@
     { "name": "[OpenAPI 3.2] Tag Parent Validation", "test": "openapi/3.2/tag-parent.json" },
     { "name": "[OpenAPI 3.2] OAuth Device Authorization Flow", "test": "openapi/3.2/oauth-device-authorization.json" },
     { "name": "[OpenAPI 3.2] Invalid URL Format", "test": "openapi/3.2/invalid-url-format.json" },
+    { "name": "[OpenAPI 3.2] Invalid Header Style", "test": "openapi/3.2/invalid-header-style.json" },
+    { "name": "[OpenAPI 3.2] Unknown Param Style", "test": "openapi/3.2/unknown-param-style.json" },
+    { "name": "[OpenAPI 3.2] Bearer Format Usage", "test": "openapi/3.2/bearer-format-usage.json" },
+    { "name": "[OpenAPI 3.2] Security Requirement Scopes", "test": "openapi/3.2/security-requirement-scopes.json" },
 
     { "name": "[Issues] Issue 804", "test": "openapi/issues/804/formData-params.json" },
     { "name": "[Issues] Issue 88", "test": "openapi/issues/88/response-def-description.json" },

@@ -16,10 +16,11 @@
 
 package io.apitomy.datamodels.validation.rules.invalid.value;
 
-import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.SecurityScheme;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30SecurityScheme;
 import io.apitomy.datamodels.models.openapi.v3x.v31.OpenApi31SecurityScheme;
+import io.apitomy.datamodels.models.openapi.v3x.v32.OpenApi32SecurityScheme;
+import io.apitomy.datamodels.util.ModelTypeUtil;
 import io.apitomy.datamodels.validation.ValidationRuleMetaData;
 
 /**
@@ -40,14 +41,20 @@ public class OasUnexpectedUsageOfBearerTokenRule extends AbstractInvalidProperty
      */
     @Override
     public void visitSecurityScheme(SecurityScheme node) {
-        if (node.root().modelType() == ModelType.OPENAPI30) {
+        if (ModelTypeUtil.isOpenApi30Model(node)) {
             OpenApi30SecurityScheme scheme = (OpenApi30SecurityScheme) node;
             if (hasValue(scheme.getBearerFormat())) {
                 this.reportIfInvalid(equals(scheme.getType(), "http") && equals(scheme.getScheme(), "bearer"), node,
                         "bearerFormat", map());
             }
-        } else if (node.root().modelType() == ModelType.OPENAPI31) {
+        } else if (ModelTypeUtil.isOpenApi31Model(node)) {
             OpenApi31SecurityScheme scheme = (OpenApi31SecurityScheme) node;
+            if (hasValue(scheme.getBearerFormat())) {
+                this.reportIfInvalid(equals(scheme.getType(), "http") && equals(scheme.getScheme(), "bearer"), node,
+                        "bearerFormat", map());
+            }
+        } else if (ModelTypeUtil.isOpenApi32Model(node)) {
+            OpenApi32SecurityScheme scheme = (OpenApi32SecurityScheme) node;
             if (hasValue(scheme.getBearerFormat())) {
                 this.reportIfInvalid(equals(scheme.getType(), "http") && equals(scheme.getScheme(), "bearer"), node,
                         "bearerFormat", map());
