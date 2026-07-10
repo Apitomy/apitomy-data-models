@@ -1,6 +1,5 @@
 package io.apitomy.datamodels.jsonschema.ref;
 
-import io.apitomy.datamodels.jsonschema.compat.JsonSchemaCompatibilityException;
 import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.Referenceable;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
@@ -46,6 +45,11 @@ import java.util.Set;
  * Cyclic back-edges are reported in {@link DereferenceResult#cyclicRefs()}
  * as a map from the {@code $ref} string to the resolved target node. Callers
  * can use this map to follow cycles without re-resolving the {@code $ref}.
+ * <p>
+ * As a safety net, a configurable maximum recursion depth
+ * (default {@value #DEFAULT_MAX_DEPTH}) prevents {@link StackOverflowError}
+ * if cycle detection fails due to identity issues. A
+ * {@link DereferenceException} is thrown when the limit is exceeded.
  *
  * <h3>Limitations</h3>
  * <ul>
@@ -66,13 +70,18 @@ import java.util.Set;
  */
 public class JsonSchemaRefDereferencer {
 
+    static final int DEFAULT_MAX_DEPTH = 256;
+
     private final JsonSchemaRefTraversal refTraversal;
     private final UnresolvableRefStrategy strategy;
+    private final int maxDepth;
 
     private JsonSchemaRefDereferencer(JsonSchemaRefTraversal refTraversal,
-                                      UnresolvableRefStrategy strategy) {
+                                      UnresolvableRefStrategy strategy,
+                                      int maxDepth) {
         this.refTraversal = refTraversal;
         this.strategy = strategy;
+        this.maxDepth = maxDepth;
     }
 
     /**
@@ -103,8 +112,10 @@ public class JsonSchemaRefDereferencer {
      *
      * @param schema the root schema to dereference
      * @return the dereference result
-     * @throws JsonSchemaCompatibilityException if a reference cannot be resolved
-     *         and {@link UnresolvableRefStrategy#FAIL} is configured
+     * @throws ReferenceResolutionException if a reference cannot be resolved
+     *         and {@link UnresolvableRefStrategy#FAIL} is configured, or if
+     *         the reference resolver throws an exception
+     * @throws DereferenceException if the maximum recursion depth is exceeded
      */
     public DereferenceResult dereference(JFullSchema schema) {
         var ctx = new DereferenceContext();
@@ -116,30 +127,44 @@ public class JsonSchemaRefDereferencer {
     }
 
     private void dereferenceNode(JFullSchema node, DereferenceContext ctx) {
+        if (ctx.depth > maxDepth) {
+            throw new DereferenceException(
+                    "Maximum recursion depth (%d) exceeded during dereferencing. "
+                    + "This may indicate a cycle that was not detected due to "
+                    + "identity-distinct resolver results for the same logical document."
+                    .formatted(maxDepth));
+        }
+
         if (node instanceof Referenceable ref && ref.get$ref() != null) {
             var refValue = ref.get$ref();
 
-            var resolved = refTraversal.resolveRef(refValue, node);
-            if (resolved.isEmpty()) {
-                handleUnresolvable(refValue, ctx);
-                return;
+            JFullSchema target;
+            try {
+                var resolved = refTraversal.resolveRef(refValue, node);
+                if (resolved.isEmpty()) {
+                    handleUnresolvable(refValue, ctx);
+                    return;
+                }
+                target = (JFullSchema) resolved.get();
+            } catch (ReferenceResolutionException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new ReferenceResolutionException(
+                        "Failed to resolve $ref: " + refValue, refValue, e);
             }
 
-            var target = (JFullSchema) resolved.get();
-
             if (ctx.ancestry.contains(target)) {
-                // Back-edge: replacing would create an object graph cycle.
-                // Leave $ref as-is and record the cycle for the caller.
                 ctx.cyclicRefs.put(refValue, target);
                 return;
             }
 
             replaceInParent(node, target);
 
-            // Recurse into the target if not already fully processed
             if (ctx.visited.add(target)) {
                 ctx.ancestry.add(target);
+                ctx.depth++;
                 dereferenceChildren(target, ctx);
+                ctx.depth--;
                 ctx.ancestry.remove(target);
             }
             return;
@@ -150,7 +175,9 @@ public class JsonSchemaRefDereferencer {
         }
 
         ctx.ancestry.add(node);
+        ctx.depth++;
         dereferenceChildren(node, ctx);
+        ctx.depth--;
         ctx.ancestry.remove(node);
     }
 
@@ -217,7 +244,7 @@ public class JsonSchemaRefDereferencer {
     private void handleUnresolvable(String ref, DereferenceContext ctx) {
         switch (strategy) {
             case FAIL:
-                throw new JsonSchemaCompatibilityException("Unresolvable $ref: " + ref);
+                throw new ReferenceResolutionException("Unresolvable $ref: " + ref, ref);
             case COLLECT:
                 ctx.unresolvedRefs.add("Unresolvable $ref: " + ref);
                 break;
@@ -267,6 +294,7 @@ public class JsonSchemaRefDereferencer {
         final Set<Node> visited = Collections.newSetFromMap(new IdentityHashMap<>());
         final Map<String, JFullSchema> cyclicRefs = new LinkedHashMap<>();
         final List<String> unresolvedRefs = new ArrayList<>();
+        int depth = 0;
     }
 
     /**
@@ -275,6 +303,7 @@ public class JsonSchemaRefDereferencer {
     public static final class Builder {
         private JsonSchemaRefResolver refResolver;
         private UnresolvableRefStrategy strategy = UnresolvableRefStrategy.COLLECT;
+        private int maxDepth = DEFAULT_MAX_DEPTH;
 
         private Builder() {
         }
@@ -305,6 +334,22 @@ public class JsonSchemaRefDereferencer {
         }
 
         /**
+         * Set the maximum recursion depth for dereferencing.
+         * Defaults to {@value #DEFAULT_MAX_DEPTH}. A {@link DereferenceException}
+         * is thrown if the limit is exceeded.
+         *
+         * @param maxDepth the maximum depth; must be positive
+         * @return this builder
+         */
+        public Builder maxDepth(int maxDepth) {
+            if (maxDepth <= 0) {
+                throw new IllegalArgumentException("maxDepth must be positive: " + maxDepth);
+            }
+            this.maxDepth = maxDepth;
+            return this;
+        }
+
+        /**
          * Builds the dereferencer.
          *
          * @return a new {@link JsonSchemaRefDereferencer} instance
@@ -314,7 +359,7 @@ public class JsonSchemaRefDereferencer {
                 refResolver = JsonSchemaRefResolverChain.withDefaults();
             }
             var refTraversal = new JsonSchemaRefTraversal(refResolver);
-            return new JsonSchemaRefDereferencer(refTraversal, strategy);
+            return new JsonSchemaRefDereferencer(refTraversal, strategy, maxDepth);
         }
     }
 }
