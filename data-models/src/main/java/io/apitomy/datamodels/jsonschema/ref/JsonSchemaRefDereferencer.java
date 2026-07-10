@@ -215,18 +215,11 @@ public class JsonSchemaRefDereferencer {
     }
 
     private void handleUnresolvable(String ref, DereferenceContext ctx) {
-        if (ctx.unresolvableRefs.contains(ref)) {
-            return;
-        }
         switch (strategy) {
             case FAIL:
                 throw new JsonSchemaCompatibilityException("Unresolvable $ref: " + ref);
             case COLLECT:
                 ctx.unresolvedRefs.add("Unresolvable $ref: " + ref);
-                ctx.unresolvableRefs.add(ref);
-                break;
-            case IGNORE:
-                ctx.unresolvableRefs.add(ref);
                 break;
         }
     }
@@ -274,7 +267,6 @@ public class JsonSchemaRefDereferencer {
         final Set<Node> visited = Collections.newSetFromMap(new IdentityHashMap<>());
         final Map<String, JFullSchema> cyclicRefs = new LinkedHashMap<>();
         final List<String> unresolvedRefs = new ArrayList<>();
-        final Set<String> unresolvableRefs = Collections.newSetFromMap(new LinkedHashMap<>());
     }
 
     /**
