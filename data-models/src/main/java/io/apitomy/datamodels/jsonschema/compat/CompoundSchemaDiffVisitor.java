@@ -61,7 +61,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         var resolvedOriginal = resolveIfRef(ctx, original);
         var resolvedUpdated = resolveIfRef(ctx, updated);
 
-        // If either side could not be resolved (COLLECT/IGNORE), skip comparison
+        // If either side could not be resolved (COLLECT), skip comparison
         if (resolvedOriginal == null || resolvedUpdated == null) {
             return;
         }
@@ -133,7 +133,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
         // Ref is unresolvable — apply strategy
         handleUnresolvableRef(ctx, ref);
-        // For COLLECT and IGNORE, return null to signal caller to skip comparison.
+        // For COLLECT, return null to signal caller to skip comparison.
         // For FAIL, handleUnresolvableRef already threw.
         return null;
     }
@@ -144,8 +144,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 throw new JsonSchemaCompatibilityException("Unresolvable $ref: " + ref);
             case COLLECT:
                 ctx.addUnsupported("Unresolvable $ref: " + ref);
-                break;
-            case IGNORE:
                 break;
         }
     }
