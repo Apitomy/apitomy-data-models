@@ -1,9 +1,11 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import io.apitomy.datamodels.jsonschema.JsonSchemaProcessingException;
+
 /**
- * Base exception for errors during JSON Schema compatibility checking.
+ * Exception for errors during JSON Schema compatibility checking.
  */
-public class JsonSchemaCompatibilityException extends RuntimeException {
+public class JsonSchemaCompatibilityException extends JsonSchemaProcessingException {
 
     public JsonSchemaCompatibilityException(String message) {
         super(message);
