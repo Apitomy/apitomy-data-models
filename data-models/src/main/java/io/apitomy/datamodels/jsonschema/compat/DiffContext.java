@@ -1,8 +1,5 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
-import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefTraversal;
-import io.apitomy.datamodels.jsonschema.ref.UnresolvableRefStrategy;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -25,46 +22,26 @@ public class DiffContext {
     private final DiffContext parentContext;
     private final DiffContext rootContext;
     private final String pathUpdated;
-    private final JsonSchemaRefTraversal refTraversal;
-    private final UnresolvableRefStrategy unresolvableRefStrategy;
-    // Shared by reference across all sub-contexts and isolated contexts
+    // Shared by reference across all sub-contexts
     final Set<String> visited;
 
     private DiffContext(DiffContext rootContext, DiffContext parentContext, String pathUpdated,
-                        Set<String> visited, JsonSchemaRefTraversal refTraversal,
-                        UnresolvableRefStrategy unresolvableRefStrategy) {
+                        Set<String> visited) {
         this.rootContext = rootContext;
         this.parentContext = parentContext;
         this.pathUpdated = pathUpdated;
         this.visited = visited;
-        this.refTraversal = refTraversal;
-        this.unresolvableRefStrategy = unresolvableRefStrategy;
     }
 
     public static DiffContext createRootContext() {
-        return createRootContext("", null, null, UnresolvableRefStrategy.COLLECT);
+        return createRootContext("", null);
     }
 
-    public static DiffContext createRootContext(String basePath, Set<String> visited,
-                                                JsonSchemaRefTraversal refTraversal) {
-        return createRootContext(basePath, visited, refTraversal, UnresolvableRefStrategy.COLLECT);
-    }
-
-    public static DiffContext createRootContext(String basePath, Set<String> visited,
-                                                JsonSchemaRefTraversal refTraversal,
-                                                UnresolvableRefStrategy unresolvableRefStrategy) {
+    public static DiffContext createRootContext(String basePath, Set<String> visited) {
         if (visited == null) {
             visited = new HashSet<>();
         }
-        var root = new DiffContext(null, null, basePath, visited, refTraversal, unresolvableRefStrategy);
-        root.initRootContext();
-        return root;
-    }
-
-    private void initRootContext() {
-        if (rootContext != null || parentContext != null) {
-            throw new IllegalStateException("Root context already initialized");
-        }
+        return new DiffContext(null, null, basePath, visited);
     }
 
     public DiffContext sub(String pathFragment) {
@@ -72,18 +49,8 @@ public class DiffContext {
                 rootContext != null ? rootContext : this,
                 this,
                 pathUpdated + "/" + pathFragment,
-                visited,
-                refTraversal,
-                unresolvableRefStrategy
+                visited
         );
-    }
-
-    public UnresolvableRefStrategy getUnresolvableRefStrategy() {
-        return unresolvableRefStrategy;
-    }
-
-    public JsonSchemaRefTraversal getRefTraversal() {
-        return refTraversal;
     }
 
     public String getPathUpdated() {
@@ -100,7 +67,6 @@ public class DiffContext {
 
     /**
      * Start an isolated scope — diffs are collected but NOT propagated to the parent.
-     * Replaces the old {@link #isolated()} pattern for nested compatibility checks.
      */
     public void pushIsolatedScope() {
         scopeStack.push(new Scope(true));

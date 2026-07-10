@@ -11,7 +11,6 @@ import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.visitors.JCDiffTraverser;
 import io.apitomy.datamodels.models.jsonschema.compound.visitors.JCDiffVisitor;
 
-import io.apitomy.datamodels.jsonschema.ref.UnresolvableRefStrategy;
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
 import io.apitomy.datamodels.models.visitors.diff.CollectionDiff;
 import io.apitomy.datamodels.models.visitors.diff.DefaultPairingKey;
@@ -56,25 +55,16 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
     /**
      * Entry point: compare original and updated schemas.
+     * Both schemas should already be converted to compound type.
+     * Any {@code $ref} nodes should be resolved by the dereferencer before
+     * calling this method.
      */
     public static void diffSchemas(DiffContext ctx, JFullSchema original, JFullSchema updated) {
-        var resolvedOriginal = resolveIfRef(ctx, original);
-        var resolvedUpdated = resolveIfRef(ctx, updated);
+        var compoundOriginal = toCompoundIfNeeded(original);
+        var compoundUpdated = toCompoundIfNeeded(updated);
 
-        // If either side could not be resolved (COLLECT), skip comparison
-        if (resolvedOriginal == null || resolvedUpdated == null) {
-            return;
-        }
-
-        // Convert to compound if needed (e.g., $ref resolved to draft-specific type)
-        var compoundOriginal = toCompoundIfNeeded(resolvedOriginal);
-        var compoundUpdated = toCompoundIfNeeded(resolvedUpdated);
-
-        // Cycle detection: prevent infinite recursion on the same node pair.
-        // Use the resolved (pre-conversion) identity for cycle detection so that
-        // converting the same node twice doesn't break the check.
-        var pairKey = System.identityHashCode(resolvedOriginal)
-                + ":" + System.identityHashCode(resolvedUpdated);
+        var pairKey = System.identityHashCode(original)
+                + ":" + System.identityHashCode(updated);
         if (ctx.visited.contains(pairKey)) {
             return;
         }
@@ -82,7 +72,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         try {
             if (!(compoundOriginal instanceof JCFullSchema origCompound)
                     || !(compoundUpdated instanceof JCFullSchema updCompound)) {
-                // Should not happen after conversion, but guard just in case
                 return;
             }
 
@@ -94,15 +83,11 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         }
     }
 
-    /**
-     * Converts a schema to compound type if it isn't already.
-     * This is needed when $ref resolution returns draft-specific schemas.
-     */
     private static JFullSchema toCompoundIfNeeded(JFullSchema schema) {
         if (schema instanceof JCFullSchema) {
             return schema;
         }
-        var modelType = detectModelType(schema);
+        var modelType = DiffUtil.detectModelType(schema);
         if (modelType != null) {
             var converted = CompoundSchemaConverter.toCompound((JsonSchema) schema, modelType);
             if (converted instanceof JFullSchema fs) {
@@ -110,42 +95,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             }
         }
         return schema;
-    }
-
-    private static ModelType detectModelType(JFullSchema schema) {
-        if (schema.root() != null && schema.root().modelType() != null) {
-            return schema.root().modelType();
-        }
-        return DiffUtil.detectModelType(schema);
-    }
-
-    private static JFullSchema resolveIfRef(DiffContext ctx, JFullSchema schema) {
-        var ref = DiffUtil.get$ref(schema);
-        if (ref == null) return schema;
-
-        var traversal = ctx.getRefTraversal();
-        if (traversal != null) {
-            var resolved = traversal.resolveRef(ref, schema);
-            if (resolved.isPresent()) {
-                return (JFullSchema) resolved.get();
-            }
-        }
-
-        // Ref is unresolvable — apply strategy
-        handleUnresolvableRef(ctx, ref);
-        // For COLLECT, return null to signal caller to skip comparison.
-        // For FAIL, handleUnresolvableRef already threw.
-        return null;
-    }
-
-    private static void handleUnresolvableRef(DiffContext ctx, String ref) {
-        switch (ctx.getUnresolvableRefStrategy()) {
-            case FAIL:
-                throw new JsonSchemaCompatibilityException("Unresolvable $ref: " + ref);
-            case COLLECT:
-                ctx.addUnsupported("Unresolvable $ref: " + ref);
-                break;
-        }
     }
 
     // -----------------------------------------------------------------------
@@ -158,9 +107,20 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         this.currentOriginal = original;
         this.currentUpdated = updated;
 
-        // If either is null the traverser already handles the null guard before calling field methods
         if (original == null || updated == null) {
             return true;
+        }
+
+        // If either side has a remaining $ref (cyclic back-edge or unresolved),
+        // skip field-by-field comparison — the $ref stub has no meaningful fields.
+        // Only compare the $ref strings themselves.
+        var origRef = DiffUtil.get$ref(original);
+        var updRef = DiffUtil.get$ref(updated);
+        if (origRef != null || updRef != null) {
+            if (origRef != null && updRef != null && !origRef.equals(updRef)) {
+                ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_CHANGED, origRef, updRef);
+            }
+            return false;
         }
 
         var originalType = DiffUtil.getTypeString(original);
@@ -1155,51 +1115,12 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
     @Override
     public void diffFullSchema$ref(String original, String updated) {
-        // $ref resolution is handled in diffSchemas() before traversal.
-        // This method handles nested $ref that might appear on resolved schemas.
-        if (original == null && updated == null) return;
-
-        var traversal = ctx.getRefTraversal();
-
-        var origResolved = original != null && traversal != null
-                ? traversal.resolveRef(original, currentOriginal)
-                        .map(n -> (JFullSchema) n).orElse(null)
-                : null;
-        var updResolved = updated != null && traversal != null
-                ? traversal.resolveRef(updated, currentUpdated)
-                        .map(n -> (JFullSchema) n).orElse(null)
-                : null;
-
-        if (original != null && origResolved == null) {
-            handleUnresolvableRef(ctx, original);
-            if (ctx.getUnresolvableRefStrategy() != UnresolvableRefStrategy.FAIL) {
-                return;
-            }
-        }
-        if (updated != null && updResolved == null) {
-            handleUnresolvableRef(ctx, updated);
-            if (ctx.getUnresolvableRefStrategy() != UnresolvableRefStrategy.FAIL) {
-                return;
-            }
-        }
-
-        if (origResolved != null && updResolved != null) {
-            var subCtx = ctx.sub("[ref]");
-            diffSchemas(subCtx, origResolved, updResolved);
-        } else if (original != null && updated == null) {
-            if (origResolved != null) {
-                var subCtx = ctx.sub("[ref]");
-                diffSchemas(subCtx, origResolved, currentUpdated);
-            } else {
-                ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_REMOVED, original, null);
-            }
-        } else if (original == null && updated != null) {
-            if (updResolved != null) {
-                var subCtx = ctx.sub("[ref]");
-                diffSchemas(subCtx, currentOriginal, updResolved);
-            } else {
-                ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_ADDED, null, updated);
-            }
+        // After upfront dereferencing, $ref is only present for cyclic back-edges
+        // or unresolved refs. Only report a difference when both sides have
+        // different $ref values — a one-sided $ref (cyclic or unresolved) is not
+        // a compatibility issue by itself.
+        if (original != null && updated != null && !original.equals(updated)) {
+            ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_CHANGED, original, updated);
         }
     }
 
