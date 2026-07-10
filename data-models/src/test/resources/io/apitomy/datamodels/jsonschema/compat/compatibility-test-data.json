@@ -3796,28 +3796,6 @@
     },
     {
       "enabled": true,
-      "id": "Ref: unresolvable with IGNORE",
-      "config": { "onUnresolvableRef": "IGNORE" },
-      "original": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "address": { "$ref": "http://missing.com/address.json" }
-        }
-      },
-      "updated": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "address": { "type": "object" }
-        }
-      },
-      "expected": {
-        "backward": { "compatible": true }
-      }
-    },
-    {
-      "enabled": true,
       "id": "Ref: resolvable external ref",
       "externalRefs": {
         "http://example.com/address.json": {

@@ -37,7 +37,7 @@ public class SchemaDiffVisitor {
         var resolvedOriginal = resolveIfRef(ctx, original);
         var resolvedUpdated = resolveIfRef(ctx, updated);
 
-        // If either side could not be resolved (COLLECT/IGNORE), skip comparison
+        // If either side could not be resolved (COLLECT), skip comparison
         if (resolvedOriginal == null || resolvedUpdated == null) {
             return;
         }
@@ -81,10 +81,7 @@ public class SchemaDiffVisitor {
             case FAIL -> throw new JsonSchemaCompatibilityException("Unresolvable $ref: " + ref);
             case COLLECT -> {
                 ctx.addUnsupported("Unresolvable $ref: " + ref);
-                return null; // signal caller to skip comparison
-            }
-            case IGNORE -> {
-                return null; // signal caller to skip comparison
+                return null;
             }
         }
         return schema; // unreachable, but satisfies compiler
@@ -94,7 +91,6 @@ public class SchemaDiffVisitor {
         switch (ctx.getUnresolvableRefStrategy()) {
             case FAIL -> throw new JsonSchemaCompatibilityException("Unresolvable $ref: " + ref);
             case COLLECT -> ctx.addUnsupported("Unresolvable $ref: " + ref);
-            case IGNORE -> { /* skip silently */ }
         }
     }
 
@@ -458,7 +454,7 @@ public class SchemaDiffVisitor {
 
         if (origRef != null && origResolved == null) {
             handleUnresolvableRef(ctx, origRef);
-            // If strategy is COLLECT or IGNORE, skip further comparison for this ref
+            // If strategy is COLLECT, skip further comparison for this ref
             if (ctx.getUnresolvableRefStrategy() != UnresolvableRefStrategy.FAIL) {
                 return;
             }

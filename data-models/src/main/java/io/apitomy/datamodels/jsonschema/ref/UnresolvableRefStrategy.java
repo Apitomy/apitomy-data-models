@@ -11,6 +11,7 @@ public enum UnresolvableRefStrategy {
     /**
      * Record the unresolvable reference and continue processing.
      * Unresolved references are reported in {@link DereferenceResult#unresolvedRefs()}.
+     * The {@code $ref} node is left as-is in the tree.
      * <p>
      * This is the default strategy.
      */
@@ -21,11 +22,5 @@ public enum UnresolvableRefStrategy {
      * reference is encountered. Use this when all references are expected to be
      * resolvable and an unresolvable one indicates a configuration error.
      */
-    FAIL,
-
-    /**
-     * Silently ignore the unresolvable reference and leave it as-is.
-     * No message is recorded.
-     */
-    IGNORE
+    FAIL
 }
