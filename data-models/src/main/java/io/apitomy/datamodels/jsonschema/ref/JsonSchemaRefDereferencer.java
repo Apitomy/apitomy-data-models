@@ -8,6 +8,7 @@ import io.apitomy.datamodels.util.NodeUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -136,25 +137,14 @@ public class JsonSchemaRefDereferencer {
         }
 
         if (node instanceof Referenceable ref && ref.get$ref() != null) {
-            var refValue = ref.get$ref();
-
-            JFullSchema target;
-            try {
-                var resolved = refTraversal.resolveRef(refValue, node);
-                if (resolved.isEmpty()) {
-                    handleUnresolvable(refValue, ctx);
-                    return;
-                }
-                target = (JFullSchema) resolved.get();
-            } catch (ReferenceResolutionException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new ReferenceResolutionException(
-                        "Failed to resolve $ref: " + refValue, refValue, e);
+            // Follow the ref chain to the final non-$ref target
+            var target = resolveRefChain(node, ctx);
+            if (target == null) {
+                return;
             }
 
             if (ctx.ancestry.contains(target)) {
-                ctx.cyclicRefs.put(refValue, target);
+                ctx.cyclicRefs.put(((Referenceable) node).get$ref(), target);
                 return;
             }
 
@@ -179,6 +169,32 @@ public class JsonSchemaRefDereferencer {
         dereferenceChildren(node, ctx);
         ctx.depth--;
         ctx.ancestry.remove(node);
+    }
+
+    private JFullSchema resolveRefChain(JFullSchema node, DereferenceContext ctx) {
+        var current = node;
+        var chainRefs = new HashSet<String>();
+        while (current instanceof Referenceable ref && ref.get$ref() != null) {
+            var refValue = ref.get$ref();
+            if (!chainRefs.add(refValue)) {
+                ctx.cyclicRefs.put(refValue, current);
+                return null;
+            }
+            try {
+                var resolved = refTraversal.resolveRef(refValue, current);
+                if (resolved.isEmpty()) {
+                    handleUnresolvable(refValue, ctx);
+                    return null;
+                }
+                current = (JFullSchema) resolved.get();
+            } catch (ReferenceResolutionException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new ReferenceResolutionException(
+                        "Failed to resolve $ref: " + refValue, refValue, e);
+            }
+        }
+        return current;
     }
 
     private void dereferenceChildren(JFullSchema node, DereferenceContext ctx) {
