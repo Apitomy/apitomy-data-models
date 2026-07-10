@@ -2,6 +2,7 @@ package io.apitomy.datamodels.jsonschema.compat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.apitomy.datamodels.jsonschema.JsonSchemaProcessingException;
 import io.apitomy.datamodels.jsonschema.ref.AnchorFragmentResolver;
 import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefDereferencer;
 import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefResolverChain;
@@ -112,7 +113,7 @@ public class JsonSchemaCompatibilityTest {
                 try {
                     checker.checkBackward(original, updated);
                     failed.add(id + " (expected error containing '" + expectedErrorMessage + "' but none thrown)");
-                } catch (JsonSchemaCompatibilityException e) {
+                } catch (JsonSchemaProcessingException e) {
                     if (e.getMessage().contains(expectedErrorMessage)) {
                         passed++;
                     } else {
@@ -120,7 +121,7 @@ public class JsonSchemaCompatibilityTest {
                                 + "' but got '" + e.getMessage() + "')");
                     }
                 } catch (Exception e) {
-                    failed.add(id + " (expected JsonSchemaCompatibilityException but got "
+                    failed.add(id + " (expected JsonSchemaProcessingException but got "
                             + e.getClass().getSimpleName() + ": " + e.getMessage() + ")");
                 }
                 continue;
@@ -298,7 +299,7 @@ public class JsonSchemaCompatibilityTest {
                 try {
                     checker.checkBackward(original, updated);
                     failed.add(id + " (expected error containing '" + expectedErrorMessage + "' but none thrown)");
-                } catch (JsonSchemaCompatibilityException e) {
+                } catch (JsonSchemaProcessingException e) {
                     if (e.getMessage().contains(expectedErrorMessage)) {
                         passed++;
                     } else {
@@ -306,7 +307,7 @@ public class JsonSchemaCompatibilityTest {
                                 + "' but got '" + e.getMessage() + "')");
                     }
                 } catch (Exception e) {
-                    failed.add(id + " (expected JsonSchemaCompatibilityException but got "
+                    failed.add(id + " (expected JsonSchemaProcessingException but got "
                             + e.getClass().getSimpleName() + ": " + e.getMessage() + ")");
                 }
                 continue;
