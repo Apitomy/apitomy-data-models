@@ -5,8 +5,6 @@ import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
-import io.apitomy.datamodels.jsonschema.ref.UnresolvableRefStrategy;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;
@@ -32,65 +30,20 @@ public class SchemaDiffVisitor {
 
     /**
      * Entry point: compare original and updated schemas.
+     * Any {@code $ref} nodes should be resolved by the dereferencer before
+     * calling this method.
      */
     public static void diffSchemas(DiffContext ctx, JFullSchema original, JFullSchema updated) {
-        var resolvedOriginal = resolveIfRef(ctx, original);
-        var resolvedUpdated = resolveIfRef(ctx, updated);
-
-        // If either side could not be resolved (COLLECT), skip comparison
-        if (resolvedOriginal == null || resolvedUpdated == null) {
-            return;
-        }
-
-        // Cycle detection: prevent infinite recursion on the same node pair.
-        // Uses identity hash — not collision-free but sufficient for practical recursive schemas.
-        // The key is removed after comparison so the same pair can be compared
-        // in different sub-schema contexts (e.g., composition checking).
-        var pairKey = System.identityHashCode(resolvedOriginal)
-                + ":" + System.identityHashCode(resolvedUpdated);
+        var pairKey = System.identityHashCode(original)
+                + ":" + System.identityHashCode(updated);
         if (ctx.visited.contains(pairKey)) {
             return;
         }
         ctx.visited.add(pairKey);
         try {
-            new SchemaDiffVisitor(ctx, resolvedOriginal).visit(resolvedUpdated);
+            new SchemaDiffVisitor(ctx, original).visit(updated);
         } finally {
             ctx.visited.remove(pairKey);
-        }
-    }
-
-    /**
-     * Attempt to resolve a $ref on the given schema.
-     * Returns the resolved schema, the original schema if there is no $ref,
-     * or {@code null} if the ref is unresolvable and the strategy allows skipping.
-     */
-    private static JFullSchema resolveIfRef(DiffContext ctx, JFullSchema schema) {
-        var ref = DiffUtil.get$ref(schema);
-        if (ref == null) return schema;
-
-        var traversal = ctx.getRefTraversal();
-        if (traversal != null) {
-            var resolved = traversal.resolveRef(ref, schema);
-            if (resolved.isPresent()) {
-                return (JFullSchema) resolved.get();
-            }
-        }
-
-        // Ref is unresolvable — apply strategy
-        switch (ctx.getUnresolvableRefStrategy()) {
-            case FAIL -> throw new JsonSchemaCompatibilityException("Unresolvable $ref: " + ref);
-            case COLLECT -> {
-                ctx.addUnsupported("Unresolvable $ref: " + ref);
-                return null;
-            }
-        }
-        return schema; // unreachable, but satisfies compiler
-    }
-
-    private static void handleUnresolvableRef(DiffContext ctx, String ref) {
-        switch (ctx.getUnresolvableRefStrategy()) {
-            case FAIL -> throw new JsonSchemaCompatibilityException("Unresolvable $ref: " + ref);
-            case COLLECT -> ctx.addUnsupported("Unresolvable $ref: " + ref);
         }
     }
 
@@ -441,51 +394,8 @@ public class SchemaDiffVisitor {
         var origRef = DiffUtil.get$ref(original);
         var updRef = DiffUtil.get$ref(updated);
 
-        if (origRef == null && updRef == null) return;
-
-        var traversal = ctx.getRefTraversal();
-
-        var origResolved = origRef != null && traversal != null
-                ? traversal.resolveRef(origRef, original).map(n -> (JFullSchema) n).orElse(null)
-                : null;
-        var updResolved = updRef != null && traversal != null
-                ? traversal.resolveRef(updRef, updated).map(n -> (JFullSchema) n).orElse(null)
-                : null;
-
-        if (origRef != null && origResolved == null) {
-            handleUnresolvableRef(ctx, origRef);
-            // If strategy is COLLECT, skip further comparison for this ref
-            if (ctx.getUnresolvableRefStrategy() != UnresolvableRefStrategy.FAIL) {
-                return;
-            }
-        }
-        if (updRef != null && updResolved == null) {
-            handleUnresolvableRef(ctx, updRef);
-            if (ctx.getUnresolvableRefStrategy() != UnresolvableRefStrategy.FAIL) {
-                return;
-            }
-        }
-
-        // Compare resolved targets
-        if (origResolved != null && updResolved != null) {
-            var subCtx = ctx.sub("[ref]");
-            diffSchemas(subCtx, origResolved, updResolved);
-        } else if (origRef != null && updRef == null) {
-            // Original had $ref, updated inlined — compare resolved original vs updated
-            if (origResolved != null) {
-                var subCtx = ctx.sub("[ref]");
-                diffSchemas(subCtx, origResolved, updated);
-            } else {
-                ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_REMOVED, origRef, null);
-            }
-        } else if (origRef == null && updRef != null) {
-            // Original was inlined, updated uses $ref — compare original vs resolved updated
-            if (updResolved != null) {
-                var subCtx = ctx.sub("[ref]");
-                diffSchemas(subCtx, original, updResolved);
-            } else {
-                ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_ADDED, null, updRef);
-            }
+        if (origRef != null && updRef != null && !origRef.equals(updRef)) {
+            ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_CHANGED, origRef, updRef);
         }
     }
 }
