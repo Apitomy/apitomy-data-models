@@ -30,10 +30,16 @@ public interface ResourceResolver {
 
     /**
      * Resolve an external resource to a parsed document node.
+     * <p>
+     * Implementations that detect an error should throw
+     * {@link ReferenceResolutionException}. Any other exception thrown by this
+     * method will be wrapped in a {@link ReferenceResolutionException} by the
+     * dereferencer.
      *
      * @param resource the resource identifier (the part before {@code #}, e.g., {@code "other.json"})
      * @param context  resolution context
      * @return the parsed document node, or empty if this resolver cannot handle the resource
+     * @throws ReferenceResolutionException if resolution fails
      */
     Optional<Node> resolveResource(String resource, RefResolutionContext context);
 }
