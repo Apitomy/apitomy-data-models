@@ -20,19 +20,49 @@ import java.util.Set;
  * Dereferences all {@code $ref} nodes in a JSON Schema tree by resolving them
  * and replacing them with the resolved content.
  * <p>
- * After dereferencing, no {@code $ref} fields remain in the tree unless they
- * are cyclic back-edges or could not be resolved. Cyclic back-edges are left
- * as {@code $ref} strings and reported in
- * {@link DereferenceResult#cyclicRefs()}.
- * <p>
- * The schema is mutated in-place. Resolved nodes are used directly (not
- * cloned), which may create shared references in the tree. Downstream
- * processing (e.g., conversion to compound schema) creates independent copies
- * from the shared graph.
- * <p>
  * This class is independently usable outside the compatibility checker.
  *
+ * <h3>Mutation</h3>
+ * The schema tree is mutated in-place. Resolved nodes are inserted directly
+ * (not cloned), which may create shared references when multiple {@code $ref}
+ * nodes point to the same definition. Callers who need to preserve the
+ * original tree should clone it before calling {@link #dereference}.
+ *
+ * <h3>Cycle handling</h3>
+ * JSON Schema allows recursive references (e.g., a {@code Person} schema
+ * whose {@code children} property references {@code Person} again). The
+ * dereferencer handles both self-referencing and mutual recursion
+ * (e.g., {@code Details} ↔ {@code Subject}).
+ * <p>
+ * Cycle detection uses an identity-based ancestry set: the dereferencer
+ * tracks which nodes are on the current traversal path. When a {@code $ref}
+ * resolves to a node that is already an ancestor, replacing it would create
+ * an object graph cycle that downstream tree traversals (conversion, diff,
+ * serialization) cannot handle. In this case, the {@code $ref} is left as-is
+ * — only the <em>back-edge</em> that would close the loop is preserved.
+ * Entry-point references into cyclic subtrees are resolved normally, so the
+ * dereferenced tree contains at least one level of the cyclic structure.
+ * <p>
+ * Cyclic back-edges are reported in {@link DereferenceResult#cyclicRefs()}
+ * as a map from the {@code $ref} string to the resolved target node. Callers
+ * can use this map to follow cycles without re-resolving the {@code $ref}.
+ *
+ * <h3>Limitations</h3>
+ * <ul>
+ *   <li>Cycle detection relies on object identity ({@code ==}). If a
+ *       {@link ResourceResolver} returns a new instance each time for the
+ *       same logical document, cycles through external references will not
+ *       be detected. Resolver implementations should return the same node
+ *       instance for the same logical resource (see {@link ResourceResolver}
+ *       javadoc).</li>
+ *   <li>If two different {@code $ref} strings resolve to logically equal
+ *       but identity-distinct documents, the dereferencer treats them as
+ *       independent. Generated deep equality (G23) would address this
+ *       in the future.</li>
+ * </ul>
+ *
  * @see DereferenceResult
+ * @see ResourceResolver
  */
 public class JsonSchemaRefDereferencer {
 
@@ -55,10 +85,21 @@ public class JsonSchemaRefDereferencer {
     /**
      * Dereferences all {@code $ref} nodes in the given schema tree.
      * <p>
-     * The schema is mutated in-place. The returned result contains the same
-     * schema instance, a list of unresolved reference messages (if
-     * {@link UnresolvableRefStrategy#COLLECT} is used), and a map of cyclic
-     * back-edge references that were left as {@code $ref} strings.
+     * The schema is mutated in-place — the returned
+     * {@link DereferenceResult#schema()} is the same instance. After this
+     * method returns:
+     * <ul>
+     *   <li>Non-cyclic {@code $ref} nodes have been replaced with their
+     *       resolved targets (shared references, not clones).</li>
+     *   <li>Cyclic back-edges retain their {@code $ref} string and are
+     *       listed in {@link DereferenceResult#cyclicRefs()} with the
+     *       resolved target node, so callers can follow the cycle without
+     *       re-resolving.</li>
+     *   <li>Unresolvable references are handled according to the configured
+     *       {@link UnresolvableRefStrategy} and listed in
+     *       {@link DereferenceResult#unresolvedRefs()} if using
+     *       {@link UnresolvableRefStrategy#COLLECT}.</li>
+     * </ul>
      *
      * @param schema the root schema to dereference
      * @return the dereference result
