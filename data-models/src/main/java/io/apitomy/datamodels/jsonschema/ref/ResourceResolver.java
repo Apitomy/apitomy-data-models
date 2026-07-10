@@ -16,6 +16,14 @@ import java.util.Optional;
  * </ul>
  * Fragment resolution (the part after {@code #}) is handled separately
  * by {@link FragmentResolver}.
+ * <p>
+ * <b>Identity contract:</b> Implementations should return the same {@link Node}
+ * instance for the same logical resource, even if invoked multiple times with
+ * the same resource identifier. The returned node is not cloned by the caller
+ * and may be mutated (e.g., by the {@link JsonSchemaRefDereferencer}).
+ * If two different resource identifiers refer to the same logical document,
+ * implementations should return the same instance for both to enable correct
+ * cycle detection during dereferencing.
  */
 @FunctionalInterface
 public interface ResourceResolver {
