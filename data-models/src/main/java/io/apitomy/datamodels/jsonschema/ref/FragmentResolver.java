@@ -20,17 +20,11 @@ public interface FragmentResolver {
 
     /**
      * Resolve the fragment within the given document.
-     * <p>
-     * Implementations that detect an error should throw
-     * {@link ReferenceResolutionException}. Any other exception thrown by this
-     * method will be wrapped in a {@link ReferenceResolutionException} by the
-     * dereferencer.
      *
      * @param ref            the parsed reference (use {@link JsonRef#pointer()} or {@link JsonRef#anchor()})
      * @param targetDocument the document to search within
      * @param context        resolution context
      * @return the resolved node, or empty if this resolver cannot handle the fragment type
-     * @throws ReferenceResolutionException if resolution fails
      */
     Optional<Node> resolveFragment(JsonRef ref, Node targetDocument, RefResolutionContext context);
 }

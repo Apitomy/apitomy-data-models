@@ -7,7 +7,7 @@ depending on your platform.
 ## Prerequisites
 
 - **Java**: JDK 17 or later
-- **Node.js**: 20 or later (for the TypeScript/JavaScript library)
+- **Node.js**: 18 or later (for the TypeScript/JavaScript library)
 
 ## Installation
 
@@ -17,14 +17,14 @@ depending on your platform.
     <dependency>
         <groupId>io.apitomy</groupId>
         <artifactId>apitomy-data-models</artifactId>
-        <version>3.1.1</version>
+        <version>3.1.0</version>
     </dependency>
     ```
 
 === "Gradle"
 
     ```groovy
-    implementation 'io.apitomy:apitomy-data-models:3.1.1'
+    implementation 'io.apitomy:apitomy-data-models:3.1.0'
     ```
 
 === "npm"

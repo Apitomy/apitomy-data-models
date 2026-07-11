@@ -23,11 +23,9 @@ traits:
       - name: security
         type: '[SecurityRequirement]'
 
-root:
-  type: Document
-
 entities:
   - name: Document
+    root: true
     traits:
       - Extensible
     properties:

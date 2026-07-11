@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.apitomy.umg.beans.SpecificationVersion;
 import io.apitomy.umg.models.concept.VisitorModel;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
-import io.apitomy.umg.pipe.java.method.ReaderMethod;
 
 /**
  * Creates a reader dispatcher reader generated.  A reader dispatcher is just a visitor that knows
@@ -114,7 +113,7 @@ public class CreateReaderDispatchersStage extends AbstractVisitorStage {
 
             // Create the method body.
             BodyBuilder body = new BodyBuilder();
-            body.addContext("readMethodName", new ReaderMethod(entityName).getName());
+            body.addContext("readMethodName", methodToImplement.getName().replace("visit", "read"));
             body.addContext("javaEntityType", javaEntityType.getName());
             body.append("this.reader.${readMethodName}(this.json, (${javaEntityType}) node);");
             methodSource.setBody(body.toString());

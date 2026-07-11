@@ -22,7 +22,6 @@ import io.apitomy.datamodels.models.SecurityRequirement;
 import io.apitomy.datamodels.models.openapi.v2x.v20.OpenApi20Document;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Document;
 import io.apitomy.datamodels.models.openapi.v3x.v31.OpenApi31Document;
-import io.apitomy.datamodels.models.openapi.v3x.v32.OpenApi32Document;
 import io.apitomy.datamodels.validation.ValidationRule;
 import io.apitomy.datamodels.validation.ValidationRuleMetaData;
 
@@ -64,12 +63,6 @@ public class OasInvalidSecurityRequirementNameRule extends ValidationRule {
                     isDefined(doc31.getComponents()) &&
                     hasValue(doc31.getComponents().getSecuritySchemes()) &&
                     isDefined(doc31.getComponents().getSecuritySchemes().get(securityReqName));
-        } else if (dt == ModelType.OPENAPI32) {
-            OpenApi32Document doc32 = (OpenApi32Document) doc;
-            return hasValue(doc32.getComponents()) &&
-                    isDefined(doc32.getComponents()) &&
-                    hasValue(doc32.getComponents().getSecuritySchemes()) &&
-                    isDefined(doc32.getComponents().getSecuritySchemes().get(securityReqName));
         } else if (dt == ModelType.ASYNCAPI20 || dt == ModelType.ASYNCAPI21 || dt == ModelType.ASYNCAPI22 || dt == ModelType.ASYNCAPI23 || dt == ModelType.ASYNCAPI24 || dt == ModelType.ASYNCAPI25 || dt == ModelType.ASYNCAPI26) {
             // TODO implement this
         }

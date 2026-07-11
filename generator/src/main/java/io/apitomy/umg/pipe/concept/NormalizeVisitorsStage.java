@@ -65,6 +65,7 @@ public class NormalizeVisitorsStage extends AbstractStage {
     /**
      * Creates a visitor in the root namespace.  Ensures that all other unparented visitors
      * are parented by this new root visitor.
+     * @param rootNamespace
      */
     private void createRootVisitor(String rootNamespace) {
         NamespaceModel rootNS = getState().getConceptIndex().lookupNamespace(rootNamespace);
@@ -81,6 +82,8 @@ public class NormalizeVisitorsStage extends AbstractStage {
 
     /**
      * Returns true if the given entity exists in *all* of the given visitors.
+     * @param entity
+     * @param childVisitors
      */
     private boolean existsInAllChildren(EntityModel entity, Collection<VisitorModel> childVisitors) {
         return childVisitors.stream().map(visitor -> visitor.containsEntity(entity.getName())).reduce(true, (sub, element) -> sub && element);

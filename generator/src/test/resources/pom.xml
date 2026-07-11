@@ -61,9 +61,10 @@
         <version.yarn>1.22.5</version.yarn>
 
         <!-- Dependency Versions -->
-        <version.com.fasterxml.jackson>2.22.1</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.21.4</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson.dataformat>2.10.0.pr1</version.com.fasterxml.jackson.dataformat>
         <version.commons-io>2.22.0</version.commons-io>
-        <version.junit-jupiter>6.1.1</version.junit-jupiter>
+        <version.junit>4.13.2</version.junit>
         <version.org.jsweet>3.1.0</version.org.jsweet>
         <version.org.skyscreamer>1.5.3</version.org.skyscreamer>
         
@@ -96,9 +97,9 @@
 
         <!-- Test Only Deps -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${version.junit-jupiter}</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${version.junit}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

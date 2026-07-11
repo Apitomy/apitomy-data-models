@@ -59,40 +59,16 @@ Each `ValidationProblem` includes the following fields:
 
 ## Error Code Prefixes
 
-Validation error codes use an entity-based naming convention. The prefix identifies which
-part of the specification the rule applies to:
+Validation error codes follow a consistent naming convention. The prefix indicates the type
+of rule:
 
-| Prefix | Entity | Example |
-|--------|--------|---------| 
-| `INF` | Info | `INF-001` |
-| `OP` | Operation | `OP-001` |
-| `PAR` | Parameter | `PAR-001` |
-| `PATH` | Path Item | `PATH-001` |
-| `SCH` | Schema | `SCH-001` |
-| `HEAD` | Header | `HEAD-001` |
-| `RES` | Response | `RES-001` |
-| `RB` | Request Body | `RB-001` |
-| `SS` | Security Scheme | `SS-001` |
-| `SREQ` | Security Requirement | `SREQ-001` |
-| `SRV` | Server | `SRV-001` |
-| `SVAR` | Server Variable | `SVAR-001` |
-| `TAG` | Tag | `TAG-001` |
-| `FLOW` | OAuth Flow | `FLOW-001` |
-| `LINK` | Link | `LINK-001` |
-| `ENC` | Encoding | `ENC-001` |
-| `MT` | Media Type | `MT-001` |
-| `DISC` | Discriminator | `DISC-001` |
-| `LIC` | License | `LIC-001` |
-| `CTC` | Contact | `CTC-001` |
-| `XML` | XML | `XML-001` |
-| `COMP` | Components | `COMP-001` |
-| `EX` | Example | `EX-001` |
-| `CHAN` | Channel (AsyncAPI) | `CHAN-001` |
-| `AAD`, `AAM`, `AAO` | AsyncAPI Document, Message, Operation | `AAD-001` |
-| `ORPC` | OpenRPC | `ORPC-001` |
-
-Codes with a `DEF` suffix (e.g., `SDEF`, `PDEF`, `RDEF`) apply to component definitions
-(the reusable entries under `components/`).
+| Prefix | Meaning | Example |
+|--------|---------|---------|
+| `REQ` | Required property is missing | `REQ-001` |
+| `INF` | Invalid format | `INF-001` |
+| `INV` | Invalid value | `INV-001` |
+| `UNQ` | Uniqueness violation | `UNQ-001` |
+| `MUT` | Mutual exclusivity violation | `MUT-001` |
 
 ---
 

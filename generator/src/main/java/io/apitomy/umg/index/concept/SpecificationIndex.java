@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Map;
 
 import io.apitomy.umg.beans.Entity;
@@ -37,9 +36,9 @@ import lombok.Getter;
  */
 public class SpecificationIndex {
 
-    private Collection<SpecificationModel> specifications = new LinkedHashSet<>();
+    private Collection<SpecificationModel> specifications = new HashSet<>();
 
-    private Collection<SpecificationVersion> specificationVersions = new LinkedHashSet<>();
+    private Collection<SpecificationVersion> specificationVersions = new HashSet<>();
 
     @Getter
     private Map<SpecificationVersionId, SpecificationModel> specIndex = new HashMap<>();

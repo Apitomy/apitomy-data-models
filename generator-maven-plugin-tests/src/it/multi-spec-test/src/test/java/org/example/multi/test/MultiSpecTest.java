@@ -6,8 +6,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.example.multi.MltiDocument;
 import org.example.multi.util.JsonUtil;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -50,7 +50,7 @@ public class MultiSpecTest {
         String resourcePath = "fixtures/" + resourceName;
         try (InputStream res = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
             if (res == null) {
-                Assertions.fail("Test resource not found: " + resourcePath);
+                Assert.fail("Test resource not found: " + resourcePath);
             }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             baos.write(res.readAllBytes());
@@ -60,9 +60,9 @@ public class MultiSpecTest {
 
     private void assertJsonEquals(ObjectNode originalJson, ObjectNode roundTripJson) throws Exception {
         try {
-            Assertions.assertEquals(originalJson, roundTripJson);
+            Assert.assertEquals(originalJson, roundTripJson);
         } catch (AssertionError e) {
-            Assertions.assertEquals(JsonUtil.stringify(originalJson), JsonUtil.stringify(roundTripJson));
+            Assert.assertEquals(JsonUtil.stringify(originalJson), JsonUtil.stringify(roundTripJson));
         }
     }
 

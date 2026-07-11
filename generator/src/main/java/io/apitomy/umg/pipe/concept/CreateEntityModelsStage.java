@@ -23,7 +23,7 @@ public class CreateEntityModelsStage extends AbstractStage {
                     EntityModel entityModel = EntityModel.builder()
                             .namespace(nsModel)
                             .name(entity.getName())
-                            .root(false)
+                            .root(entity.getRoot() != null ? entity.getRoot() : false)
                             .specModel(specificationModel)
                             .specVersion(specVersion)
                             .propertyOrder(entity.getPropertyOrder())

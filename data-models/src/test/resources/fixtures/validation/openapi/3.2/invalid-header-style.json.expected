@@ -1,1 +1,0 @@
-[HEAD-010] |medium| {/paths[/test]/get/responses[200]/headers[X-Custom]->style} :: Header Style must be "simple".

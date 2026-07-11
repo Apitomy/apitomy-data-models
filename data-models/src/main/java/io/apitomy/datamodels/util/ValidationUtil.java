@@ -21,7 +21,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
-import io.apitomy.datamodels.DataModelsException;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.validation.ValidationRule;
@@ -50,7 +49,7 @@ public class ValidationUtil {
             return (ValidationRule) constructor.newInstance(ruleInfo);
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
                 | IllegalArgumentException | InvocationTargetException e) {
-            throw new DataModelsException(e);
+            throw new RuntimeException(e);
         }
     }
 

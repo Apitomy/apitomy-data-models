@@ -73,6 +73,10 @@
                             "type": "string"
                         }
                     },
+                    "root": {
+                        "description": "",
+                        "type": "boolean"
+                    },
                     "propertyOrder": {
                         "description": "",
                         "type": "array",
@@ -191,19 +195,6 @@
                     },
                     "majorVersionNamespace": {
                         "description": "",
-                        "type": "string"
-                    },
-                    "typeAliases": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/TypeAlias"
-                        }
-                    },
-                    "root": {
-                        "$ref": "#/components/schemas/Root"
-                    },
-                    "conversionTarget": {
-                        "description": "Version name of the target spec to convert to",
                         "type": "string"
                     }
                 },
@@ -344,56 +335,6 @@
                     "ruleType": "propertyValue",
                     "propertyName": "type",
                     "propertyValue": "widget"
-                }
-            },
-            "TypeAlias": {
-                "title": "Root Type for TypeAlias",
-                "description": "A named, reusable type definition (typically a union) with optional discrimination rules.",
-                "required": [
-                    "name",
-                    "type"
-                ],
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string"
-                    },
-                    "unionRules": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/UnionRule"
-                        }
-                    }
-                },
-                "example": {
-                    "name": "SchemaOrBoolean",
-                    "type": "boolean|Schema",
-                    "unionRules": [
-                        {
-                            "unionType": "Schema",
-                            "ruleType": "propertyExists",
-                            "propertyName": "type"
-                        }
-                    ]
-                }
-            },
-            "Root": {
-                "title": "Root Type for Root",
-                "description": "Specifies the root type for a specification version. Can reference a type alias (union) or an entity name.",
-                "required": [
-                    "type"
-                ],
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string"
-                    }
-                },
-                "example": {
-                    "type": "SchemaOrBoolean"
                 }
             }
         }

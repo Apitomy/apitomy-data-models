@@ -1,16 +1,16 @@
 package io.apitomy.umg.base.visitors;
 
-import io.apitomy.umg.base.Any;
+import io.apitomy.umg.base.Node;
 
 /**
  * All data model traversers must implement this interface.
  */
 public interface Traverser {
-
+    
     /**
-     * Traverse a data model starting at the given value (entity or union).
-     * @param value
+     * Traverse a single node in a data model.
+     * @param node
      */
-    public void traverse(Any value);
+    public void traverse(Node node);
 
 }

@@ -16,8 +16,8 @@
 
 package io.apitomy.datamodels.validation;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author eric.wittmann@gmail.com
@@ -35,18 +35,18 @@ public class ValidationRuleTest extends ValidationRule {
 
     @Test
     public void testIsValidUrl() throws Exception {
-        Assertions.assertTrue(isValidUrl("http://www.google.com"));
-        Assertions.assertTrue(isValidUrl("https://github.com/Apitomy/apitomy-studio/blob/master/back-end/hub-api/src/main/java/io/apitomy/hub/api/rest/IDesignsResource.java"));
-        Assertions.assertTrue(isValidUrl("https://www.pcworld.com/article/3394338/pixel-3a-and-3a-xl-vs-pixel-3-and-3-xl-specs-features-camera-price.html"));
+        Assert.assertTrue(isValidUrl("http://www.google.com"));
+        Assert.assertTrue(isValidUrl("https://github.com/Apitomy/apitomy-studio/blob/master/back-end/hub-api/src/main/java/io/apitomy/hub/api/rest/IDesignsResource.java"));
+        Assert.assertTrue(isValidUrl("https://www.pcworld.com/article/3394338/pixel-3a-and-3a-xl-vs-pixel-3-and-3-xl-specs-features-camera-price.html"));
 
-        Assertions.assertFalse(isValidUrl("www.google.com"));
-        Assertions.assertFalse(isValidUrl("first.last@gmail.com"));
+        Assert.assertFalse(isValidUrl("www.google.com"));
+        Assert.assertFalse(isValidUrl("first.last@gmail.com"));
     }
 
     @Test
     public void testIsValidEmail() throws Exception {
-        Assertions.assertTrue(isValidEmailAddress("first.last@gmail.com"));
-        Assertions.assertTrue(isValidEmailAddress("first.last+postfix@gmail.com"));
+        Assert.assertTrue(isValidEmailAddress("first.last@gmail.com"));
+        Assert.assertTrue(isValidEmailAddress("first.last+postfix@gmail.com"));
     }
     
 }

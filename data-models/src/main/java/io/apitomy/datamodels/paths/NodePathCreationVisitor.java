@@ -2,7 +2,6 @@ package io.apitomy.datamodels.paths;
 
 import io.apitomy.datamodels.models.Document;
 import io.apitomy.datamodels.models.Node;
-import io.apitomy.datamodels.models.RootCapable;
 import io.apitomy.datamodels.models.union.ListUnionValue;
 import io.apitomy.datamodels.models.visitors.AllNodeVisitor;
 import io.apitomy.datamodels.util.NodeUtil;
@@ -18,9 +17,6 @@ public class NodePathCreationVisitor extends AllNodeVisitor {
 
     @Override
     protected void visitNode(Node node) {
-        if (node instanceof RootCapable && ((RootCapable) node).isRoot() && node.parent() == null) {
-            return;
-        }
         switch (node.parentPropertyType()) {
             case standard:
                 path.prepend(new NodePathSegment(node.parentPropertyName(), false));

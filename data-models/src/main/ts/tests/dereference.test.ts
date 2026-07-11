@@ -52,7 +52,7 @@ class DereferenceTestReferenceResolver implements IReferenceResolver {
 
     private toModel(jsonNode: any, from: Node): Node {
         let rval: Node = from.emptyClone();
-        (rval as any)._setParent(from.parent());
+        rval.attach(from.parent());
         return Library.readNode(jsonNode, rval);
     }
 
@@ -69,7 +69,7 @@ allTests.forEach(spec => {
         expect(originalJson).not.toBeNull();
 
         // Parse/read the document
-        let sourceDoc: Node = <Node><any>Library.readRoot(originalJson);
+        let sourceDoc: Document = Library.readDocument(originalJson);
         expect(sourceDoc).not.toBeNull();
 
         // Dereference the document

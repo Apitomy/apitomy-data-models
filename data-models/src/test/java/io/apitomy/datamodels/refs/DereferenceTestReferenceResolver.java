@@ -77,7 +77,7 @@ public class DereferenceTestReferenceResolver implements IReferenceResolver {
 
     private Node toModel(ObjectNode jsonNode, Node from) {
         Node rval = from.emptyClone();
-        ((io.apitomy.datamodels.models.NodeImpl) rval)._setParent(from.parent());
+        rval.attach(from.parent());
         return Library.readNode(jsonNode, rval);
     }
 

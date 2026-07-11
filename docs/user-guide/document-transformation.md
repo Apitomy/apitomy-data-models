@@ -62,14 +62,6 @@ Call `Library.transformDocument()` with the source document and the target `Mode
 | From | To | Description |
 |------|----|-------------|
 | AsyncAPI 2.x | AsyncAPI 2.y (y > x) | Incremental upgrades within the 2.x series |
-| AsyncAPI 2.x | AsyncAPI 3.x | Cross-major upgrade from any 2.x version to 3.0 or 3.1 |
-| AsyncAPI 3.0 | AsyncAPI 3.1 | Upgrade within the 3.x series |
-
-!!! note
-    AsyncAPI transformations update the version identifier and re-parse the document using
-    the target version's data model. Structural changes between major versions (e.g., the
-    channel/operation model differences between 2.x and 3.x) are handled by the library's
-    reader, which maps the existing JSON structure into the target model.
 
 ---
 
@@ -91,36 +83,6 @@ intermediate conversions internally.
     ```typescript
     // Direct upgrade from 2.0 to 3.2 in one step
     const openApi32 = Library.transformDocument(swagger, ModelType.OPENAPI32);
-    ```
-
----
-
-## Error Handling
-
-Unsupported transformations throw `TransformationException` (a subclass of
-`DataModelsException`). For example, transforming an OpenRPC document or downgrading
-from a newer version to an older one will throw this exception.
-
-=== "Java"
-
-    ```java
-    import io.apitomy.datamodels.TransformationException;
-
-    try {
-        Document result = Library.transformDocument(source, ModelType.OPENAPI30);
-    } catch (TransformationException e) {
-        System.err.println("Transformation not supported: " + e.getMessage());
-    }
-    ```
-
-=== "TypeScript"
-
-    ```typescript
-    try {
-        const result = Library.transformDocument(source, ModelType.OPENAPI30);
-    } catch (e) {
-        console.error('Transformation not supported:', e.message);
-    }
     ```
 
 ---

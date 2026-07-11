@@ -53,6 +53,7 @@ public class OpenApi3NodeImporter extends ReferencedNodeImporter {
             String name = generateNodeName(getNameHintFromRef("ImportedSchema"), getComponentNames(components.getSchemas()));
             // Cast to OpenApiSchema (OpenApi30Schema and OpenApi31Schema implement this)
             components.addSchema(name, (io.apitomy.datamodels.models.openapi.OpenApiSchema) node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -66,6 +67,7 @@ public class OpenApi3NodeImporter extends ReferencedNodeImporter {
             OpenApiComponents components = ensureOpenApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedCallback"), getComponentNames(components.getCallbacks()));
             components.addCallback(name, node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -79,6 +81,7 @@ public class OpenApi3NodeImporter extends ReferencedNodeImporter {
             OpenApiComponents components = ensureOpenApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedExample"), getComponentNames(components.getExamples()));
             components.addExample(name, (OpenApiExample) node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -92,6 +95,7 @@ public class OpenApi3NodeImporter extends ReferencedNodeImporter {
             OpenApiComponents components = ensureOpenApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedHeader"), getComponentNames(components.getHeaders()));
             components.addHeader(name, node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -105,6 +109,7 @@ public class OpenApi3NodeImporter extends ReferencedNodeImporter {
             OpenApiComponents components = ensureOpenApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedLink"), getComponentNames(components.getLinks()));
             components.addLink(name, (OpenApiLink) node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -118,6 +123,7 @@ public class OpenApi3NodeImporter extends ReferencedNodeImporter {
             OpenApiComponents components = ensureOpenApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedParameter"), getComponentNames(components.getParameters()));
             components.addParameter(name, (OpenApiParameter) node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -139,6 +145,7 @@ public class OpenApi3NodeImporter extends ReferencedNodeImporter {
             OpenApiComponents components = ensureOpenApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedRequestBody"), getComponentNames(components.getRequestBodies()));
             components.addRequestBody(name, node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -152,6 +159,7 @@ public class OpenApi3NodeImporter extends ReferencedNodeImporter {
             OpenApiComponents components = ensureOpenApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedResponse"), getComponentNames(components.getResponses()));
             components.addResponse(name, node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -173,6 +181,7 @@ public class OpenApi3NodeImporter extends ReferencedNodeImporter {
             OpenApiComponents components = ensureOpenApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedSecurityScheme"), getComponentNames(components.getSecuritySchemes()));
             components.addSecurityScheme(name, (OpenApiSecurityScheme) node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }

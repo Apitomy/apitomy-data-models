@@ -32,6 +32,8 @@ public class GeneratorState {
     /**
      * Returns all traits with the same name as the given parent trait.  Does a search of
      * the namespace tree to find such traits.
+     *
+     * @param parentTrait
      */
     public Collection<TraitModel> findChildTraitsFor(TraitModel parentTrait) {
         String traitName = parentTrait.getName();
@@ -49,6 +51,8 @@ public class GeneratorState {
     /**
      * Returns all entities with the same name as the given parent entity.  Does a search of
      * the namespace tree to find such entities.
+     *
+     * @param parentEntity
      */
     public Collection<EntityModel> findChildEntitiesFor(EntityModel parentEntity) {
         String entityName = parentEntity.getName();
@@ -65,6 +69,9 @@ public class GeneratorState {
 
     /**
      * Finds a child trait in the given namespace with the given name.
+     *
+     * @param namespaceModel
+     * @param traitName
      */
     public TraitModel findChildTraitIn(NamespaceModel namespaceModel, String traitName) {
         if (namespaceModel.containsTrait(traitName)) {
@@ -81,6 +88,9 @@ public class GeneratorState {
 
     /**
      * Finds a child entity in the given namespace with the given name.
+     *
+     * @param namespaceModel
+     * @param entityName
      */
     public EntityModel findChildEntityIn(NamespaceModel namespaceModel, String entityName) {
         if (namespaceModel.containsEntity(entityName)) {

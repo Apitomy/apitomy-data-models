@@ -9,7 +9,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>@maven.compiler.release@</maven.compiler.release>
-        <version.com.fasterxml.jackson>2.22.1</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.21.4</version.com.fasterxml.jackson>
     </properties>
 
     <dependencies>
@@ -25,9 +25,9 @@
             <version>${version.com.fasterxml.jackson}</version>
         </dependency>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>@version.junit-jupiter@</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>@version.junit@</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

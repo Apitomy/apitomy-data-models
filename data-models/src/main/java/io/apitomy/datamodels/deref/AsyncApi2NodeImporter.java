@@ -44,6 +44,7 @@ public class AsyncApi2NodeImporter extends ReferencedNodeImporter {
             AsyncApiComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedChannelBinding"), getComponentNames(components.getChannelBindings()));
             components.addChannelBinding(name, node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -65,6 +66,7 @@ public class AsyncApi2NodeImporter extends ReferencedNodeImporter {
             AsyncApiComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedCorrelationID"), getComponentNames(components.getCorrelationIds()));
             components.addCorrelationId(name, node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -78,6 +80,7 @@ public class AsyncApi2NodeImporter extends ReferencedNodeImporter {
             AsyncApiComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedMessage"), getComponentNames(components.getMessages()));
             components.addMessage(name, node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -91,6 +94,7 @@ public class AsyncApi2NodeImporter extends ReferencedNodeImporter {
             AsyncApiComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedMessageBinding"), getComponentNames(components.getMessageBindings()));
             components.addMessageBinding(name, node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -104,6 +108,7 @@ public class AsyncApi2NodeImporter extends ReferencedNodeImporter {
             AsyncApiComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedMessageTrait"), getComponentNames(components.getMessageTraits()));
             components.addMessageTrait(name, node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -117,6 +122,7 @@ public class AsyncApi2NodeImporter extends ReferencedNodeImporter {
             AsyncApiComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedOperationBinding"), getComponentNames(components.getOperationBindings()));
             components.addOperationBinding(name, node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -130,6 +136,7 @@ public class AsyncApi2NodeImporter extends ReferencedNodeImporter {
             AsyncApiComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedOperationTrait"), getComponentNames(components.getOperationTraits()));
             components.addOperationTrait(name, node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -143,6 +150,7 @@ public class AsyncApi2NodeImporter extends ReferencedNodeImporter {
             AsyncApiComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedParameter"), getComponentNames(components.getParameters()));
             components.addParameter(name, (AsyncApiParameter) node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -164,6 +172,7 @@ public class AsyncApi2NodeImporter extends ReferencedNodeImporter {
             AsyncApiComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedSecurityScheme"), getComponentNames(components.getSecuritySchemes()));
             components.addSecurityScheme(name, (AsyncApiSecurityScheme) node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -185,6 +194,7 @@ public class AsyncApi2NodeImporter extends ReferencedNodeImporter {
             AsyncApiComponents components = ensureAsyncApiComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedServerBinding"), getComponentNames(components.getServerBindings()));
             components.addServerBinding(name, node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }

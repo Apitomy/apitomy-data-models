@@ -1,14 +1,11 @@
 package io.apitomy.umg.base.visitors;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
-import io.apitomy.umg.base.Any;
 import io.apitomy.umg.base.MappedNode;
 import io.apitomy.umg.base.Node;
-
-
+import io.apitomy.umg.base.Visitable;
 import io.apitomy.umg.base.union.EntityListUnionValue;
 import io.apitomy.umg.base.union.EntityMapUnionValue;
 import io.apitomy.umg.base.union.Union;
@@ -39,7 +36,7 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
      *
      * @param node
      */
-    protected void doTraverseNode(Node node) {
+    protected void doTraverseNode(Visitable node) {
         node.accept(this);
     }
 
@@ -49,7 +46,7 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
      * @param propertyName
      * @param node
      */
-    protected void traverseNode(String propertyName, Node node) {
+    protected void traverseNode(String propertyName, Visitable node) {
         if (node != null) {
             traversalContext.pushProperty(propertyName);
             doTraverseNode(node);
@@ -63,15 +60,16 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
      * @param propertyName
      * @param items
      */
-    protected void traverseList(String propertyName, Collection<? extends Any> items) {
+    @SuppressWarnings("unchecked")
+    protected void traverseList(String propertyName, Collection<? extends Node> items) {
         if (items != null) {
             int index = 0;
             traversalContext.pushProperty(propertyName);
-            List<? extends Any> clonedItems = JsonUtil.collectionToList(items);
-            for (Any item : clonedItems) {
-                if (item != null && item.isNode()) {
+            Collection<? extends Node> clonedItems = (Collection<? extends Node>) JsonUtil.cloneCollection(items);
+            for (Node node : clonedItems) {
+                if (node != null) {
                     traversalContext.pushListIndex(index);
-                    doTraverseNode((Node) item);
+                    doTraverseNode(node);
                     traversalContext.pop();
                 }
                 index++;
@@ -86,19 +84,19 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
      * @param propertyName
      * @param items
      */
-    protected void traverseMap(String propertyName, Map<String, ? extends Any> items) {
+    @SuppressWarnings("unchecked")
+    protected void traverseMap(String propertyName, Map<String, ? extends Node> items) {
         if (items != null) {
             traversalContext.pushProperty(propertyName);
-            List<String> keys = JsonUtil.collectionToList(items.keySet());
-            for (int _idx = 0; _idx < keys.size(); _idx++) {
-                String key = keys.get(_idx);
-                Any value = items.get(key);
-                if (value != null && value.isNode()) {
+            Collection<String> keys = (Collection<String>) JsonUtil.cloneCollection(items.keySet());
+            keys.forEach(key -> {
+                Node value = items.get(key);
+                if (value != null) {
                     this.traversalContext.pushMapIndex(key);
-                    this.doTraverseNode((Node) value);
+                    this.doTraverseNode(value);
                     this.traversalContext.pop();
                 }
-            }
+            });
             this.traversalContext.pop();
         }
     }
@@ -108,18 +106,18 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
      *
      * @param items
      */
+    @SuppressWarnings("unchecked")
     protected void traverseMappedNode(MappedNode<? extends Node> mappedNode) {
         if (mappedNode != null) {
-            List<String> names = JsonUtil.collectionToList(mappedNode.getItemNames());
-            for (int _idx = 0; _idx < names.size(); _idx++) {
-                String name = names.get(_idx);
+            Collection<String> names = (Collection<String>) JsonUtil.cloneCollection(mappedNode.getItemNames());
+            names.forEach(name -> {
                 Node value = mappedNode.getItem(name);
                 if (value != null) {
                     this.traversalContext.pushMapIndex(name);
                     this.doTraverseNode(value);
                     this.traversalContext.pop();
                 }
-            }
+            });
         }
     }
 
@@ -133,7 +131,7 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
     protected void traverseUnion(String propertyName, Union union) {
         if (union != null) {
             if (union.isEntity()) {
-                this.traverseNode(propertyName, (Node) union);
+                this.traverseNode(propertyName, union);
             } else if (union.isEntityList()) {
                 EntityListUnionValue<? extends Node> value = (EntityListUnionValue<? extends Node>) union;
                 this.traverseList(propertyName, value.getValue());
@@ -145,19 +143,14 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
     }
 
     /**
-     * Called to traverse the data model starting at the given value and traversing
-     * down until this value and all child nodes have been visited.
-     * Accepts both {@link Node} (entity) and {@link Union} (union value) roots.
+     * Called to traverse the data model starting at the given node and traversing
+     * down until this node and all child nodes have been visited.
      *
-     * @param value
+     * @param node
      */
     @Override
-    public void traverse(Any value) {
-        if (value instanceof Node) {
-            doTraverseNode((Node) value);
-        } else if (value instanceof Union) {
-            traverseUnion(null, (Union) value);
-        }
+    public void traverse(Node node) {
+        node.accept(this);
     }
 
 }

@@ -43,11 +43,6 @@ strict mode, and implementing custom reference resolvers for external content.
 Transform documents between specification versions, such as upgrading from OpenAPI 2.0 to 3.0
 or from OpenAPI 3.0 to 3.1.
 
-### [Schema Compatibility](schema-compatibility.md)
-
-Check backward, forward, and full compatibility between JSON Schema versions. Useful for
-detecting breaking changes when evolving API schemas.
-
 ---
 
 ## Supported Specifications

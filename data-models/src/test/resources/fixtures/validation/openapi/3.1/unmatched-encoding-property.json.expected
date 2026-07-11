@@ -1,1 +1,0 @@
-[ENC-006] |medium| {/paths[/upload]/post/requestBody/content[multipart/form-data]/encoding[missingProperty]->missingProperty} :: Encoding Property "missingProperty" not found in the associated schema.

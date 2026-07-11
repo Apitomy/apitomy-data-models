@@ -1,10 +1,6 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
-import io.apitomy.datamodels.models.jsonschema.Dependency;
-import io.apitomy.datamodels.models.jsonschema.JFullSchema;
-import io.apitomy.datamodels.models.jsonschema.JsonSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
+import io.apitomy.datamodels.models.union.BooleanJSchemaUnion;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,10 +12,10 @@ import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
 public class ObjectSchemaDiff {
 
     private final DiffContext ctx;
-    private final JFullSchema original;
-    private final JFullSchema updated;
+    private final SchemaAccessor original;
+    private final SchemaAccessor updated;
 
-    public ObjectSchemaDiff(DiffContext ctx, JFullSchema original, JFullSchema updated) {
+    public ObjectSchemaDiff(DiffContext ctx, SchemaAccessor original, SchemaAccessor updated) {
         this.ctx = ctx;
         this.original = original;
         this.updated = updated;
@@ -81,7 +77,7 @@ public class ObjectSchemaDiff {
             if (!origPermitsAdditional) {
                 // Original forbids additional, so adding properties extends the schema
                 ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED, null, addedKeys);
-            } else if (origAdditional != null && origAdditional.isFullSchema() && updProps != null) {
+            } else if (origAdditional != null && origAdditional.isJSchema() && updProps != null) {
                 // Original has an additionalProperties schema: adding a property replaces the
                 // additionalProperties schema with a specific one, which is compatible
                 // only if the new property schema is compatible with the old additionalProperties schema.
@@ -113,7 +109,7 @@ public class ObjectSchemaDiff {
             if (!updPermitsAdditional) {
                 // Updated forbids additional, so the removed property can no longer be set
                 ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED, removedKeys, null);
-            } else if (updAdditional != null && updAdditional.isFullSchema() && origProps != null) {
+            } else if (updAdditional != null && updAdditional.isJSchema() && origProps != null) {
                 // Updated has an additionalProperties schema: removed property values
                 // will now be validated against it. Compatible only if the AP schema
                 // accepts a superset of what the original property schema accepted.
@@ -149,8 +145,8 @@ public class ObjectSchemaDiff {
 
         var origIsBoolean = origAP != null && origAP.isBoolean();
         var updIsBoolean = updAP != null && updAP.isBoolean();
-        var origIsSchema = origAP != null && origAP.isFullSchema();
-        var updIsSchema = updAP != null && updAP.isFullSchema();
+        var origIsSchema = origAP != null && origAP.isJSchema();
+        var updIsSchema = updAP != null && updAP.isJSchema();
 
         if ((origIsBoolean || origAP == null) && (updIsBoolean || updAP == null)) {
             diffBooleanTransition(ctx, origPermits, updPermits, true,
@@ -233,8 +229,10 @@ public class ObjectSchemaDiff {
                 OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_NONE);
     }
 
-    private static JsonSchema getPropertyNames(JFullSchema schema) {
-        if (schema instanceof JD7FullSchema d) return d.getPropertyNames();
+    private static BooleanJSchemaUnion getPropertyNames(SchemaAccessor schema) {
+        var node = schema.node();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document d) return d.getPropertyNames();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema s) return s.getPropertyNames();
         return null;
     }
 
@@ -262,9 +260,11 @@ public class ObjectSchemaDiff {
             for (var key : commonKeys) {
                 var origValue = origDeps.get(key);
                 var updValue = updDeps.get(key);
-                if (origValue.isStringList() && updValue.isStringList()) {
-                    var origSet = new HashSet<>(origValue.asStringList());
-                    var updSet = new HashSet<>(updValue.asStringList());
+                if (origValue.isArray() && updValue.isArray()) {
+                    var origSet = new HashSet<String>();
+                    origValue.forEach(n -> origSet.add(n.asText()));
+                    var updSet = new HashSet<String>();
+                    updValue.forEach(n -> updSet.add(n.asText()));
                     for (var v : origSet) {
                         if (!updSet.contains(v)) {
                             ctx.addDifference(OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_REMOVED, v, null);
@@ -278,22 +278,26 @@ public class ObjectSchemaDiff {
                     if (!origSet.equals(updSet)) {
                         ctx.addDifference(OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_CHANGED, origValue, updValue);
                     }
-                } else if (origValue.isFullSchema() && updValue.isFullSchema()) {
-                    var subCtx = ctx.sub("dependencies/" + key);
-                    if (!isSchemaCompatible(subCtx, origValue.asFullSchema(), updValue.asFullSchema(), true)) {
-                        subCtx.addDifference(OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED, origValue, updValue);
+                } else if (origValue.isObject() && updValue.isObject()) {
+                    // Schema dependencies — compare as schemas
+                    // This is a simplified comparison; full comparison would require
+                    // parsing the JsonNode as a schema document
+                    if (!origValue.equals(updValue)) {
+                        ctx.addDifference(OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED, origValue, updValue);
                     }
                 }
             }
         }
     }
 
-    private static Map<String, Dependency> getDependencies(JFullSchema schema) {
-        if (schema instanceof JDFullSchema d) return d.getDependencies();
+    private static Map<String, com.fasterxml.jackson.databind.JsonNode> getDependencies(SchemaAccessor schema) {
+        var node = schema.node();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JSDraftDocument d) return d.getDependencies();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.JSDraftJSchema s) return s.getDependencies();
         return null;
     }
 
-    private static boolean permitsAdditional(JsonSchema additionalProperties) {
+    private static boolean permitsAdditional(BooleanJSchemaUnion additionalProperties) {
         if (additionalProperties == null) return true; // default is true
         if (additionalProperties.isBoolean()) return additionalProperties.asBoolean();
         return true; // schema means additional properties are allowed (with constraints)

@@ -1,4 +1,0 @@
-[TAG-003] |medium| {/channels[userSignup]/tags[0]->users} :: Duplicate tag 'users' found (every tag must have a unique name).
-[TAG-003] |medium| {/channels[userSignup]/tags[2]->users} :: Duplicate tag 'users' found (every tag must have a unique name).
-[TAG-003] |medium| {/info/tags[0]->app} :: Duplicate tag 'app' found (every tag must have a unique name).
-[TAG-003] |medium| {/info/tags[2]->app} :: Duplicate tag 'app' found (every tag must have a unique name).

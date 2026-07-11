@@ -72,7 +72,7 @@ class ValidationTestReferenceResolver implements IReferenceResolver {
 
     private toModel(jsonNode: any, from: Node): Node {
         let rval: Node = from.emptyClone();
-        (rval as any)._setParent(from.parent());
+        rval.attach(from.parent());
         return Library.readNode(jsonNode, rval);
     }
 
@@ -89,7 +89,7 @@ allTests.forEach(spec => {
         expect(json).not.toBeNull();
         
         // Parse/read the document
-        let document: Node = <Node><any>Library.readRoot(json);
+        let document: Document = Library.readDocument(json);
 
         // Validate the document
         let severityRegistry: IValidationSeverityRegistry = null;

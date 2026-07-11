@@ -2041,7 +2041,8 @@
       "original": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "string",
-        "enum": []
+        "enum": [
+        ]
       },
       "updated": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -2087,7 +2088,7 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "string",
         "const": [
-          "\u03c0"
+          "π"
         ]
       }
     },
@@ -3062,8 +3063,7 @@
             ]
           }
         }
-      },
-      "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
+      }
     },
     {
       "enabled": true,
@@ -3117,8 +3117,7 @@
             }
           }
         }
-      },
-      "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
+      }
     },
     {
       "enabled": true,
@@ -3233,8 +3232,7 @@
             }
           }
         }
-      },
-      "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
+      }
     },
     {
       "enabled": true,
@@ -3303,8 +3301,7 @@
             }
           }
         }
-      },
-      "_disabledReason": "$ref/$id resolution not yet implemented \u2014 see #1042"
+      }
     },
     {
       "enabled": true,
@@ -3441,10 +3438,7 @@
         "type": "object",
         "properties": {
           "test": {
-            "type": [
-              "string",
-              "number"
-            ]
+            "type": ["string", "number"]
           }
         }
       }
@@ -3457,34 +3451,20 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": {
-            "type": "string"
-          }
+          "foo": { "type": "string" }
         },
-        "required": [
-          "foo"
-        ],
-        "additionalProperties": {
-          "type": "string"
-        }
+        "required":["foo"],
+        "additionalProperties": { "type": "string" }
       },
       "updated": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": {
-            "type": "string"
-          },
-          "bar": {
-            "type": "string"
-          }
+          "foo": { "type": "string" },
+          "bar": { "type": "string" }
         },
-        "required": [
-          "foo"
-        ],
-        "additionalProperties": {
-          "type": "string"
-        }
+        "required":["foo"],
+        "additionalProperties": { "type": "string" }
       }
     },
     {
@@ -3495,28 +3475,18 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": {
-            "type": "string"
-          },
-          "bar": {
-            "type": "string"
-          }
+          "foo": { "type": "string" },
+          "bar":{ "type": "string" }
         },
-        "required": [
-          "foo"
-        ]
+        "required":["foo"]
       },
       "updated": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": {
-            "type": "string"
-          }
+          "foo": { "type": "string" }
         },
-        "required": [
-          "foo"
-        ]
+        "required":["foo"]
       }
     },
     {
@@ -3527,24 +3497,16 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": {
-            "type": "string"
-          }
+          "foo": { "type": "string" }
         },
-        "additionalProperties": {
-          "type": "number"
-        }
+        "additionalProperties": { "type": "number" }
       },
       "updated": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": {
-            "type": "string"
-          },
-          "bar": {
-            "type": "number"
-          }
+          "foo": { "type": "string" },
+          "bar": { "type": "number" }
         },
         "additionalProperties": true
       }
@@ -3557,12 +3519,8 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": {
-            "type": "string"
-          },
-          "bar": {
-            "type": "number"
-          }
+          "foo": { "type": "string" },
+          "bar": { "type": "number" }
         },
         "additionalProperties": false
       },
@@ -3570,13 +3528,9 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": {
-            "type": "string"
-          }
+          "foo": { "type": "string" }
         },
-        "additionalProperties": {
-          "type": "number"
-        }
+        "additionalProperties": { "type": "number" }
       }
     },
     {
@@ -3587,12 +3541,8 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": {
-            "type": "string"
-          },
-          "bar": {
-            "type": "number"
-          }
+          "foo": { "type": "string" },
+          "bar": { "type": "number" }
         },
         "additionalProperties": false
       },
@@ -3600,9 +3550,7 @@
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "foo": {
-            "type": "string"
-          }
+          "foo": { "type": "string" }
         },
         "additionalProperties": {
           "type": "number",
@@ -3625,9 +3573,7 @@
             "type": "string"
           }
         ],
-        "additionalItems": {
-          "type": "string"
-        }
+        "additionalItems": { "type": "string" }
       },
       "updated": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -3637,9 +3583,7 @@
             "type": "string"
           }
         ],
-        "additionalItems": {
-          "type": "string"
-        }
+        "additionalItems": { "type": "string" }
       }
     },
     {
@@ -3680,9 +3624,7 @@
             "type": "string"
           }
         ],
-        "additionalItems": {
-          "type": "number"
-        }
+        "additionalItems": { "type": "number" }
       },
       "updated": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -3723,9 +3665,7 @@
             "type": "string"
           }
         ],
-        "additionalItems": {
-          "type": "number"
-        }
+        "additionalItems": { "type": "number" }
       }
     },
     {
@@ -3756,76 +3696,6 @@
           "type": "number",
           "maximum": 42
         }
-      }
-    },
-    {
-      "enabled": true,
-      "id": "Ref: unresolvable with COLLECT",
-      "config": { "onUnresolvableRef": "COLLECT" },
-      "original": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "address": { "$ref": "http://missing.com/address.json" }
-        }
-      },
-      "updated": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "address": { "type": "object" }
-        }
-      },
-      "expected": {
-        "backward": { "compatible": true }
-      }
-    },
-    {
-      "enabled": true,
-      "id": "Ref: unresolvable with FAIL",
-      "config": { "onUnresolvableRef": "FAIL" },
-      "original": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "$ref": "http://missing.com/schema.json"
-      },
-      "updated": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "string"
-      },
-      "expected": { "error": "Unresolvable $ref" }
-    },
-    {
-      "enabled": true,
-      "id": "Ref: resolvable external ref",
-      "externalRefs": {
-        "http://example.com/address.json": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": { "street": { "type": "string" } },
-          "required": ["street"]
-        }
-      },
-      "original": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "home": { "$ref": "http://example.com/address.json" }
-        }
-      },
-      "updated": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "home": {
-            "type": "object",
-            "properties": { "street": { "type": "string" } },
-            "required": ["street"]
-          }
-        }
-      },
-      "expected": {
-        "backward": { "compatible": true },
-        "forward": { "compatible": true }
       }
     }
   ]

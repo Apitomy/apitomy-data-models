@@ -1,8 +1,0 @@
-name: Synthetic
-url: https://example.com/synthetic
-description: Synthetic spec exercising every generator feature for snapshot testing.
-prefix: Syn
-namespace: io.test.synthetic
-versions:
-  - $ref: ./synthetic-v1.yaml
-  - $ref: ./synthetic-v2.yaml

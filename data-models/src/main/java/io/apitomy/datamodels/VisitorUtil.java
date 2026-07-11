@@ -19,7 +19,6 @@ package io.apitomy.datamodels;
 import java.util.List;
 import java.util.Map;
 
-import io.apitomy.datamodels.models.Any;
 import io.apitomy.datamodels.models.MappedNode;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.Node;
@@ -31,12 +30,11 @@ import io.apitomy.datamodels.models.asyncapi.v2x.v24.visitors.AsyncApi24Traverse
 import io.apitomy.datamodels.models.asyncapi.v2x.v25.visitors.AsyncApi25Traverser;
 import io.apitomy.datamodels.models.asyncapi.v2x.v26.visitors.AsyncApi26Traverser;
 import io.apitomy.datamodels.models.asyncapi.v3x.v30.visitors.AsyncApi30Traverser;
-import io.apitomy.datamodels.models.asyncapi.v3x.v31.visitors.AsyncApi31Traverser;
-import io.apitomy.datamodels.models.jsonschema.draft.draft4.visitors.JD4Traverser;
-import io.apitomy.datamodels.models.jsonschema.draft.draft6.visitors.JD6Traverser;
-import io.apitomy.datamodels.models.jsonschema.draft.draft7.visitors.JD7Traverser;
-import io.apitomy.datamodels.models.jsonschema.modern.v201909.visitors.JM201909Traverser;
-import io.apitomy.datamodels.models.jsonschema.modern.v202012.visitors.JM202012Traverser;
+import io.apitomy.datamodels.models.jsonschema.draft.draft4.visitors.JSDraft4Traverser;
+import io.apitomy.datamodels.models.jsonschema.draft.draft6.visitors.JSDraft6Traverser;
+import io.apitomy.datamodels.models.jsonschema.draft.draft7.visitors.JSDraft7Traverser;
+import io.apitomy.datamodels.models.jsonschema.modern.v201909.visitors.JS201909Traverser;
+import io.apitomy.datamodels.models.jsonschema.modern.v202012.visitors.JS202012Traverser;
 import io.apitomy.datamodels.models.openapi.v2x.v20.visitors.OpenApi20Traverser;
 import io.apitomy.datamodels.models.openapi.v3x.v30.visitors.OpenApi30Traverser;
 import io.apitomy.datamodels.models.openapi.v3x.v31.visitors.OpenApi31Traverser;
@@ -49,7 +47,6 @@ import io.apitomy.datamodels.models.visitors.Traverser;
 import io.apitomy.datamodels.models.visitors.Visitor;
 import io.apitomy.datamodels.paths.NodePath;
 import io.apitomy.datamodels.paths.NodePathSegment;
-import io.apitomy.datamodels.util.LoggerUtil;
 import io.apitomy.datamodels.util.NodeUtil;
 
 /**
@@ -57,7 +54,7 @@ import io.apitomy.datamodels.util.NodeUtil;
  */
 public class VisitorUtil {
 
-    public static void visitTree(Any node, Visitor visitor, TraverserDirection direction) {
+    public static void visitTree(Node node, Visitor visitor, TraverserDirection direction) {
         ModelType type = node.root().modelType();
         Traverser traverser = null;
         if (direction == TraverserDirection.up) {
@@ -88,9 +85,6 @@ public class VisitorUtil {
                 case ASYNCAPI30:
                     traverser = new AsyncApi30Traverser(visitor);
                     break;
-                case ASYNCAPI31:
-                    traverser = new AsyncApi31Traverser(visitor);
-                    break;
                 case OPENAPI20:
                     traverser = new OpenApi20Traverser(visitor);
                     break;
@@ -109,25 +103,25 @@ public class VisitorUtil {
                 case OPENRPC14:
                     traverser = new OpenRpc14Traverser(visitor);
                     break;
-                case JD4:
-                    traverser = new JD4Traverser(visitor);
+                case JSDRAFT4:
+                    traverser = new JSDraft4Traverser(visitor);
                     break;
-                case JD6:
-                    traverser = new JD6Traverser(visitor);
+                case JSDRAFT6:
+                    traverser = new JSDraft6Traverser(visitor);
                     break;
-                case JD7:
-                    traverser = new JD7Traverser(visitor);
+                case JSDRAFT7:
+                    traverser = new JSDraft7Traverser(visitor);
                     break;
-                case JM201909:
-                    traverser = new JM201909Traverser(visitor);
+                case JS201909:
+                    traverser = new JS201909Traverser(visitor);
                     break;
-                case JM202012:
-                    traverser = new JM202012Traverser(visitor);
+                case JS202012:
+                    traverser = new JS202012Traverser(visitor);
                     break;
             }
         }
         if (traverser == null) {
-            throw new UnsupportedModelTypeException("Traverser not found for type: " + type);
+            throw new RuntimeException("Traverser not found for type: " + type);
         }
         traverser.traverse(node);
     }
@@ -198,75 +192,8 @@ public class VisitorUtil {
                     ((Node) current).accept(visitor);
                 }
             } catch (Exception e) {
-                LoggerUtil.warn("Error during path traversal at segment '%s': %s",
-                        segment.getValue(), e.getMessage());
+                // If any error occurs during traversal, stop gracefully
                 break;
-            }
-        }
-    }
-
-    /**
-     * Strict variant of {@link #visitPath(Node, NodePath, Visitor)} that throws on errors
-     * instead of silently stopping traversal. Use this when you need to ensure that the
-     * entire path was successfully traversed, and want errors to propagate to the caller.
-     *
-     * @param node The starting node (typically the root document)
-     * @param nodePath The path to traverse through the data model
-     * @param visitor The visitor to apply to each node along the path
-     * @throws DataModelsException if any error occurs during traversal
-     */
-    @SuppressWarnings("rawtypes")
-    public static void visitPathStrict(Node node, NodePath nodePath, Visitor visitor) {
-        List<NodePathSegment> segments = nodePath.getSegments();
-        Object current = node;
-
-        // Visit the starting node
-        if (NodeUtil.isNode(current)) {
-            ((Node) current).accept(visitor);
-        }
-
-        // Traverse each segment of the path
-        for (NodePathSegment segment : segments) {
-            if (current == null) {
-                break;
-            }
-
-            try {
-                if (!segment.isIndex()) {
-                    current = NodeUtil.getProperty(current, segment.getValue());
-                } else {
-                    if (NodeUtil.isUnion(current)) {
-                        Union union = (Union) current;
-                        current = union.unionValue();
-                    }
-
-                    if (NodeUtil.isNode(current)) {
-                        MappedNode mappedNode = (MappedNode) current;
-                        current = mappedNode.getItem(segment.getValue());
-                    } else if (NodeUtil.isList(current)) {
-                        int index = NodeUtil.toInteger(segment.getValue());
-                        List list = (List) current;
-                        if (index >= 0 && index < list.size()) {
-                            current = list.get(index);
-                        } else {
-                            break;
-                        }
-                    } else if (NodeUtil.isMap(current)) {
-                        Map map = (Map) current;
-                        current = NodeUtil.getMapItem(map, segment.getValue());
-                    }
-                }
-
-                if (current == null) {
-                    break;
-                }
-
-                if (NodeUtil.isNode(current)) {
-                    ((Node) current).accept(visitor);
-                }
-            } catch (Exception e) {
-                throw new DataModelsException("Error during path traversal at segment '"
-                        + segment.getValue() + "'", e);
             }
         }
     }

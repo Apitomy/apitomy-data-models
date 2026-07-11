@@ -26,6 +26,8 @@ public class JavaWriteStage extends AbstractStage {
     /**
      * Writes the given class out to a file.
      *
+     * @param javaSource
+     * @param outputDirectory
      */
     private void writeToFile(JavaSource<?> javaSource, File outputDirectory) {
         String pkg = javaSource.getPackage();

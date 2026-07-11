@@ -1,6 +1,5 @@
 package io.apitomy.datamodels;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.apitomy.datamodels.models.ModelType;
@@ -8,14 +7,6 @@ import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.util.JsonUtil;
 
 public class ModelTypeDetector {
-
-    private static String getStringProp(ObjectNode json, String name) {
-        JsonNode node = JsonUtil.getProperty(json, name);
-        if (JsonUtil.isString(node)) {
-            return JsonUtil.toString(node);
-        }
-        return null;
-    }
 
     /**
      * Called to discover what type of model the given JSON data represents.  This method
@@ -32,9 +23,9 @@ public class ModelTypeDetector {
      * @param json
      */
     public static ModelType discoverModelType(ObjectNode json) {
-        String asyncapi = getStringProp(json, "asyncapi");
-        String openapi = getStringProp(json, "openapi");
-        String swagger = getStringProp(json, "swagger");
+        String asyncapi = JsonUtil.getStringProperty(json, "asyncapi");
+        String openapi = JsonUtil.getStringProperty(json, "openapi");
+        String swagger = JsonUtil.getStringProperty(json, "swagger");
         if (asyncapi != null) {
             if (asyncapi.startsWith("2.0")) {
                 return ModelType.ASYNCAPI20;
@@ -55,7 +46,7 @@ public class ModelTypeDetector {
             } else if (asyncapi.startsWith("3.1")) {
                 return ModelType.ASYNCAPI31;
             } else {
-                throw new UnsupportedModelTypeException("Unknown/unsupported AsyncAPI version: " + asyncapi);
+                throw new RuntimeException("Unknown/unsupported AsyncAPI version: " + asyncapi);
             }
         }
         if (openapi != null) {
@@ -68,42 +59,42 @@ public class ModelTypeDetector {
             } else if (openapi.startsWith("3.2")) {
                 return ModelType.OPENAPI32;
             } else {
-                throw new UnsupportedModelTypeException("Unknown/unsupported OpenAPI version: " + openapi);
+                throw new RuntimeException("Unknown/unsupported OpenAPI version: " + openapi);
             }
         }
         if (swagger != null) {
             if (swagger.startsWith("2.")) {
                 return ModelType.OPENAPI20;
             } else {
-                throw new UnsupportedModelTypeException("Unknown/unsupported OpenAPI/Swagger version: " + swagger);
+                throw new RuntimeException("Unknown/unsupported OpenAPI/Swagger version: " + swagger);
             }
         }
 
-        String openrpc = getStringProp(json, "openrpc");
+        String openrpc = JsonUtil.getStringProperty(json, "openrpc");
         if (openrpc != null) {
             if (openrpc.startsWith("1.3")) {
                 return ModelType.OPENRPC13;
             } else if (openrpc.startsWith("1.4")) {
                 return ModelType.OPENRPC14;
             } else {
-                throw new UnsupportedModelTypeException("Unknown/unsupported OpenRPC version: " + openrpc);
+                throw new RuntimeException("Unknown/unsupported OpenRPC version: " + openrpc);
             }
         }
 
-        String schema = getStringProp(json, "$schema");
+        String schema = JsonUtil.getStringProperty(json, "$schema");
         if (schema != null) {
             if (schema.contains("draft-04")) {
-                return ModelType.JD4;
+                return ModelType.JSDRAFT4;
             } else if (schema.contains("draft-06")) {
-                return ModelType.JD6;
+                return ModelType.JSDRAFT6;
             } else if (schema.contains("draft-07")) {
-                return ModelType.JD7;
+                return ModelType.JSDRAFT7;
             } else if (schema.contains("2019-09")) {
-                return ModelType.JM201909;
+                return ModelType.JS201909;
             } else if (schema.contains("2020-12")) {
-                return ModelType.JM202012;
+                return ModelType.JS202012;
             } else {
-                throw new UnsupportedModelTypeException("Unknown/unsupported JSON Schema version: " + schema);
+                throw new RuntimeException("Unknown/unsupported JSON Schema version: " + schema);
             }
         }
 
@@ -111,6 +102,6 @@ public class ModelTypeDetector {
         //  Should check for schema keywords (type, properties, allOf, etc.) and
         //  version-specific keywords ($defs → 2019-09+, prefixItems → 2020-12, etc.)
         //  before falling back. Currently defaults to Draft 7 for any unrecognized document.
-        return ModelType.JD7;
+        return ModelType.JSDRAFT7;
     }
 }

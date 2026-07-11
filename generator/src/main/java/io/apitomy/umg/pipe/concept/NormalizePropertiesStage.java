@@ -1,8 +1,7 @@
 package io.apitomy.umg.pipe.concept;
 
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.TreeSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +41,7 @@ public class NormalizePropertiesStage extends AbstractStage {
                 // Get all direct children of this parent entity.
                 Collection<EntityModel> childEntities = getState().findChildEntitiesFor(parentEntity);
                 // Get a collection of all properties for the children
-                Set<PropertyModel> allProperties = new TreeSet<>(Comparator.comparing(PropertyModel::getName));
+                Set<PropertyModel> allProperties = new HashSet<>();
                 childEntities.forEach(child -> allProperties.addAll(child.getProperties().values()));
 
                 // Filter the full list of properties - only keep the properties that exist in *all* children.
@@ -70,7 +69,7 @@ public class NormalizePropertiesStage extends AbstractStage {
                 // Get all direct children of this parent trait.
                 Collection<TraitModel> childTraits = getState().findChildTraitsFor(parentTrait);
                 // Get a collection of all properties for the children
-                Set<PropertyModel> allProperties = new TreeSet<>(Comparator.comparing(PropertyModel::getName));
+                Set<PropertyModel> allProperties = new HashSet<>();
                 childTraits.forEach(child -> allProperties.addAll(child.getProperties().values()));
 
                 // Filter the full list of properties - only keep the properties that exist in *all* children.
@@ -94,9 +93,11 @@ public class NormalizePropertiesStage extends AbstractStage {
     /**
      * Checks if the given collection of properties contains the given property.  It must have a property with
      * the same name and the property must have the same type.
+     * @param properties
+     * @param property
      */
     private boolean hasProperty(Map<String, PropertyModel> properties, PropertyModel property) {
         PropertyModel otherProperty = properties.get(property.getName());
-        return otherProperty != null && otherProperty.getRawType().equals(property.getRawType());
+        return otherProperty != null && otherProperty.getType().equals(property.getType());
     }
 }

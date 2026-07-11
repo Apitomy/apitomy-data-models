@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.apitomy</groupId>
         <artifactId>apitomy-data-models-parent</artifactId>
-        <version>3.1.3-SNAPSHOT</version>
+        <version>3.1.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -16,6 +16,21 @@
 
     <url>https://www.apitomy.io/</url>
     <description>Open Source API Design Studio</description>
+
+    <repositories>
+        <!-- use project local repo to get maven artifacts previously hosted on disconnected jsweet repo (https://github.com/cincheo/jsweet/issues/780) -->
+        <repository>
+            <id>local-repo</id>
+            <url>file:${basedir}/dependencies</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>local-repo</id>
+            <url>file:${basedir}/dependencies</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <dependencies>
         <!-- Third Party Deps -->
@@ -43,17 +58,17 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.apitomy</groupId>
+            <groupId>org.jsweet</groupId>
             <artifactId>jsweet-transpiler</artifactId>
-            <version>${version.jsweet-maven-plugin}</version>
+            <version>${version.org.jsweet-transpiler}</version>
             <scope>provided</scope>
         </dependency>
 
         <!-- Test Only Deps -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${version.junit-jupiter}</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${version.junit}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -191,13 +206,6 @@
                                 <exclude>**/_*/**</exclude>
                                 <exclude>**/jsonschema/compat/**</exclude>
                                 <exclude>**/jsonschema/ref/**</exclude>
-                                <exclude>**/jsonschema/convert/**</exclude>
-                                <exclude>**/visitors/diff/**</exclude>
-                                <exclude>**/*DiffTraverser.java</exclude>
-                                <exclude>**/*DiffVisitor.java</exclude>
-                                <exclude>**/visitors/convert/**</exclude>
-                                <exclude>**/*ConversionTraverser.java</exclude>
-                                <exclude>**/*ConversionVisitor.java</exclude>
                             </excludes>
                         </configuration>
                         <executions>

@@ -1,10 +1,7 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
-import io.apitomy.datamodels.models.jsonschema.JFullSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.JDFullSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema;
-import io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema;
+import io.apitomy.datamodels.models.jsonschema.draft.draft4.JSDraft4Document;
+import io.apitomy.datamodels.models.jsonschema.draft.draft4.JSDraft4JSchema;
 
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.*;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
@@ -12,11 +9,11 @@ import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
 public class NumberSchemaDiff {
 
     private final DiffContext ctx;
-    private final JFullSchema original;
-    private final JFullSchema updated;
+    private final SchemaAccessor original;
+    private final SchemaAccessor updated;
     private final String effectiveType;
 
-    public NumberSchemaDiff(DiffContext ctx, JFullSchema original, JFullSchema updated,
+    public NumberSchemaDiff(DiffContext ctx, SchemaAccessor original, SchemaAccessor updated,
                                    String effectiveType) {
         this.ctx = ctx;
         this.original = original;
@@ -30,8 +27,8 @@ public class NumberSchemaDiff {
         var origExclMax = getEffectiveExclusiveMaximum(original);
         var updExclMax = getEffectiveExclusiveMaximum(updated);
 
-        var origMinimum = getMinimum(original);
-        var updMinimum = getMinimum(updated);
+        var origMinimum = original.getMinimum();
+        var updMinimum = updated.getMinimum();
         if (isDraft4(original) && Boolean.TRUE.equals(getDraft4ExclusiveMinimum(original))) {
             origMinimum = null;
         }
@@ -52,8 +49,8 @@ public class NumberSchemaDiff {
                 NUMBER_TYPE_MINIMUM_ADDED, NUMBER_TYPE_MINIMUM_REMOVED,
                 NUMBER_TYPE_MINIMUM_INCREASED, NUMBER_TYPE_MINIMUM_DECREASED);
 
-        var origMaximum = getMaximum(original);
-        var updMaximum = getMaximum(updated);
+        var origMaximum = original.getMaximum();
+        var updMaximum = updated.getMaximum();
         if (isDraft4(original) && Boolean.TRUE.equals(getDraft4ExclusiveMaximum(original))) {
             origMaximum = null;
         }
@@ -90,7 +87,7 @@ public class NumberSchemaDiff {
                     NUMBER_TYPE_IS_MINIMUM_EXCLUSIVE_UNCHANGED);
         } else if (isDraft4(original) && !isDraft4(updated)) {
             var origIsExcl = getDraft4ExclusiveMinimum(original);
-            var origMin = getMinimum(original);
+            var origMin = original.getMinimum();
             Number effectiveOrigExclMin = (Boolean.TRUE.equals(origIsExcl) && origMin != null) ? origMin : null;
             var updExcl = getExclusiveMinimumAsNumber(updated);
             diffNumber(ctx, effectiveOrigExclMin, updExcl,
@@ -99,7 +96,7 @@ public class NumberSchemaDiff {
         } else if (!isDraft4(original) && isDraft4(updated)) {
             var origExcl = getExclusiveMinimumAsNumber(original);
             var updIsExcl = getDraft4ExclusiveMinimum(updated);
-            var updMin = getMinimum(updated);
+            var updMin = updated.getMinimum();
             Number effectiveUpdExclMin = (Boolean.TRUE.equals(updIsExcl) && updMin != null) ? updMin : null;
             diffNumber(ctx, origExcl, effectiveUpdExclMin,
                     NUMBER_TYPE_EXCLUSIVE_MINIMUM_ADDED, NUMBER_TYPE_EXCLUSIVE_MINIMUM_REMOVED,
@@ -123,7 +120,7 @@ public class NumberSchemaDiff {
                     NUMBER_TYPE_IS_MAXIMUM_EXCLUSIVE_UNCHANGED);
         } else if (isDraft4(original) && !isDraft4(updated)) {
             var origIsExcl = getDraft4ExclusiveMaximum(original);
-            var origMax = getMaximum(original);
+            var origMax = original.getMaximum();
             Number effectiveOrigExclMax = (Boolean.TRUE.equals(origIsExcl) && origMax != null) ? origMax : null;
             var updExcl = getExclusiveMaximumAsNumber(updated);
             diffNumber(ctx, effectiveOrigExclMax, updExcl,
@@ -132,7 +129,7 @@ public class NumberSchemaDiff {
         } else if (!isDraft4(original) && isDraft4(updated)) {
             var origExcl = getExclusiveMaximumAsNumber(original);
             var updIsExcl = getDraft4ExclusiveMaximum(updated);
-            var updMax = getMaximum(updated);
+            var updMax = updated.getMaximum();
             Number effectiveUpdExclMax = (Boolean.TRUE.equals(updIsExcl) && updMax != null) ? updMax : null;
             diffNumber(ctx, origExcl, effectiveUpdExclMax,
                     NUMBER_TYPE_EXCLUSIVE_MAXIMUM_ADDED, NUMBER_TYPE_EXCLUSIVE_MAXIMUM_REMOVED,
@@ -159,8 +156,8 @@ public class NumberSchemaDiff {
 
     private void diffIntegerRequired() {
         if (effectiveType == null) return;
-        var origType = DiffUtil.getTypeString(original);
-        var updType = DiffUtil.getTypeString(updated);
+        var origType = original.getTypeString();
+        var updType = updated.getTypeString();
         var origIsInteger = "integer".equals(origType);
         var updIsInteger = "integer".equals(updType);
         diffBooleanTransition(ctx, origIsInteger, updIsInteger, false,
@@ -169,60 +166,86 @@ public class NumberSchemaDiff {
                 NUMBER_TYPE_INTEGER_REQUIRED_UNCHANGED);
     }
 
-    private static boolean isDraft4(JFullSchema schema) {
-        return schema instanceof JD4FullSchema;
+    // --- Draft version helpers ---
+
+    private static boolean isDraft4(SchemaAccessor schema) {
+        return schema.isInstanceOf(JSDraft4Document.class) || schema.isInstanceOf(JSDraft4JSchema.class);
     }
 
-    private static Boolean getDraft4ExclusiveMinimum(JFullSchema schema) {
-        if (schema instanceof JD4FullSchema d) return d.isExclusiveMinimum();
+    private static Boolean getDraft4ExclusiveMinimum(SchemaAccessor schema) {
+        if (schema.isInstanceOf(JSDraft4Document.class)) {
+            return schema.as(JSDraft4Document.class).isExclusiveMinimum();
+        }
+        if (schema.isInstanceOf(JSDraft4JSchema.class)) {
+            return schema.as(JSDraft4JSchema.class).isExclusiveMinimum();
+        }
         return null;
     }
 
-    private static Boolean getDraft4ExclusiveMaximum(JFullSchema schema) {
-        if (schema instanceof JD4FullSchema d) return d.isExclusiveMaximum();
+    private static Boolean getDraft4ExclusiveMaximum(SchemaAccessor schema) {
+        if (schema.isInstanceOf(JSDraft4Document.class)) {
+            return schema.as(JSDraft4Document.class).isExclusiveMaximum();
+        }
+        if (schema.isInstanceOf(JSDraft4JSchema.class)) {
+            return schema.as(JSDraft4JSchema.class).isExclusiveMaximum();
+        }
         return null;
     }
 
-    private static Number getExclusiveMinimumAsNumber(JFullSchema schema) {
-        if (schema instanceof JD6FullSchema d) return d.getExclusiveMinimum();
-        if (schema instanceof JD7FullSchema d) return d.getExclusiveMinimum();
+    private static Number getExclusiveMinimumAsNumber(SchemaAccessor schema) {
+        // Draft-6+ have exclusiveMinimum as Number
+        // Check via the draft-group interfaces
+        var node = schema.node();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6Document d) {
+            return d.getExclusiveMinimum();
+        }
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6JSchema s) {
+            return s.getExclusiveMinimum();
+        }
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document d) {
+            return d.getExclusiveMinimum();
+        }
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema s) {
+            return s.getExclusiveMinimum();
+        }
         return null;
     }
 
-    private static Number getExclusiveMaximumAsNumber(JFullSchema schema) {
-        if (schema instanceof JD6FullSchema d) return d.getExclusiveMaximum();
-        if (schema instanceof JD7FullSchema d) return d.getExclusiveMaximum();
+    private static Number getExclusiveMaximumAsNumber(SchemaAccessor schema) {
+        var node = schema.node();
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6Document d) {
+            return d.getExclusiveMaximum();
+        }
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JSDraft6JSchema s) {
+            return s.getExclusiveMaximum();
+        }
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7Document d) {
+            return d.getExclusiveMaximum();
+        }
+        if (node instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JSDraft7JSchema s) {
+            return s.getExclusiveMaximum();
+        }
         return null;
     }
 
-    private static Number getEffectiveExclusiveMinimum(JFullSchema schema) {
+    private static Number getEffectiveExclusiveMinimum(SchemaAccessor schema) {
         if (isDraft4(schema)) {
             if (Boolean.TRUE.equals(getDraft4ExclusiveMinimum(schema))) {
-                return getMinimum(schema);
+                return schema.getMinimum();
             }
             return null;
         }
         return getExclusiveMinimumAsNumber(schema);
     }
 
-    private static Number getEffectiveExclusiveMaximum(JFullSchema schema) {
+    private static Number getEffectiveExclusiveMaximum(SchemaAccessor schema) {
         if (isDraft4(schema)) {
             if (Boolean.TRUE.equals(getDraft4ExclusiveMaximum(schema))) {
-                return getMaximum(schema);
+                return schema.getMaximum();
             }
             return null;
         }
         return getExclusiveMaximumAsNumber(schema);
-    }
-
-    private static Number getMinimum(JFullSchema schema) {
-        if (schema instanceof JDFullSchema d) return d.getMinimum();
-        return null;
-    }
-
-    private static Number getMaximum(JFullSchema schema) {
-        if (schema instanceof JDFullSchema d) return d.getMaximum();
-        return null;
     }
 
     private static java.math.BigDecimal toBigDecimal(Number n) {

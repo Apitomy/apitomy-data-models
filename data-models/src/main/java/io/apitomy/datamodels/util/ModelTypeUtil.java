@@ -1,6 +1,5 @@
 package io.apitomy.datamodels.util;
 
-import io.apitomy.datamodels.UnsupportedModelTypeException;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.Node;
 
@@ -30,15 +29,15 @@ public class ModelTypeUtil {
                 return "3.0.0";
             case ASYNCAPI31:
                 return "3.1.0";
-            case JD4:
+            case JSDRAFT4:
                 return "http://json-schema.org/draft-04/schema#";
-            case JD6:
+            case JSDRAFT6:
                 return "http://json-schema.org/draft-06/schema#";
-            case JD7:
+            case JSDRAFT7:
                 return "http://json-schema.org/draft-07/schema#";
-            case JM201909:
+            case JS201909:
                 return "https://json-schema.org/draft/2019-09/schema";
-            case JM202012:
+            case JS202012:
                 return "https://json-schema.org/draft/2020-12/schema";
             case OPENAPI20:
                 return "2.0";
@@ -53,7 +52,7 @@ public class ModelTypeUtil {
             case OPENRPC14:
                 return "1.4.0";
         }
-        throw new UnsupportedModelTypeException("Unsupported model type: " + type.name());
+        throw new RuntimeException("Unsupported model type: " + type.name());
     }
 
     /**
@@ -83,14 +82,14 @@ public class ModelTypeUtil {
             case OPENRPC13:
             case OPENRPC14:
                 return "openrpc";
-            case JD4:
-            case JD6:
-            case JD7:
-            case JM201909:
-            case JM202012:
+            case JSDRAFT4:
+            case JSDRAFT6:
+            case JSDRAFT7:
+            case JS201909:
+            case JS202012:
                 return "$schema";
         }
-        throw new UnsupportedModelTypeException("Unsupported model type: " + type.name());
+        throw new RuntimeException("Unsupported model type: " + type.name());
     }
 
     public static boolean isOpenApiModel(Node node) {
@@ -214,11 +213,11 @@ public class ModelTypeUtil {
 
     public static boolean isJsonSchemaModel(Node node) {
         switch (node.root().modelType()) {
-            case JD4:
-            case JD6:
-            case JD7:
-            case JM201909:
-            case JM202012:
+            case JSDRAFT4:
+            case JSDRAFT6:
+            case JSDRAFT7:
+            case JS201909:
+            case JS202012:
                 return true;
             default:
                 return false;

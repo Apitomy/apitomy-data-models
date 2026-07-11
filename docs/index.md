@@ -1,11 +1,11 @@
 # Apitomy Data Models
 
-A Java and TypeScript library for reading, writing, and manipulating OpenAPI, AsyncAPI,
-OpenRPC, and JSON Schema documents using a rich, typed object model.
+A Java and TypeScript library for reading, writing, and manipulating OpenAPI and AsyncAPI
+documents using a rich, typed object model.
 
 ## Key Features
 
-- **Multi-Spec Support** — OpenAPI 2.0, 3.0, 3.1, 3.2; AsyncAPI 2.x, 3.x; OpenRPC 1.x; JSON Schema Draft 4–2020-12
+- **Multi-Spec Support** — OpenAPI 2.0, 3.0, 3.1, 3.2 and AsyncAPI 2.x, 3.x
 - **Read & Write** — Parse from JSON or YAML, serialize back to any format
 - **Validation** — Built-in validation engine with hundreds of spec-compliance rules
 - **Visitor Pattern** — Powerful visitor and traverser patterns for querying and transforming
@@ -31,14 +31,14 @@ OpenRPC, and JSON Schema documents using a rich, typed object model.
     <dependency>
         <groupId>io.apitomy</groupId>
         <artifactId>apitomy-data-models</artifactId>
-        <version>3.1.1</version>
+        <version>3.1.0</version>
     </dependency>
     ```
 
 === "Gradle"
 
     ```groovy
-    implementation 'io.apitomy:apitomy-data-models:3.1.1'
+    implementation 'io.apitomy:apitomy-data-models:3.1.0'
     ```
 
 === "npm"

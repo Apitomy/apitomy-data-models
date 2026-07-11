@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import io.apitomy.datamodels.cmd.CommandException;
 import io.apitomy.datamodels.cmd.ICommand;
 import io.apitomy.datamodels.paths.NodePath;
 
@@ -119,7 +118,7 @@ public class CommandUtil {
             Class<?> aClass = Class.forName(cmdFQCN);
             return (ICommand) aClass.getConstructor().newInstance();
         } catch (Exception e) {
-            throw new CommandException("Error creating command: " + cmdType, e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -132,7 +131,7 @@ public class CommandUtil {
     public static ICommand unmarshall(ObjectNode from) {
         String type = from.get("__type").asText();
         if (type == null) {
-            throw new CommandException("Missing __type from source data.");
+            throw new RuntimeException("Missing __type from source data.");
         }
 
         try {
@@ -140,9 +139,9 @@ public class CommandUtil {
             ICommand cmd = mapper.treeToValue((TreeNode) from, cmdClass);
             return cmd;
         } catch (JsonProcessingException e) {
-            throw new CommandException("Error unmarshalling command: " + type, e);
+            throw new RuntimeException("Error unmarshalling command: " + type, e);
         } catch (NullPointerException e) {
-            throw new CommandException("Missing command from unmarshalling factory: " + type, e);
+            throw new RuntimeException("Missing command from unmarshalling factory: " + type, e);
         }
     }
 
@@ -199,7 +198,7 @@ public class CommandUtil {
                                 result.set(field.getName(), commandsArray);
                             }
                         } catch (IllegalAccessException e) {
-                            throw new CommandException("Error marshalling command list field: " + field.getName(), e);
+                            throw new RuntimeException("Error marshalling command list field: " + field.getName(), e);
                         }
                     }
                 }

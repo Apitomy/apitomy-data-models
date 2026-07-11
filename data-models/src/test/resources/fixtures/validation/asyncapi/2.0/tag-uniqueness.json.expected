@@ -1,5 +1,0 @@
-[AAM-001] |medium| {/channels[userSignup]/subscribe/message->null} :: Message should have either payload or headers defined.
-[TAG-003] |medium| {/channels[userSignup]/subscribe/tags[0]->users} :: Duplicate tag 'users' found (every tag must have a unique name).
-[TAG-003] |medium| {/channels[userSignup]/subscribe/tags[2]->users} :: Duplicate tag 'users' found (every tag must have a unique name).
-[TAG-003] |medium| {/tags[0]->app} :: Duplicate tag 'app' found (every tag must have a unique name).
-[TAG-003] |medium| {/tags[2]->app} :: Duplicate tag 'app' found (every tag must have a unique name).

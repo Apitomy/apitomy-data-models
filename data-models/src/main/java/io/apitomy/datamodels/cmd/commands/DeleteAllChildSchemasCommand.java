@@ -67,8 +67,8 @@ public class DeleteAllChildSchemasCommand extends AbstractSchemaInhCommand {
             for (int i = 0; i < schemas.size(); i++) {
                 Schema s = schemas.get(i);
                 if (has$Ref(s)) {
-                    addOldSchema(s);
                     removeAnyOfSchema(schema, s);
+                    addOldSchema(s);
                 }
             }
             if (getAnyOfSchemas(schema).isEmpty()) {
@@ -80,8 +80,8 @@ public class DeleteAllChildSchemasCommand extends AbstractSchemaInhCommand {
             for (int i = 0; i < schemas.size(); i++) {
                 Schema s = schemas.get(i);
                 if (has$Ref(s)) {
-                    addOldSchema(s);
                     removeOneOfSchema(schema, s);
+                    addOldSchema(s);
                 }
             }
             if (getOneOfSchemas(schema).isEmpty()) {

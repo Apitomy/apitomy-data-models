@@ -19,7 +19,6 @@ package io.apitomy.datamodels.validation.rules.invalid.value;
 import io.apitomy.datamodels.models.openapi.OpenApiHeader;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Header;
 import io.apitomy.datamodels.models.openapi.v3x.v31.OpenApi31Header;
-import io.apitomy.datamodels.models.openapi.v3x.v32.OpenApi32Header;
 import io.apitomy.datamodels.util.ModelTypeUtil;
 import io.apitomy.datamodels.validation.ValidationRuleMetaData;
 
@@ -46,8 +45,6 @@ public class OasInvalidHeaderStyleRule extends AbstractInvalidPropertyValueRule 
             style = ((OpenApi30Header) node).getStyle();
         } else if (ModelTypeUtil.isOpenApi31Model(node)) {
             style = ((OpenApi31Header) node).getStyle();
-        } else if (ModelTypeUtil.isOpenApi32Model(node)) {
-            style = ((OpenApi32Header) node).getStyle();
         }
 
         if (hasValue(style)) {

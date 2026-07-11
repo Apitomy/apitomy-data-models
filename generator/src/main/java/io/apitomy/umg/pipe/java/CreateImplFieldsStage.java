@@ -1,6 +1,7 @@
 package io.apitomy.umg.pipe.java;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 
 import org.jboss.forge.roaster.model.source.FieldSource;
@@ -9,7 +10,7 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.PropertyModelWithOrigin;
-import io.apitomy.umg.models.concept.type.MapType;
+import io.apitomy.umg.models.concept.PropertyType;
 
 /**
  * Creates the fields for each entity implementation.  This is done by iterating over all leaf entities
@@ -40,24 +41,22 @@ public class CreateImplFieldsStage extends AbstractJavaStage {
 
         boolean isStarProperty = false;
         if (isStarProperty(property)) {
-            var collectionResolvedType = MapType.builder()
-                    .namespace(property.getResolvedType().getNamespace())
-                    .name("{" + property.getResolvedType().getName() + "}")
-                    .valueType(property.getResolvedType())
+            PropertyType mappedType = PropertyType.builder()
+                    .nested(Collections.singleton(property.getType()))
+                    .map(true)
                     .build();
-            property = PropertyModel.builder().name("_items").resolvedType(collectionResolvedType).build();
+            property = PropertyModel.builder().name("_items").type(mappedType).build();
             isStarProperty = true;
         } else if (isRegexProperty(property) && (isEntity(property) || isPrimitive(property))) {
             if (property.getCollection() == null) {
                 error("Regex property defined without a collection name: " + javaEntityImpl.getCanonicalName() + "::" + property);
                 return;
             }
-            var collectionResolvedType = MapType.builder()
-                    .namespace(property.getResolvedType().getNamespace())
-                    .name("{" + property.getResolvedType().getName() + "}")
-                    .valueType(property.getResolvedType())
+            PropertyType collectionPropertyType = PropertyType.builder()
+                    .nested(Collections.singleton(property.getType()))
+                    .map(true)
                     .build();
-            property = PropertyModel.builder().name(property.getCollection()).resolvedType(collectionResolvedType).build();
+            property = PropertyModel.builder().name(property.getCollection()).type(collectionPropertyType).build();
         }
 
         String fieldName = getFieldName(property);
@@ -68,10 +67,15 @@ public class CreateImplFieldsStage extends AbstractJavaStage {
             return;
         }
 
-        var jt = getJavaTypeFactory().createJavaType(
-                property.getResolvedType(), propertyWithOrigin.getOrigin().getNamespace());
-        jt.addImportsTo(javaEntityImpl);
-        fieldType = jt.toJavaTypeString();
+        if (isUnion(property)) {
+            UnionPropertyType upt = new UnionPropertyType(property.getType());
+            upt.addImportsTo(javaEntityImpl);
+            fieldType = upt.getName();
+        } else {
+            JavaType jt = new JavaType(property.getType(), propertyWithOrigin.getOrigin().getNamespace().fullName());
+            jt.addImportsTo(javaEntityImpl);
+            fieldType = jt.toJavaTypeString();
+        }
 
         FieldSource<JavaClassSource> field = javaEntityImpl.addField().setPrivate().setType(fieldType).setName(fieldName);
         if (isStarProperty) {

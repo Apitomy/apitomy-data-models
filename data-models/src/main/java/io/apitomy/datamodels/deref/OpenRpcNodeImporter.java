@@ -40,6 +40,7 @@ public class OpenRpcNodeImporter extends ReferencedNodeImporter {
             OpenRpcComponents components = ensureOpenRpcComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedSchema"), getComponentNames(components.getSchemas()));
             components.addSchema(name, (OpenRpcSchema) node);
+            node.attach(components);
             setPathToImportedNode(node, componentType, name);
         }
     }
@@ -53,6 +54,7 @@ public class OpenRpcNodeImporter extends ReferencedNodeImporter {
             OpenRpcComponents components = ensureOpenRpcComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedContentDescriptor"), getComponentNames(components.getContentDescriptors()));
             components.addContentDescriptor(name, node);
+            ((Node) node).attach(components);
             setPathToImportedNode((Node) node, componentType, name);
         }
     }
@@ -66,6 +68,7 @@ public class OpenRpcNodeImporter extends ReferencedNodeImporter {
             OpenRpcComponents components = ensureOpenRpcComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedExample"), getComponentNames(components.getExamples()));
             components.addExample(name, (io.apitomy.datamodels.models.openrpc.OpenRpcExample) node);
+            ((Node) node).attach(components);
             setPathToImportedNode((Node) node, componentType, name);
         }
     }
@@ -79,6 +82,7 @@ public class OpenRpcNodeImporter extends ReferencedNodeImporter {
             OpenRpcComponents components = ensureOpenRpcComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedLink"), getComponentNames(components.getLinks()));
             components.addLink(name, (OpenRpcLink) node);
+            ((Node) node).attach(components);
             setPathToImportedNode((Node) node, componentType, name);
         }
     }
@@ -92,6 +96,7 @@ public class OpenRpcNodeImporter extends ReferencedNodeImporter {
             OpenRpcComponents components = ensureOpenRpcComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedError"), getComponentNames(components.getErrors()));
             components.addError(name, node);
+            ((Node) node).attach(components);
             setPathToImportedNode((Node) node, componentType, name);
         }
     }
@@ -105,6 +110,7 @@ public class OpenRpcNodeImporter extends ReferencedNodeImporter {
             OpenRpcComponents components = ensureOpenRpcComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedExamplePairing"), getComponentNames(components.getExamplePairings()));
             components.addExamplePairing(name, node);
+            ((Node) node).attach(components);
             setPathToImportedNode((Node) node, componentType, name);
         }
     }
@@ -118,6 +124,7 @@ public class OpenRpcNodeImporter extends ReferencedNodeImporter {
             OpenRpcComponents components = ensureOpenRpcComponents();
             String name = generateNodeName(getNameHintFromRef("ImportedTag"), getComponentNames(components.getTags()));
             components.addTag(name, (OpenRpcTag) node);
+            ((Node) node).attach(components);
             setPathToImportedNode((Node) node, componentType, name);
         }
     }

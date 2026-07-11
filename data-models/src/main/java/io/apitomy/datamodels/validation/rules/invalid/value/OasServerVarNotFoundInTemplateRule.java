@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.apitomy.datamodels.models.ServerVariable;
-import io.apitomy.datamodels.models.openapi.OpenApiServer;
+import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Server;
 import io.apitomy.datamodels.util.NodeUtil;
 import io.apitomy.datamodels.validation.ValidationRuleMetaData;
 
@@ -68,7 +68,7 @@ public class OasServerVarNotFoundInTemplateRule extends AbstractInvalidPropertyV
     @Override
     public void visitServerVariable(ServerVariable node) {
         String varName = getMappedNodeName(node);
-        OpenApiServer server = (OpenApiServer) node.parent();
+        OpenApi30Server server = (OpenApi30Server) node.parent();
         List<String> vars = parseServerTemplate(server.getUrl());
         String[] varArray = NodeUtil.asArray(vars);
 

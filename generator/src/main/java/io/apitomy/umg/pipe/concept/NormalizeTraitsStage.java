@@ -69,6 +69,8 @@ public class NormalizeTraitsStage extends AbstractStage {
      * even if only one child subtree contains the trait.  This ensures that spec-level
      * interfaces are always generated even when a spec has only one major version.
      *
+     * @param namespaceModel
+     * @param traitName
      */
     private boolean needsParentTrait(NamespaceModel namespaceModel, String traitName) {
         int count = 0;

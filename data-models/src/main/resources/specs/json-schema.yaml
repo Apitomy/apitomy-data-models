@@ -1,7 +1,7 @@
 name: JSON Schema
 url: https://json-schema.org/
 description: JSON Schema is a vocabulary that allows you to annotate and validate JSON documents.
-prefix: J
+prefix: JsonSchema
 namespace: io.apitomy.datamodels.models.jsonschema
 versions:
   - $ref: ./json-schema/json-schema-draft-4.yaml
@@ -9,4 +9,3 @@ versions:
   - $ref: ./json-schema/json-schema-draft-7.yaml
   - $ref: ./json-schema/json-schema-2019-09.yaml
   - $ref: ./json-schema/json-schema-2020-12.yaml
-  - $ref: ./json-schema/json-schema-compound.yaml

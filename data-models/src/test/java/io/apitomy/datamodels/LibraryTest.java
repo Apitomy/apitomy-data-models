@@ -1,13 +1,13 @@
 package io.apitomy.datamodels;
 
 import io.apitomy.datamodels.models.ModelType;
-import io.apitomy.datamodels.models.jsonschema.modern.v202012.JM202012FullSchema;
+import io.apitomy.datamodels.models.jsonschema.modern.v202012.JS202012Document;
 import io.apitomy.datamodels.models.openapi.OpenApiDocument;
 import io.apitomy.datamodels.models.union.StringUnionValueImpl;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Document;
 import io.apitomy.datamodels.models.openrpc.v1x.v14.OpenRpc14Document;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class LibraryTest {
 
@@ -18,12 +18,12 @@ public class LibraryTest {
     @Test
     public void testReadDocumentFromJSONString() {
         OpenApi30Document document = (OpenApi30Document) Library.readDocumentFromJSONString(EMPTY_OPENAPI);
-        Assertions.assertEquals("3.0.1", document.getOpenapi());
+        Assert.assertEquals("3.0.1", document.getOpenapi());
     }
 
     @Test
     public void testJsonSchema202012() {
-        JM202012FullSchema document = (JM202012FullSchema) Library.createRoot(ModelType.JM202012);
+        JS202012Document document = (JS202012Document) Library.createDocument(ModelType.JS202012);
         document.set$id("http://example.com/draft2020-12/my-schema.json");
         document.setType(new StringUnionValueImpl("string"));
 
@@ -34,8 +34,8 @@ public class LibraryTest {
     "type": "string"
 }""";
 
-        String actual = Library.writeNodeToString((io.apitomy.datamodels.models.Node) document);
-        Assertions.assertEquals(expected, actual);
+        String actual = Library.writeDocumentToJSONString(document);
+        Assert.assertEquals(expected, actual);
     }
 
     @Test
@@ -55,7 +55,7 @@ public class LibraryTest {
 }""";
 
         String actual = Library.writeDocumentToJSONString(document);
-        Assertions.assertEquals(expected, actual);
+        Assert.assertEquals(expected, actual);
     }
 
     @Test
@@ -65,9 +65,9 @@ public class LibraryTest {
         document.getInfo().setTitle("My API");
         document.getInfo().setVersion("1.0");
 
-        Assertions.assertEquals("3.0.3", document.getOpenapi());
-        Assertions.assertEquals("My API", document.getInfo().getTitle());
-        Assertions.assertEquals("1.0", document.getInfo().getVersion());
+        Assert.assertEquals("3.0.3", document.getOpenapi());
+        Assert.assertEquals("My API", document.getInfo().getTitle());
+        Assert.assertEquals("1.0", document.getInfo().getVersion());
     }
 
     @Test
@@ -77,9 +77,9 @@ public class LibraryTest {
         document.getInfo().setTitle("My RPC API");
         document.getInfo().setVersion("1.0");
 
-        Assertions.assertEquals("1.4.0", document.getOpenrpc());
-        Assertions.assertEquals("My RPC API", document.getInfo().getTitle());
-        Assertions.assertEquals("1.0", document.getInfo().getVersion());
+        Assert.assertEquals("1.4.0", document.getOpenrpc());
+        Assert.assertEquals("My RPC API", document.getInfo().getTitle());
+        Assert.assertEquals("1.0", document.getInfo().getVersion());
     }
 
 }

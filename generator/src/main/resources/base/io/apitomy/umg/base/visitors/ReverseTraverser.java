@@ -1,7 +1,7 @@
 package io.apitomy.umg.base.visitors;
 
-import io.apitomy.umg.base.Any;
 import io.apitomy.umg.base.Node;
+
 public class ReverseTraverser extends AllNodeVisitor implements Traverser {
 
     protected Visitor visitor;
@@ -11,10 +11,8 @@ public class ReverseTraverser extends AllNodeVisitor implements Traverser {
     }
 
     @Override
-    public void traverse(Any value) {
-        if (value instanceof Node) {
-            ((Node) value).accept(this);
-        }
+    public void traverse(Node node) {
+        node.accept(this);
     }
 
     @Override

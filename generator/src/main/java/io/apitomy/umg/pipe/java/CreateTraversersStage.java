@@ -19,7 +19,6 @@ import io.apitomy.umg.models.concept.EntityModel;
 import io.apitomy.umg.models.concept.PropertyModel;
 import io.apitomy.umg.models.concept.VisitorModel;
 import io.apitomy.umg.pipe.java.method.BodyBuilder;
-import io.apitomy.umg.pipe.java.method.GetterMethod;
 
 /**
  * Creates a traverser for each specification visitor interface.  A traverser is a visitor that
@@ -119,8 +118,7 @@ public class CreateTraversersStage extends AbstractVisitorStage {
         body.append("node.accept(this.visitor);");
 
         Collection<PropertyModel> allProperties = getState().getConceptIndex().getAllEntityProperties(entityModel).stream().map(property -> property.getProperty()).filter(property -> {
-            return isEntity(property) || isEntityList(property) || isEntityMap(property)
-                    || isUnion(property) || isUnionList(property) || isUnionMap(property);
+            return isEntity(property) || isEntityList(property) || isEntityMap(property) || isUnion(property);
         }).collect(Collectors.toList());
 
         if (!allProperties.isEmpty()) {
@@ -133,15 +131,9 @@ public class CreateTraversersStage extends AbstractVisitorStage {
             PropertyModel property = _property;
 
             body.addContext("propertyName", property.getName());
-            body.addContext("propertyGetter", new GetterMethod(property).getName());
+            body.addContext("propertyGetter", getterMethodName(property));
 
-            if (isUnion(property)) {
-                body.append("this.traverseUnion(\"${propertyName}\", model.${propertyGetter}());");
-            } else if (isUnionList(property)) {
-                body.append("this.traverseList(\"${propertyName}\", model.${propertyGetter}());");
-            } else if (isUnionMap(property)) {
-                body.append("this.traverseMap(\"${propertyName}\", model.${propertyGetter}());");
-            } else if (isEntity(property)) {
+            if (isEntity(property)) {
                 if (isStarProperty(_property)) {
                     body.append("this.traverseMappedNode(model);");
                 } else if (isRegexProperty(_property)) {
@@ -153,6 +145,8 @@ public class CreateTraversersStage extends AbstractVisitorStage {
                 body.append("this.traverseList(\"${propertyName}\", model.${propertyGetter}());");
             } else if (isEntityMap(property)) {
                 body.append("this.traverseMap(\"${propertyName}\", model.${propertyGetter}());");
+            } else if (isUnion(property)) {
+                body.append("this.traverseUnion(\"${propertyName}\", model.${propertyGetter}());");
             } else {
                 warn("Unhandled property in traverser: " + property);
             }

@@ -1,6 +1,6 @@
 package org.example.union.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -11,8 +11,8 @@ import org.example.union.Node;
 import org.example.union.v10.Utm10Document;
 import org.example.union.v10.visitors.Utm10Traverser;
 import org.example.union.visitors.AllNodeVisitor;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -24,50 +24,50 @@ public class UnionTest {
     public void testReaderSimplest() throws Exception {
         String testContent = loadTestResource("simplest.json");
         Utm10Document document = UnionTestLibrary.readDocument(testContent);
-        Assertions.assertNotNull(document);
-        Assertions.assertEquals("simplest", document.getId());
+        Assert.assertNotNull(document);
+        Assert.assertEquals("simplest", document.getId());
     }
 
     @Test
     public void testReaderSimple() throws Exception {
         Utm10Document document = doFullTest("simple.json");
-        Assertions.assertEquals("simple", document.getId());
+        Assert.assertEquals("simple", document.getId());
     }
 
     @Test
     public void testReaderNotSimple() throws Exception {
         Utm10Document document = doFullTest("not-simple.json");
-        Assertions.assertEquals("not-simple", document.getId());
+        Assert.assertEquals("not-simple", document.getId());
     }
 
     @Test
     public void testReaderWithChildren() throws Exception {
         Utm10Document document = doFullTest("with-children.json");
-        Assertions.assertEquals("with-children", document.getId());
+        Assert.assertEquals("with-children", document.getId());
     }
 
     @Test
     public void testReaderWithCar() throws Exception {
         Utm10Document document = doFullTest("with-car.json");
-        Assertions.assertEquals("with-car", document.getId());
+        Assert.assertEquals("with-car", document.getId());
     }
 
     @Test
     public void testReaderWithTruck() throws Exception {
         Utm10Document document = doFullTest("with-truck.json");
-        Assertions.assertEquals("with-truck", document.getId());
+        Assert.assertEquals("with-truck", document.getId());
     }
 
     @Test
     public void testReaderImplicit1() throws Exception {
         Utm10Document document = doFullTest("implicit-1.json");
-        Assertions.assertEquals("implicit-1", document.getId());
+        Assert.assertEquals("implicit-1", document.getId());
     }
 
     @Test
     public void testReaderImplicit2() throws Exception {
         Utm10Document document = doFullTest("implicit-2.json");
-        Assertions.assertEquals("implicit-2", document.getId());
+        Assert.assertEquals("implicit-2", document.getId());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class UnionTest {
         String resourcePath = "fixtures/" + resourceName;
         try (InputStream res = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
             if (res == null) {
-                Assertions.fail("Test resource not found: " + resourcePath);
+                Assert.fail("Test resource not found: " + resourcePath);
             }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             baos.write(res.readAllBytes());
@@ -115,7 +115,7 @@ public class UnionTest {
     }
 
     private void assertJsonEquals(String expectedJson, String actualJson) throws Exception {
-        Assertions.assertEquals(mapper.readTree(expectedJson), mapper.readTree(actualJson));
+        Assert.assertEquals(mapper.readTree(expectedJson), mapper.readTree(actualJson));
     }
 
 }

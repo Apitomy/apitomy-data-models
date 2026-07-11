@@ -18,8 +18,8 @@ package io.apitomy.datamodels.util;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author eric.wittmann@gmail.com
@@ -28,34 +28,34 @@ public class RegexUtilTest {
 
     @Test
     public void testMatches() throws Exception {
-        Assertions.assertTrue(RegexUtil.matches("Hello World", ".+"));
-        Assertions.assertTrue(RegexUtil.matches("Hello World", "Hello.World"));
-        Assertions.assertTrue(RegexUtil.matches("Hello World", "H(.+).W(.*)"));
-        Assertions.assertFalse(RegexUtil.matches("Hello World", "H(.+).w(.*)"));
+        Assert.assertTrue(RegexUtil.matches("Hello World", ".+"));
+        Assert.assertTrue(RegexUtil.matches("Hello World", "Hello.World"));
+        Assert.assertTrue(RegexUtil.matches("Hello World", "H(.+).W(.*)"));
+        Assert.assertFalse(RegexUtil.matches("Hello World", "H(.+).w(.*)"));
     }
 
     @Test
     public void testFindMatches() throws Exception {
         List<String[]> matches = RegexUtil.findMatches("this-is-some-test-data", "-([a-zA-Z]+)");
-        Assertions.assertEquals(4, matches.size());
-        Assertions.assertEquals("is", matches.get(0)[1]);
-        Assertions.assertEquals("some", matches.get(1)[1]);
-        Assertions.assertEquals("test", matches.get(2)[1]);
-        Assertions.assertEquals("data", matches.get(3)[1]);
+        Assert.assertEquals(4, matches.size());
+        Assert.assertEquals("is", matches.get(0)[1]);
+        Assert.assertEquals("some", matches.get(1)[1]);
+        Assert.assertEquals("test", matches.get(2)[1]);
+        Assert.assertEquals("data", matches.get(3)[1]);
 
         matches = RegexUtil.findMatches("/path-1/bar-2/foo-33/baz-414/", "/([a-zA-Z]+)-([\\d]+)");
-        Assertions.assertEquals(4, matches.size());
-        Assertions.assertEquals("path", matches.get(0)[1]);
-        Assertions.assertEquals("1", matches.get(0)[2]);
+        Assert.assertEquals(4, matches.size());
+        Assert.assertEquals("path", matches.get(0)[1]);
+        Assert.assertEquals("1", matches.get(0)[2]);
 
-        Assertions.assertEquals("bar", matches.get(1)[1]);
-        Assertions.assertEquals("2", matches.get(1)[2]);
+        Assert.assertEquals("bar", matches.get(1)[1]);
+        Assert.assertEquals("2", matches.get(1)[2]);
 
-        Assertions.assertEquals("foo", matches.get(2)[1]);
-        Assertions.assertEquals("33", matches.get(2)[2]);
+        Assert.assertEquals("foo", matches.get(2)[1]);
+        Assert.assertEquals("33", matches.get(2)[2]);
 
-        Assertions.assertEquals("baz", matches.get(3)[1]);
-        Assertions.assertEquals("414", matches.get(3)[2]);
+        Assert.assertEquals("baz", matches.get(3)[1]);
+        Assert.assertEquals("414", matches.get(3)[2]);
     }
 
     @Test
@@ -63,22 +63,22 @@ public class RegexUtilTest {
         String SEG_MATCH_REGEX = "\\/([^{}\\/]*)(\\{([a-zA-Z_][0-9a-zA-Z_]*)\\})?";
 
         List<String[]> matches = RegexUtil.findMatches("/pet", SEG_MATCH_REGEX);
-        Assertions.assertEquals(1, matches.size());
+        Assert.assertEquals(1, matches.size());
 
         matches = RegexUtil.findMatches("/pet/findByStatus", SEG_MATCH_REGEX);
-        Assertions.assertEquals(2, matches.size());
+        Assert.assertEquals(2, matches.size());
 
         matches = RegexUtil.findMatches("/pet/{petId}", SEG_MATCH_REGEX);
-        Assertions.assertEquals(2, matches.size());
+        Assert.assertEquals(2, matches.size());
 
         matches = RegexUtil.findMatches("/pet/{petId}/uploadImage", SEG_MATCH_REGEX);
-        Assertions.assertEquals(3, matches.size());
+        Assert.assertEquals(3, matches.size());
 
         matches = RegexUtil.findMatches("/store/order/{orderId}", SEG_MATCH_REGEX);
-        Assertions.assertEquals(3, matches.size());
+        Assert.assertEquals(3, matches.size());
 
         matches = RegexUtil.findMatches("/designs/{designId}/codegen/projects/{projectId}/zip", SEG_MATCH_REGEX);
-        Assertions.assertEquals(6, matches.size());
+        Assert.assertEquals(6, matches.size());
     }
 
     @Test
@@ -86,11 +86,11 @@ public class RegexUtilTest {
         String $ref = "#/components/PetResponse";
         List<String[]> split = RegexUtil.findMatches($ref, "([^/]+)/?");
         //        split.forEach(mi -> { System.out.println(String.join(",", mi)); });
-        Assertions.assertEquals(3, split.size());
+        Assert.assertEquals(3, split.size());
 
-        Assertions.assertEquals("#", split.get(0)[1]);
-        Assertions.assertEquals("components", split.get(1)[1]);
-        Assertions.assertEquals("PetResponse", split.get(2)[1]);
+        Assert.assertEquals("#", split.get(0)[1]);
+        Assert.assertEquals("components", split.get(1)[1]);
+        Assert.assertEquals("PetResponse", split.get(2)[1]);
     }
 
 }

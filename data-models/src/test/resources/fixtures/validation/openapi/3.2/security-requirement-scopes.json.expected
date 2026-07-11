@@ -1,1 +1,0 @@
-[SREQ-002] |medium| {/paths[/test]/get/security[0]->null} :: Security Requirement 'apiKey' scopes must be an empty array because the referenced Security Definition not "oauth2" or "openIdConnect".

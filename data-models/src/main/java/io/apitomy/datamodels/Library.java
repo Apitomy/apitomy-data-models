@@ -21,10 +21,8 @@ import io.apitomy.datamodels.deref.Dereferencer;
 import io.apitomy.datamodels.models.Document;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.Node;
-import io.apitomy.datamodels.models.RootCapable;
+import io.apitomy.datamodels.models.RootNode;
 import io.apitomy.datamodels.models.asyncapi.AsyncApiDocument;
-import io.apitomy.datamodels.models.io.ModelCloner;
-import io.apitomy.datamodels.models.io.ModelClonerFactory;
 import io.apitomy.datamodels.models.io.ModelReader;
 import io.apitomy.datamodels.models.io.ModelReaderFactory;
 import io.apitomy.datamodels.models.io.ModelWriter;
@@ -41,7 +39,6 @@ import io.apitomy.datamodels.refs.ReferenceResolverChain;
 import io.apitomy.datamodels.transform.OpenApi20to30TransformationVisitor;
 import io.apitomy.datamodels.transform.OpenApi30to31TransformationVisitor;
 import io.apitomy.datamodels.transform.OpenApi31to32TransformationVisitor;
-import io.apitomy.datamodels.transform.TransformUtil;
 import io.apitomy.datamodels.util.ModelTypeUtil;
 import io.apitomy.datamodels.util.ValidationUtil;
 import io.apitomy.datamodels.validation.DefaultSeverityRegistry;
@@ -50,6 +47,7 @@ import io.apitomy.datamodels.validation.ValidationProblem;
 import io.apitomy.datamodels.validation.ValidationVisitor;
 
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 /**
  * The most common entry points into using the data models library.  Provides convenience methods
@@ -78,97 +76,56 @@ public class Library {
      * @param type the model type to create
      * @return a new, empty document
      */
-    /**
-     * @deprecated Use {@link #createRoot(ModelType)} instead. This method only works for specs
-     * whose root entity implements {@link Document} (OpenAPI, AsyncAPI). For JSON Schema,
-     * the root is a FullSchema entity and this method will throw.
-     */
-    @Deprecated
     public static Document createDocument(ModelType type) {
-        RootCapable root = createRoot(type);
-        if (root instanceof Document) {
-            return (Document) root;
-        }
-        throw new UnsupportedModelTypeException(
-                "Root is not a Document. Use createRoot() instead. Got: "
-                + (root != null ? root.getClass().getSimpleName() : "null"));
-    }
-
-    /**
-     * Creates a new, empty root node of the given model type.
-     */
-    public static RootCapable createRoot(ModelType type) {
         ModelReader reader = ModelReaderFactory.createModelReader(type);
         ObjectNode json = JsonUtil.objectNode();
         String versionProp = ModelTypeUtil.getVersionPropertyName(type);
         String version = ModelTypeUtil.getVersion(type);
         if (versionProp != null) {
-            JsonUtil.setProperty(json, versionProp, JsonUtil.toJsonNode(version));
+            JsonUtil.setStringProperty(json, versionProp, version);
         }
-        return reader.readRoot(json);
+        return (Document) reader.readRoot(json);
     }
 
     /**
-     * @deprecated Use {@link #readRoot(ObjectNode)} instead. This method only works for specs
-     * whose root entity implements {@link Document}. For JSON Schema, use {@code readRoot()}.
+     * Reads an entire document from JSON data.  The JSON data (already parsed, not in string format) is
+     * read as a data model {@link Document} and returned.
+     * @param json
      */
-    @Deprecated
     public static Document readDocument(ObjectNode json) {
-        RootCapable root = readRoot(json);
-        if (root instanceof Document) {
-            return (Document) root;
-        }
-        throw new UnsupportedModelTypeException(
-                "Root is not a Document. Use readRoot() instead. Got: "
-                + (root != null ? root.getClass().getSimpleName() : "null"));
-    }
-
-    /**
-     * Reads a root node from JSON data, returning the generic {@link RootCapable} type.
-     */
-    public static RootCapable readRoot(ObjectNode json) {
+        // Clone the input because the reader is destructive to the source data.
         ObjectNode clonedJson = (ObjectNode) JsonUtil.clone(json);
         ModelType type = ModelTypeDetector.discoverModelType(clonedJson);
+
         ModelReader reader = ModelReaderFactory.createModelReader(type);
-        return reader.readRoot(clonedJson);
+        return (Document) reader.readRoot(clonedJson);
     }
 
     /**
-     * @deprecated Use {@link #readRootFromJSONString(String)} instead. This method only works
-     * for specs whose root entity implements {@link Document}. For JSON Schema, use
-     * {@code readRootFromJSONString()}.
+     * Reads an entire document from a JSON formatted string.  This will parse the given string into
+     * JSON data and then call Library.readDocument.
+     * @param jsonString
      */
-    @Deprecated
     public static Document readDocumentFromJSONString(String jsonString) {
         ObjectNode json = (ObjectNode) JsonUtil.parseJSON(jsonString);
         return readDocument(json);
     }
 
     /**
-     * Reads a root node from a JSON string, returning the generic {@link RootCapable} type.
+     * Called to serialize a given data model node to a JSON object.
+     * @param document
      */
-    public static RootCapable readRootFromJSONString(String jsonString) {
-        ObjectNode json = (ObjectNode) JsonUtil.parseJSON(jsonString);
-        return readRoot(json);
-    }
-
-    /**
-     * @deprecated Use {@link #writeNode(Node)} instead. This method only works for specs
-     * whose root entity implements {@link Document}. For JSON Schema, use {@code writeNode()}.
-     */
-    @Deprecated
     public static ObjectNode writeDocument(Document document) {
         ModelWriter writer = ModelWriterFactory.createModelWriter(document.root().modelType());
-        return (ObjectNode) writer.writeRoot((RootCapable) document);
+        return writer.writeRoot((RootNode) document);
     }
 
     /**
-     * @deprecated Use {@link #writeNodeToString(Node)} instead. This method only works for specs
-     * whose root entity implements {@link Document}. For JSON Schema, use {@code writeNodeToString()}.
+     * Called to serialize a given data model to a JSON formatted string.
+     * @param document
      */
-    @Deprecated
     public static String writeDocumentToJSONString(Document document) {
-        ObjectNode json = Library.writeDocument(document);
+        ObjectNode json = Library.writeDocument( document);
         return JsonUtil.stringify(json);
     }
 
@@ -250,7 +207,7 @@ public class Library {
      * @param nodePath
      * @param doc
      */
-    public static Node resolveNodePath(NodePath nodePath, Node doc) {
+    public static Node resolveNodePath(NodePath nodePath, Document doc) {
         return NodePathUtil.resolveNodePath(nodePath, doc);
     }
 
@@ -290,16 +247,17 @@ public class Library {
         }
 
         if (ModelTypeUtil.isAsyncApiModel(source)) {
-            String versionProp = ModelTypeUtil.getVersionPropertyName(toType);
+            AsyncApiDocument doc = (AsyncApiDocument) source;
+            String oldVersion = doc.getAsyncapi();
             String newVersion = ModelTypeUtil.getVersion(toType);
-            AsyncApiDocument newDoc = (AsyncApiDocument) TransformUtil.cloneAndTransform(source, rawJson -> {
-                rawJson.put(versionProp, newVersion);
-                return rawJson;
-            });
+
+            doc.setAsyncapi(newVersion);
+            AsyncApiDocument newDoc = (AsyncApiDocument) cloneDocument(source);
+            doc.setAsyncapi(oldVersion);
             return newDoc;
         }
 
-        throw new TransformationException("Transformation not supported.");
+        throw new RuntimeException("Transformation not supported.");
     }
 
     /**
@@ -328,19 +286,28 @@ public class Library {
             return transformer.getResult();
         }
 
-        throw new TransformationException("No single-step transformation from " + fromType + " to " + toType);
+        throw new RuntimeException("No single-step transformation from " + fromType + " to " + toType);
     }
 
     /**
-     * Clones the given document by performing a deep copy of the entire node tree.  Uses a
-     * generated cloner that walks the source tree once, creating new node instances and
-     * copying property values directly — avoiding JSON serialization overhead.
-     * @param source the document to clone
-     * @return a new document that is a deep copy of the source
+     * Clones the given document by serializing it to a JS object, and then re-parsing it.
+     * @param source
      */
     public static Document cloneDocument(Document source) {
-        ModelCloner cloner = ModelClonerFactory.createModelCloner(source.root().modelType());
-        return (Document) cloner.cloneNode(source);
+        return cloneDocument(source, UnaryOperator.identity());
+    }
+
+    /**
+     * Clones the given document by serializing it to a JS object, and then re-parsing it.
+     * @param source
+     * @param transformer
+     */
+    public static Document cloneDocument(Document source, UnaryOperator<ObjectNode> transformer) {
+        // TODO have the code generator produce a Cloner of some kind that knows how to clone any Node.
+        //      We already have reader/writer dispatchers.  We only need something that can create a new,
+        //      empty model instance from an existing (not empty) model.
+        ObjectNode jsObj = transformer.apply(writeNode(source));
+        return readDocument(jsObj);
     }
 
     /**
@@ -357,7 +324,7 @@ public class Library {
         }
 
         // Validate the data model.
-        ValidationVisitor validator = ValidationUtil.createValidationVisitorForNode((Node) node.root());
+        ValidationVisitor validator = ValidationUtil.createValidationVisitorForNode(node.root());
         validator.setSeverityRegistry(severityRegistry);
         visitTree(node, validator, TraverserDirection.down);
 

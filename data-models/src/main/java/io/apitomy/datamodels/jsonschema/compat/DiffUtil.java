@@ -1,13 +1,7 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
 import io.apitomy.datamodels.models.Node;
-import io.apitomy.datamodels.models.Referenceable;
-import io.apitomy.datamodels.models.jsonschema.JFullSchema;
-import io.apitomy.datamodels.models.jsonschema.JsonSchema;
-import io.apitomy.datamodels.models.ModelType;
-import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
-import io.apitomy.datamodels.jsonschema.convert.CompoundSchemaConverter;
-import io.apitomy.datamodels.models.union.StringStringListUnion;
+import io.apitomy.datamodels.models.union.BooleanJSchemaUnion;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -171,52 +165,19 @@ public final class DiffUtil {
      * Compare two sub-schemas for compatibility. Uses a fresh DiffContext to isolate
      * the comparison, but shares the visited set to prevent infinite recursion.
      */
-    public static boolean isSchemaCompatible(DiffContext ctx, JFullSchema original, JFullSchema updated,
+    public static boolean isSchemaCompatible(DiffContext ctx, Node original, Node updated,
                                               boolean backward) {
-        ctx.pushIsolatedScope();
-        if (original instanceof JCFullSchema || updated instanceof JCFullSchema) {
-            var origCompound = ensureCompound(original);
-            var updCompound = ensureCompound(updated);
-            if (backward) {
-                CompoundSchemaDiffVisitor.diffSchemas(ctx, origCompound, updCompound);
-            } else {
-                CompoundSchemaDiffVisitor.diffSchemas(ctx, updCompound, origCompound);
-            }
+        var subCtx = ctx.isolated();
+        if (backward) {
+            SchemaDiffVisitor.diffSchemas(subCtx, SchemaAccessor.wrap(original), SchemaAccessor.wrap(updated));
         } else {
-            if (backward) {
-                SchemaDiffVisitor.diffSchemas(ctx, original, updated);
-            } else {
-                SchemaDiffVisitor.diffSchemas(ctx, updated, original);
-            }
+            SchemaDiffVisitor.diffSchemas(subCtx, SchemaAccessor.wrap(updated), SchemaAccessor.wrap(original));
         }
-        return ctx.popScopeIsCompatible();
+        return subCtx.foundAllDifferencesAreCompatible();
     }
 
-    static JFullSchema ensureCompound(JFullSchema schema) {
-        if (schema instanceof JCFullSchema) return schema;
-        // Use instanceof checks to determine the model type, ignoring root().modelType()
-        // because sub-schemas may have a compound root after top-level conversion
-        // while themselves remaining draft-specific.
-        ModelType modelType = detectModelType(schema);
-        if (modelType != null) {
-            var converted = CompoundSchemaConverter.toCompound((JsonSchema) schema, modelType);
-            if (converted instanceof JFullSchema fs) return fs;
-        }
-        return schema;
-    }
-
-    static ModelType detectModelType(JFullSchema schema) {
-        if (schema instanceof io.apitomy.datamodels.models.jsonschema.modern.v202012.JM202012FullSchema) return ModelType.JM202012;
-        if (schema instanceof io.apitomy.datamodels.models.jsonschema.modern.v201909.JM201909FullSchema) return ModelType.JM201909;
-        if (schema instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema) return ModelType.JD7;
-        if (schema instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema) return ModelType.JD6;
-        if (schema instanceof io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema) return ModelType.JD4;
-        throw new IllegalArgumentException("Unhandled schema type: " + schema.getClass().getName()
-                + ". Add support for this type in detectModelTypeByInstance().");
-    }
-
-    public static boolean isUnionSchemaCompatible(DiffContext ctx, JsonSchema original,
-                                                   JsonSchema updated, boolean backward) {
+    public static boolean isUnionSchemaCompatible(DiffContext ctx, BooleanJSchemaUnion original,
+                                                   BooleanJSchemaUnion updated, boolean backward) {
         if (original == null || updated == null) return original == updated;
         if (original.isBoolean() && updated.isBoolean()) {
             if (original.asBoolean() == updated.asBoolean()) return true;
@@ -246,11 +207,11 @@ public final class DiffUtil {
                 return !updated.asBoolean();
             }
         }
-        return isSchemaCompatible(ctx, original.asFullSchema(), updated.asFullSchema(), backward);
+        return isSchemaCompatible(ctx, original.asJSchema(), updated.asJSchema(), backward);
     }
 
-    public static void compareSchema(DiffContext ctx, JsonSchema original,
-                                      JsonSchema updated,
+    public static void compareSchema(DiffContext ctx, BooleanJSchemaUnion original,
+                                      BooleanJSchemaUnion updated,
                                       DiffType addedType, DiffType removedType,
                                       DiffType bothType, DiffType backwardNotForwardType,
                                       DiffType forwardNotBackwardType, DiffType noneType) {
@@ -260,8 +221,8 @@ public final class DiffUtil {
         }
     }
 
-    public static void compareSchemaWhenExist(DiffContext ctx, JsonSchema original,
-                                               JsonSchema updated,
+    public static void compareSchemaWhenExist(DiffContext ctx, BooleanJSchemaUnion original,
+                                               BooleanJSchemaUnion updated,
                                                DiffType bothType, DiffType backwardType,
                                                DiffType forwardType, DiffType noneType) {
         var backward = isUnionSchemaCompatible(ctx, original, updated, true);
@@ -284,28 +245,5 @@ public final class DiffUtil {
         } catch (Exception ex) {
             return null;
         }
-    }
-
-    public static String getTypeString(JFullSchema schema) {
-        StringStringListUnion type = schema.getType();
-        if (type != null && type.isString()) {
-            return type.asString();
-        }
-        return null;
-    }
-
-    public static List<String> getTypeList(JFullSchema schema) {
-        StringStringListUnion type = schema.getType();
-        if (type == null) return null;
-        if (type.isString()) return List.of(type.asString());
-        if (type.isStringList()) return type.asStringList();
-        return null;
-    }
-
-    public static String get$ref(Node node) {
-        if (node instanceof Referenceable ref) {
-            return ref.get$ref();
-        }
-        return null;
     }
 }

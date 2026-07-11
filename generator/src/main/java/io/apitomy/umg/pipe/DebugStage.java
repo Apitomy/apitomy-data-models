@@ -14,7 +14,7 @@ public class DebugStage extends AbstractStage {
             namespace.getTraits().values().forEach(trait -> {
                 debug("    Trait: " + trait.getName());
                 trait.getProperties().values().forEach(field -> {
-                    debug("        Property: " + field.getName() + " (" + field.getResolvedType() + ")");
+                    debug("        Property: " + field.getName() + " (" + field.getType() + ")");
                 });
             });
             namespace.getEntities().values().forEach(entity -> {
@@ -23,7 +23,7 @@ public class DebugStage extends AbstractStage {
                     debug("        Trait: " + trait.getName());
                 });
                 entity.getProperties().values().forEach(field -> {
-                    debug("        Property: " + field.getName() + " (" + field.getResolvedType() + ")");
+                    debug("        Property: " + field.getName() + " (" + field.getType() + ")");
                 });
             });
             if (namespace.getVisitor() != null) {

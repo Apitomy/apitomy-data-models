@@ -1,165 +1,113 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
 import io.apitomy.datamodels.Library;
-import io.apitomy.datamodels.jsonschema.convert.CompoundSchemaConverter;
-import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefDereferencer;
+import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefResolver;
+import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefResolverChain;
+import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefTraversal;
 import io.apitomy.datamodels.models.ModelType;
-import io.apitomy.datamodels.models.jsonschema.JFullSchema;
-import io.apitomy.datamodels.models.jsonschema.JsonSchema;
+import io.apitomy.datamodels.models.jsonschema.JsonSchemaDocument;
+
+import java.util.Set;
 
 /**
- * Entry point for JSON Schema compatibility checking.
- * <p>
- * Schemas are parsed from JSON strings, optionally dereferenced, converted to a
- * compound schema type that merges all draft-version properties, then compared
- * using the diff visitor infrastructure.
- * <p>
- * The checker parses its own copies of the input JSON strings — the caller's
- * data is never modified.
- * <p>
- * Use the {@link #builder()} method to create and configure an instance:
- * <pre>{@code
- * var checker = JsonSchemaCompatibilityChecker.builder()
- *     .allowCrossVersionChecking(true)
- *     .dereferencer(deref)
- *     .build();
- *
- * CompatibilityCheckResult result = checker.checkBackward(original, updated);
- * if (!result.isCompatible()) {
- *     result.getIncompatibleDifferences().forEach(System.out::println);
- * }
- * }</pre>
- * <p>
- * Instances are immutable and safe to reuse across multiple checks.
+ * Entry point for JSON Schema backward compatibility checking.
  * <p>
  * <b>Note:</b> This API is experimental and subject to change in future versions.
+ * <p>
+ * Usage:
+ * <pre>
+ *   var result = JsonSchemaCompatibilityChecker.checkBackwardCompatibility(oldSchema, newSchema);
+ *   if (!result.isCompatible()) {
+ *       result.getIncompatibleDifferences().forEach(d -> ...);
+ *   }
+ * </pre>
  */
 public final class JsonSchemaCompatibilityChecker {
 
-    private final boolean allowCrossVersionChecking;
-    private final JsonSchemaRefDereferencer dereferencer;
-
-    /**
-     * Package-private constructor — use {@link #builder()} to create instances.
-     */
-    JsonSchemaCompatibilityChecker(boolean allowCrossVersionChecking,
-                                   JsonSchemaRefDereferencer dereferencer) {
-        this.allowCrossVersionChecking = allowCrossVersionChecking;
-        this.dereferencer = dereferencer;
+    private JsonSchemaCompatibilityChecker() {
     }
 
     /**
-     * Returns a new builder for configuring a {@link JsonSchemaCompatibilityChecker}.
+     * Check if the updated schema is backward compatible with the original.
+     * Backward compatible means: data written with the original schema can be read
+     * using the updated schema.
      *
-     * @return a new builder instance
+     * @param originalSchemaJson JSON text of the original schema
+     * @param updatedSchemaJson  JSON text of the updated schema
+     * @return the diff context with all found differences
      */
-    public static JsonSchemaCompatibilityCheckerBuilder builder() {
-        return new JsonSchemaCompatibilityCheckerBuilder();
+    public static DiffContext checkBackwardCompatibility(String originalSchemaJson, String updatedSchemaJson) {
+        return checkBackwardCompatibility(originalSchemaJson, updatedSchemaJson,
+                JsonSchemaRefResolverChain.withDefaults());
     }
 
     /**
-     * Check backward compatibility: data written with the original schema can
-     * be read by a consumer using the updated schema.
-     *
-     * @param originalJson the original JSON Schema document as a JSON string
-     * @param updatedJson  the updated JSON Schema document as a JSON string
-     * @return the result of the backward compatibility check
-     * @throws IllegalArgumentException if the input is not a valid JSON Schema,
-     *         or if cross-version checking is disabled and the schemas use different draft versions
+     * Check backward compatibility using a custom reference resolver.
+     * Use this when external references need to be resolved from a specific source
+     * (e.g., a schema registry).
      */
-    public CompatibilityCheckResult checkBackward(String originalJson, String updatedJson) {
-        return new CompatibilityCheckResult(doCheck(originalJson, updatedJson));
-    }
+    public static DiffContext checkBackwardCompatibility(String originalSchemaJson, String updatedSchemaJson,
+                                                         JsonSchemaRefResolver resolver) {
+        java.util.Objects.requireNonNull(resolver, "resolver must not be null");
+        var originalDoc = parseSchema(originalSchemaJson);
+        var updatedDoc = parseSchema(updatedSchemaJson);
 
-    /**
-     * Check forward compatibility: data written with the updated schema can
-     * be read by a consumer using the original schema.
-     * <p>
-     * This is equivalent to checking backward compatibility with the arguments swapped.
-     *
-     * @param originalJson the original JSON Schema document as a JSON string
-     * @param updatedJson  the updated JSON Schema document as a JSON string
-     * @return the result of the forward compatibility check
-     * @throws IllegalArgumentException if the input is not a valid JSON Schema,
-     *         or if cross-version checking is disabled and the schemas use different draft versions
-     */
-    public CompatibilityCheckResult checkForward(String originalJson, String updatedJson) {
-        return new CompatibilityCheckResult(doCheck(updatedJson, originalJson));
-    }
+        var refTraversal = new JsonSchemaRefTraversal(resolver);
+        var ctx = DiffContext.createRootContext("", null, refTraversal);
 
-    /**
-     * Check full compatibility (both backward and forward).
-     * <p>
-     * This performs both a backward and a forward compatibility check and
-     * combines the results into a {@link FullCompatibilityCheckResult}.
-     *
-     * @param originalJson the original JSON Schema document as a JSON string
-     * @param updatedJson  the updated JSON Schema document as a JSON string
-     * @return the combined result of both compatibility checks
-     * @throws IllegalArgumentException if the input is not a valid JSON Schema,
-     *         or if cross-version checking is disabled and the schemas use different draft versions
-     */
-    public FullCompatibilityCheckResult checkFull(String originalJson, String updatedJson) {
-        var backward = checkBackward(originalJson, updatedJson);
-        var forward = checkForward(originalJson, updatedJson);
-        return new FullCompatibilityCheckResult(backward, forward);
-    }
+        flagModernVersions(ctx, originalDoc);
+        flagModernVersions(ctx, updatedDoc);
 
-    // --- Internal ---
+        var originalAccessor = SchemaAccessor.wrap(originalDoc);
+        var updatedAccessor = SchemaAccessor.wrap(updatedDoc);
 
-    private DiffContext doCheck(String originalSchemaJson, String updatedSchemaJson) {
-        var originalParsed = parseSchema(originalSchemaJson);
-        var updatedParsed = parseSchema(updatedSchemaJson);
-
-        var originalModelType = originalParsed.root().modelType();
-        var updatedModelType = updatedParsed.root().modelType();
-
-        if (!allowCrossVersionChecking && originalModelType != updatedModelType) {
-            throw new IllegalArgumentException(
-                    "Cross-version checking is not enabled. Original: " + originalModelType
-                    + ", Updated: " + updatedModelType
-                    + ". Use allowCrossVersionChecking(true) to enable.");
-        }
-
-        var ctx = DiffContext.createRootContext();
-
-        // Dereference if configured
-        if (dereferencer != null) {
-            var origResult = dereferencer.dereference(originalParsed);
-            var updResult = dereferencer.dereference(updatedParsed);
-            origResult.unresolvedRefs().forEach(ctx::addUnsupported);
-            updResult.unresolvedRefs().forEach(ctx::addUnsupported);
-        }
-
-        // Convert both schemas to compound type
-        var originalCompound = toCompoundFullSchema(originalParsed, originalModelType);
-        var updatedCompound = toCompoundFullSchema(updatedParsed, updatedModelType);
-
-        // TODO: Modern version support — flag for now, remove when diff classes handle all keywords
-        flagModernVersions(ctx, originalModelType);
-        flagModernVersions(ctx, updatedModelType);
-
-        CompoundSchemaDiffVisitor.diffSchemas(ctx, originalCompound, updatedCompound);
+        SchemaDiffVisitor.diffSchemas(ctx, originalAccessor, updatedAccessor);
         return ctx;
     }
 
-    private static JFullSchema toCompoundFullSchema(JFullSchema doc, ModelType modelType) {
-        JsonSchema compound = CompoundSchemaConverter.toCompound((JsonSchema) doc, modelType);
-        if (compound instanceof JFullSchema) {
-            return (JFullSchema) compound;
-        }
-        throw new IllegalArgumentException("Failed to convert schema to compound type");
+    /**
+     * Check if the updated schema is backward compatible with the original.
+     */
+    public static boolean isBackwardCompatible(String originalSchemaJson, String updatedSchemaJson) {
+        return checkBackwardCompatibility(originalSchemaJson, updatedSchemaJson)
+                .foundAllDifferencesAreCompatible();
     }
 
-    private static void flagModernVersions(DiffContext ctx, ModelType modelType) {
-        if (modelType == ModelType.JM201909 || modelType == ModelType.JM202012) {
+    /**
+     * Get only the incompatible differences between two schemas.
+     */
+    public static Set<Difference> getIncompatibleDifferences(String originalSchemaJson,
+                                                              String updatedSchemaJson) {
+        return checkBackwardCompatibility(originalSchemaJson, updatedSchemaJson)
+                .getIncompatibleDifferences();
+    }
+
+    /**
+     * Check forward compatibility (updated schema can read data written with original).
+     * Implemented by swapping the argument order.
+     */
+    public static boolean isForwardCompatible(String originalSchemaJson, String updatedSchemaJson) {
+        return isBackwardCompatible(updatedSchemaJson, originalSchemaJson);
+    }
+
+    /**
+     * Check full compatibility (both backward and forward compatible).
+     */
+    public static boolean isFullyCompatible(String originalSchemaJson, String updatedSchemaJson) {
+        return isBackwardCompatible(originalSchemaJson, updatedSchemaJson)
+                && isForwardCompatible(originalSchemaJson, updatedSchemaJson);
+    }
+
+    private static void flagModernVersions(DiffContext ctx, JsonSchemaDocument doc) {
+        var modelType = doc.root().modelType();
+        if (modelType == ModelType.JS201909 || modelType == ModelType.JS202012) {
             ctx.addUnsupported("JSON Schema %s (modern version support not yet implemented)".formatted(modelType));
         }
     }
 
-    private static JFullSchema parseSchema(String schemaJson) {
-        var doc = Library.readRootFromJSONString(schemaJson);
-        if (!(doc instanceof JFullSchema jsonSchemaDoc)) {
+    private static JsonSchemaDocument parseSchema(String schemaJson) {
+        var doc = Library.readDocumentFromJSONString(schemaJson);
+        if (!(doc instanceof JsonSchemaDocument jsonSchemaDoc)) {
             throw new IllegalArgumentException(
                     "Input is not a JSON Schema document. Detected type: " + doc.root().modelType());
         }

@@ -51,22 +51,6 @@ public class JavaIndex {
         return this.enums.get(fullyQualifiedName);
     }
 
-    public JavaInterfaceSource findInterfaceBySimpleName(String simpleName) {
-        return this.interfaces.entrySet().stream()
-                .filter(e -> e.getKey().endsWith("." + simpleName))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .orElse(null);
-    }
-
-    public JavaClassSource findClassBySimpleName(String simpleName) {
-        return this.classes.entrySet().stream()
-                .filter(e -> e.getKey().endsWith("." + simpleName))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .orElse(null);
-    }
-
     public void index(JavaClassSource _class) {
         String fqcn = _class.getCanonicalName();
         this.classes.put(fqcn, _class);
