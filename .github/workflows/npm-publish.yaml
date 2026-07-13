@@ -69,6 +69,8 @@ jobs:
 
       - name: Publish to NPM
         run: npm publish --provenance --access public ./data-models/target/ts/
+        env:
+          NODE_AUTH_TOKEN: ''
 
 
       - name: Slack Notification (Always)
