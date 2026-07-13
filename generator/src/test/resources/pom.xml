@@ -63,7 +63,7 @@
         <!-- Dependency Versions -->
         <version.com.fasterxml.jackson>2.22.1</version.com.fasterxml.jackson>
         <version.commons-io>2.22.0</version.commons-io>
-        <version.junit-jupiter>6.1.1</version.junit-jupiter>
+        <version.junit-jupiter>6.1.2</version.junit-jupiter>
         <version.org.jsweet>3.1.0</version.org.jsweet>
         <version.org.skyscreamer>1.5.3</version.org.skyscreamer>
         
