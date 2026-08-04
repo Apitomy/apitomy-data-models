@@ -33,6 +33,6 @@
     "jest": "30.4.2",
     "ts-jest": "29.4.12",
     "tsup": "8.5.1",
-    "typescript": "5.9.3"
+    "typescript": "7.0.2"
   }
 }
