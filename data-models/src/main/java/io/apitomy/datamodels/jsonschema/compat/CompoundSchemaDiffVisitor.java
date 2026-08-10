@@ -32,7 +32,7 @@ import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
  * visitor method for each field. The visitor delegates to {@link DiffUtil} and
  * the existing diff helper classes for the actual comparison logic.
  */
-// TODO: Modern schema support — unevaluatedItems, unevaluatedProperties, $dynamicRef, etc.
+// TODO: Modern schema support — $dynamicRef, $recursiveRef
 public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> {
 
     private final DiffContext ctx;
@@ -408,6 +408,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     @Override
     public boolean diffFullSchemaItems(BooleanFullSchemaFullSchemaListUnion original,
                                     BooleanFullSchemaFullSchemaListUnion updated) {
+        // After normalization, items is always a single schema or boolean (tuples → prefixItems)
         if (original == null && updated == null) return false;
 
         if (original != null && updated != null) {
@@ -417,14 +418,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                         updated.asFullSchema(), true)) {
                     subCtx.addDifference(ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED, original, updated);
                 }
-            } else if (original.isFullSchemaList() && updated.isFullSchemaList()) {
-                diffTupleItems(original.asFullSchemaList(), updated.asFullSchemaList());
-            } else if (original.isFullSchemaList() && updated.isFullSchema()) {
-                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, original, updated);
-            } else if (original.isFullSchema() && updated.isFullSchemaList()) {
-                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, original, updated);
-            } else if (original.isBoolean() || updated.isBoolean()) {
-                // boolean items handled via isUnionSchemaCompatible indirectly
             }
         } else {
             diffAddedRemoved(ctx, original, updated,
@@ -433,15 +426,24 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         return false;
     }
 
-    @SuppressWarnings("unchecked")
-    private void diffTupleItems(List<JFullSchema> origList, List<JFullSchema> updList) {
+    @Override
+    public void diffFullSchemaPrefixItems(List<JsonSchema> original, List<JsonSchema> updated,
+                                           CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
+        if (original == null && updated == null) return;
+
+        var origList = original != null ? original : List.<JsonSchema>of();
+        var updList = updated != null ? updated : List.<JsonSchema>of();
         var minSize = Math.min(origList.size(), updList.size());
+
         for (var i = 0; i < minSize; i++) {
-            var subCtx = ctx.sub("items/" + i);
             var origSchema = origList.get(i);
             var updSchema = updList.get(i);
-            if (!DiffUtil.isSchemaCompatible(subCtx, origSchema, updSchema, true)) {
-                subCtx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, origSchema, updSchema);
+            if (origSchema.isFullSchema() && updSchema.isFullSchema()) {
+                var subCtx = ctx.sub("prefixItems/" + i);
+                if (!DiffUtil.isSchemaCompatible(subCtx, origSchema.asFullSchema(),
+                        updSchema.asFullSchema(), true)) {
+                    subCtx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, origSchema, updSchema);
+                }
             }
         }
 
@@ -452,52 +454,48 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             } else if (origAI != null && origAI.isFullSchema()) {
                 var allCompatible = true;
                 for (var i = minSize; i < updList.size(); i++) {
-                    var subCtx = ctx.sub("items/" + i);
-                    if (!DiffUtil.isSchemaCompatible(subCtx, origAI.asFullSchema(),
-                            updList.get(i), true)) {
-                        allCompatible = false;
-                        break;
+                    if (updList.get(i).isFullSchema()) {
+                        var subCtx = ctx.sub("prefixItems/" + i);
+                        if (!DiffUtil.isSchemaCompatible(subCtx, origAI.asFullSchema(),
+                                updList.get(i).asFullSchema(), true)) {
+                            allCompatible = false;
+                            break;
+                        }
                     }
                 }
                 if (allCompatible) {
-                    ctx.addDifference(
-                            ARRAY_TYPE_ITEM_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES,
+                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES,
                             origList.size(), updList.size());
                 } else {
-                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED,
-                            origList.size(), updList.size());
+                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
                 }
             } else {
-                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED,
-                        origList.size(), updList.size());
+                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
             }
         } else if (updList.size() < origList.size()) {
             var updAI = currentUpdated instanceof JCFullSchema c ? c.getAdditionalItems() : null;
-            var updPermitsAdditional = updAI == null
-                    || (updAI.isBoolean() ? updAI.asBoolean() : true);
+            var updPermitsAdditional = updAI == null || (updAI.isBoolean() ? updAI.asBoolean() : true);
             if (!updPermitsAdditional) {
-                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED,
-                        origList.size(), updList.size());
+                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
             } else if (updAI != null && updAI.isFullSchema()) {
                 var allCompatible = true;
                 for (var i = minSize; i < origList.size(); i++) {
-                    var subCtx = ctx.sub("items/" + i);
-                    if (!DiffUtil.isSchemaCompatible(subCtx, origList.get(i),
-                            updAI.asFullSchema(), true)) {
-                        allCompatible = false;
-                        break;
+                    if (origList.get(i).isFullSchema()) {
+                        var subCtx = ctx.sub("prefixItems/" + i);
+                        if (!DiffUtil.isSchemaCompatible(subCtx, origList.get(i).asFullSchema(),
+                                updAI.asFullSchema(), true)) {
+                            allCompatible = false;
+                            break;
+                        }
                     }
                 }
                 if (allCompatible) {
-                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED,
-                            origList.size(), updList.size());
+                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED, origList.size(), updList.size());
                 } else {
-                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED,
-                            origList.size(), updList.size());
+                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
                 }
             } else {
-                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED,
-                        origList.size(), updList.size());
+                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED, origList.size(), updList.size());
             }
         }
     }
@@ -554,6 +552,41 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         var subCtx = ctx.sub("contains");
         if (!isUnionSchemaCompatible(subCtx, original, updated, true)) {
             subCtx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, original, updated);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean diffFullSchemaUnevaluatedItems(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) return false;
+        if (original != null && updated != null
+                && original.isFullSchema() && updated.isFullSchema()) {
+            if (isUnionSchemaCompatible(ctx, original, updated, true)) {
+                ctx.addDifference(ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_UNCHANGED, original, updated);
+            } else {
+                ctx.addDifference(ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED, original, updated);
+            }
+        } else {
+            diffAddedRemoved(ctx, original, updated,
+                    ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED, ARRAY_TYPE_ALL_ITEM_SCHEMA_REMOVED);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean diffFullSchemaUnevaluatedProperties(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) return false;
+        if (original != null && updated != null
+                && original.isFullSchema() && updated.isFullSchema()) {
+            if (isUnionSchemaCompatible(ctx, original, updated, true)) {
+                ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_UNCHANGED, original, updated);
+            } else {
+                ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_CHANGED, original, updated);
+            }
+        } else {
+            diffAddedRemoved(ctx, original, updated,
+                    OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_ADDED,
+                    OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_REMOVED);
         }
         return false;
     }
