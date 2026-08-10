@@ -1,5 +1,6 @@
 package io.apitomy.datamodels.jsonschema.convert;
 
+import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaFullSchemaListUnion;
 import io.apitomy.datamodels.models.jsonschema.Dependency;
 import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
@@ -48,6 +49,11 @@ public class JD7ToCompoundConverter extends JD7ToJCConversionVisitor {
                 target.setMaximum(rangeValue(value, true));
             }
         }
+    }
+
+    @Override
+    public void convertFullSchemaItems(BooleanFullSchemaFullSchemaListUnion value, JCFullSchema target) {
+        CompoundSchemaConverter.normalizeItems(value, target);
     }
 
     @Override

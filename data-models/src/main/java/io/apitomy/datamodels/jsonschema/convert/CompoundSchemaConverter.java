@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.apitomy.datamodels.models.Any;
 import io.apitomy.datamodels.models.ModelType;
+import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaFullSchemaListUnion;
 import io.apitomy.datamodels.models.jsonschema.Dependency;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
@@ -71,6 +72,21 @@ public class CompoundSchemaConverter {
         }
         if (requiredMap != null) {
             target.setDependentRequired(requiredMap);
+        }
+    }
+
+    /**
+     * Normalizes d4-d7 {@code items} into compound fields:
+     * tuple (list) → {@code prefixItems}, single schema → {@code items}.
+     */
+    static void normalizeItems(BooleanFullSchemaFullSchemaListUnion value, JCFullSchema target) {
+        if (value == null) return;
+        if (value.isFullSchemaList()) {
+            for (var schema : value.asFullSchemaList()) {
+                target.addPrefixItem((JsonSchema) schema);
+            }
+        } else {
+            target.setItems(value);
         }
     }
 }
