@@ -3827,6 +3827,176 @@
         "backward": { "compatible": true },
         "forward": { "compatible": true }
       }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: $defs basic compatibility",
+      "compatibility": "both",
+      "original": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "$defs": {
+          "Address": {
+            "type": "object",
+            "properties": { "street": { "type": "string" } }
+          }
+        },
+        "properties": { "home": { "$ref": "#/$defs/Address" } }
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "$defs": {
+          "Address": {
+            "type": "object",
+            "properties": { "street": { "type": "string" } }
+          }
+        },
+        "properties": { "home": { "$ref": "#/$defs/Address" } }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: dependentSchemas add dependency",
+      "compatibility": "backward",
+      "original": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "address": { "type": "string" } },
+        "dependentSchemas": {
+          "address": {
+            "properties": { "city": { "type": "string" } }
+          }
+        }
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "address": { "type": "string" } }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: dependentRequired add member",
+      "compatibility": "backward",
+      "original": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "address": { "type": "string" }, "city": { "type": "string" } },
+        "dependentRequired": {
+          "address": ["city"]
+        }
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "address": { "type": "string" }, "city": { "type": "string" } }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: dependentRequired added is not backward compatible",
+      "original": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "address": { "type": "string" } },
+        "required": ["name"]
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "address": { "type": "string" } },
+        "required": ["name"],
+        "dependentRequired": {
+          "address": ["name"]
+        }
+      },
+      "expected": {
+        "backward": { "compatible": false },
+        "forward": { "compatible": true }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Cross-version: d7 dependencies vs 2019-09 dependentSchemas",
+      "config": { "allowCrossVersionChecking": true },
+      "compatibility": "both",
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "address": { "type": "string" } },
+        "dependencies": {
+          "address": {
+            "properties": { "city": { "type": "string" } }
+          }
+        }
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "address": { "type": "string" } },
+        "dependentSchemas": {
+          "address": {
+            "properties": { "city": { "type": "string" } }
+          }
+        }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Cross-version: d7 dependencies (string-array) vs 2019-09 dependentRequired",
+      "config": { "allowCrossVersionChecking": true },
+      "compatibility": "both",
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "address": { "type": "string" }, "city": { "type": "string" } },
+        "dependencies": {
+          "address": ["city"]
+        }
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "address": { "type": "string" }, "city": { "type": "string" } },
+        "dependentRequired": {
+          "address": ["city"]
+        }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: 2019-09 basic schema compatibility",
+      "compatibility": "both",
+      "original": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "age": { "type": "integer" } },
+        "required": ["name"]
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "age": { "type": "integer" } },
+        "required": ["name"]
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: 2020-12 basic schema compatibility",
+      "compatibility": "both",
+      "original": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" } },
+        "required": ["name"]
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" } },
+        "required": ["name"]
+      }
     }
   ]
 }
