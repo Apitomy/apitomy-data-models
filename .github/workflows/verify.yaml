@@ -7,14 +7,14 @@ on:
       - 'LICENSE'
       - 'README*'
       - 'CODE_OF_CONDUCT*'
-    branches: [main]
+    branches: [main, feature/json-schema-rewrite-clean]
   pull_request:
     paths-ignore:
       - '.gitignore'
       - 'LICENSE'
       - 'README*'
       - 'CODE_OF_CONDUCT*'
-    branches: [main]
+    branches: [main, feature/json-schema-rewrite-clean]
 
 jobs:
   build-verify:
