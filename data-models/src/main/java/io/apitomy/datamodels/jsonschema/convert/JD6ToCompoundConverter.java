@@ -1,11 +1,13 @@
 package io.apitomy.datamodels.jsonschema.convert;
 
+import io.apitomy.datamodels.models.jsonschema.Dependency;
 import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValueImpl;
 import io.apitomy.datamodels.models.jsonschema.draft.draft6.visitors.JD6ToJCConversionVisitor;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * Converts Draft 6 schemas to the compound schema type.
@@ -46,6 +48,11 @@ public class JD6ToCompoundConverter extends JD6ToJCConversionVisitor {
                 target.setMaximum(rangeValue(value, true));
             }
         }
+    }
+
+    @Override
+    public void convertFullSchemaDependencies(Map<String, Dependency> value, JCFullSchema target) {
+        CompoundSchemaConverter.splitDependencies(value, target);
     }
 
     /**
