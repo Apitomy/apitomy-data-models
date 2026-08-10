@@ -3997,6 +3997,110 @@
         "properties": { "name": { "type": "string" } },
         "required": ["name"]
       }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: prefixItems basic compatibility",
+      "compatibility": "both",
+      "original": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "prefixItems": [
+          { "type": "string" },
+          { "type": "integer" }
+        ]
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "prefixItems": [
+          { "type": "string" },
+          { "type": "integer" }
+        ]
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: prefixItems narrowed (added item)",
+      "expected": {
+        "backward": { "compatible": false },
+        "forward": { "compatible": true }
+      },
+      "original": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "prefixItems": [
+          { "type": "string" }
+        ]
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "prefixItems": [
+          { "type": "string" },
+          { "type": "integer" }
+        ]
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Cross-version: d7 tuple items vs 2020-12 prefixItems",
+      "config": { "allowCrossVersionChecking": true },
+      "compatibility": "both",
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "array",
+        "items": [
+          { "type": "string" },
+          { "type": "integer" }
+        ]
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "prefixItems": [
+          { "type": "string" },
+          { "type": "integer" }
+        ]
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: unevaluatedProperties added",
+      "expected": {
+        "backward": { "compatible": false },
+        "forward": { "compatible": true }
+      },
+      "original": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" } }
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" } },
+        "unevaluatedProperties": false
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: unevaluatedProperties removed",
+      "expected": {
+        "backward": { "compatible": true },
+        "forward": { "compatible": false }
+      },
+      "original": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" } },
+        "unevaluatedProperties": false
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "name": { "type": "string" } }
+      }
     }
   ]
 }
