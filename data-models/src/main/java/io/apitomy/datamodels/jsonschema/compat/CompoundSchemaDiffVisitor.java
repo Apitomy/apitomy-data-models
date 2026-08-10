@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.apitomy.datamodels.jsonschema.convert.CompoundSchemaConverter;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaFullSchemaListUnion;
-import io.apitomy.datamodels.models.jsonschema.Dependency;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
@@ -19,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.*;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
@@ -233,7 +233,18 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public boolean visitFullSchemaPatternProperty(JsonSchema original, JsonSchema updated) { return false; }
 
     @Override
-    public boolean visitFullSchemaDependency(Dependency original, Dependency updated) { return false; }
+    public boolean visitFullSchemaDependentSchema(JsonSchema original, JsonSchema updated) {
+        if (original != null && updated != null
+                && original.isFullSchema() && updated.isFullSchema()) {
+            var subCtx = ctx.sub("dependentSchemas");
+            if (!isSchemaCompatible(subCtx, original.asFullSchema(),
+                    updated.asFullSchema(), true)) {
+                subCtx.addDifference(OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED,
+                        original, updated);
+            }
+        }
+        return false;
+    }
 
     @Override
     public boolean visitFullSchemaAllOfItem(JsonSchema original, JsonSchema updated) { return false; }
@@ -755,11 +766,31 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         return false;
     }
 
+    // dependencies is always empty after conversion — d4-d7 entries are split
+    // into dependentSchemas/dependentRequired by the converters.
+
     @Override
-    public void diffFullSchemaDependencies(Map<String, Dependency> original,
-                                           Map<String, Dependency> updated,
-                                           CollectionDiff<DefaultPairingKey, Dependency> diff) {
-        // Suppress auto-recursion for matched dependencies
+    public void diffFullSchemaDependentSchemas(Map<String, JsonSchema> original,
+                                                Map<String, JsonSchema> updated,
+                                                CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
+        if (original == null && updated == null) return;
+
+        var origKeys = original != null
+                ? new HashSet<>(original.keySet()) : new HashSet<String>();
+        var updKeys = updated != null
+                ? new HashSet<>(updated.keySet()) : new HashSet<String>();
+
+        diffSetChanged(ctx, origKeys, updKeys,
+                OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_ADDED,
+                OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_REMOVED,
+                OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_CHANGED,
+                OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_MEMBER_ADDED,
+                OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_MEMBER_REMOVED);
+    }
+
+    @Override
+    public void diffFullSchemaDependentRequired(Map<String, JsonNode> original,
+                                                 Map<String, JsonNode> updated) {
         if (original == null && updated == null) return;
 
         var origKeys = original != null
@@ -778,40 +809,43 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             var commonKeys = new HashSet<>(origKeys);
             commonKeys.retainAll(updKeys);
             for (var key : commonKeys) {
-                var origValue = original.get(key);
-                var updValue = updated.get(key);
-                if (origValue.isStringList() && updValue.isStringList()) {
-                    var origSet = new HashSet<>(origValue.asStringList());
-                    var updSet = new HashSet<>(updValue.asStringList());
-                    for (var v : origSet) {
-                        if (!updSet.contains(v)) {
-                            ctx.addDifference(
-                                    OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_REMOVED,
-                                    v, null);
-                        }
-                    }
-                    for (var v : updSet) {
-                        if (!origSet.contains(v)) {
-                            ctx.addDifference(
-                                    OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_ADDED,
-                                    null, v);
-                        }
-                    }
-                    if (!origSet.equals(updSet)) {
+                var origArray = original.get(key);
+                var updArray = updated.get(key);
+                var origSet = jsonArrayToStringSet(origArray);
+                var updSet = jsonArrayToStringSet(updArray);
+                for (var v : origSet) {
+                    if (!updSet.contains(v)) {
                         ctx.addDifference(
-                                OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_CHANGED,
-                                origValue, updValue);
+                                OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_REMOVED,
+                                v, null);
                     }
-                } else if (origValue.isFullSchema() && updValue.isFullSchema()) {
-                    var subCtx = ctx.sub("dependencies/" + key);
-                    if (!isSchemaCompatible(subCtx, origValue.asFullSchema(),
-                            updValue.asFullSchema(), true)) {
-                        subCtx.addDifference(OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED,
-                                origValue, updValue);
+                }
+                for (var v : updSet) {
+                    if (!origSet.contains(v)) {
+                        ctx.addDifference(
+                                OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_ADDED,
+                                null, v);
                     }
+                }
+                if (!origSet.equals(updSet)) {
+                    ctx.addDifference(
+                            OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_CHANGED,
+                            origArray, updArray);
                 }
             }
         }
+    }
+
+    private static Set<String> jsonArrayToStringSet(JsonNode arrayNode) {
+        var set = new HashSet<String>();
+        if (arrayNode != null && arrayNode.isArray()) {
+            for (var element : arrayNode) {
+                if (element.isTextual()) {
+                    set.add(element.asText());
+                }
+            }
+        }
+        return set;
     }
 
     // -----------------------------------------------------------------------

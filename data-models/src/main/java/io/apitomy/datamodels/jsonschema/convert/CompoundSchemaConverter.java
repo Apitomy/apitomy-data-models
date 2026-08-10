@@ -1,13 +1,20 @@
 package io.apitomy.datamodels.jsonschema.convert;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.apitomy.datamodels.models.Any;
 import io.apitomy.datamodels.models.ModelType;
+import io.apitomy.datamodels.models.jsonschema.Dependency;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
+import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
 import io.apitomy.datamodels.models.jsonschema.draft.draft4.visitors.JD4ToJCConversionTraverser;
 import io.apitomy.datamodels.models.jsonschema.draft.draft6.visitors.JD6ToJCConversionTraverser;
 import io.apitomy.datamodels.models.jsonschema.draft.draft7.visitors.JD7ToJCConversionTraverser;
 import io.apitomy.datamodels.models.jsonschema.modern.v201909.visitors.JM201909ToJCConversionTraverser;
 import io.apitomy.datamodels.models.jsonschema.modern.v202012.visitors.JM202012ToJCConversionTraverser;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Converts any JSON Schema version to the compound schema type.
@@ -40,5 +47,30 @@ public class CompoundSchemaConverter {
                 return source;
         }
         return (JsonSchema) result;
+    }
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    /**
+     * Splits a d4-d7 {@code dependencies} map into {@code dependentSchemas}
+     * and {@code dependentRequired} on the compound target.
+     */
+    static void splitDependencies(Map<String, Dependency> value, JCFullSchema target) {
+        if (value == null) return;
+        Map<String, JsonNode> requiredMap = null;
+        for (Map.Entry<String, Dependency> entry : value.entrySet()) {
+            var dep = entry.getValue();
+            if (dep.isFullSchema()) {
+                target.addDependentSchema(entry.getKey(), (JsonSchema) dep.asFullSchema());
+            } else if (dep.isStringList()) {
+                if (requiredMap == null) {
+                    requiredMap = new LinkedHashMap<>();
+                }
+                requiredMap.put(entry.getKey(), MAPPER.valueToTree(dep.asStringList()));
+            }
+        }
+        if (requiredMap != null) {
+            target.setDependentRequired(requiredMap);
+        }
     }
 }

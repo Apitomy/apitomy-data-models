@@ -1,9 +1,12 @@
 package io.apitomy.datamodels.jsonschema.convert;
 
+import io.apitomy.datamodels.models.jsonschema.Dependency;
 import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValueImpl;
 import io.apitomy.datamodels.models.jsonschema.draft.draft4.visitors.JD4ToJCConversionVisitor;
+
+import java.util.Map;
 
 /**
  * Converts Draft 4 schemas to the compound schema type.
@@ -41,6 +44,11 @@ public class JD4ToCompoundConverter extends JD4ToJCConversionVisitor {
         if (Boolean.TRUE.equals(value) && target.getMaximum() != null) {
             target.getMaximum().setExclusive(true);
         }
+    }
+
+    @Override
+    public void convertFullSchemaDependencies(Map<String, Dependency> value, JCFullSchema target) {
+        CompoundSchemaConverter.splitDependencies(value, target);
     }
 
     private static JCRangeValue rangeValue(Number value, boolean exclusive) {

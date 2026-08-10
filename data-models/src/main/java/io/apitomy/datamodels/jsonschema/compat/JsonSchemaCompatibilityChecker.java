@@ -135,10 +135,6 @@ public final class JsonSchemaCompatibilityChecker {
         var originalCompound = toCompoundFullSchema(originalParsed, originalModelType);
         var updatedCompound = toCompoundFullSchema(updatedParsed, updatedModelType);
 
-        // TODO: Modern version support — flag for now, remove when diff classes handle all keywords
-        flagModernVersions(ctx, originalModelType);
-        flagModernVersions(ctx, updatedModelType);
-
         CompoundSchemaDiffVisitor.diffSchemas(ctx, originalCompound, updatedCompound);
         return ctx;
     }
@@ -149,12 +145,6 @@ public final class JsonSchemaCompatibilityChecker {
             return (JFullSchema) compound;
         }
         throw new IllegalArgumentException("Failed to convert schema to compound type");
-    }
-
-    private static void flagModernVersions(DiffContext ctx, ModelType modelType) {
-        if (modelType == ModelType.JM201909 || modelType == ModelType.JM202012) {
-            ctx.addUnsupported("JSON Schema %s (modern version support not yet implemented)".formatted(modelType));
-        }
     }
 
     private static JFullSchema parseSchema(String schemaJson) {
