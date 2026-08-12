@@ -4101,6 +4101,177 @@
         "type": "object",
         "properties": { "name": { "type": "string" } }
       }
+    },
+    {
+      "enabled": true,
+      "id": "Cross-version: d7 definitions vs 2019-09 $defs",
+      "config": { "allowCrossVersionChecking": true },
+      "compatibility": "both",
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "definitions": {
+          "Name": { "type": "string", "minLength": 1 }
+        },
+        "properties": { "name": { "$ref": "#/definitions/Name" } }
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "$defs": {
+          "Name": { "type": "string", "minLength": 1 }
+        },
+        "properties": { "name": { "$ref": "#/$defs/Name" } }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: $recursiveRef string comparison (same)",
+      "compatibility": "both",
+      "original": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "$recursiveAnchor": true,
+        "type": "object",
+        "properties": {
+          "child": { "$recursiveRef": "#" }
+        }
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "$recursiveAnchor": true,
+        "type": "object",
+        "properties": {
+          "child": { "$recursiveRef": "#" }
+        }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: $dynamicRef string comparison (same)",
+      "compatibility": "both",
+      "original": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "$defs": {
+          "leaf": { "$dynamicAnchor": "leafType", "type": "string" }
+        },
+        "properties": {
+          "value": { "$dynamicRef": "#leafType" }
+        }
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "$defs": {
+          "leaf": { "$dynamicAnchor": "leafType", "type": "string" }
+        },
+        "properties": {
+          "value": { "$dynamicRef": "#leafType" }
+        }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: 2019-09 if/then/else",
+      "compatibility": "both",
+      "original": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "kind": { "type": "string" }, "value": {} },
+        "if": { "properties": { "kind": { "const": "number" } } },
+        "then": { "properties": { "value": { "type": "number" } } },
+        "else": { "properties": { "value": { "type": "string" } } }
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "kind": { "type": "string" }, "value": {} },
+        "if": { "properties": { "kind": { "const": "number" } } },
+        "then": { "properties": { "value": { "type": "number" } } },
+        "else": { "properties": { "value": { "type": "string" } } }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: dependentRequired member added within key",
+      "expected": {
+        "backward": { "compatible": false },
+        "forward": { "compatible": true }
+      },
+      "original": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "billing": { "type": "string" }, "card": { "type": "string" }, "phone": { "type": "string" } },
+        "dependentRequired": {
+          "billing": ["card"]
+        }
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "billing": { "type": "string" }, "card": { "type": "string" }, "phone": { "type": "string" } },
+        "dependentRequired": {
+          "billing": ["card", "phone"]
+        }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: dependentRequired member removed within key",
+      "expected": {
+        "backward": { "compatible": true },
+        "forward": { "compatible": false }
+      },
+      "original": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "billing": { "type": "string" }, "card": { "type": "string" }, "phone": { "type": "string" } },
+        "dependentRequired": {
+          "billing": ["card", "phone"]
+        }
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2019-09/schema",
+        "type": "object",
+        "properties": { "billing": { "type": "string" }, "card": { "type": "string" }, "phone": { "type": "string" } },
+        "dependentRequired": {
+          "billing": ["card"]
+        }
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: 2020-12 composition (allOf/anyOf)",
+      "compatibility": "both",
+      "original": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "allOf": [
+          { "type": "object", "properties": { "name": { "type": "string" } } },
+          { "type": "object", "properties": { "age": { "type": "integer" } } }
+        ]
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "allOf": [
+          { "type": "object", "properties": { "name": { "type": "string" } } },
+          { "type": "object", "properties": { "age": { "type": "integer" } } }
+        ]
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Modern: 2020-12 enum/const",
+      "compatibility": "both",
+      "original": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "string",
+        "enum": ["red", "green", "blue"]
+      },
+      "updated": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "string",
+        "enum": ["red", "green", "blue"]
+      }
     }
   ]
 }
