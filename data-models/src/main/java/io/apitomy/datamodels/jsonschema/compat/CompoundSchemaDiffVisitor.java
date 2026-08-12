@@ -123,10 +123,38 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             return false;
         }
 
+        var origTypeList = DiffUtil.getTypeList(original);
+        var updTypeList = DiffUtil.getTypeList(updated);
         var originalType = DiffUtil.getTypeString(original);
         var updatedType = DiffUtil.getTypeString(updated);
 
-        if (originalType != null && updatedType != null && !originalType.equals(updatedType)) {
+        if (origTypeList != null && updTypeList != null) {
+            var origSet = new HashSet<>(origTypeList);
+            var updSet = new HashSet<>(updTypeList);
+            // Normalize: integer is a subset of number
+            if (origSet.contains("integer") && updSet.contains("number")) {
+                origSet.remove("integer");
+                origSet.add("number");
+            }
+            if (updSet.contains("integer") && origSet.contains("number")) {
+                updSet.remove("integer");
+                updSet.add("number");
+            }
+            if (!origSet.equals(updSet)) {
+                var added = new HashSet<>(updSet);
+                added.removeAll(origSet);
+                var removed = new HashSet<>(origSet);
+                removed.removeAll(updSet);
+                if (!removed.isEmpty() && added.isEmpty()) {
+                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, origTypeList, updTypeList);
+                } else if (removed.isEmpty() && !added.isEmpty()) {
+                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, origTypeList, updTypeList);
+                } else {
+                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, origTypeList, updTypeList);
+                }
+                return false;
+            }
+        } else if (originalType != null && updatedType != null && !originalType.equals(updatedType)) {
             if ("integer".equals(originalType) && "number".equals(updatedType)) {
                 ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, originalType, updatedType);
             } else if (updatedType.isEmpty() || isEmptyOrTrueSchema(updated)) {
@@ -134,15 +162,12 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             } else {
                 ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, originalType, updatedType);
             }
-            return false; // type changed — no point comparing fields
-        }
-
-        if (originalType != null && updatedType == null) {
+            return false;
+        } else if (originalType != null && updatedType == null) {
             if (isEmptyOrTrueSchema(updated)) {
                 ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, originalType, "");
                 return false;
             }
-            // Check if updated uses composition (anyOf/oneOf) that includes the original type
             var updAnyOf = updated.getAnyOf();
             var updOneOf = updated.getOneOf();
             if (updAnyOf != null || updOneOf != null) {
@@ -162,23 +187,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     return false;
                 }
             }
-        }
-
-        if (originalType == null && updatedType != null) {
+        } else if (originalType == null && updatedType != null) {
             if (isEmptyOrTrueSchema(original)) {
                 ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "", updatedType);
                 return false;
-            }
-        }
-
-        // Multi-valued type check
-        var effectiveType = originalType != null ? originalType : updatedType;
-        if (effectiveType == null) {
-            var origTypeList = DiffUtil.getTypeList(original);
-            var updTypeList = DiffUtil.getTypeList(updated);
-            if ((origTypeList != null && origTypeList.size() > 1)
-                    || (updTypeList != null && updTypeList.size() > 1)) {
-                ctx.addUnsupported("Multi-valued type field (e.g. type: [\"string\", \"number\"])");
             }
         }
 

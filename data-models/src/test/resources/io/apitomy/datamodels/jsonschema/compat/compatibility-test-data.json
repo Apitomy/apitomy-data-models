@@ -4272,6 +4272,87 @@
         "type": "string",
         "enum": ["red", "green", "blue"]
       }
+    },
+    {
+      "enabled": true,
+      "id": "Multi-type: same types both compatible",
+      "compatibility": "both",
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["string", "number"]
+      },
+      "updated": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["string", "number"]
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Multi-type: type added is backward compatible",
+      "compatibility": "backward",
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["string", "number"]
+      },
+      "updated": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["string", "number", "boolean"]
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Multi-type: type removed is not backward compatible",
+      "expected": {
+        "backward": { "compatible": false },
+        "forward": { "compatible": true }
+      },
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["string", "number", "boolean"]
+      },
+      "updated": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["string", "number"]
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Multi-type: integer subset of number is compatible",
+      "compatibility": "both",
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["string", "integer"]
+      },
+      "updated": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["string", "number"]
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Multi-type: single to multi is backward compatible",
+      "compatibility": "backward",
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "string"
+      },
+      "updated": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["string", "number"]
+      }
+    },
+    {
+      "enabled": true,
+      "id": "Multi-type: different order is compatible",
+      "compatibility": "both",
+      "original": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["number", "string"]
+      },
+      "updated": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": ["string", "number"]
+      }
     }
   ]
 }
