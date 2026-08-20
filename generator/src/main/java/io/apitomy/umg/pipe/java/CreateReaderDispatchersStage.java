@@ -69,7 +69,7 @@ public class CreateReaderDispatchersStage extends AbstractVisitorStage {
             readerDispatcherSource.addInterface(vtiInterface.getName());
 
             // Add all methods to the list (but avoid duplicates).
-            List<MethodSource<?>> allMethods = getAllMethodsForVisitorInterface(visitorToImplement);
+            List<MethodSource<?>> allMethods = getVisitMethodsOnly(visitorToImplement);
             allMethods.forEach(method -> {
                 if (!methodNames.contains(method.getName())) {
                     methodsToImplement.add(method);
@@ -121,6 +121,7 @@ public class CreateReaderDispatchersStage extends AbstractVisitorStage {
         });
 
         // Index the new class
+        addBeforeAfterImplementations(readerDispatcherSource, visitor);
         getState().getJavaIndex().index(readerDispatcherSource);
     }
 

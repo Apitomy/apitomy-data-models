@@ -63,7 +63,7 @@ public class CreateClonerDispatchersStage extends AbstractVisitorStage {
             dispatcherSource.addImport(vtiInterface);
             dispatcherSource.addInterface(vtiInterface.getName());
 
-            List<MethodSource<?>> allMethods = getAllMethodsForVisitorInterface(visitorToImplement);
+            List<MethodSource<?>> allMethods = getVisitMethodsOnly(visitorToImplement);
             allMethods.forEach(method -> {
                 if (!methodNames.contains(method.getName())) {
                     methodsToImplement.add(method);
@@ -130,6 +130,7 @@ public class CreateClonerDispatchersStage extends AbstractVisitorStage {
             methodSource.setBody(body.toString());
         });
 
+        addBeforeAfterImplementations(dispatcherSource, visitor);
         getState().getJavaIndex().index(dispatcherSource);
     }
 

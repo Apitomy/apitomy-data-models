@@ -83,18 +83,41 @@ public class CreateAllNodeVisitorStage extends AbstractVisitorStage {
                 .setReturnTypeVoid().setProtected().setAbstract(true);
         visitNodeMethod.addParameter("Node", "node");
 
-        // Now create an implementation for each visit method.
+        // Create beforeVisitNode / afterVisitNode hooks
+        MethodSource<JavaClassSource> beforeMethod = allNodeVisitorSource.addMethod().setName("beforeVisitNode")
+                .setReturnType(boolean.class).setProtected();
+        beforeMethod.addParameter("Node", "node");
+        beforeMethod.setBody("return true;");
+
+        MethodSource<JavaClassSource> afterMethod = allNodeVisitorSource.addMethod().setName("afterVisitNode")
+                .setReturnTypeVoid().setProtected();
+        afterMethod.addParameter("Node", "node");
+        afterMethod.setBody("");
+
+        // Now create an implementation for each visit/beforeVisit/afterVisit method.
         methodsToImplement.forEach(method -> {
+            String name = method.getName();
+            boolean isBefore = name.startsWith("beforeVisit");
+            boolean isAfter = name.startsWith("afterVisit");
+
             MethodSource<JavaClassSource> methodSource = allNodeVisitorSource.addMethod()
-                    .setName(method.getName())
-                    .setReturnTypeVoid()
+                    .setName(name)
                     .setPublic();
-            // We know each visit method will have a single parameter.
             ParameterSource<?> param = method.getParameters().get(0);
             allNodeVisitorSource.addImport(param.getType());
             methodSource.addParameter(param.getType().getSimpleName(), param.getName());
             methodSource.addAnnotation(Override.class);
-            methodSource.setBody("this.visitNode(node);");
+
+            if (isBefore) {
+                methodSource.setReturnType(boolean.class);
+                methodSource.setBody("return this.beforeVisitNode(node);");
+            } else if (isAfter) {
+                methodSource.setReturnTypeVoid();
+                methodSource.setBody("this.afterVisitNode(node);");
+            } else {
+                methodSource.setReturnTypeVoid();
+                methodSource.setBody("this.visitNode(node);");
+            }
         });
 
         // Index the new class

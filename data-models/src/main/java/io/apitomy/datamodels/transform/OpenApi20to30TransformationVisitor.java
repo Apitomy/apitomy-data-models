@@ -53,7 +53,7 @@ import io.apitomy.datamodels.models.openapi.v2x.v20.OpenApi20Schema;
 import io.apitomy.datamodels.models.openapi.v2x.v20.OpenApi20SecurityRequirement;
 import io.apitomy.datamodels.models.openapi.v2x.v20.OpenApi20SecurityScheme;
 import io.apitomy.datamodels.models.openapi.v2x.v20.OpenApi20XML;
-import io.apitomy.datamodels.models.openapi.v2x.v20.visitors.OpenApi20Visitor;
+import io.apitomy.datamodels.models.openapi.v2x.v20.visitors.OpenApi20VisitorAdapter;
 import io.apitomy.datamodels.models.openapi.v3x.OpenApi3xMediaType;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Components;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Contact;
@@ -101,7 +101,7 @@ import java.util.Map;
  * A visitor used to transform an OpenAPI 2.0 document into an OpenAPI 3.0.x document.
  * @author eric.wittmann@gmail.com
  */
-public class OpenApi20to30TransformationVisitor implements OpenApi20Visitor, TraversingVisitor {
+public class OpenApi20to30TransformationVisitor extends OpenApi20VisitorAdapter implements TraversingVisitor {
 
     private OpenApi30Document doc30;
     private TraversalContext traversalContext;

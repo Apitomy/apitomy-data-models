@@ -96,16 +96,23 @@ public class CreateVisitorAdaptersStage extends AbstractVisitorStage {
 
         // Now create an empty implementation for each visit method.
         methodsToImplement.forEach(method -> {
+            boolean isBooleanReturn = method.getName().startsWith("beforeVisit");
+
             MethodSource<JavaClassSource> methodSource = visitorAdapterSource.addMethod()
                     .setName(method.getName())
-                    .setReturnTypeVoid()
                     .setPublic();
+            if (isBooleanReturn) {
+                methodSource.setReturnType(boolean.class);
+                methodSource.setBody("return true;");
+            } else {
+                methodSource.setReturnTypeVoid();
+                methodSource.setBody("");
+            }
             // We know each visit method will have a single parameter.
             ParameterSource<?> param = method.getParameters().get(0);
             visitorAdapterSource.addImport(param.getType());
             methodSource.addParameter(param.getType().getSimpleName(), param.getName());
             methodSource.addAnnotation(Override.class);
-            methodSource.setBody("");
         });
 
         // Index the new class

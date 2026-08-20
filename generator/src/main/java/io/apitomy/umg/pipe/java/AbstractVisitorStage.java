@@ -1,5 +1,6 @@
 package io.apitomy.umg.pipe.java;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +44,47 @@ public abstract class AbstractVisitorStage extends AbstractJavaStage {
             visitor = visitor.getParent();
         }
         return methods;
+    }
+
+    protected List<MethodSource<?>> getVisitMethodsOnly(VisitorModel visitor) {
+        return getAllMethodsForVisitorInterface(visitor).stream()
+                .filter(m -> m.getName().startsWith("visit"))
+                .collect(Collectors.toList());
+    }
+
+    protected List<MethodSource<?>> getBeforeAfterMethodsOnly(VisitorModel visitor) {
+        return getAllMethodsForVisitorInterface(visitor).stream()
+                .filter(m -> m.getName().startsWith("beforeVisit") || m.getName().startsWith("afterVisit"))
+                .collect(Collectors.toList());
+    }
+
+    protected void addBeforeAfterImplementations(org.jboss.forge.roaster.model.source.JavaClassSource classSource,
+                                                  VisitorModel visitor) {
+        Set<String> methodNames = new HashSet<>();
+        for (MethodSource<?> method : getBeforeAfterMethodsOnly(visitor)) {
+            if (methodNames.contains(method.getName())) {
+                continue;
+            }
+            methodNames.add(method.getName());
+
+            boolean isBefore = method.getName().startsWith("beforeVisit");
+            org.jboss.forge.roaster.model.source.ParameterSource<?> param = method.getParameters().get(0);
+            classSource.addImport(param.getType());
+
+            MethodSource<org.jboss.forge.roaster.model.source.JavaClassSource> methodSource = classSource.addMethod()
+                    .setName(method.getName())
+                    .setPublic();
+            methodSource.addParameter(param.getType().getSimpleName(), param.getName());
+            methodSource.addAnnotation(Override.class);
+
+            if (isBefore) {
+                methodSource.setReturnType(boolean.class);
+                methodSource.setBody("return true;");
+            } else {
+                methodSource.setReturnTypeVoid();
+                methodSource.setBody("");
+            }
+        }
     }
 
 }
