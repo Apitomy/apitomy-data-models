@@ -77,8 +77,7 @@ public class CreateTraversersStage extends AbstractVisitorStage {
             traverserSource.addImport(vtiInterface);
             traverserSource.addInterface(vtiInterface);
 
-            // Add all methods to the list (but avoid duplicates).
-            List<MethodSource<?>> allMethods = getAllMethodsForVisitorInterface(visitorToImplement);
+            List<MethodSource<?>> allMethods = getVisitMethodsOnly(visitorToImplement);
             allMethods.forEach(method -> {
                 if (!methodNames.contains(method.getName())) {
                     methodsToImplement.add(method);
@@ -104,18 +103,49 @@ public class CreateTraversersStage extends AbstractVisitorStage {
             String entityName = method.getName().replace("visit", "");
             EntityModel entityModel = getState().getConceptIndex().lookupEntity(entityNamespace, entityName);
 
-            String body = createTraversalMethodBody(entityModel, traverserSource);
+            String visitorTypeName = lookupJavaVisitor(visitor).getName();
+            String body = createTraversalMethodBody(entityModel, traverserSource, visitorTypeName);
             methodSource.setBody(body);
+        });
+
+        // Also implement beforeVisit/afterVisit by delegating to the user's visitor
+        methodsToImplement.forEach(method -> {
+            String entityName = method.getName().replace("visit", "");
+            ParameterSource<?> param = method.getParameters().get(0);
+            String paramType = param.getType().getSimpleName();
+
+            // beforeVisitXyz
+            MethodSource<JavaClassSource> beforeMethod = traverserSource.addMethod()
+                    .setName("beforeVisit" + entityName)
+                    .setReturnType(boolean.class)
+                    .setPublic();
+            beforeMethod.addParameter(paramType, param.getName());
+            beforeMethod.addAnnotation(Override.class);
+            beforeMethod.setBody("return true;");
+
+            // afterVisitXyz
+            MethodSource<JavaClassSource> afterMethod = traverserSource.addMethod()
+                    .setName("afterVisit" + entityName)
+                    .setReturnTypeVoid()
+                    .setPublic();
+            afterMethod.addParameter(paramType, param.getName());
+            afterMethod.addAnnotation(Override.class);
+            afterMethod.setBody("");
         });
 
         // Index the new class
         getState().getJavaIndex().index(traverserSource);
     }
 
-    private String createTraversalMethodBody(EntityModel entityModel, JavaClassSource traverserSource) {
+    private String createTraversalMethodBody(EntityModel entityModel, JavaClassSource traverserSource, String visitorTypeName) {
         JavaInterfaceSource javaEntity = lookupJavaEntity(entityModel);
 
         BodyBuilder body = new BodyBuilder();
+
+        body.addContext("entityName", entityModel.getName());
+        body.addContext("visitorType", visitorTypeName);
+        body.append("if (((${visitorType}) this.visitor).beforeVisit${entityName}(node)) {");
+
         body.append("node.accept(this.visitor);");
 
         Collection<PropertyModel> allProperties = getState().getConceptIndex().getAllEntityProperties(entityModel).stream().map(property -> property.getProperty()).filter(property -> {
@@ -157,6 +187,9 @@ public class CreateTraversersStage extends AbstractVisitorStage {
                 warn("Unhandled property in traverser: " + property);
             }
         });
+
+        body.append("}");
+        body.append("((${visitorType}) this.visitor).afterVisit${entityName}(node);");
 
         return body.toString();
     }

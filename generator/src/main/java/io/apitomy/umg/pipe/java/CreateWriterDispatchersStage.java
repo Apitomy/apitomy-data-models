@@ -69,7 +69,7 @@ public class CreateWriterDispatchersStage extends AbstractVisitorStage {
             writerDispatcherSource.addInterface(vtiInterface.getName());
 
             // Add all methods to the list (but avoid duplicates).
-            List<MethodSource<?>> allMethods = getAllMethodsForVisitorInterface(visitorToImplement);
+            List<MethodSource<?>> allMethods = getVisitMethodsOnly(visitorToImplement);
             allMethods.forEach(method -> {
                 if (!methodNames.contains(method.getName())) {
                     methodsToImplement.add(method);
@@ -121,6 +121,7 @@ public class CreateWriterDispatchersStage extends AbstractVisitorStage {
         });
 
         // Index the new class
+        addBeforeAfterImplementations(writerDispatcherSource, visitor);
         getState().getJavaIndex().index(writerDispatcherSource);
     }
 

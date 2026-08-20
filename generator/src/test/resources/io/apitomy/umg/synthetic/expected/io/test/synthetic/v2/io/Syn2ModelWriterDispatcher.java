@@ -68,4 +68,76 @@ public class Syn2ModelWriterDispatcher implements Syn2Visitor {
 	public void visitItem(SynItem node) {
 		this.writer.writeItem((Syn2Item) node, this.json);
 	}
+
+	@Override
+	public boolean beforeVisitPaths(SynPaths node) {
+		return true;
+	}
+
+	@Override
+	public void afterVisitPaths(SynPaths node) {
+	}
+
+	@Override
+	public boolean beforeVisitOperation(SynOperation node) {
+		return true;
+	}
+
+	@Override
+	public void afterVisitOperation(SynOperation node) {
+	}
+
+	@Override
+	public boolean beforeVisitSchema(SynSchema node) {
+		return true;
+	}
+
+	@Override
+	public void afterVisitSchema(SynSchema node) {
+	}
+
+	@Override
+	public boolean beforeVisitInfo(SynInfo node) {
+		return true;
+	}
+
+	@Override
+	public void afterVisitInfo(SynInfo node) {
+	}
+
+	@Override
+	public boolean beforeVisitPathItem(SynPathItem node) {
+		return true;
+	}
+
+	@Override
+	public void afterVisitPathItem(SynPathItem node) {
+	}
+
+	@Override
+	public boolean beforeVisitDocument(SynDocument node) {
+		return true;
+	}
+
+	@Override
+	public void afterVisitDocument(SynDocument node) {
+	}
+
+	@Override
+	public boolean beforeVisitContact(SynContact node) {
+		return true;
+	}
+
+	@Override
+	public void afterVisitContact(SynContact node) {
+	}
+
+	@Override
+	public boolean beforeVisitItem(SynItem node) {
+		return true;
+	}
+
+	@Override
+	public void afterVisitItem(SynItem node) {
+	}
 }
