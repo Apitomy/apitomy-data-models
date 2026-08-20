@@ -44,9 +44,11 @@ public class CreateVisitorInterfacesStage extends AbstractVisitorStage {
             visitorInterfaceSource.addInterface(parentVisitorInterface.getName());
         }
 
-        // Now create visitXyz methods for each entity in the visitor
+        // Now create visitXyz, beforeVisitXyz, and afterVisitXyz methods for each entity
         visitor.getEntities().forEach(entity -> {
             createVisitMethodFor(visitorInterfaceSource, entity);
+            createBeforeVisitMethodFor(visitorInterfaceSource, entity);
+            createAfterVisitMethodFor(visitorInterfaceSource, entity);
         });
 
         getState().getJavaIndex().index(visitorInterfaceSource);
@@ -57,10 +59,12 @@ public class CreateVisitorInterfacesStage extends AbstractVisitorStage {
         });
     }
 
-    /**
-     * Creates the readXyz() method for the given entity.
-     *
-     */
+    // visitXyz is the main visitor callback, called by node.accept(visitor).
+    // It is separate from beforeVisitXyz to keep backward compatibility (void return)
+    // and because the traversal gate (before) and the work (visit) are separate concerns
+    // for the regular visitor. If in the future we want to merge them (like the DiffVisitor's
+    // boolean visitXyz pattern), we would change visitXyz to return boolean and remove
+    // beforeVisitXyz.
     private void createVisitMethodFor(JavaInterfaceSource visitorInterfaceSource, EntityModel entity) {
         String visitMethodName = "visit" + entity.getName();
 
@@ -74,6 +78,36 @@ public class CreateVisitorInterfacesStage extends AbstractVisitorStage {
 
         MethodSource<JavaInterfaceSource> methodSource = visitorInterfaceSource.addMethod()
                 .setName(visitMethodName)
+                .setReturnTypeVoid()
+                .setPublic();
+        methodSource.addParameter(javaEntityModel.getName(), "node");
+    }
+
+    private void createBeforeVisitMethodFor(JavaInterfaceSource visitorInterfaceSource, EntityModel entity) {
+        String methodName = "beforeVisit" + entity.getName();
+
+        JavaInterfaceSource javaEntityModel = findRootJavaEntity(entity);
+        if (javaEntityModel == null) {
+            return;
+        }
+
+        MethodSource<JavaInterfaceSource> methodSource = visitorInterfaceSource.addMethod()
+                .setName(methodName)
+                .setReturnType(boolean.class)
+                .setPublic();
+        methodSource.addParameter(javaEntityModel.getName(), "node");
+    }
+
+    private void createAfterVisitMethodFor(JavaInterfaceSource visitorInterfaceSource, EntityModel entity) {
+        String methodName = "afterVisit" + entity.getName();
+
+        JavaInterfaceSource javaEntityModel = findRootJavaEntity(entity);
+        if (javaEntityModel == null) {
+            return;
+        }
+
+        MethodSource<JavaInterfaceSource> methodSource = visitorInterfaceSource.addMethod()
+                .setName(methodName)
                 .setReturnTypeVoid()
                 .setPublic();
         methodSource.addParameter(javaEntityModel.getName(), "node");
