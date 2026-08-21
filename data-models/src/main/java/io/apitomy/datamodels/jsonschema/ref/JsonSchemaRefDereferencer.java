@@ -6,6 +6,8 @@ import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.Referenceable;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.visitors.AllNodeVisitor;
+import io.apitomy.datamodels.models.visitors.TraversalContext;
+import io.apitomy.datamodels.models.visitors.TraversingVisitor;
 import io.apitomy.datamodels.util.NodeUtil;
 
 import java.util.ArrayList;
@@ -200,29 +202,45 @@ public class JsonSchemaRefDereferencer {
     }
 
     private void dereferenceChildren(JFullSchema node, DereferenceContext ctx) {
-        VisitorUtil.visitTree(node, new AllNodeVisitor() {
-            private boolean isRoot = true;
+        var visitor = new ChildSchemaVisitor(node, ctx);
+        VisitorUtil.visitTree(node, visitor, TraverserDirection.down);
+    }
 
-            @Override
-            protected void visitNode(Node n) {
-            }
+    private class ChildSchemaVisitor extends AllNodeVisitor implements TraversingVisitor {
+        private final JFullSchema root;
+        private final DereferenceContext ctx;
+        private boolean isRoot = true;
+        private TraversalContext traversalContext;
 
-            @Override
-            public boolean beforeVisitFullSchema(JFullSchema n) {
-                if (isRoot) {
-                    isRoot = false;
-                    return true;
-                }
-                return false;
-            }
+        ChildSchemaVisitor(JFullSchema root, DereferenceContext ctx) {
+            this.root = root;
+            this.ctx = ctx;
+        }
 
-            @Override
-            public void afterVisitFullSchema(JFullSchema n) {
-                if (n != node) {
-                    dereferenceNode(n, ctx);
-                }
+        @Override
+        public void setTraversalContext(TraversalContext context) {
+            this.traversalContext = context;
+        }
+
+        @Override
+        protected void visitNode(Node n) {
+        }
+
+        @Override
+        public void visitFullSchema(JFullSchema n) {
+            if (isRoot) {
+                isRoot = false;
+                return;
             }
-        }, TraverserDirection.down);
+            traversalContext.skip();
+        }
+
+        @Override
+        public void afterVisitFullSchema(JFullSchema n) {
+            if (n != root) {
+                dereferenceNode(n, ctx);
+            }
+        }
     }
 
     private void handleUnresolvable(String ref, DereferenceContext ctx) {

@@ -16,6 +16,7 @@ import io.test.synthetic.v1.Syn1PathItem;
 import io.test.synthetic.v1.Syn1Paths;
 import io.test.synthetic.v1.Syn1Schema;
 import io.test.synthetic.visitors.AbstractTraverser;
+import io.test.synthetic.visitors.TraversalAction;
 import io.test.synthetic.visitors.Visitor;
 
 public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
@@ -26,8 +27,9 @@ public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
 
 	@Override
 	public void visitPaths(SynPaths node) {
-		if (((Syn1Visitor) this.visitor).beforeVisitPaths(node)) {
-			node.accept(this.visitor);
+		this.traversalContext.resetAction();
+		node.accept(this.visitor);
+		if (this.traversalContext.consumeAction() != TraversalAction.SKIP) {
 			Syn1Paths model = (Syn1Paths) node;
 			this.traverseMappedNode(model);
 		}
@@ -36,8 +38,9 @@ public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
 
 	@Override
 	public void visitOperation(SynOperation node) {
-		if (((Syn1Visitor) this.visitor).beforeVisitOperation(node)) {
-			node.accept(this.visitor);
+		this.traversalContext.resetAction();
+		node.accept(this.visitor);
+		if (this.traversalContext.consumeAction() != TraversalAction.SKIP) {
 			Syn1Operation model = (Syn1Operation) node;
 			this.traverseList("parameters", model.getParameters());
 		}
@@ -46,8 +49,9 @@ public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
 
 	@Override
 	public void visitSchema(SynSchema node) {
-		if (((Syn1Visitor) this.visitor).beforeVisitSchema(node)) {
-			node.accept(this.visitor);
+		this.traversalContext.resetAction();
+		node.accept(this.visitor);
+		if (this.traversalContext.consumeAction() != TraversalAction.SKIP) {
 			Syn1Schema model = (Syn1Schema) node;
 			this.traverseUnion("items", model.getItems());
 			this.traverseMap("properties", model.getProperties());
@@ -61,8 +65,9 @@ public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
 
 	@Override
 	public void visitInfo(SynInfo node) {
-		if (((Syn1Visitor) this.visitor).beforeVisitInfo(node)) {
-			node.accept(this.visitor);
+		this.traversalContext.resetAction();
+		node.accept(this.visitor);
+		if (this.traversalContext.consumeAction() != TraversalAction.SKIP) {
 			Syn1Info model = (Syn1Info) node;
 			this.traverseNode("contact", model.getContact());
 		}
@@ -71,8 +76,9 @@ public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
 
 	@Override
 	public void visitPathItem(SynPathItem node) {
-		if (((Syn1Visitor) this.visitor).beforeVisitPathItem(node)) {
-			node.accept(this.visitor);
+		this.traversalContext.resetAction();
+		node.accept(this.visitor);
+		if (this.traversalContext.consumeAction() != TraversalAction.SKIP) {
 			Syn1PathItem model = (Syn1PathItem) node;
 			this.traverseNode("get", model.getGet());
 			this.traverseNode("put", model.getPut());
@@ -83,8 +89,9 @@ public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
 
 	@Override
 	public void visitDocument(SynDocument node) {
-		if (((Syn1Visitor) this.visitor).beforeVisitDocument(node)) {
-			node.accept(this.visitor);
+		this.traversalContext.resetAction();
+		node.accept(this.visitor);
+		if (this.traversalContext.consumeAction() != TraversalAction.SKIP) {
 			Syn1Document model = (Syn1Document) node;
 			this.traverseNode("info", model.getInfo());
 			this.traverseList("items", model.getItems());
@@ -95,16 +102,18 @@ public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
 
 	@Override
 	public void visitContact(SynContact node) {
-		if (((Syn1Visitor) this.visitor).beforeVisitContact(node)) {
-			node.accept(this.visitor);
+		this.traversalContext.resetAction();
+		node.accept(this.visitor);
+		if (this.traversalContext.consumeAction() != TraversalAction.SKIP) {
 		}
 		((Syn1Visitor) this.visitor).afterVisitContact(node);
 	}
 
 	@Override
 	public void visitItem(SynItem node) {
-		if (((Syn1Visitor) this.visitor).beforeVisitItem(node)) {
-			node.accept(this.visitor);
+		this.traversalContext.resetAction();
+		node.accept(this.visitor);
+		if (this.traversalContext.consumeAction() != TraversalAction.SKIP) {
 			Syn1Item model = (Syn1Item) node;
 			this.traverseNode("schema", model.getSchema());
 			this.traverseUnion("defaultValue", model.getDefaultValue());
@@ -113,17 +122,7 @@ public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
 	}
 
 	@Override
-	public boolean beforeVisitPaths(SynPaths node) {
-		return true;
-	}
-
-	@Override
 	public void afterVisitPaths(SynPaths node) {
-	}
-
-	@Override
-	public boolean beforeVisitOperation(SynOperation node) {
-		return true;
 	}
 
 	@Override
@@ -131,17 +130,7 @@ public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
 	}
 
 	@Override
-	public boolean beforeVisitSchema(SynSchema node) {
-		return true;
-	}
-
-	@Override
 	public void afterVisitSchema(SynSchema node) {
-	}
-
-	@Override
-	public boolean beforeVisitInfo(SynInfo node) {
-		return true;
 	}
 
 	@Override
@@ -149,17 +138,7 @@ public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
 	}
 
 	@Override
-	public boolean beforeVisitPathItem(SynPathItem node) {
-		return true;
-	}
-
-	@Override
 	public void afterVisitPathItem(SynPathItem node) {
-	}
-
-	@Override
-	public boolean beforeVisitDocument(SynDocument node) {
-		return true;
 	}
 
 	@Override
@@ -167,17 +146,7 @@ public class Syn1Traverser extends AbstractTraverser implements Syn1Visitor {
 	}
 
 	@Override
-	public boolean beforeVisitContact(SynContact node) {
-		return true;
-	}
-
-	@Override
 	public void afterVisitContact(SynContact node) {
-	}
-
-	@Override
-	public boolean beforeVisitItem(SynItem node) {
-		return true;
 	}
 
 	@Override

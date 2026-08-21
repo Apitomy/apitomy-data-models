@@ -83,39 +83,29 @@ public class CreateAllNodeVisitorStage extends AbstractVisitorStage {
                 .setReturnTypeVoid().setProtected().setAbstract(true);
         visitNodeMethod.addParameter("Node", "node");
 
-        // Create beforeVisitNode / afterVisitNode hooks
-        MethodSource<JavaClassSource> beforeMethod = allNodeVisitorSource.addMethod().setName("beforeVisitNode")
-                .setReturnType(boolean.class).setProtected();
-        beforeMethod.addParameter("Node", "node");
-        beforeMethod.setBody("return true;");
-
+        // Create afterVisitNode hook
         MethodSource<JavaClassSource> afterMethod = allNodeVisitorSource.addMethod().setName("afterVisitNode")
                 .setReturnTypeVoid().setProtected();
         afterMethod.addParameter("Node", "node");
         afterMethod.setBody("");
 
-        // Now create an implementation for each visit/beforeVisit/afterVisit method.
+        // Now create an implementation for each visit/afterVisit method.
         methodsToImplement.forEach(method -> {
             String name = method.getName();
-            boolean isBefore = name.startsWith("beforeVisit");
             boolean isAfter = name.startsWith("afterVisit");
 
             MethodSource<JavaClassSource> methodSource = allNodeVisitorSource.addMethod()
                     .setName(name)
+                    .setReturnTypeVoid()
                     .setPublic();
             ParameterSource<?> param = method.getParameters().get(0);
             allNodeVisitorSource.addImport(param.getType());
             methodSource.addParameter(param.getType().getSimpleName(), param.getName());
             methodSource.addAnnotation(Override.class);
 
-            if (isBefore) {
-                methodSource.setReturnType(boolean.class);
-                methodSource.setBody("return this.beforeVisitNode(node);");
-            } else if (isAfter) {
-                methodSource.setReturnTypeVoid();
+            if (isAfter) {
                 methodSource.setBody("this.afterVisitNode(node);");
             } else {
-                methodSource.setReturnTypeVoid();
                 methodSource.setBody("this.visitNode(node);");
             }
         });
