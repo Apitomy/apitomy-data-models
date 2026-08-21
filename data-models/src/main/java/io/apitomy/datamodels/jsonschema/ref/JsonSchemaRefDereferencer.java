@@ -1,9 +1,11 @@
 package io.apitomy.datamodels.jsonschema.ref;
 
+import io.apitomy.datamodels.TraverserDirection;
+import io.apitomy.datamodels.VisitorUtil;
 import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.Referenceable;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
-import io.apitomy.datamodels.models.jsonschema.JsonSchema;
+import io.apitomy.datamodels.models.visitors.AllNodeVisitor;
 import io.apitomy.datamodels.util.NodeUtil;
 
 import java.util.ArrayList;
@@ -198,63 +200,29 @@ public class JsonSchemaRefDereferencer {
     }
 
     private void dereferenceChildren(JFullSchema node, DereferenceContext ctx) {
-        dereferenceUnion(node, "not", ctx);
-        dereferenceUnion(node, "if", ctx);
-        dereferenceUnion(node, "then", ctx);
-        dereferenceUnion(node, "else", ctx);
-        dereferenceUnion(node, "items", ctx);
-        dereferenceUnion(node, "additionalItems", ctx);
-        dereferenceUnion(node, "contains", ctx);
-        dereferenceUnion(node, "additionalProperties", ctx);
-        dereferenceUnion(node, "propertyNames", ctx);
-        dereferenceUnion(node, "contentSchema", ctx);
-        dereferenceUnion(node, "unevaluatedItems", ctx);
-        dereferenceUnion(node, "unevaluatedProperties", ctx);
+        VisitorUtil.visitTree(node, new AllNodeVisitor() {
+            private boolean isRoot = true;
 
-        dereferenceSchemaList(node, "allOf", ctx);
-        dereferenceSchemaList(node, "anyOf", ctx);
-        dereferenceSchemaList(node, "oneOf", ctx);
-        dereferenceSchemaList(node, "prefixItems", ctx);
+            @Override
+            protected void visitNode(Node n) {
+            }
 
-        dereferenceSchemaMap(node, "definitions", ctx);
-        dereferenceSchemaMap(node, "$defs", ctx);
-        dereferenceSchemaMap(node, "properties", ctx);
-        dereferenceSchemaMap(node, "patternProperties", ctx);
-        dereferenceSchemaMap(node, "dependencies", ctx);
-        dereferenceSchemaMap(node, "dependentSchemas", ctx);
-    }
+            @Override
+            public boolean beforeVisitFullSchema(JFullSchema n) {
+                if (isRoot) {
+                    isRoot = false;
+                    return true;
+                }
+                return false;
+            }
 
-    private void dereferenceUnion(Node parent, String propertyName, DereferenceContext ctx) {
-        var value = NodeUtil.getProperty(parent, propertyName);
-        if (value instanceof JFullSchema schema) {
-            dereferenceNode(schema, ctx);
-        }
-    }
-
-    private void dereferenceSchemaList(Node parent, String propertyName, DereferenceContext ctx) {
-        var value = NodeUtil.getProperty(parent, propertyName);
-        if (value instanceof List<?> list) {
-            for (var item : list) {
-                if (item instanceof JFullSchema schema) {
-                    dereferenceNode(schema, ctx);
-                } else if (item instanceof JsonSchema union && union.isFullSchema()) {
-                    dereferenceNode(union.asFullSchema(), ctx);
+            @Override
+            public void afterVisitFullSchema(JFullSchema n) {
+                if (n != node) {
+                    dereferenceNode(n, ctx);
                 }
             }
-        }
-    }
-
-    private void dereferenceSchemaMap(Node parent, String propertyName, DereferenceContext ctx) {
-        var value = NodeUtil.getProperty(parent, propertyName);
-        if (value instanceof Map<?, ?> map) {
-            for (var entry : map.values()) {
-                if (entry instanceof JFullSchema schema) {
-                    dereferenceNode(schema, ctx);
-                } else if (entry instanceof JsonSchema union && union.isFullSchema()) {
-                    dereferenceNode(union.asFullSchema(), ctx);
-                }
-            }
-        }
+        }, TraverserDirection.down);
     }
 
     private void handleUnresolvable(String ref, DereferenceContext ctx) {
