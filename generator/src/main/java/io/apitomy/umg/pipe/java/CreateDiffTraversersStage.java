@@ -67,17 +67,21 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
         String providerFQN = getState().getConfig().getRootNamespace() + ".visitors.diff.PairingStrategyProvider";
         classSource.addImport(providerFQN);
 
+        // Import TraversalAction for context-based traversal control
+        String actionFQN = getState().getConfig().getRootNamespace() + ".visitors.TraversalAction";
+        classSource.addImport(actionFQN);
+
         // Constructors
         MethodSource<JavaClassSource> constructor = classSource.addMethod()
                 .setConstructor(true).setPublic();
         constructor.addParameter(visitorClassName + "<P>", "visitor");
-        constructor.setBody("super(visitor);");
+        constructor.setBody("super(visitor); visitor.setTraversalContext(this.originalContext);");
 
         MethodSource<JavaClassSource> constructor2 = classSource.addMethod()
                 .setConstructor(true).setPublic();
         constructor2.addParameter(visitorClassName, "visitor");
         constructor2.addParameter("PairingStrategyProvider<P>", "pairingProvider");
-        constructor2.setBody("super(visitor, pairingProvider);");
+        constructor2.setBody("super(visitor, pairingProvider); visitor.setTraversalContext(this.originalContext);");
 
         java.util.Set<String> createdMethods = new java.util.HashSet<>();
 
@@ -222,7 +226,13 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
 
         body.append("if (original == null && updated == null) return;");
         body.addContext("visitMethod", "visit" + entityName);
-        body.append("if (!visitor.${visitMethod}(original, updated)) return;");
+        body.addContext("afterVisitMethod", "afterVisit" + entityName);
+        body.append("this.originalContext.resetAction();");
+        body.append("visitor.${visitMethod}(original, updated);");
+        body.append("if (this.originalContext.consumeAction() == TraversalAction.SKIP) {");
+        body.append("    visitor.${afterVisitMethod}(original, updated);");
+        body.append("    return;");
+        body.append("}");
         body.append("if (original == null || updated == null) return;");
 
         for (PropertyModelWithOrigin propWithOrigin : allProperties) {
@@ -249,7 +259,9 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 jt.addImportsTo(classSource);
                 String afterDiffMethod = "afterDiff" + entityName + fieldSuffix;
                 body.addContext("afterDiffMethod", afterDiffMethod);
-                body.append("    if (visitor.${diffMethod}(original.${getter}(), updated.${getter}())) {");
+                body.append("    this.originalContext.resetAction();");
+                body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
+                body.append("    if (this.originalContext.consumeAction() != TraversalAction.SKIP) {");
                 body.append("        if (original.${getter}() != null && updated.${getter}() != null) {");
                 body.append("            traverse(original.${getter}(), updated.${getter}());");
                 body.append("        }");
@@ -272,7 +284,9 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}(), diff);");
                 body.append("    for (CollectionDiff.MatchedPair<P, " + valueTypeStr + "> pair : diff.getMatched()) {");
                 body.append("        pushListIndex(pair.getKey());");
-                body.append("        if (visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated())) {");
+                body.append("        this.originalContext.resetAction();");
+                body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
+                body.append("        if (this.originalContext.consumeAction() != TraversalAction.SKIP) {");
                 if (isEntityList(property)) {
                     body.append("            if (pair.getOriginal() != null && pair.getUpdated() != null) {");
                     body.append("                traverse(pair.getOriginal(), pair.getUpdated());");
@@ -306,7 +320,9 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}(), diff);");
                 body.append("    for (CollectionDiff.MatchedPair<P, " + valueTypeStr + "> pair : diff.getMatched()) {");
                 body.append("        pushMapKey(pair.getKey());");
-                body.append("        if (visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated())) {");
+                body.append("        this.originalContext.resetAction();");
+                body.append("        visitor.${visitMethod2}(pair.getOriginal(), pair.getUpdated());");
+                body.append("        if (this.originalContext.consumeAction() != TraversalAction.SKIP) {");
                 if (isEntityMap(property)) {
                     body.append("            if (pair.getOriginal() != null && pair.getUpdated() != null) {");
                     body.append("                traverse(pair.getOriginal(), pair.getUpdated());");
@@ -329,7 +345,9 @@ public class CreateDiffTraversersStage extends AbstractJavaStage {
                 String afterDiffMethod = "afterDiff" + entityName + fieldSuffix;
                 body.addContext("traverseUnion", traverseUnion);
                 body.addContext("afterDiffMethod", afterDiffMethod);
-                body.append("    if (visitor.${diffMethod}(original.${getter}(), updated.${getter}())) {");
+                body.append("    this.originalContext.resetAction();");
+                body.append("    visitor.${diffMethod}(original.${getter}(), updated.${getter}());");
+                body.append("    if (this.originalContext.consumeAction() != TraversalAction.SKIP) {");
                 body.append("        this.${traverseUnion}(original.${getter}(), updated.${getter}());");
                 body.append("    }");
                 body.append("    visitor.${afterDiffMethod}(original.${getter}(), updated.${getter}());");
