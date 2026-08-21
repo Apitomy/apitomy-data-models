@@ -45,6 +45,21 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         classSource.addImport(pairingKeyFQN);
         classSource.addTypeVariable("P").setBounds("PairingKey");
 
+        // Add traversal context field for skip() support
+        String ctxFQN = getState().getConfig().getRootNamespace() + ".visitors.TraversalContext";
+        classSource.addImport(ctxFQN);
+        classSource.addField()
+                .setName("traversalContext")
+                .setType("TraversalContext")
+                .setProtected();
+
+        MethodSource<JavaClassSource> setter = classSource.addMethod()
+                .setName("setTraversalContext")
+                .setReturnTypeVoid()
+                .setPublic();
+        setter.addParameter("TraversalContext", "context");
+        setter.setBody("this.traversalContext = context;");
+
         JavaTypeFactory jtf = getJavaTypeFactory();
 
         specVer.getEntities().forEach(entity -> {
@@ -90,11 +105,11 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         String methodName = "visit" + entityModel.getName();
         MethodSource<JavaClassSource> method = classSource.addMethod()
                 .setName(methodName)
-                .setReturnType(boolean.class)
+                .setReturnTypeVoid()
                 .setPublic();
         method.addParameter(javaEntity.getName(), "original");
         method.addParameter(javaEntity.getName(), "updated");
-        method.setBody("return true;");
+        method.setBody("");
 
         String afterMethodName = "afterVisit" + entityModel.getName();
         MethodSource<JavaClassSource> afterMethod = classSource.addMethod()
@@ -162,11 +177,11 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         String methodName = "diff" + entityName + fieldSuffix;
         MethodSource<JavaClassSource> method = classSource.addMethod()
                 .setName(methodName)
-                .setReturnType(boolean.class)
+                .setReturnTypeVoid()
                 .setPublic();
         method.addParameter(jt.toJavaTypeString(), "original");
         method.addParameter(jt.toJavaTypeString(), "updated");
-        method.setBody("return true;");
+        method.setBody("");
 
         String afterMethodName = "afterDiff" + entityName + fieldSuffix;
         MethodSource<JavaClassSource> afterMethod = classSource.addMethod()
@@ -186,11 +201,11 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         String methodName = "diff" + entityName + fieldSuffix;
         MethodSource<JavaClassSource> method = classSource.addMethod()
                 .setName(methodName)
-                .setReturnType(boolean.class)
+                .setReturnTypeVoid()
                 .setPublic();
         method.addParameter(jt.toJavaTypeString(), "original");
         method.addParameter(jt.toJavaTypeString(), "updated");
-        method.setBody("return true;");
+        method.setBody("");
 
         String afterMethodName = "afterDiff" + entityName + fieldSuffix;
         MethodSource<JavaClassSource> afterMethod = classSource.addMethod()
@@ -227,11 +242,11 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         String visitMethodName = "visit" + entityName + fieldSuffix + "Item";
         MethodSource<JavaClassSource> visitMethod = classSource.addMethod()
                 .setName(visitMethodName)
-                .setReturnType(boolean.class)
+                .setReturnTypeVoid()
                 .setPublic();
         visitMethod.addParameter(valueJt.toJavaTypeString(), "original");
         visitMethod.addParameter(valueJt.toJavaTypeString(), "updated");
-        visitMethod.setBody("return true;");
+        visitMethod.setBody("");
 
         String afterVisitMethodName = "afterVisit" + entityName + fieldSuffix + "Item";
         MethodSource<JavaClassSource> afterVisitMethod = classSource.addMethod()
@@ -268,11 +283,11 @@ public class CreateDiffVisitorsStage extends AbstractJavaStage {
         String visitMethodName = "visit" + entityName + singularSuffix;
         MethodSource<JavaClassSource> visitMethod = classSource.addMethod()
                 .setName(visitMethodName)
-                .setReturnType(boolean.class)
+                .setReturnTypeVoid()
                 .setPublic();
         visitMethod.addParameter(valueJt.toJavaTypeString(), "original");
         visitMethod.addParameter(valueJt.toJavaTypeString(), "updated");
-        visitMethod.setBody("return true;");
+        visitMethod.setBody("");
 
         String afterVisitMethodName = "afterVisit" + entityName + singularSuffix;
         MethodSource<JavaClassSource> afterVisitMethod = classSource.addMethod()

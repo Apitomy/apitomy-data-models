@@ -19,6 +19,7 @@ import io.test.synthetic.v2.Syn2Operation;
 import io.test.synthetic.v2.Syn2PathItem;
 import io.test.synthetic.v2.Syn2Paths;
 import io.test.synthetic.v2.Syn2Schema;
+import io.test.synthetic.visitors.TraversalAction;
 import io.test.synthetic.visitors.diff.AbstractDiffTraverser;
 import io.test.synthetic.visitors.diff.CollectionDiff;
 import io.test.synthetic.visitors.diff.PairingKey;
@@ -30,10 +31,12 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 
 	public Syn2DiffTraverser(Syn2DiffVisitor<P> visitor) {
 		super(visitor);
+		visitor.setTraversalContext(this.originalContext);
 	}
 
 	public Syn2DiffTraverser(Syn2DiffVisitor visitor, PairingStrategyProvider<P> pairingProvider) {
 		super(visitor, pairingProvider);
+		visitor.setTraversalContext(this.originalContext);
 	}
 
 	@Override
@@ -68,8 +71,12 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 	public void traverseDocument(Syn2Document original, Syn2Document updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitDocument(original, updated))
+		this.originalContext.resetAction();
+		visitor.visitDocument(original, updated);
+		if (this.originalContext.consumeAction() == TraversalAction.SKIP) {
+			visitor.afterVisitDocument(original, updated);
 			return;
+		}
 		if (original == null || updated == null)
 			return;
 		{
@@ -79,7 +86,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("info");
-			if (visitor.diffDocumentInfo(original.getInfo(), updated.getInfo())) {
+			this.originalContext.resetAction();
+			visitor.diffDocumentInfo(original.getInfo(), updated.getInfo());
+			if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 				if (original.getInfo() != null && updated.getInfo() != null) {
 					traverse(original.getInfo(), updated.getInfo());
 				}
@@ -93,7 +102,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffDocumentItems(original.getItems(), updated.getItems(), diff);
 			for (CollectionDiff.MatchedPair<P, SynItem> pair : diff.getMatched()) {
 				pushListIndex(pair.getKey());
-				if (visitor.visitDocumentItemsItem(pair.getOriginal(), pair.getUpdated())) {
+				this.originalContext.resetAction();
+				visitor.visitDocumentItemsItem(pair.getOriginal(), pair.getUpdated());
+				if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 					if (pair.getOriginal() != null && pair.getUpdated() != null) {
 						traverse(pair.getOriginal(), pair.getUpdated());
 					}
@@ -120,7 +131,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffDocumentWebhooks(original.getWebhooks(), updated.getWebhooks(), diff);
 			for (CollectionDiff.MatchedPair<P, Syn2PathItem> pair : diff.getMatched()) {
 				pushMapKey(pair.getKey());
-				if (visitor.visitDocumentWebhook(pair.getOriginal(), pair.getUpdated())) {
+				this.originalContext.resetAction();
+				visitor.visitDocumentWebhook(pair.getOriginal(), pair.getUpdated());
+				if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 					if (pair.getOriginal() != null && pair.getUpdated() != null) {
 						traverse(pair.getOriginal(), pair.getUpdated());
 					}
@@ -132,7 +145,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("additionalSchema");
-			if (visitor.diffDocumentAdditionalSchema(original.getAdditionalSchema(), updated.getAdditionalSchema())) {
+			this.originalContext.resetAction();
+			visitor.diffDocumentAdditionalSchema(original.getAdditionalSchema(), updated.getAdditionalSchema());
+			if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 				this.traverseSchemaOrBoolean(original.getAdditionalSchema(), updated.getAdditionalSchema());
 			}
 			visitor.afterDiffDocumentAdditionalSchema(original.getAdditionalSchema(), updated.getAdditionalSchema());
@@ -144,8 +159,12 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 	public void traverseInfo(Syn2Info original, Syn2Info updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitInfo(original, updated))
+		this.originalContext.resetAction();
+		visitor.visitInfo(original, updated);
+		if (this.originalContext.consumeAction() == TraversalAction.SKIP) {
+			visitor.afterVisitInfo(original, updated);
 			return;
+		}
 		if (original == null || updated == null)
 			return;
 		{
@@ -155,7 +174,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("contact");
-			if (visitor.diffInfoContact(original.getContact(), updated.getContact())) {
+			this.originalContext.resetAction();
+			visitor.diffInfoContact(original.getContact(), updated.getContact());
+			if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 				if (original.getContact() != null && updated.getContact() != null) {
 					traverse(original.getContact(), updated.getContact());
 				}
@@ -179,8 +200,12 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 	public void traverseContact(Syn2Contact original, Syn2Contact updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitContact(original, updated))
+		this.originalContext.resetAction();
+		visitor.visitContact(original, updated);
+		if (this.originalContext.consumeAction() == TraversalAction.SKIP) {
+			visitor.afterVisitContact(original, updated);
 			return;
+		}
 		if (original == null || updated == null)
 			return;
 		{
@@ -204,8 +229,12 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 	public void traverseItem(Syn2Item original, Syn2Item updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitItem(original, updated))
+		this.originalContext.resetAction();
+		visitor.visitItem(original, updated);
+		if (this.originalContext.consumeAction() == TraversalAction.SKIP) {
+			visitor.afterVisitItem(original, updated);
 			return;
+		}
 		if (original == null || updated == null)
 			return;
 		{
@@ -245,7 +274,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("schema");
-			if (visitor.diffItemSchema(original.getSchema(), updated.getSchema())) {
+			this.originalContext.resetAction();
+			visitor.diffItemSchema(original.getSchema(), updated.getSchema());
+			if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 				if (original.getSchema() != null && updated.getSchema() != null) {
 					traverse(original.getSchema(), updated.getSchema());
 				}
@@ -260,7 +291,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("defaultValue");
-			if (visitor.diffItemDefaultValue(original.getDefaultValue(), updated.getDefaultValue())) {
+			this.originalContext.resetAction();
+			visitor.diffItemDefaultValue(original.getDefaultValue(), updated.getDefaultValue());
+			if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 				this.traverseBooleanSchemaUnion(original.getDefaultValue(), updated.getDefaultValue());
 			}
 			visitor.afterDiffItemDefaultValue(original.getDefaultValue(), updated.getDefaultValue());
@@ -282,8 +315,12 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 	public void traverseSchema(Syn2Schema original, Syn2Schema updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitSchema(original, updated))
+		this.originalContext.resetAction();
+		visitor.visitSchema(original, updated);
+		if (this.originalContext.consumeAction() == TraversalAction.SKIP) {
+			visitor.afterVisitSchema(original, updated);
 			return;
+		}
 		if (original == null || updated == null)
 			return;
 		{
@@ -298,7 +335,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("items");
-			if (visitor.diffSchemaItems(original.getItems(), updated.getItems())) {
+			this.originalContext.resetAction();
+			visitor.diffSchemaItems(original.getItems(), updated.getItems());
+			if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 				this.traverseBooleanSchemaSchemaListUnion(original.getItems(), updated.getItems());
 			}
 			visitor.afterDiffSchemaItems(original.getItems(), updated.getItems());
@@ -311,7 +350,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffSchemaProperties(original.getProperties(), updated.getProperties(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
 				pushMapKey(pair.getKey());
-				if (visitor.visitSchemaProperty(pair.getOriginal(), pair.getUpdated())) {
+				this.originalContext.resetAction();
+				visitor.visitSchemaProperty(pair.getOriginal(), pair.getUpdated());
+				if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 					this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 				}
 				visitor.afterVisitSchemaProperty(pair.getOriginal(), pair.getUpdated());
@@ -326,7 +367,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffSchemaAllOf(original.getAllOf(), updated.getAllOf(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
 				pushListIndex(pair.getKey());
-				if (visitor.visitSchemaAllOfItem(pair.getOriginal(), pair.getUpdated())) {
+				this.originalContext.resetAction();
+				visitor.visitSchemaAllOfItem(pair.getOriginal(), pair.getUpdated());
+				if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 					this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 				}
 				visitor.afterVisitSchemaAllOfItem(pair.getOriginal(), pair.getUpdated());
@@ -341,7 +384,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffSchemaDefinitions(original.getDefinitions(), updated.getDefinitions(), diff);
 			for (CollectionDiff.MatchedPair<P, BooleanSchemaUnion> pair : diff.getMatched()) {
 				pushMapKey(pair.getKey());
-				if (visitor.visitSchemaDefinition(pair.getOriginal(), pair.getUpdated())) {
+				this.originalContext.resetAction();
+				visitor.visitSchemaDefinition(pair.getOriginal(), pair.getUpdated());
+				if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 					this.traverseBooleanSchemaUnion(pair.getOriginal(), pair.getUpdated());
 				}
 				visitor.afterVisitSchemaDefinition(pair.getOriginal(), pair.getUpdated());
@@ -356,7 +401,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffSchemaNestedSchemas(original.getNestedSchemas(), updated.getNestedSchemas(), diff);
 			for (CollectionDiff.MatchedPair<P, SchemaOrBoolean> pair : diff.getMatched()) {
 				pushMapKey(pair.getKey());
-				if (visitor.visitSchemaNestedSchema(pair.getOriginal(), pair.getUpdated())) {
+				this.originalContext.resetAction();
+				visitor.visitSchemaNestedSchema(pair.getOriginal(), pair.getUpdated());
+				if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 					this.traverseSchemaOrBoolean(pair.getOriginal(), pair.getUpdated());
 				}
 				visitor.afterVisitSchemaNestedSchema(pair.getOriginal(), pair.getUpdated());
@@ -371,7 +418,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffSchemaComposedSchemas(original.getComposedSchemas(), updated.getComposedSchemas(), diff);
 			for (CollectionDiff.MatchedPair<P, SchemaOrBoolean> pair : diff.getMatched()) {
 				pushListIndex(pair.getKey());
-				if (visitor.visitSchemaComposedSchemasItem(pair.getOriginal(), pair.getUpdated())) {
+				this.originalContext.resetAction();
+				visitor.visitSchemaComposedSchemasItem(pair.getOriginal(), pair.getUpdated());
+				if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 					this.traverseSchemaOrBoolean(pair.getOriginal(), pair.getUpdated());
 				}
 				visitor.afterVisitSchemaComposedSchemasItem(pair.getOriginal(), pair.getUpdated());
@@ -400,8 +449,12 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 	public void traversePaths(Syn2Paths original, Syn2Paths updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitPaths(original, updated))
+		this.originalContext.resetAction();
+		visitor.visitPaths(original, updated);
+		if (this.originalContext.consumeAction() == TraversalAction.SKIP) {
+			visitor.afterVisitPaths(original, updated);
 			return;
+		}
 		if (original == null || updated == null)
 			return;
 		visitor.afterVisitPaths(original, updated);
@@ -410,8 +463,12 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 	public void traversePathItem(Syn2PathItem original, Syn2PathItem updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitPathItem(original, updated))
+		this.originalContext.resetAction();
+		visitor.visitPathItem(original, updated);
+		if (this.originalContext.consumeAction() == TraversalAction.SKIP) {
+			visitor.afterVisitPathItem(original, updated);
 			return;
+		}
 		if (original == null || updated == null)
 			return;
 		{
@@ -426,7 +483,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("get");
-			if (visitor.diffPathItemGet(original.getGet(), updated.getGet())) {
+			this.originalContext.resetAction();
+			visitor.diffPathItemGet(original.getGet(), updated.getGet());
+			if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 				if (original.getGet() != null && updated.getGet() != null) {
 					traverse(original.getGet(), updated.getGet());
 				}
@@ -436,7 +495,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("put");
-			if (visitor.diffPathItemPut(original.getPut(), updated.getPut())) {
+			this.originalContext.resetAction();
+			visitor.diffPathItemPut(original.getPut(), updated.getPut());
+			if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 				if (original.getPut() != null && updated.getPut() != null) {
 					traverse(original.getPut(), updated.getPut());
 				}
@@ -446,7 +507,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("post");
-			if (visitor.diffPathItemPost(original.getPost(), updated.getPost())) {
+			this.originalContext.resetAction();
+			visitor.diffPathItemPost(original.getPost(), updated.getPost());
+			if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 				if (original.getPost() != null && updated.getPost() != null) {
 					traverse(original.getPost(), updated.getPost());
 				}
@@ -456,7 +519,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		}
 		{
 			pushProperty("delete");
-			if (visitor.diffPathItemDelete(original.getDelete(), updated.getDelete())) {
+			this.originalContext.resetAction();
+			visitor.diffPathItemDelete(original.getDelete(), updated.getDelete());
+			if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 				if (original.getDelete() != null && updated.getDelete() != null) {
 					traverse(original.getDelete(), updated.getDelete());
 				}
@@ -470,8 +535,12 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 	public void traverseOperation(Syn2Operation original, Syn2Operation updated) {
 		if (original == null && updated == null)
 			return;
-		if (!visitor.visitOperation(original, updated))
+		this.originalContext.resetAction();
+		visitor.visitOperation(original, updated);
+		if (this.originalContext.consumeAction() == TraversalAction.SKIP) {
+			visitor.afterVisitOperation(original, updated);
 			return;
+		}
 		if (original == null || updated == null)
 			return;
 		{
@@ -496,7 +565,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			visitor.diffOperationParameters(original.getParameters(), updated.getParameters(), diff);
 			for (CollectionDiff.MatchedPair<P, SynItem> pair : diff.getMatched()) {
 				pushListIndex(pair.getKey());
-				if (visitor.visitOperationParametersItem(pair.getOriginal(), pair.getUpdated())) {
+				this.originalContext.resetAction();
+				visitor.visitOperationParametersItem(pair.getOriginal(), pair.getUpdated());
+				if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
 					if (pair.getOriginal() != null && pair.getUpdated() != null) {
 						traverse(pair.getOriginal(), pair.getUpdated());
 					}
