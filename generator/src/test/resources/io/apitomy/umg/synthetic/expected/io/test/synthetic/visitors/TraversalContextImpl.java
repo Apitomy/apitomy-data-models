@@ -16,6 +16,7 @@ import java.util.Stack;
 public class TraversalContextImpl implements TraversalContext {
 
 	private final Stack<TraversalStep> stack = new Stack<>();
+	private TraversalAction action = TraversalAction.CONTINUE;
 
 	public void pushProperty(String propertyName) {
 		this.stack.push(TraversalStep.fromNodeProperty(propertyName));
@@ -65,6 +66,29 @@ public class TraversalContextImpl implements TraversalContext {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public void skip() {
+		this.action = TraversalAction.SKIP;
+	}
+
+	/**
+	 * Resets the action to {@link TraversalAction#CONTINUE}. Called by the
+	 * traverser before each visit method.
+	 */
+	public void resetAction() {
+		this.action = TraversalAction.CONTINUE;
+	}
+
+	/**
+	 * Returns the current action and resets to CONTINUE. Called by the traverser
+	 * after each visit method.
+	 */
+	public TraversalAction consumeAction() {
+		TraversalAction current = this.action;
+		this.action = TraversalAction.CONTINUE;
+		return current;
 	}
 
 }

@@ -130,7 +130,7 @@ public class CreateClonerDispatchersStage extends AbstractVisitorStage {
             methodSource.setBody(body.toString());
         });
 
-        addBeforeAfterImplementations(dispatcherSource, visitor);
+        addAfterVisitImplementations(dispatcherSource, visitor);
         getState().getJavaIndex().index(dispatcherSource);
     }
 

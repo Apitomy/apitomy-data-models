@@ -121,7 +121,7 @@ public class CreateReaderDispatchersStage extends AbstractVisitorStage {
         });
 
         // Index the new class
-        addBeforeAfterImplementations(readerDispatcherSource, visitor);
+        addAfterVisitImplementations(readerDispatcherSource, visitor);
         getState().getJavaIndex().index(readerDispatcherSource);
     }
 

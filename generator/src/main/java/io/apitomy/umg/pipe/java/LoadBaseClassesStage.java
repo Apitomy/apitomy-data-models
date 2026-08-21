@@ -25,6 +25,7 @@ public class LoadBaseClassesStage extends AbstractStage {
         try {
             loadBaseEnums(
                     "io.apitomy.umg.base.visitors.TraversalStepType",
+                    "io.apitomy.umg.base.visitors.TraversalAction",
                     "io.apitomy.umg.base.ParentPropertyType"
                     );
             loadBaseClasses(
