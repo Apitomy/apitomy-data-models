@@ -70,17 +70,7 @@ public class Syn2ModelReaderDispatcher implements Syn2Visitor {
 	}
 
 	@Override
-	public boolean beforeVisitPaths(SynPaths node) {
-		return true;
-	}
-
-	@Override
 	public void afterVisitPaths(SynPaths node) {
-	}
-
-	@Override
-	public boolean beforeVisitOperation(SynOperation node) {
-		return true;
 	}
 
 	@Override
@@ -88,17 +78,7 @@ public class Syn2ModelReaderDispatcher implements Syn2Visitor {
 	}
 
 	@Override
-	public boolean beforeVisitSchema(SynSchema node) {
-		return true;
-	}
-
-	@Override
 	public void afterVisitSchema(SynSchema node) {
-	}
-
-	@Override
-	public boolean beforeVisitInfo(SynInfo node) {
-		return true;
 	}
 
 	@Override
@@ -106,17 +86,7 @@ public class Syn2ModelReaderDispatcher implements Syn2Visitor {
 	}
 
 	@Override
-	public boolean beforeVisitPathItem(SynPathItem node) {
-		return true;
-	}
-
-	@Override
 	public void afterVisitPathItem(SynPathItem node) {
-	}
-
-	@Override
-	public boolean beforeVisitDocument(SynDocument node) {
-		return true;
 	}
 
 	@Override
@@ -124,17 +94,7 @@ public class Syn2ModelReaderDispatcher implements Syn2Visitor {
 	}
 
 	@Override
-	public boolean beforeVisitContact(SynContact node) {
-		return true;
-	}
-
-	@Override
 	public void afterVisitContact(SynContact node) {
-	}
-
-	@Override
-	public boolean beforeVisitItem(SynItem node) {
-		return true;
 	}
 
 	@Override

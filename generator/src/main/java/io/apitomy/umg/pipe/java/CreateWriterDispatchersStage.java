@@ -121,7 +121,7 @@ public class CreateWriterDispatchersStage extends AbstractVisitorStage {
         });
 
         // Index the new class
-        addBeforeAfterImplementations(writerDispatcherSource, visitor);
+        addAfterVisitImplementations(writerDispatcherSource, visitor);
         getState().getJavaIndex().index(writerDispatcherSource);
     }
 

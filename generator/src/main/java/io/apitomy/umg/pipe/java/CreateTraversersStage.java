@@ -54,6 +54,7 @@ public class CreateTraversersStage extends AbstractVisitorStage {
         JavaClassSource abstractTraverserSource = getState().getJavaIndex().lookupClass(getAbstractTraverserFQN());
         traverserSource.addImport(abstractTraverserSource);
         traverserSource.extendSuperType(abstractTraverserSource);
+        traverserSource.addImport(getState().getConfig().getRootNamespace() + ".visitors.TraversalAction");
 
         // Create the constructor
         JavaInterfaceSource rootVisitorJavaInterface = getState().getJavaIndex().lookupInterface(getRootVisitorInterfaceFQN());
@@ -108,30 +109,8 @@ public class CreateTraversersStage extends AbstractVisitorStage {
             methodSource.setBody(body);
         });
 
-        // Also implement beforeVisit/afterVisit by delegating to the user's visitor
-        methodsToImplement.forEach(method -> {
-            String entityName = method.getName().replace("visit", "");
-            ParameterSource<?> param = method.getParameters().get(0);
-            String paramType = param.getType().getSimpleName();
-
-            // beforeVisitXyz
-            MethodSource<JavaClassSource> beforeMethod = traverserSource.addMethod()
-                    .setName("beforeVisit" + entityName)
-                    .setReturnType(boolean.class)
-                    .setPublic();
-            beforeMethod.addParameter(paramType, param.getName());
-            beforeMethod.addAnnotation(Override.class);
-            beforeMethod.setBody("return true;");
-
-            // afterVisitXyz
-            MethodSource<JavaClassSource> afterMethod = traverserSource.addMethod()
-                    .setName("afterVisit" + entityName)
-                    .setReturnTypeVoid()
-                    .setPublic();
-            afterMethod.addParameter(paramType, param.getName());
-            afterMethod.addAnnotation(Override.class);
-            afterMethod.setBody("");
-        });
+        // Add afterVisit implementations (no-ops on the traverser itself)
+        addAfterVisitImplementations(traverserSource, visitor);
 
         // Index the new class
         getState().getJavaIndex().index(traverserSource);
@@ -144,9 +123,11 @@ public class CreateTraversersStage extends AbstractVisitorStage {
 
         body.addContext("entityName", entityModel.getName());
         body.addContext("visitorType", visitorTypeName);
-        body.append("if (((${visitorType}) this.visitor).beforeVisit${entityName}(node)) {");
 
+        // Call visitXyz, then check if the visitor requested skip via the context
+        body.append("this.traversalContext.resetAction();");
         body.append("node.accept(this.visitor);");
+        body.append("if (this.traversalContext.consumeAction() != TraversalAction.SKIP) {");
 
         Collection<PropertyModel> allProperties = getState().getConceptIndex().getAllEntityProperties(entityModel).stream().map(property -> property.getProperty()).filter(property -> {
             return isEntity(property) || isEntityList(property) || isEntityMap(property)

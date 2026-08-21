@@ -14,21 +14,12 @@ public abstract class AllNodeVisitor implements CombinedVisitor {
 
 	protected abstract void visitNode(Node node);
 
-	protected boolean beforeVisitNode(Node node) {
-		return true;
-	}
-
 	protected void afterVisitNode(Node node) {
 	}
 
 	@Override
 	public void visitPaths(SynPaths node) {
 		this.visitNode(node);
-	}
-
-	@Override
-	public boolean beforeVisitPaths(SynPaths node) {
-		return this.beforeVisitNode(node);
 	}
 
 	@Override
@@ -42,11 +33,6 @@ public abstract class AllNodeVisitor implements CombinedVisitor {
 	}
 
 	@Override
-	public boolean beforeVisitOperation(SynOperation node) {
-		return this.beforeVisitNode(node);
-	}
-
-	@Override
 	public void afterVisitOperation(SynOperation node) {
 		this.afterVisitNode(node);
 	}
@@ -54,11 +40,6 @@ public abstract class AllNodeVisitor implements CombinedVisitor {
 	@Override
 	public void visitSchema(SynSchema node) {
 		this.visitNode(node);
-	}
-
-	@Override
-	public boolean beforeVisitSchema(SynSchema node) {
-		return this.beforeVisitNode(node);
 	}
 
 	@Override
@@ -72,11 +53,6 @@ public abstract class AllNodeVisitor implements CombinedVisitor {
 	}
 
 	@Override
-	public boolean beforeVisitInfo(SynInfo node) {
-		return this.beforeVisitNode(node);
-	}
-
-	@Override
 	public void afterVisitInfo(SynInfo node) {
 		this.afterVisitNode(node);
 	}
@@ -84,11 +60,6 @@ public abstract class AllNodeVisitor implements CombinedVisitor {
 	@Override
 	public void visitPathItem(SynPathItem node) {
 		this.visitNode(node);
-	}
-
-	@Override
-	public boolean beforeVisitPathItem(SynPathItem node) {
-		return this.beforeVisitNode(node);
 	}
 
 	@Override
@@ -102,11 +73,6 @@ public abstract class AllNodeVisitor implements CombinedVisitor {
 	}
 
 	@Override
-	public boolean beforeVisitDocument(SynDocument node) {
-		return this.beforeVisitNode(node);
-	}
-
-	@Override
 	public void afterVisitDocument(SynDocument node) {
 		this.afterVisitNode(node);
 	}
@@ -117,11 +83,6 @@ public abstract class AllNodeVisitor implements CombinedVisitor {
 	}
 
 	@Override
-	public boolean beforeVisitContact(SynContact node) {
-		return this.beforeVisitNode(node);
-	}
-
-	@Override
 	public void afterVisitContact(SynContact node) {
 		this.afterVisitNode(node);
 	}
@@ -129,11 +90,6 @@ public abstract class AllNodeVisitor implements CombinedVisitor {
 	@Override
 	public void visitItem(SynItem node) {
 		this.visitNode(node);
-	}
-
-	@Override
-	public boolean beforeVisitItem(SynItem node) {
-		return this.beforeVisitNode(node);
 	}
 
 	@Override
