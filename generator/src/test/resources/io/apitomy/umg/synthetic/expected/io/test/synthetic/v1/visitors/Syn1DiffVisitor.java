@@ -18,6 +18,7 @@ import io.test.synthetic.v1.Syn1Operation;
 import io.test.synthetic.v1.Syn1PathItem;
 import io.test.synthetic.v1.Syn1Paths;
 import io.test.synthetic.v1.Syn1Schema;
+import io.test.synthetic.visitors.TraversalContext;
 import io.test.synthetic.visitors.diff.CollectionDiff;
 import io.test.synthetic.visitors.diff.PairingKey;
 import java.util.List;
@@ -25,8 +26,13 @@ import java.util.Map;
 
 public abstract class Syn1DiffVisitor<P extends PairingKey> {
 
-	public boolean visitDocument(Syn1Document original, Syn1Document updated) {
-		return true;
+	protected TraversalContext traversalContext;
+
+	public void setTraversalContext(TraversalContext context) {
+		this.traversalContext = context;
+	}
+
+	public void visitDocument(Syn1Document original, Syn1Document updated) {
 	}
 
 	public void afterVisitDocument(Syn1Document original, Syn1Document updated) {
@@ -35,8 +41,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	public void diffDocumentVersion(String original, String updated) {
 	}
 
-	public boolean diffDocumentInfo(SynInfo original, SynInfo updated) {
-		return true;
+	public void diffDocumentInfo(SynInfo original, SynInfo updated) {
 	}
 
 	public void afterDiffDocumentInfo(SynInfo original, SynInfo updated) {
@@ -45,8 +50,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	public void diffDocumentItems(List<SynItem> original, List<SynItem> updated, CollectionDiff<P, SynItem> diff) {
 	}
 
-	public boolean visitDocumentItemsItem(SynItem original, SynItem updated) {
-		return true;
+	public void visitDocumentItemsItem(SynItem original, SynItem updated) {
 	}
 
 	public void afterVisitDocumentItemsItem(SynItem original, SynItem updated) {
@@ -58,15 +62,13 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	public void diffDocumentMetadata(Map<String, String> original, Map<String, String> updated) {
 	}
 
-	public boolean diffDocumentAdditionalSchema(SchemaOrBoolean original, SchemaOrBoolean updated) {
-		return true;
+	public void diffDocumentAdditionalSchema(SchemaOrBoolean original, SchemaOrBoolean updated) {
 	}
 
 	public void afterDiffDocumentAdditionalSchema(SchemaOrBoolean original, SchemaOrBoolean updated) {
 	}
 
-	public boolean visitInfo(Syn1Info original, Syn1Info updated) {
-		return true;
+	public void visitInfo(Syn1Info original, Syn1Info updated) {
 	}
 
 	public void afterVisitInfo(Syn1Info original, Syn1Info updated) {
@@ -75,8 +77,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	public void diffInfoName(String original, String updated) {
 	}
 
-	public boolean diffInfoContact(SynContact original, SynContact updated) {
-		return true;
+	public void diffInfoContact(SynContact original, SynContact updated) {
 	}
 
 	public void afterDiffInfoContact(SynContact original, SynContact updated) {
@@ -85,8 +86,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	public void diffInfoVersion(String original, String updated) {
 	}
 
-	public boolean visitContact(Syn1Contact original, Syn1Contact updated) {
-		return true;
+	public void visitContact(Syn1Contact original, Syn1Contact updated) {
 	}
 
 	public void afterVisitContact(Syn1Contact original, Syn1Contact updated) {
@@ -101,8 +101,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	public void diffContactUrl(String original, String updated) {
 	}
 
-	public boolean visitItem(Syn1Item original, Syn1Item updated) {
-		return true;
+	public void visitItem(Syn1Item original, Syn1Item updated) {
 	}
 
 	public void afterVisitItem(Syn1Item original, Syn1Item updated) {
@@ -129,8 +128,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	public void diffItemRaw(ObjectNode original, ObjectNode updated) {
 	}
 
-	public boolean diffItemSchema(SynSchema original, SynSchema updated) {
-		return true;
+	public void diffItemSchema(SynSchema original, SynSchema updated) {
 	}
 
 	public void afterDiffItemSchema(SynSchema original, SynSchema updated) {
@@ -139,8 +137,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	public void diffItemExamples(List<JsonNode> original, List<JsonNode> updated) {
 	}
 
-	public boolean diffItemDefaultValue(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
-		return true;
+	public void diffItemDefaultValue(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
 	public void afterDiffItemDefaultValue(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
@@ -149,8 +146,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	public void diffItemTitle(String original, String updated) {
 	}
 
-	public boolean visitSchema(Syn1Schema original, Syn1Schema updated) {
-		return true;
+	public void visitSchema(Syn1Schema original, Syn1Schema updated) {
 	}
 
 	public void afterVisitSchema(Syn1Schema original, Syn1Schema updated) {
@@ -162,8 +158,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	public void diffSchemaType(String original, String updated) {
 	}
 
-	public boolean diffSchemaItems(BooleanSchemaSchemaListUnion original, BooleanSchemaSchemaListUnion updated) {
-		return true;
+	public void diffSchemaItems(BooleanSchemaSchemaListUnion original, BooleanSchemaSchemaListUnion updated) {
 	}
 
 	public void afterDiffSchemaItems(BooleanSchemaSchemaListUnion original, BooleanSchemaSchemaListUnion updated) {
@@ -173,8 +168,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 			CollectionDiff<P, BooleanSchemaUnion> diff) {
 	}
 
-	public boolean visitSchemaProperty(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
-		return true;
+	public void visitSchemaProperty(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
 	public void afterVisitSchemaProperty(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
@@ -184,8 +178,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 			CollectionDiff<P, BooleanSchemaUnion> diff) {
 	}
 
-	public boolean visitSchemaAllOfItem(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
-		return true;
+	public void visitSchemaAllOfItem(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
 	public void afterVisitSchemaAllOfItem(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
@@ -195,8 +188,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 			CollectionDiff<P, BooleanSchemaUnion> diff) {
 	}
 
-	public boolean visitSchemaDefinition(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
-		return true;
+	public void visitSchemaDefinition(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
 	}
 
 	public void afterVisitSchemaDefinition(BooleanSchemaUnion original, BooleanSchemaUnion updated) {
@@ -206,8 +198,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 			CollectionDiff<P, SchemaOrBoolean> diff) {
 	}
 
-	public boolean visitSchemaNestedSchema(SchemaOrBoolean original, SchemaOrBoolean updated) {
-		return true;
+	public void visitSchemaNestedSchema(SchemaOrBoolean original, SchemaOrBoolean updated) {
 	}
 
 	public void afterVisitSchemaNestedSchema(SchemaOrBoolean original, SchemaOrBoolean updated) {
@@ -217,8 +208,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 			CollectionDiff<P, SchemaOrBoolean> diff) {
 	}
 
-	public boolean visitSchemaComposedSchemasItem(SchemaOrBoolean original, SchemaOrBoolean updated) {
-		return true;
+	public void visitSchemaComposedSchemasItem(SchemaOrBoolean original, SchemaOrBoolean updated) {
 	}
 
 	public void afterVisitSchemaComposedSchemasItem(SchemaOrBoolean original, SchemaOrBoolean updated) {
@@ -233,15 +223,13 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	public void diffSchemaEnum(List<JsonNode> original, List<JsonNode> updated) {
 	}
 
-	public boolean visitPaths(Syn1Paths original, Syn1Paths updated) {
-		return true;
+	public void visitPaths(Syn1Paths original, Syn1Paths updated) {
 	}
 
 	public void afterVisitPaths(Syn1Paths original, Syn1Paths updated) {
 	}
 
-	public boolean visitPathItem(Syn1PathItem original, Syn1PathItem updated) {
-		return true;
+	public void visitPathItem(Syn1PathItem original, Syn1PathItem updated) {
 	}
 
 	public void afterVisitPathItem(Syn1PathItem original, Syn1PathItem updated) {
@@ -253,29 +241,25 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	public void diffPathItemSummary(String original, String updated) {
 	}
 
-	public boolean diffPathItemGet(SynOperation original, SynOperation updated) {
-		return true;
+	public void diffPathItemGet(SynOperation original, SynOperation updated) {
 	}
 
 	public void afterDiffPathItemGet(SynOperation original, SynOperation updated) {
 	}
 
-	public boolean diffPathItemPut(SynOperation original, SynOperation updated) {
-		return true;
+	public void diffPathItemPut(SynOperation original, SynOperation updated) {
 	}
 
 	public void afterDiffPathItemPut(SynOperation original, SynOperation updated) {
 	}
 
-	public boolean diffPathItemPost(SynOperation original, SynOperation updated) {
-		return true;
+	public void diffPathItemPost(SynOperation original, SynOperation updated) {
 	}
 
 	public void afterDiffPathItemPost(SynOperation original, SynOperation updated) {
 	}
 
-	public boolean visitOperation(Syn1Operation original, Syn1Operation updated) {
-		return true;
+	public void visitOperation(Syn1Operation original, Syn1Operation updated) {
 	}
 
 	public void afterVisitOperation(Syn1Operation original, Syn1Operation updated) {
@@ -294,8 +278,7 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 			CollectionDiff<P, SynItem> diff) {
 	}
 
-	public boolean visitOperationParametersItem(SynItem original, SynItem updated) {
-		return true;
+	public void visitOperationParametersItem(SynItem original, SynItem updated) {
 	}
 
 	public void afterVisitOperationParametersItem(SynItem original, SynItem updated) {

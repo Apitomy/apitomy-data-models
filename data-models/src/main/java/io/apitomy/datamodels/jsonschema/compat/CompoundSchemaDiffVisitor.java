@@ -102,13 +102,13 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     @Override
-    public boolean visitFullSchema(JCFullSchema original, JCFullSchema updated) {
+    public void visitFullSchema(JCFullSchema original, JCFullSchema updated) {
         // Store for cross-field logic
         this.currentOriginal = original;
         this.currentUpdated = updated;
 
         if (original == null || updated == null) {
-            return true;
+            return;
         }
 
         // If either side has a remaining $ref (cyclic back-edge or unresolved),
@@ -120,7 +120,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             if (origRef != null && updRef != null && !origRef.equals(updRef)) {
                 ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_CHANGED, origRef, updRef);
             }
-            return false;
+            traversalContext.skip(); return;
         }
 
         var origTypeList = DiffUtil.getTypeList(original);
@@ -152,7 +152,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 } else {
                     ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, origTypeList, updTypeList);
                 }
-                return false;
+                traversalContext.skip(); return;
             }
         } else if (originalType != null && updatedType != null && !originalType.equals(updatedType)) {
             if ("integer".equals(originalType) && "number".equals(updatedType)) {
@@ -162,11 +162,11 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             } else {
                 ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, originalType, updatedType);
             }
-            return false;
+            traversalContext.skip(); return;
         } else if (originalType != null && updatedType == null) {
             if (isEmptyOrTrueSchema(updated)) {
                 ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, originalType, "");
-                return false;
+                traversalContext.skip(); return;
             }
             var updAnyOf = updated.getAnyOf();
             var updOneOf = updated.getOneOf();
@@ -184,18 +184,18 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 }
                 if (origMatchesAny) {
                     ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, originalType, "anyOf/oneOf");
-                    return false;
+                    traversalContext.skip(); return;
                 }
             }
         } else if (originalType == null && updatedType != null) {
             if (isEmptyOrTrueSchema(original)) {
                 ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "", updatedType);
-                return false;
+                traversalContext.skip(); return;
             }
         }
 
         // Return true to let the traverser call all field-level diff methods
-        return true;
+        return;
     }
 
     private boolean isEmptyOrTrueSchema(JFullSchema schema) {
@@ -239,13 +239,13 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // compatibility-based composition matching).
 
     @Override
-    public boolean visitFullSchemaProperty(JsonSchema original, JsonSchema updated) { return false; }
+    public void visitFullSchemaProperty(JsonSchema original, JsonSchema updated) { traversalContext.skip(); }
 
     @Override
-    public boolean visitFullSchemaPatternProperty(JsonSchema original, JsonSchema updated) { return false; }
+    public void visitFullSchemaPatternProperty(JsonSchema original, JsonSchema updated) { traversalContext.skip(); }
 
     @Override
-    public boolean visitFullSchemaDependentSchema(JsonSchema original, JsonSchema updated) {
+    public void visitFullSchemaDependentSchema(JsonSchema original, JsonSchema updated) {
         if (original != null && updated != null
                 && original.isFullSchema() && updated.isFullSchema()) {
             var subCtx = ctx.sub("dependentSchemas");
@@ -255,17 +255,17 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                         original, updated);
             }
         }
-        return false;
+        traversalContext.skip(); return;
     }
 
     @Override
-    public boolean visitFullSchemaAllOfItem(JsonSchema original, JsonSchema updated) { return false; }
+    public void visitFullSchemaAllOfItem(JsonSchema original, JsonSchema updated) { traversalContext.skip(); }
 
     @Override
-    public boolean visitFullSchemaAnyOfItem(JsonSchema original, JsonSchema updated) { return false; }
+    public void visitFullSchemaAnyOfItem(JsonSchema original, JsonSchema updated) { traversalContext.skip(); }
 
     @Override
-    public boolean visitFullSchemaOneOfItem(JsonSchema original, JsonSchema updated) { return false; }
+    public void visitFullSchemaOneOfItem(JsonSchema original, JsonSchema updated) { traversalContext.skip(); }
 
     // -----------------------------------------------------------------------
     // String type fields
@@ -318,15 +318,15 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     @Override
-    public boolean diffFullSchemaMinimum(JCRangeValue original, JCRangeValue updated) {
-        if (original == null && updated == null) return false;
+    public void diffFullSchemaMinimum(JCRangeValue original, JCRangeValue updated) {
+        if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original == null) {
             ctx.addDifference(NUMBER_TYPE_MINIMUM_ADDED, null, rangeToString(updated));
-            return false;
+            traversalContext.skip(); return;
         }
         if (updated == null) {
             ctx.addDifference(NUMBER_TYPE_MINIMUM_REMOVED, rangeToString(original), null);
-            return false;
+            traversalContext.skip(); return;
         }
         // Both present -- compare values
         Number origVal = original.getValue();
@@ -346,19 +346,19 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             }
             // else: same value and exclusivity -- no diff
         }
-        return false; // don't auto-recurse into RangeValue fields
+        traversalContext.skip(); return; // don't auto-recurse into RangeValue fields
     }
 
     @Override
-    public boolean diffFullSchemaMaximum(JCRangeValue original, JCRangeValue updated) {
-        if (original == null && updated == null) return false;
+    public void diffFullSchemaMaximum(JCRangeValue original, JCRangeValue updated) {
+        if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original == null) {
             ctx.addDifference(NUMBER_TYPE_MAXIMUM_ADDED, null, rangeToString(updated));
-            return false;
+            traversalContext.skip(); return;
         }
         if (updated == null) {
             ctx.addDifference(NUMBER_TYPE_MAXIMUM_REMOVED, rangeToString(original), null);
-            return false;
+            traversalContext.skip(); return;
         }
         // Both present -- compare values
         Number origVal = original.getValue();
@@ -378,7 +378,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             }
             // else: same value and exclusivity -- no diff
         }
-        return false; // don't auto-recurse into RangeValue fields
+        traversalContext.skip(); return; // don't auto-recurse into RangeValue fields
     }
 
     @Override
@@ -418,10 +418,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     }
 
     @Override
-    public boolean diffFullSchemaItems(BooleanFullSchemaFullSchemaListUnion original,
+    public void diffFullSchemaItems(BooleanFullSchemaFullSchemaListUnion original,
                                     BooleanFullSchemaFullSchemaListUnion updated) {
         // After normalization, items is always a single schema or boolean (tuples → prefixItems)
-        if (original == null && updated == null) return false;
+        if (original == null && updated == null) { traversalContext.skip(); return; }
 
         if (original != null && updated != null) {
             if (original.isFullSchema() && updated.isFullSchema()) {
@@ -435,7 +435,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             diffAddedRemoved(ctx, original, updated,
                     ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED, ARRAY_TYPE_ALL_ITEM_SCHEMA_REMOVED);
         }
-        return false;
+        traversalContext.skip(); return;
     }
 
     @Override
@@ -513,8 +513,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     }
 
     @Override
-    public boolean diffFullSchemaAdditionalItems(JsonSchema original, JsonSchema updated) {
-        if (original == null && updated == null) return false;
+    public void diffFullSchemaAdditionalItems(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) { traversalContext.skip(); return; }
 
         var origPermits = original == null || (original.isBoolean() ? original.asBoolean() : true);
         var updPermits = updated == null || (updated.isBoolean() ? updated.asBoolean() : true);
@@ -547,30 +547,30 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         } else if ((original == null || (origIsBoolean && origPermits)) && updIsSchema) {
             ctx.addDifference(ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED, original, updated);
         }
-        return false;
+        traversalContext.skip(); return;
     }
 
     @Override
-    public boolean diffFullSchemaContains(JsonSchema original, JsonSchema updated) {
-        if (original == null && updated == null) return false;
+    public void diffFullSchemaContains(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original == null) {
             ctx.addDifference(ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_ADDED, null, updated);
-            return false;
+            traversalContext.skip(); return;
         }
         if (updated == null) {
             ctx.addDifference(ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_REMOVED, original, null);
-            return false;
+            traversalContext.skip(); return;
         }
         var subCtx = ctx.sub("contains");
         if (!isUnionSchemaCompatible(subCtx, original, updated, true)) {
             subCtx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, original, updated);
         }
-        return false;
+        traversalContext.skip(); return;
     }
 
     @Override
-    public boolean diffFullSchemaUnevaluatedItems(JsonSchema original, JsonSchema updated) {
-        if (original == null && updated == null) return false;
+    public void diffFullSchemaUnevaluatedItems(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original != null && updated != null
                 && original.isFullSchema() && updated.isFullSchema()) {
             if (isUnionSchemaCompatible(ctx, original, updated, true)) {
@@ -582,12 +582,12 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             diffAddedRemoved(ctx, original, updated,
                     ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED, ARRAY_TYPE_ALL_ITEM_SCHEMA_REMOVED);
         }
-        return false;
+        traversalContext.skip(); return;
     }
 
     @Override
-    public boolean diffFullSchemaUnevaluatedProperties(JsonSchema original, JsonSchema updated) {
-        if (original == null && updated == null) return false;
+    public void diffFullSchemaUnevaluatedProperties(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original != null && updated != null
                 && original.isFullSchema() && updated.isFullSchema()) {
             if (isUnionSchemaCompatible(ctx, original, updated, true)) {
@@ -600,7 +600,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_ADDED,
                     OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_REMOVED);
         }
-        return false;
+        traversalContext.skip(); return;
     }
 
     // -----------------------------------------------------------------------
@@ -722,8 +722,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     }
 
     @Override
-    public boolean diffFullSchemaAdditionalProperties(JsonSchema original, JsonSchema updated) {
-        if (original == null && updated == null) return false;
+    public void diffFullSchemaAdditionalProperties(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) { traversalContext.skip(); return; }
 
         var origPermits = permitsAdditional(original);
         var updPermits = permitsAdditional(updated);
@@ -763,7 +763,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_EXTENDED, original, updated);
             }
         }
-        return false;
+        traversalContext.skip(); return;
     }
 
     @Override
@@ -799,8 +799,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     }
 
     @Override
-    public boolean diffFullSchemaPropertyNames(JsonSchema original, JsonSchema updated) {
-        if (original == null && updated == null) return false;
+    public void diffFullSchemaPropertyNames(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) { traversalContext.skip(); return; }
         compareSchema(ctx, original, updated,
                 OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_ADDED,
                 OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_REMOVED,
@@ -808,7 +808,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD,
                 OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD,
                 OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_NONE);
-        return false;
+        traversalContext.skip(); return;
     }
 
     // dependencies is always empty after conversion — d4-d7 entries are split
@@ -1038,15 +1038,15 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     @Override
-    public boolean diffFullSchemaNot(JsonSchema original, JsonSchema updated) {
-        if (original == null && updated == null) return false;
+    public void diffFullSchemaNot(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) { traversalContext.skip(); return; }
         compareSchema(ctx, original, updated,
                 SUBSCHEMA_TYPE_CHANGED, SUBSCHEMA_TYPE_CHANGED,
                 NOT_TYPE_SCHEMA_COMPATIBLE_BOTH,
                 NOT_TYPE_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD,
                 NOT_TYPE_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD,
                 NOT_TYPE_SCHEMA_COMPATIBLE_NONE);
-        return false;
+        traversalContext.skip(); return;
     }
 
     // -----------------------------------------------------------------------
@@ -1056,39 +1056,39 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     @Override
-    public boolean diffFullSchemaIf(JsonSchema original, JsonSchema updated) {
-        if (original == null && updated == null) return false;
+    public void diffFullSchemaIf(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) { traversalContext.skip(); return; }
         compareSchema(ctx, original, updated,
                 CONDITIONAL_TYPE_IF_SCHEMA_ADDED, CONDITIONAL_TYPE_IF_SCHEMA_REMOVED,
                 CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_BOTH,
                 CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD,
                 CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD,
                 CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_NONE);
-        return false;
+        traversalContext.skip(); return;
     }
 
     @Override
-    public boolean diffFullSchemaThen(JsonSchema original, JsonSchema updated) {
-        if (original == null && updated == null) return false;
+    public void diffFullSchemaThen(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) { traversalContext.skip(); return; }
         compareSchema(ctx, original, updated,
                 CONDITIONAL_TYPE_THEN_SCHEMA_ADDED, CONDITIONAL_TYPE_THEN_SCHEMA_REMOVED,
                 CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_BOTH,
                 CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD,
                 CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD,
                 CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_NONE);
-        return false;
+        traversalContext.skip(); return;
     }
 
     @Override
-    public boolean diffFullSchemaElse(JsonSchema original, JsonSchema updated) {
-        if (original == null && updated == null) return false;
+    public void diffFullSchemaElse(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) { traversalContext.skip(); return; }
         compareSchema(ctx, original, updated,
                 CONDITIONAL_TYPE_ELSE_SCHEMA_ADDED, CONDITIONAL_TYPE_ELSE_SCHEMA_REMOVED,
                 CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_BOTH,
                 CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD,
                 CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD,
                 CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_NONE);
-        return false;
+        traversalContext.skip(); return;
     }
 
     // -----------------------------------------------------------------------
@@ -1166,7 +1166,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     @Override
-    public boolean diffFullSchemaType(
+    public void diffFullSchemaType(
             io.apitomy.datamodels.models.union.StringStringListUnion original,
             io.apitomy.datamodels.models.union.StringStringListUnion updated) {
         // Type change detection is handled in visitFullSchema.
@@ -1185,7 +1185,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                         NUMBER_TYPE_INTEGER_REQUIRED_UNCHANGED);
             }
         }
-        return true;
+        return;
     }
 
     // -----------------------------------------------------------------------
@@ -1208,15 +1208,15 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     @Override
-    public boolean diffFullSchemaContentSchema(JsonSchema original, JsonSchema updated) {
-        if (original == null && updated == null) return false;
+    public void diffFullSchemaContentSchema(JsonSchema original, JsonSchema updated) {
+        if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original != null && updated != null) {
             var subCtx = ctx.sub("contentSchema");
             if (!isUnionSchemaCompatible(subCtx, original, updated, true)) {
                 subCtx.addDifference(SUBSCHEMA_TYPE_CHANGED, original, updated);
             }
         }
-        return false;
+        traversalContext.skip(); return;
     }
 
     // -----------------------------------------------------------------------
