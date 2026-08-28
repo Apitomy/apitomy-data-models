@@ -29,8 +29,8 @@ import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
  * to produce compatibility {@link Difference}s collected via {@link DiffContext}.
  * <p>
  * The traverser iterates all compound-schema fields and calls the appropriate
- * visitor method for each field. The visitor delegates to {@link DiffUtil} and
- * the existing diff helper classes for the actual comparison logic.
+ * visitor method for each field. The visitor delegates to {@link DiffUtil} for
+ * generic diff primitives; schema-level compatibility recursion lives in this class.
  */
 // TODO: Modern schema support — $dynamicRef, $recursiveRef
 public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> {
@@ -50,16 +50,17 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     }
 
     // -----------------------------------------------------------------------
-    // Static entry points (preserved for backward compatibility with DiffUtil)
+    // Entry point + on-demand conversion
     // -----------------------------------------------------------------------
 
     /**
-     * Entry point: compare original and updated schemas.
-     * Both schemas should already be converted to compound type.
-     * Any {@code $ref} nodes should be resolved by the dereferencer before
-     * calling this method.
+     * Entry point: compare original and updated schemas. Either operand is converted to
+     * compound on demand (see {@link #toCompoundIfNeeded}); once the deep conversion is
+     * genuinely deep (tuple {@code items} elements included) this becomes a passthrough
+     * and the on-demand step can be dropped. Any {@code $ref} nodes should be resolved by
+     * the dereferencer before calling this method.
      */
-    public static void diffSchemas(DiffContext ctx, JFullSchema original, JFullSchema updated) {
+    static void diffSchemas(DiffContext ctx, JFullSchema original, JFullSchema updated) {
         var compoundOriginal = toCompoundIfNeeded(original);
         var compoundUpdated = toCompoundIfNeeded(updated);
 
@@ -72,7 +73,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         try {
             if (!(compoundOriginal instanceof JCFullSchema origCompound)
                     || !(compoundUpdated instanceof JCFullSchema updCompound)) {
-                return;
+                throw new IllegalStateException(
+                        "diffSchemas requires both operands to be compound (JCFullSchema) after conversion, "
+                        + "but one could not be converted. original=" + compoundOriginal.getClass().getName()
+                        + ", updated=" + compoundUpdated.getClass().getName());
             }
 
             var visitor = new CompoundSchemaDiffVisitor(ctx);
@@ -426,7 +430,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         if (original != null && updated != null) {
             if (original.isFullSchema() && updated.isFullSchema()) {
                 var subCtx = ctx.sub("items");
-                if (!DiffUtil.isSchemaCompatible(subCtx, original.asFullSchema(),
+                if (!isSchemaCompatible(subCtx, original.asFullSchema(),
                         updated.asFullSchema(), true)) {
                     subCtx.addDifference(ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED, original, updated);
                 }
@@ -452,7 +456,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             var updSchema = updList.get(i);
             if (origSchema.isFullSchema() && updSchema.isFullSchema()) {
                 var subCtx = ctx.sub("prefixItems/" + i);
-                if (!DiffUtil.isSchemaCompatible(subCtx, origSchema.asFullSchema(),
+                if (!isSchemaCompatible(subCtx, origSchema.asFullSchema(),
                         updSchema.asFullSchema(), true)) {
                     subCtx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, origSchema, updSchema);
                 }
@@ -468,7 +472,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 for (var i = minSize; i < updList.size(); i++) {
                     if (updList.get(i).isFullSchema()) {
                         var subCtx = ctx.sub("prefixItems/" + i);
-                        if (!DiffUtil.isSchemaCompatible(subCtx, origAI.asFullSchema(),
+                        if (!isSchemaCompatible(subCtx, origAI.asFullSchema(),
                                 updList.get(i).asFullSchema(), true)) {
                             allCompatible = false;
                             break;
@@ -494,7 +498,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 for (var i = minSize; i < origList.size(); i++) {
                     if (origList.get(i).isFullSchema()) {
                         var subCtx = ctx.sub("prefixItems/" + i);
-                        if (!DiffUtil.isSchemaCompatible(subCtx, origList.get(i).asFullSchema(),
+                        if (!isSchemaCompatible(subCtx, origList.get(i).asFullSchema(),
                                 updAI.asFullSchema(), true)) {
                             allCompatible = false;
                             break;
@@ -1228,8 +1232,91 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     // -----------------------------------------------------------------------
-    // Helper methods from NumberSchemaDiff
+    // Local helper methods
     // -----------------------------------------------------------------------
+
+    /**
+     * Compare two sub-schemas for compatibility. Pushes an isolated scope so the nested
+     * comparison doesn't leak into the surrounding diff, while sharing the visited set to
+     * prevent infinite recursion on cyclic schemas.
+     *
+     * <p>Delegates to {@link #diffSchemas}, which converts either operand to compound
+     * ({@link JCFullSchema}) on demand — so raw draft sub-schemas that the top-level
+     * conversion didn't reach (e.g. tuple {@code items} elements) are handled transparently.
+     */
+    private static boolean isSchemaCompatible(DiffContext ctx, JFullSchema original, JFullSchema updated,
+                                              boolean backward) {
+        ctx.pushIsolatedScope();
+        if (backward) {
+            diffSchemas(ctx, original, updated);
+        } else {
+            diffSchemas(ctx, updated, original);
+        }
+        return ctx.popScopeIsCompatible();
+    }
+
+    private static boolean isUnionSchemaCompatible(DiffContext ctx, JsonSchema original,
+                                                   JsonSchema updated, boolean backward) {
+        if (original == null || updated == null) return original == updated;
+        if (original.isBoolean() && updated.isBoolean()) {
+            if (original.asBoolean() == updated.asBoolean()) return true;
+            if (backward) {
+                // false → true: widening (backward compatible)
+                // true → false: narrowing (not backward compatible)
+                return !original.asBoolean() && updated.asBoolean();
+            } else {
+                return original.asBoolean() && !updated.asBoolean();
+            }
+        }
+        if (original.isBoolean()) {
+            if (backward) {
+                // false → schema: widening from nothing to something (backward compatible)
+                // true → schema: narrowing from everything to something (not backward compatible)
+                return !original.asBoolean();
+            } else {
+                return original.asBoolean();
+            }
+        }
+        if (updated.isBoolean()) {
+            if (backward) {
+                // schema → true: widening to everything (backward compatible)
+                // schema → false: narrowing to nothing (not backward compatible)
+                return updated.asBoolean();
+            } else {
+                return !updated.asBoolean();
+            }
+        }
+        return isSchemaCompatible(ctx, original.asFullSchema(), updated.asFullSchema(), backward);
+    }
+
+    private static void compareSchema(DiffContext ctx, JsonSchema original,
+                                      JsonSchema updated,
+                                      DiffType addedType, DiffType removedType,
+                                      DiffType bothType, DiffType backwardNotForwardType,
+                                      DiffType forwardNotBackwardType, DiffType noneType) {
+        if (diffAddedRemoved(ctx, original, updated, addedType, removedType)) {
+            compareSchemaWhenExist(ctx, original, updated, bothType,
+                    backwardNotForwardType, forwardNotBackwardType, noneType);
+        }
+    }
+
+    private static void compareSchemaWhenExist(DiffContext ctx, JsonSchema original,
+                                               JsonSchema updated,
+                                               DiffType bothType, DiffType backwardType,
+                                               DiffType forwardType, DiffType noneType) {
+        var backward = isUnionSchemaCompatible(ctx, original, updated, true);
+        var forward = isUnionSchemaCompatible(ctx, original, updated, false);
+
+        if (backward && forward) {
+            ctx.addDifference(bothType, original, updated);
+        } else if (backward) {
+            ctx.addDifference(backwardType, original, updated);
+        } else if (forward) {
+            ctx.addDifference(forwardType, original, updated);
+        } else {
+            ctx.addDifference(noneType, original, updated);
+        }
+    }
 
     private static String rangeToString(JCRangeValue range) {
         if (range == null) return null;
