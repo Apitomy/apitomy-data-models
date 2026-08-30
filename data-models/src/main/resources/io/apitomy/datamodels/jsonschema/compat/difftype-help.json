@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "help": {
+    "OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED": [
+      "The set of objects accepted by `properties` was widened.",
+      "",
+      "This is reported, for example, when a named property is added while the old schema forbade unknown properties (`additionalProperties: false`), or when a named property is removed while the new schema still accepts it via `additionalProperties`. In both cases the object accepts at least everything it accepted before.",
+      "",
+      "Backward compatible: a reader using the new schema accepts all data written with the old schema. The forward direction is not guaranteed — old readers may reject data that exploits the widening."
+    ],
+    "OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED": [
+      "The set of objects accepted by `properties` was narrowed, so some data valid under the old schema is rejected by the new one.",
+      "",
+      "A common and surprising cause is *adding* a property definition when the schema otherwise accepted any value for that name (`additionalProperties` absent or `true`): the name that used to accept anything is now constrained by the new property schema. Removing a property while unknown properties are forbidden narrows the object as well.",
+      "",
+      "Not backward compatible: a reader using the new schema may reject data written with the old schema. Note that adding a property is therefore not automatically a safe change."
+    ],
+    "OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES": [
+      "A property was added, and the addition is safe because the old schema already validated unknown properties through an `additionalProperties` schema, and the newly-added property's schema is compatible with that `additionalProperties` schema.",
+      "",
+      "Because the property name was already constrained (by `additionalProperties`) under the old schema and the new, more specific constraint is no stricter, no previously-valid data is rejected.",
+      "",
+      "Backward compatible. This is the case that distinguishes a safe property addition from the narrowing reported by `OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED`."
+    ],
+    "OBJECT_TYPE_ADDITIONAL_PROPERTIES_TRUE_TO_FALSE": [
+      "`additionalProperties` changed from allowing extra properties to forbidding them (`false`).",
+      "",
+      "Objects that carried properties not named in `properties` were valid before and are rejected now.",
+      "",
+      "Not backward compatible: a reader using the new schema rejects such previously-valid data."
+    ],
+    "OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_ADDED": [
+      "A schema constraint for `additionalProperties` was introduced where extra properties were previously unconstrained.",
+      "",
+      "Extra properties that were accepted with any value before must now satisfy the added schema, so some previously-valid data is rejected.",
+      "",
+      "Not backward compatible."
+    ],
+    "OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED": [
+      "A property was added to `required`.",
+      "",
+      "Instances that omitted this property were valid under the old schema and are invalid under the new one.",
+      "",
+      "Not backward compatible: a reader using the new schema rejects old data that lacks the newly-required property. Adding a required property is one of the most common breaking changes."
+    ],
+    "OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_REMOVED": [
+      "A property was removed from `required`; it became optional.",
+      "",
+      "Every instance valid under the old schema still carried the property, so it remains valid under the new schema, which merely no longer demands it.",
+      "",
+      "Backward compatible. The forward direction does not hold: old readers may reject new data that omits the now-optional property."
+    ],
+    "SUBSCHEMA_TYPE_CHANGED": [
+      "The declared `type` was changed to a different, non-overlapping type (for example `string` to `integer`).",
+      "",
+      "Instances of the old type are not instances of the new type, so data written with the old schema is rejected.",
+      "",
+      "Not backward compatible. Broadening `type` — removing it or changing it to a superset of the old one — is reported separately and can be compatible."
+    ],
+    "NUMBER_TYPE_INTEGER_REQUIRED_FALSE_TO_TRUE": [
+      "The numeric type was restricted from `number` to `integer`.",
+      "",
+      "Non-integer numbers such as `1.5` were valid before and are rejected now.",
+      "",
+      "Not backward compatible: a reader using the new schema rejects fractional values that the old schema accepted."
+    ],
+    "ENUM_TYPE_VALUES_MEMBER_ADDED": [
+      "A value was added to the `enum` allowed set, widening it.",
+      "",
+      "Every value valid under the old `enum` is still a member of the new, larger set.",
+      "",
+      "Backward compatible. The forward direction does not hold: old readers reject the newly-added value."
+    ],
+    "ENUM_TYPE_VALUES_MEMBER_REMOVED": [
+      "A value was removed from the `enum` allowed set, narrowing it.",
+      "",
+      "Data using the removed value was valid before and is rejected now.",
+      "",
+      "Not backward compatible: a reader using the new schema rejects old data that used the removed value."
+    ],
+    "CONST_TYPE_VALUE_CHANGED": [
+      "The single value fixed by `const` was changed.",
+      "",
+      "Only the old constant was valid before, and only the new constant is valid now, so any data written with the old schema is rejected.",
+      "",
+      "Not backward compatible."
+    ],
+    "CONDITIONAL_TYPE_IF_SCHEMA_ADDED": [
+      "An `if` subschema was introduced where there was none.",
+      "",
+      "Conditional (`if`/`then`/`else`) validation applies only when an `if` is present. Adding one activates a `then`/`else` branch that can reject instances the old schema accepted.",
+      "",
+      "Because the effect depends entirely on the accompanying `then`/`else` branches, this is flagged conservatively as not backward compatible."
+    ],
+    "CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD": [
+      "The `then` branch of a conditional changed so that it is compatible in the forward direction only.",
+      "",
+      "The `then` branch applies to instances that match `if`. It was tightened, so some instances that matched `if` and were valid under the old `then` are rejected under the new one.",
+      "",
+      "Not backward compatible (forward-only): a reader using the new schema may reject old data, even though old readers accept all new data."
+    ],
+    "CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD": [
+      "The `else` branch of a conditional changed so that it is compatible in the backward direction only.",
+      "",
+      "The `else` branch applies to instances that do not match `if`. The new branch still accepts everything the old one did, but it also accepts data the old branch rejected.",
+      "",
+      "Backward compatible: a reader using the new schema accepts all old data. The forward direction fails — old readers may reject the newly-accepted data."
+    ]
+  }
+}
