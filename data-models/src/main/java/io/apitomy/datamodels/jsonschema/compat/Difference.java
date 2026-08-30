@@ -1,6 +1,7 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public final class Difference {
 
@@ -21,6 +22,25 @@ public final class Difference {
 
     public DiffType getDiffType() {
         return diffType;
+    }
+
+    /**
+     * A human-readable one-line description of this difference. Delegates to
+     * {@link DiffType#getShortDescription()}.
+     */
+    public String getShortDescription() {
+        return diffType.getShortDescription();
+    }
+
+    /**
+     * A long-form, {@code --explain}-style explanation of this difference, if one is curated for
+     * its {@link DiffType}. Delegates to {@link DiffType#getHelp()}.
+     * <p>
+     * This accessor lives on {@code Difference} (not only {@code DiffType}) so that future help can
+     * be enriched with the concrete paths and sub-schemas carried by this instance.
+     */
+    public Optional<String> getHelp() {
+        return diffType.getHelp();
     }
 
     public String getPathOriginal() {
