@@ -88,10 +88,16 @@ public final class DiffUtil {
         }
     }
 
+    /**
+     * Emits the directional diff for a boolean-keyword transition. By convention the "unchanged"
+     * case emits nothing (see the {@code *_UNCHANGED} note on {@link DiffType}); it only reports
+     * {@code true} so callers can tell no difference was recorded.
+     *
+     * @return {@code true} if the value was unchanged (no difference emitted), {@code false} otherwise
+     */
     public static boolean diffBooleanTransition(DiffContext ctx, Boolean original, Boolean updated,
                                                  Boolean defaultValue,
-                                                 DiffType changeFalseToTrue, DiffType changeTrueToFalse,
-                                                 DiffType unchanged) {
+                                                 DiffType changeFalseToTrue, DiffType changeTrueToFalse) {
         if (original == null) original = defaultValue;
         if (updated == null) updated = defaultValue;
         if (original && !updated) {
@@ -99,7 +105,6 @@ public final class DiffUtil {
         } else if (!original && updated) {
             ctx.addDifference(changeFalseToTrue, original, updated);
         } else {
-            ctx.addDifference(unchanged, original, updated);
             return true;
         }
         return false;
