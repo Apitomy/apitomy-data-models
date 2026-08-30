@@ -1,5 +1,7 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import java.util.Optional;
+
 /**
  * Classifies a single difference found between two schemas.
  * <p>
@@ -245,5 +247,18 @@ public enum DiffType {
      */
     public String getShortDescription() {
         return shortDescription;
+    }
+
+    /**
+     * A curated, long-form explanation of this kind of difference, formatted as Markdown.
+     * <p>
+     * Unlike {@link #getShortDescription()}, help text is optional: only a curated subset of diff
+     * types carry one, so this returns {@link Optional#empty()} for the rest. The text is loaded
+     * lazily from a bundled manifest on first access and cached for the lifetime of the JVM.
+     *
+     * @return the help text, or {@link Optional#empty()} if none is curated for this constant
+     */
+    public Optional<String> getHelp() {
+        return DiffTypeHelp.get(name());
     }
 }
