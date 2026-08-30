@@ -1,5 +1,6 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -41,6 +42,13 @@ public final class Difference {
      */
     public Optional<String> getHelp() {
         return diffType.getHelp();
+    }
+
+    /**
+     * Worked examples of this kind of difference. Delegates to {@link DiffType#getExamples()}.
+     */
+    public List<CompatibilityExample> getExamples() {
+        return diffType.getExamples();
     }
 
     public String getPathOriginal() {

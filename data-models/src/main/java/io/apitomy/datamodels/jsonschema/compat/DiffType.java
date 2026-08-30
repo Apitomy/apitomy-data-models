@@ -1,5 +1,6 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -34,6 +35,13 @@ import java.util.Optional;
  *       (source→target); for the common backward check that is old→new. Disambiguating the framing
  *       for forward/full checks is deferred (see epic item C45).</li>
  * </ul>
+ *
+ * <h2>"Unchanged" outcomes are not emitted</h2>
+ * <p>
+ * When a comparison finds a keyword or subschema unchanged, it records no {@link Difference}. An
+ * unchanged value is compatible in both directions and carries no information for a consumer, so
+ * surfacing it would add nothing but noise to a check result. The diff logic therefore skips the
+ * "no change" case rather than reporting it: there is no {@code DiffType} for an unchanged outcome.
  */
 public enum DiffType {
 
@@ -260,5 +268,18 @@ public enum DiffType {
      */
     public Optional<String> getHelp() {
         return DiffTypeHelp.get(name());
+    }
+
+    /**
+     * Worked examples of this kind of difference, drawn from the bundled example catalog.
+     * <p>
+     * Each example is a concrete schema pair (one direction of a catalog case) whose check emits
+     * this diff type. The list is loaded lazily on first access and cached; it is empty for diff
+     * types the catalog does not yet exercise.
+     *
+     * @return an unmodifiable list of examples, possibly empty
+     */
+    public List<CompatibilityExample> getExamples() {
+        return DiffTypeExamples.get(this);
     }
 }

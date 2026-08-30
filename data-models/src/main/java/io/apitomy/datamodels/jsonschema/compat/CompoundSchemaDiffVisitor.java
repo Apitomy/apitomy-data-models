@@ -417,8 +417,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaUniqueItems(Boolean original, Boolean updated) {
         diffBooleanTransition(ctx, original, updated, false,
                 ARRAY_TYPE_UNIQUE_ITEMS_FALSE_TO_TRUE,
-                ARRAY_TYPE_UNIQUE_ITEMS_TRUE_TO_FALSE,
-                ARRAY_TYPE_UNIQUE_ITEMS_BOOLEAN_UNCHANGED);
+                ARRAY_TYPE_UNIQUE_ITEMS_TRUE_TO_FALSE);
     }
 
     @Override
@@ -530,13 +529,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         if ((origIsBoolean || original == null) && (updIsBoolean || updated == null)) {
             diffBooleanTransition(ctx, origPermits, updPermits, true,
                     ARRAY_TYPE_ADDITIONAL_ITEMS_FALSE_TO_TRUE,
-                    ARRAY_TYPE_ADDITIONAL_ITEMS_TRUE_TO_FALSE,
-                    ARRAY_TYPE_ADDITIONAL_ITEMS_BOOLEAN_UNCHANGED);
+                    ARRAY_TYPE_ADDITIONAL_ITEMS_TRUE_TO_FALSE);
         } else if (origIsSchema && updIsSchema) {
-            if (isUnionSchemaCompatible(ctx, original, updated, true)) {
-                ctx.addDifference(ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_UNCHANGED,
-                        original, updated);
-            } else {
+            if (!isUnionSchemaCompatible(ctx, original, updated, true)) {
                 ctx.addDifference(ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED,
                         original, updated);
             }
@@ -577,9 +572,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original != null && updated != null
                 && original.isFullSchema() && updated.isFullSchema()) {
-            if (isUnionSchemaCompatible(ctx, original, updated, true)) {
-                ctx.addDifference(ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_UNCHANGED, original, updated);
-            } else {
+            if (!isUnionSchemaCompatible(ctx, original, updated, true)) {
                 ctx.addDifference(ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED, original, updated);
             }
         } else {
@@ -594,9 +587,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original != null && updated != null
                 && original.isFullSchema() && updated.isFullSchema()) {
-            if (isUnionSchemaCompatible(ctx, original, updated, true)) {
-                ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_UNCHANGED, original, updated);
-            } else {
+            if (!isUnionSchemaCompatible(ctx, original, updated, true)) {
                 ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_CHANGED, original, updated);
             }
         } else {
@@ -740,13 +731,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         if ((origIsBoolean || original == null) && (updIsBoolean || updated == null)) {
             diffBooleanTransition(ctx, origPermits, updPermits, true,
                     OBJECT_TYPE_ADDITIONAL_PROPERTIES_FALSE_TO_TRUE,
-                    OBJECT_TYPE_ADDITIONAL_PROPERTIES_TRUE_TO_FALSE,
-                    OBJECT_TYPE_ADDITIONAL_PROPERTIES_BOOLEAN_UNCHANGED);
+                    OBJECT_TYPE_ADDITIONAL_PROPERTIES_TRUE_TO_FALSE);
         } else if (origIsSchema && updIsSchema) {
-            if (isUnionSchemaCompatible(ctx, original, updated, true)) {
-                ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_UNCHANGED,
-                        original, updated);
-            } else {
+            if (!isUnionSchemaCompatible(ctx, original, updated, true)) {
                 ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_CHANGED,
                         original, updated);
             }
@@ -1185,8 +1172,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 var updIsInteger = "integer".equals(updType);
                 diffBooleanTransition(ctx, origIsInteger, updIsInteger, false,
                         NUMBER_TYPE_INTEGER_REQUIRED_FALSE_TO_TRUE,
-                        NUMBER_TYPE_INTEGER_REQUIRED_TRUE_TO_FALSE,
-                        NUMBER_TYPE_INTEGER_REQUIRED_UNCHANGED);
+                        NUMBER_TYPE_INTEGER_REQUIRED_TRUE_TO_FALSE);
             }
         }
         return;
