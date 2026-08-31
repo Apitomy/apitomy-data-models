@@ -2,7 +2,7 @@
   "tests" : [
     {
       "enabled" : true,
-      "id" : "Basic: {}",
+      "id" : "Basic: type removed (widened to any type)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -27,7 +27,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Basic: true",
+      "id" : "Basic: typed schema replaced with 'true'",
       "expected" : {
         "backward" : {
           "compatible" : false
@@ -44,7 +44,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Basic: false",
+      "id" : "Basic: 'false' property schema replaced with string",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -75,7 +75,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Basic: meta",
+      "id" : "Basic: '$id' vs legacy 'id' keyword",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -95,7 +95,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: minLength",
+      "id" : "String: minLength decreased",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -123,7 +123,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: minLength",
+      "id" : "String: minLength removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -150,7 +150,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: minLength",
+      "id" : "String: minLength unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -172,7 +172,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: maxLength",
+      "id" : "String: maxLength increased",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -200,7 +200,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: maxLength",
+      "id" : "String: maxLength removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -227,7 +227,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: maxLength",
+      "id" : "String: maxLength unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -249,7 +249,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: pattern 1",
+      "id" : "String: pattern removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -276,7 +276,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: pattern 2",
+      "id" : "String: pattern changed",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -304,7 +304,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: pattern 3",
+      "id" : "String: pattern unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -326,7 +326,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: format 1",
+      "id" : "String: format removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -353,7 +353,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: format 2",
+      "id" : "String: format changed",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -381,7 +381,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: format 3",
+      "id" : "String: format unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -403,7 +403,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: integer",
+      "id" : "Number: integer widened to number",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -429,7 +429,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: multipleOf 1",
+      "id" : "Number: multipleOf removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -456,7 +456,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: multipleOf 2",
+      "id" : "Number: multipleOf changed to a divisor",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -484,7 +484,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: multipleOf 3",
+      "id" : "Number: multipleOf changed to a non-divisor",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -512,7 +512,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: minimum",
+      "id" : "Number: minimum removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -539,7 +539,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: minimum",
+      "id" : "Number: minimum decreased",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -567,7 +567,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: minimum",
+      "id" : "Number: minimum unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -589,7 +589,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: maximum",
+      "id" : "Number: maximum removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -616,7 +616,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: maximum",
+      "id" : "Number: maximum increased",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -644,7 +644,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: maximum",
+      "id" : "Number: maximum unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -666,7 +666,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: exclusiveMinimum 1",
+      "id" : "Number: exclusiveMinimum (draft-04 boolean) relaxed to inclusive minimum",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -696,7 +696,7 @@
     {
       "enabled" : true,
       "$comment" : "Schema library does not support this case.",
-      "id" : "Number: exclusiveMinimum 2",
+      "id" : "Number: exclusiveMinimum relaxed to inclusive minimum",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -725,7 +725,7 @@
     {
       "enabled" : true,
       "$comment" : "Schema library does not support this case.",
-      "id" : "Number: exclusiveMinimum 3",
+      "id" : "Number: exclusiveMinimum replaced with a lower minimum",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -754,7 +754,7 @@
     {
       "enabled" : true,
       "$comment" : "Schema library does not support this case.",
-      "id" : "Number: exclusiveMinimum 4",
+      "id" : "Number: exclusiveMinimum unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -776,7 +776,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: exclusiveMinimum 5",
+      "id" : "Number: exclusiveMinimum draft-04 vs draft-07 form (equivalent)",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -799,7 +799,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: exclusiveMaximum 1",
+      "id" : "Number: exclusiveMaximum (draft-04 boolean) relaxed to inclusive maximum",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -829,7 +829,7 @@
     {
       "enabled" : true,
       "$comment" : "Schema library does not support this case.",
-      "id" : "Number: exclusiveMaximum 2",
+      "id" : "Number: exclusiveMaximum relaxed to inclusive maximum",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -858,7 +858,7 @@
     {
       "enabled" : true,
       "$comment" : "Schema library does not support this case.",
-      "id" : "Number: exclusiveMaximum 3",
+      "id" : "Number: exclusiveMaximum replaced with a higher maximum",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -887,7 +887,7 @@
     {
       "enabled" : true,
       "$comment" : "Schema library does not support this case.",
-      "id" : "Number: exclusiveMaximum 4",
+      "id" : "Number: exclusiveMaximum unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -909,7 +909,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Number: exclusiveMaximum 5",
+      "id" : "Number: exclusiveMaximum draft-04 vs draft-07 form (equivalent)",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -932,7 +932,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: properties 1",
+      "id" : "Object: property removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -971,7 +971,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: properties 2",
+      "id" : "Object: property types changed",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -1013,7 +1013,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: additionalProperties",
+      "id" : "Object: additionalProperties false to true",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1056,7 +1056,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: additionalProperties 2",
+      "id" : "Object: additionalProperties false to schema",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1102,7 +1102,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: Complex additionalProperties",
+      "id" : "Object: additionalProperties schema relaxed",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -1149,7 +1149,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: required",
+      "id" : "Object: required property removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1184,7 +1184,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: required",
+      "id" : "Object: required property added and removed",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -1222,7 +1222,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: required",
+      "id" : "Object: required reordered (unchanged)",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -1250,7 +1250,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: propertyNames",
+      "id" : "Object: propertyNames schema relaxed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1284,7 +1284,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: minProperties 1",
+      "id" : "Object: minProperties removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1311,7 +1311,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: minProperties 2",
+      "id" : "Object: minProperties decreased",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1339,7 +1339,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: minProperties 3",
+      "id" : "Object: minProperties unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -1361,7 +1361,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: maxProperties",
+      "id" : "Object: maxProperties removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1388,7 +1388,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: maxProperties",
+      "id" : "Object: maxProperties increased",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1416,7 +1416,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: maxProperties",
+      "id" : "Object: maxProperties unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -1438,7 +1438,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: dependencies",
+      "id" : "Object: dependencies property list shortened",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1499,7 +1499,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: patternProperties 1",
+      "id" : "Object: patternProperties pattern removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1540,7 +1540,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: patternProperties 2",
+      "id" : "Object: patternProperties schemas changed",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -1582,7 +1582,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: schemaDependencies 1",
+      "id" : "Object: schema dependency removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1647,7 +1647,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: schemaDependencies 2",
+      "id" : "Object: schema dependency removed (one of two)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1726,7 +1726,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: property added 1",
+      "id" : "Object: property added and additionalProperties opened",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1774,7 +1774,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: property added 2",
+      "id" : "Object: property added (additionalProperties false)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1821,7 +1821,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: property added 3",
+      "id" : "Object: property added with additionalProperties schema",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1872,7 +1872,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: property removed 1",
+      "id" : "Object: property removed and additionalProperties opened",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1920,7 +1920,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Object: property removed 2",
+      "id" : "Object: property removed with additionalProperties schema",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -1971,7 +1971,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: items",
+      "id" : "Array: items schema relaxed",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -2002,7 +2002,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: contains",
+      "id" : "Array: contains schema relaxed",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -2033,7 +2033,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: tuples 1",
+      "id" : "Array: tuple item schema relaxed",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -2074,7 +2074,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: tuples 2",
+      "id" : "Array: tuple item schemas reordered",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -2116,7 +2116,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: tuples 3",
+      "id" : "Array: tuple shortened (item type changed)",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -2157,7 +2157,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: tuples 4",
+      "id" : "Array: tuple items removed entirely",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2191,7 +2191,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: additionalItems",
+      "id" : "Array: additionalItems false to true",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2228,7 +2228,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: additionalItems 2",
+      "id" : "Array: additionalItems false to schema",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2268,7 +2268,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: additionalItems 3",
+      "id" : "Array: additionalItems schema to true",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2308,7 +2308,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: additionalItems 4",
+      "id" : "Array: additionalItems schema widened",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -2347,7 +2347,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: additionalItems 5",
+      "id" : "Array: additionalItems schema changed",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -2395,7 +2395,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: items added",
+      "id" : "Array: tuple item added and additionalItems opened",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2444,7 +2444,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: items added 2",
+      "id" : "Array: tuple item added (additionalItems false)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2485,7 +2485,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: items added 3",
+      "id" : "Array: tuple item added with additionalItems schema",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2530,7 +2530,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: items added 4",
+      "id" : "Array: tuple item added matching additionalItems",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2575,7 +2575,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: items added 5",
+      "id" : "Array: tuple item added not matching additionalItems",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -2620,7 +2620,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: items removed",
+      "id" : "Array: tuple item removed and additionalItems opened",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2669,7 +2669,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: items removed 2",
+      "id" : "Array: tuple item removed (additionalItems true)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2710,7 +2710,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: items removed 3",
+      "id" : "Array: tuple item removed, additionalItems opened to true",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2755,7 +2755,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: items removed 4",
+      "id" : "Array: tuple item removed, additionalItems schema mismatch",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -2800,7 +2800,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: items removed 5",
+      "id" : "Array: tuple item removed, additionalItems schema matches",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2845,7 +2845,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: minItems",
+      "id" : "Array: minItems removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2872,7 +2872,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: minItems",
+      "id" : "Array: minItems decreased",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2900,7 +2900,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: minItems",
+      "id" : "Array: minItems unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -2922,7 +2922,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: maxItems",
+      "id" : "Array: maxItems removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2949,7 +2949,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: maxItems",
+      "id" : "Array: maxItems increased",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -2977,7 +2977,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: maxItems",
+      "id" : "Array: maxItems unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -2999,7 +2999,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Array: uniqueItems",
+      "id" : "Array: uniqueItems true to false",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3026,7 +3026,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Boolean",
+      "id" : "Boolean: type removed (widened to any type)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3051,7 +3051,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Null",
+      "id" : "Null: type removed (widened to any type)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3076,7 +3076,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Enum 1",
+      "id" : "Enum: values removed (constraint dropped)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3107,7 +3107,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Enum 2",
+      "id" : "Enum: value added",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3144,7 +3144,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Enum 3",
+      "id" : "Enum: values reordered (unchanged)",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -3174,7 +3174,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Enum 4",
+      "id" : "Enum: values added to empty enum",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3208,7 +3208,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Const",
+      "id" : "Const: unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -3234,7 +3234,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Const",
+      "id" : "Const: value changed",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -3266,7 +3266,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Const",
+      "id" : "Const: value removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3295,7 +3295,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Const: Enum equivalency",
+      "id" : "Const: equivalent single-value enum",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -3317,7 +3317,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: contentEncoding 1",
+      "id" : "String: contentEncoding unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -3339,7 +3339,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: contentEncoding 2",
+      "id" : "String: contentEncoding removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3366,7 +3366,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: contentEncoding 3",
+      "id" : "String: contentEncoding changed",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -3394,7 +3394,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: contentMediaType 1",
+      "id" : "String: contentMediaType unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -3416,7 +3416,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: contentMediaType 2",
+      "id" : "String: contentMediaType removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3443,7 +3443,7 @@
     },
     {
       "enabled" : true,
-      "id" : "String: contentMediaType 3",
+      "id" : "String: contentMediaType changed",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -3471,7 +3471,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: allOf 1",
+      "id" : "Complex: allOf subschema relaxed",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -3508,7 +3508,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: allOf 2",
+      "id" : "Complex: allOf subschemas reordered",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -3542,7 +3542,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: allOf 3",
+      "id" : "Complex: allOf branch removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3579,7 +3579,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: anyOf 1",
+      "id" : "Complex: anyOf subschema relaxed",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -3616,7 +3616,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: anyOf 2",
+      "id" : "Complex: anyOf subschemas reordered",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -3650,7 +3650,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: anyOf 3",
+      "id" : "Complex: anyOf branch added",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3687,7 +3687,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: allOf to anyOf",
+      "id" : "Complex: allOf changed to anyOf",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3729,7 +3729,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: allOf to anyOf 2",
+      "id" : "Complex: allOf changed to anyOf (subschema relaxed)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3771,7 +3771,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: allOf to anyOf 3",
+      "id" : "Complex: allOf changed to anyOf (branch added)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3816,7 +3816,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: oneOf to anyOf",
+      "id" : "Complex: oneOf changed to anyOf",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3858,7 +3858,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: oneOf to anyOf 2",
+      "id" : "Complex: oneOf changed to anyOf (subschema relaxed)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3900,7 +3900,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: oneOf to anyOf 3",
+      "id" : "Complex: oneOf changed to anyOf (branch added)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -3945,7 +3945,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: oneOf 1",
+      "id" : "Complex: oneOf subschema relaxed",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -3982,7 +3982,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: oneOf 2",
+      "id" : "Complex: oneOf subschemas reordered",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -4016,7 +4016,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: oneOf 3",
+      "id" : "Complex: oneOf branch added",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -4053,7 +4053,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: not 1",
+      "id" : "Complex: not schema narrowed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -4085,7 +4085,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: not 2",
+      "id" : "Complex: not schema range changed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -4119,7 +4119,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Complex: not 3",
+      "id" : "Complex: not schema unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -4149,7 +4149,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Conditional",
+      "id" : "Conditional: if/then/else unchanged",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -4247,7 +4247,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Conditional: if",
+      "id" : "Conditional: if schema changed",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -4346,7 +4346,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Conditional: then",
+      "id" : "Conditional: then schema relaxed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -4444,7 +4444,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Conditional: else",
+      "id" : "Conditional: else schema relaxed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -4617,7 +4617,7 @@
     },
     {
       "enabled" : true,
-      "id" : "References: $ref",
+      "id" : "References: $ref inlined (equivalent)",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -4683,7 +4683,7 @@
     },
     {
       "enabled" : true,
-      "id" : "References: $ref compatibility",
+      "id" : "References: $ref target relaxed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -4754,7 +4754,7 @@
     },
     {
       "enabled" : true,
-      "id" : "References: $id",
+      "id" : "References: $id ref inlined (equivalent)",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -4820,7 +4820,7 @@
     },
     {
       "enabled" : true,
-      "id" : "References: $id compatibility",
+      "id" : "References: $id ref target relaxed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -4893,7 +4893,7 @@
     },
     {
       "enabled" : true,
-      "id" : "References: recursive",
+      "id" : "References: recursive definition inlined",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -4970,7 +4970,7 @@
     },
     {
       "enabled" : true,
-      "id" : "References: Recursive in combined schema, Issue #1551",
+      "id" : "References: recursive combined schema (Issue #1551)",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -5060,7 +5060,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Properties: type keyword from string to array compatibility 1",
+      "id" : "Properties: property type widened via anyOf",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -5102,7 +5102,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Properties: type keyword from string to array compatibility 2",
+      "id" : "Properties: property type widened via type array",
       "expected" : {
         "backward" : {
           "compatible" : true
@@ -5140,7 +5140,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Issue 4965-O1",
+      "id" : "Issue 4965: property added under additionalProperties (O1)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -5191,7 +5191,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Issue 4965-O2",
+      "id" : "Issue 4965: property removed (O2)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -5236,7 +5236,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Issue 4965-O3",
+      "id" : "Issue 4965: property added, additionalProperties opened (O3)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -5281,7 +5281,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Issue 4965-O4",
+      "id" : "Issue 4965: property removed, additionalProperties schema added (O4)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -5326,7 +5326,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Issue 4965-O5",
+      "id" : "Issue 4965: property removed, additionalProperties narrowed (O5)",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -5372,7 +5372,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Issue 4965-A1",
+      "id" : "Issue 4965: tuple item removed under additionalItems (A1)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -5417,7 +5417,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Issue 4965-A2",
+      "id" : "Issue 4965: tuple item removed (A2)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -5456,7 +5456,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Issue 4965-A3",
+      "id" : "Issue 4965: tuple item added, additionalItems opened (A3)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -5501,7 +5501,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Issue 4965-A4",
+      "id" : "Issue 4965: tuple item removed, additionalItems schema added (A4)",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -5546,7 +5546,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Issue 4965-A5",
+      "id" : "Issue 4965: tuple item removed, additionalItems narrowed (A5)",
       "expected" : {
         "backward" : {
           "compatible" : false,
@@ -5591,7 +5591,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Ref: unresolvable with COLLECT",
+      "id" : "Ref: unresolvable $ref (COLLECT mode)",
       "config" : {
         "onUnresolvableRef" : "COLLECT"
       },
@@ -5624,7 +5624,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Ref: unresolvable with FAIL",
+      "id" : "Ref: unresolvable $ref (FAIL mode)",
       "config" : {
         "onUnresolvableRef" : "FAIL"
       },
@@ -5642,7 +5642,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Ref: resolvable external ref",
+      "id" : "Ref: resolvable external $ref",
       "externalRefs" : {
         "http://example.com/address.json" : {
           "$schema" : "http://json-schema.org/draft-07/schema#",
@@ -5744,7 +5744,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Modern: dependentSchemas add dependency",
+      "id" : "Modern: dependentSchemas dependency removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
@@ -5797,7 +5797,7 @@
     },
     {
       "enabled" : true,
-      "id" : "Modern: dependentRequired add member",
+      "id" : "Modern: dependentRequired removed",
       "expected" : {
         "backward" : {
           "compatible" : true,
