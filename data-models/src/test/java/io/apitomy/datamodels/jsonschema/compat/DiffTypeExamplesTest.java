@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,6 +46,20 @@ class DiffTypeExamplesTest {
     }
 
     @Test
+    void everyHelpTypeHasAtLeastOneExample() {
+        // C42e coverage guarantee: any DiffType worth a curated --explain help entry must also
+        // carry at least one worked example, so users always have something concrete to look at.
+        List<String> missing = new ArrayList<>();
+        for (DiffType diffType : DiffType.values()) {
+            if (diffType.getHelp().isPresent() && diffType.getExamples().isEmpty()) {
+                missing.add(diffType.name());
+            }
+        }
+        assertTrue(missing.isEmpty(),
+                "DiffTypes with curated help but no tagged example: " + missing);
+    }
+
+    @Test
     void examplesAreWellFormed() throws Exception {
         for (DiffType diffType : DiffType.values()) {
             for (CompatibilityExample example : diffType.getExamples()) {
@@ -58,15 +73,6 @@ class DiffTypeExamplesTest {
                 assertTrue(updated.isObject() || updated.isBoolean(), "updated must be a JSON schema");
             }
         }
-    }
-
-    @Test
-    void unchangedTypesHaveNoExamples() {
-        // *_UNCHANGED outcomes are never emitted (see the DiffType convention), so they can carry
-        // no examples. Doubles as a regression guard for the *_UNCHANGED noise removal.
-        assertTrue(DiffType.ARRAY_TYPE_UNIQUE_ITEMS_BOOLEAN_UNCHANGED.getExamples().isEmpty());
-        assertTrue(DiffType.NUMBER_TYPE_INTEGER_REQUIRED_UNCHANGED.getExamples().isEmpty());
-        assertTrue(DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_UNCHANGED.getExamples().isEmpty());
     }
 
     @Test

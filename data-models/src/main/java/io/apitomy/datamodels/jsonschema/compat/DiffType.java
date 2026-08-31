@@ -45,7 +45,6 @@ import java.util.Optional;
  */
 public enum DiffType {
 
-    ARRAY_TYPE_ADDITIONAL_ITEMS_BOOLEAN_UNCHANGED(true, "The allow/disallow setting for additional array items is unchanged."),
     ARRAY_TYPE_ADDITIONAL_ITEMS_EXTENDED(true, "The schema for additional array items was widened to accept more items."),
     ARRAY_TYPE_ADDITIONAL_ITEMS_FALSE_TO_TRUE(true, "Additional array items changed from disallowed to allowed."),
     ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED(false, "The schema for additional array items was narrowed to accept fewer items."),
@@ -54,12 +53,8 @@ public enum DiffType {
     ARRAY_TYPE_ALL_ITEM_SCHEMA_REMOVED(true, "The schema constraining all array items was removed."),
     ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_ADDED(false, "A constraint requiring at least one matching array item was added."),
     ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_REMOVED(true, "The constraint requiring at least one matching array item was removed."),
-    ARRAY_TYPE_ITEM_SCHEMA_ADDED(false, "A schema for a specific positional (tuple) array item was added."),
-    ARRAY_TYPE_ITEM_SCHEMA_REMOVED(false, "A schema for a specific positional (tuple) array item was removed."),
     ARRAY_TYPE_ITEM_SCHEMAS_CHANGED(false, "A positional (tuple) item schema was changed."),
     ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED(true, "The positional (tuple) item schemas were extended, accepting more arrays."),
-    ARRAY_TYPE_ITEM_SCHEMAS_LENGTH_DECREASED(false, "The number of positional (tuple) item schemas decreased."),
-    ARRAY_TYPE_ITEM_SCHEMAS_LENGTH_INCREASED(false, "The number of positional (tuple) item schemas increased."),
     ARRAY_TYPE_ITEM_SCHEMAS_NARROWED(false, "The positional (tuple) item schemas were narrowed, accepting fewer arrays."),
     ARRAY_TYPE_ITEM_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES(true, "The positional (tuple) item schemas were narrowed but remain compatible via the additional-items schema."),
     ARRAY_TYPE_MAX_ITEMS_ADDED(false, "A 'maxItems' upper bound on array length was added."),
@@ -70,11 +65,7 @@ public enum DiffType {
     ARRAY_TYPE_MIN_ITEMS_DECREASED(true, "The 'minItems' array-length minimum was decreased."),
     ARRAY_TYPE_MIN_ITEMS_INCREASED(false, "The 'minItems' array-length minimum was increased."),
     ARRAY_TYPE_MIN_ITEMS_REMOVED(true, "The 'minItems' array-length minimum was removed."),
-    ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_ADDED(false, "A schema constraining additional array items was added."),
     ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED(false, "The schema constraining additional array items was changed."),
-    ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_REMOVED(true, "The schema constraining additional array items was removed."),
-    ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_UNCHANGED(true, "The schema constraining additional array items is unchanged."),
-    ARRAY_TYPE_UNIQUE_ITEMS_BOOLEAN_UNCHANGED(true, "The 'uniqueItems' setting is unchanged."),
     ARRAY_TYPE_UNIQUE_ITEMS_FALSE_TO_TRUE(false, "'uniqueItems' changed from false to true, now requiring distinct array elements."),
     ARRAY_TYPE_UNIQUE_ITEMS_TRUE_TO_FALSE(true, "'uniqueItems' changed from true to false, no longer requiring distinct elements."),
 
@@ -122,23 +113,8 @@ public enum DiffType {
     NOT_TYPE_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD(true, "The 'not' subschema is compatible forward but not backward."),
     NOT_TYPE_SCHEMA_COMPATIBLE_NONE(false, "The 'not' subschema is compatible in neither direction."),
 
-    NUMBER_TYPE_EXCLUSIVE_MAXIMUM_ADDED(false, "An 'exclusiveMaximum' upper bound was added."),
-    NUMBER_TYPE_EXCLUSIVE_MAXIMUM_DECREASED(false, "The 'exclusiveMaximum' upper bound was decreased."),
-    NUMBER_TYPE_EXCLUSIVE_MAXIMUM_INCREASED(true, "The 'exclusiveMaximum' upper bound was increased."),
-    NUMBER_TYPE_EXCLUSIVE_MAXIMUM_REMOVED(true, "The 'exclusiveMaximum' upper bound was removed."),
-    NUMBER_TYPE_EXCLUSIVE_MINIMUM_ADDED(false, "An 'exclusiveMinimum' lower bound was added."),
-    NUMBER_TYPE_EXCLUSIVE_MINIMUM_DECREASED(true, "The 'exclusiveMinimum' lower bound was decreased."),
-    NUMBER_TYPE_EXCLUSIVE_MINIMUM_INCREASED(false, "The 'exclusiveMinimum' lower bound was increased."),
-    NUMBER_TYPE_EXCLUSIVE_MINIMUM_REMOVED(true, "The 'exclusiveMinimum' lower bound was removed."),
     NUMBER_TYPE_INTEGER_REQUIRED_FALSE_TO_TRUE(false, "The numeric type was restricted from 'number' to 'integer'."),
     NUMBER_TYPE_INTEGER_REQUIRED_TRUE_TO_FALSE(true, "The numeric type was widened from 'integer' to 'number'."),
-    NUMBER_TYPE_INTEGER_REQUIRED_UNCHANGED(true, "The integer requirement is unchanged."),
-    NUMBER_TYPE_IS_MAXIMUM_EXCLUSIVE_FALSE_TO_TRUE(false, "The maximum bound became exclusive."),
-    NUMBER_TYPE_IS_MAXIMUM_EXCLUSIVE_TRUE_TO_FALSE(true, "The maximum bound became inclusive."),
-    NUMBER_TYPE_IS_MAXIMUM_EXCLUSIVE_UNCHANGED(true, "The exclusivity of the maximum bound is unchanged."),
-    NUMBER_TYPE_IS_MINIMUM_EXCLUSIVE_FALSE_TO_TRUE(false, "The minimum bound became exclusive."),
-    NUMBER_TYPE_IS_MINIMUM_EXCLUSIVE_TRUE_TO_FALSE(true, "The minimum bound became inclusive."),
-    NUMBER_TYPE_IS_MINIMUM_EXCLUSIVE_UNCHANGED(true, "The exclusivity of the minimum bound is unchanged."),
     NUMBER_TYPE_MAXIMUM_ADDED(false, "A 'maximum' upper bound was added."),
     NUMBER_TYPE_MAXIMUM_DECREASED(false, "The 'maximum' upper bound was decreased."),
     NUMBER_TYPE_MAXIMUM_INCREASED(true, "The 'maximum' upper bound was increased."),
@@ -152,14 +128,12 @@ public enum DiffType {
     NUMBER_TYPE_MULTIPLE_OF_UPDATED_IS_DIVISIBLE(true, "The new 'multipleOf' evenly divides the old value, relaxing the constraint."),
     NUMBER_TYPE_MULTIPLE_OF_UPDATED_IS_NOT_DIVISIBLE(false, "The new 'multipleOf' does not evenly divide the old value, tightening the constraint."),
 
-    OBJECT_TYPE_ADDITIONAL_PROPERTIES_BOOLEAN_UNCHANGED(true, "The 'additionalProperties' boolean setting is unchanged."),
     OBJECT_TYPE_ADDITIONAL_PROPERTIES_EXTENDED(true, "The 'additionalProperties' schema was widened to accept more properties."),
     OBJECT_TYPE_ADDITIONAL_PROPERTIES_FALSE_TO_TRUE(true, "'additionalProperties' changed from false to true, now allowing extra properties."),
     OBJECT_TYPE_ADDITIONAL_PROPERTIES_NARROWED(false, "The 'additionalProperties' schema was narrowed to accept fewer properties."),
     OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_ADDED(false, "A schema for 'additionalProperties' was added."),
     OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_CHANGED(false, "The schema for 'additionalProperties' was changed."),
     OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_REMOVED(true, "The schema for 'additionalProperties' was removed."),
-    OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_UNCHANGED(true, "The schema for 'additionalProperties' is unchanged."),
     OBJECT_TYPE_ADDITIONAL_PROPERTIES_TRUE_TO_FALSE(false, "'additionalProperties' changed from true to false, no longer allowing extra properties."),
     OBJECT_TYPE_MAX_PROPERTIES_ADDED(false, "A 'maxProperties' upper bound on property count was added."),
     OBJECT_TYPE_MAX_PROPERTIES_DECREASED(false, "The 'maxProperties' property-count limit was decreased."),
@@ -182,16 +156,10 @@ public enum DiffType {
     OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_ADDED(false, "A required property was added to a property dependency's list."),
     OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_CHANGED(true, "A property dependency's required-property list was changed."),
     OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_REMOVED(true, "A required property was removed from a property dependency's list."),
-    OBJECT_TYPE_PROPERTY_SCHEMA_ADDED(false, "A schema for a property was added."),
-    OBJECT_TYPE_PROPERTY_SCHEMA_REMOVED(true, "A schema for a property was removed."),
-    OBJECT_TYPE_PROPERTY_SCHEMAS_ADDED(false, "The 'properties' section was added."),
     OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED(false, "A property's schema in 'properties' was changed."),
     OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED(true, "The 'properties' constraints were widened to accept more objects."),
-    OBJECT_TYPE_PROPERTY_SCHEMAS_MEMBER_ADDED(false, "A property was added to 'properties'."),
-    OBJECT_TYPE_PROPERTY_SCHEMAS_MEMBER_REMOVED(true, "A property was removed from 'properties'."),
     OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED(false, "The 'properties' constraints were narrowed to accept fewer objects."),
     OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES(true, "The 'properties' constraints were narrowed but remain compatible via 'additionalProperties'."),
-    OBJECT_TYPE_PROPERTY_SCHEMAS_REMOVED(true, "The 'properties' section was removed."),
     OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_ADDED(false, "A 'propertyNames' schema constraining property names was added."),
     OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_REMOVED(true, "The 'propertyNames' schema was removed."),
     OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_BOTH(true, "The 'propertyNames' schema is compatible in both directions."),
@@ -203,11 +171,7 @@ public enum DiffType {
     OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED(false, "A property was made 'required'."),
     OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_REMOVED(true, "A property is no longer 'required'."),
     OBJECT_TYPE_REQUIRED_PROPERTIES_REMOVED(true, "The 'required' properties constraint was removed."),
-    OBJECT_TYPE_SCHEMA_DEPENDENCIES_ADDED(false, "A schema dependency (a property whose presence applies an additional schema) was added."),
     OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED(true, "The set of schema dependencies was changed."),
-    OBJECT_TYPE_SCHEMA_DEPENDENCIES_MEMBER_ADDED(false, "A schema dependency was added for a property."),
-    OBJECT_TYPE_SCHEMA_DEPENDENCIES_MEMBER_REMOVED(true, "A schema dependency was removed for a property."),
-    OBJECT_TYPE_SCHEMA_DEPENDENCIES_REMOVED(true, "All schema dependencies (a property applying an additional schema) were removed."),
 
     REFERENCE_TYPE_TARGET_SCHEMA_CHANGED(false, "A '$ref' now points to a different or changed target schema."),
 
@@ -233,9 +197,7 @@ public enum DiffType {
     STRING_TYPE_PATTERN_REMOVED(true, "The 'pattern' regular-expression constraint was removed."),
 
     SUBSCHEMA_TYPE_CHANGED(false, "The declared 'type' of the schema was changed."),
-    SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE(true, "The schema's 'type' was broadened to allow any type (removed or empty)."),
-
-    UNDEFINED_UNUSED(false, "An undefined or unclassified difference was detected.");
+    SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE(true, "The schema's 'type' was broadened to allow any type (removed or empty).");
 
     private final boolean backwardsCompatible;
     private final String shortDescription;
