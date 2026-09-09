@@ -33,6 +33,13 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
 
+      # Cheap, and it is the only coverage this logic can have: the release
+      # workflow's version computation cannot be exercised without cutting a
+      # real release.
+      - name: Test Release Version Computation
+        run: ./.github/scripts/compute-release-versions.test.sh
+
+
       - name: Build Project
         run: mvn clean install -Ptranspilation
         env:
