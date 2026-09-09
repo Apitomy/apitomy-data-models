@@ -6,6 +6,10 @@ on:
         description: 'Branch to release from'
         required: false
         default: 'main'
+      next-snapshot-version:
+        description: 'Next development version (e.g. 4.0.0-SNAPSHOT to end the beta line). Leave empty to compute it.'
+        required: false
+        default: ''
 
 permissions:
   id-token: write
@@ -18,6 +22,7 @@ jobs:
     outputs:
       release-version: ${{ steps.versions.outputs.release-version }}
       snapshot-version: ${{ steps.versions.outputs.snapshot-version }}
+      prerelease: ${{ steps.versions.outputs.prerelease }}
     steps:
 
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
@@ -63,18 +68,16 @@ jobs:
 
       - name: Compute Release and Snapshot Versions
         id: versions
+        env:
+          # Read through the environment rather than interpolating the input
+          # directly into the script, so its contents can never be executed.
+          NEXT_SNAPSHOT_INPUT: ${{ inputs.next-snapshot-version }}
         run: |
+          # See .github/scripts/compute-release-versions.sh for the rules; it is
+          # covered by compute-release-versions.test.sh, since this decision
+          # cannot otherwise be exercised without cutting a real release.
           CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          RELEASE_VERSION="${CURRENT_VERSION%-SNAPSHOT}"
-          MAJOR=$(echo "$RELEASE_VERSION" | cut -d. -f1)
-          MINOR=$(echo "$RELEASE_VERSION" | cut -d. -f2)
-          PATCH=$(echo "$RELEASE_VERSION" | cut -d. -f3)
-          NEXT_PATCH=$((PATCH + 1))
-          SNAPSHOT_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}-SNAPSHOT"
-          echo "release-version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
-          echo "snapshot-version=$SNAPSHOT_VERSION" >> "$GITHUB_OUTPUT"
-          echo "Release version: $RELEASE_VERSION"
-          echo "Next snapshot version: $SNAPSHOT_VERSION"
+          ./.github/scripts/compute-release-versions.sh "$CURRENT_VERSION" "$NEXT_SNAPSHOT_INPUT" >> "$GITHUB_OUTPUT"
 
 
       - name: Update Release Version ${{ steps.versions.outputs.release-version }}
@@ -95,7 +98,7 @@ jobs:
 
 
       - name: Create GitHub Release
-        run: ./.github/scripts/create-github-release.sh ${{ steps.versions.outputs.release-version }} ${{ inputs.branch }}
+        run: ./.github/scripts/create-github-release.sh ${{ steps.versions.outputs.release-version }} ${{ inputs.branch }} ${{ steps.versions.outputs.prerelease }}
         env:
           GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
@@ -115,6 +118,7 @@ jobs:
     with:
       release-version: ${{ needs.release.outputs.release-version }}
       branch: ${{ inputs.branch }}
+      prerelease: ${{ needs.release.outputs.prerelease == 'true' }}
     secrets: inherit
 
 
