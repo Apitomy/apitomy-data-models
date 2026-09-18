@@ -5,7 +5,7 @@ import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.util.NodeUtil;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -39,9 +39,10 @@ public final class JsonPointer {
             throw new IllegalArgumentException("JSON Pointer must start with '/' or be empty: " + pointer);
         }
         var parts = pointer.substring(1).split("/", -1);
-        var segments = Arrays.stream(parts)
-                .map(JsonPointer::unescape)
-                .toList();
+        var segments = new ArrayList<String>();
+        for (var part : parts) {
+            segments.add(unescape(part));
+        }
         return new JsonPointer(pointer, segments);
     }
 
@@ -74,16 +75,20 @@ public final class JsonPointer {
 
     @SuppressWarnings("rawtypes")
     private static Object resolveSegment(Object current, String segment) {
-        if (current instanceof MappedNode mn) {
+        if (current instanceof MappedNode) {
+            MappedNode mn = (MappedNode) current;
             return mn.getItem(segment);
         }
-        if (current instanceof Node n) {
+        if (current instanceof Node) {
+            Node n = (Node) current;
             return NodeUtil.getProperty(n, segment);
         }
-        if (current instanceof java.util.Map<?, ?> map) {
+        if (current instanceof java.util.Map) {
+            var map = (java.util.Map<?, ?>) current;
             return map.get(segment);
         }
-        if (current instanceof java.util.List<?> list) {
+        if (current instanceof java.util.List) {
+            var list = (java.util.List<?>) current;
             try {
                 return list.get(Integer.parseInt(segment));
             } catch (NumberFormatException | IndexOutOfBoundsException e) {
@@ -94,8 +99,11 @@ public final class JsonPointer {
     }
 
     private static Node toNode(Object obj) {
-        if (obj instanceof Node n) return n;
-        if (obj instanceof JsonSchema union && union.isFullSchema()) return union.asFullSchema();
+        if (obj instanceof Node) return ((Node) obj);
+        if (obj instanceof JsonSchema) {
+            var union = (JsonSchema) obj;
+            if (union.isFullSchema()) return union.asFullSchema();
+        }
         return null;
     }
 
@@ -107,7 +115,8 @@ public final class JsonPointer {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof JsonPointer p)) return false;
+        if (!(o instanceof JsonPointer)) return false;
+        JsonPointer p = (JsonPointer) o;
         return segments.equals(p.segments);
     }
 

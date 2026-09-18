@@ -3,6 +3,10 @@ package io.apitomy.datamodels.jsonschema.compat;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import io.apitomy.datamodels.util.CollectionUtil;
 
 /**
  * Result of a single-direction compatibility check (backward or forward).
@@ -31,8 +35,12 @@ public final class CompatibilityCheckResult {
      * @return {@code true} when there are no incompatible differences
      */
     public boolean isCompatible() {
-        return differences.stream()
-                .noneMatch(d -> !d.getDiffType().isBackwardsCompatible());
+        for (Difference d : differences) {
+            if (!d.getDiffType().isBackwardsCompatible()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -42,7 +50,7 @@ public final class CompatibilityCheckResult {
      * @return an unmodifiable set of all differences
      */
     public Set<Difference> getDifferences() {
-        return Set.copyOf(differences);
+        return CollectionUtil.copyOfSet(differences);
     }
 
     /**
@@ -52,9 +60,13 @@ public final class CompatibilityCheckResult {
      * @return an unmodifiable set of incompatible differences
      */
     public Set<Difference> getIncompatibleDifferences() {
-        return differences.stream()
-                .filter(d -> !d.getDiffType().isBackwardsCompatible())
-                .collect(Collectors.toUnmodifiableSet());
+        Set<Difference> incompatible = new LinkedHashSet<Difference>();
+        for (Difference d : differences) {
+            if (!d.getDiffType().isBackwardsCompatible()) {
+                incompatible.add(d);
+            }
+        }
+        return incompatible;
     }
 
     /**
@@ -75,6 +87,6 @@ public final class CompatibilityCheckResult {
      * @return an unmodifiable list of unsupported-feature descriptions
      */
     public List<String> getUnsupportedFeatures() {
-        return List.copyOf(unsupportedFeatures);
+        return CollectionUtil.copyOfList(unsupportedFeatures);
     }
 }

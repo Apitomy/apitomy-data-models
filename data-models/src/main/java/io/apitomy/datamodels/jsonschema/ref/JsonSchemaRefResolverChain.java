@@ -5,6 +5,8 @@ import io.apitomy.datamodels.models.Node;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Collections;
+import io.apitomy.datamodels.util.CollectionUtil;
 
 /**
  * Resolves {@code $ref} values using two configurable resolver chains:
@@ -27,8 +29,8 @@ public final class JsonSchemaRefResolverChain implements JsonSchemaRefResolver {
 
     private JsonSchemaRefResolverChain(List<FragmentResolver> fragmentResolvers,
                                        List<ResourceResolver> resourceResolvers) {
-        this.fragmentResolvers = List.copyOf(fragmentResolvers);
-        this.resourceResolvers = List.copyOf(resourceResolvers);
+        this.fragmentResolvers = CollectionUtil.copyOfList(fragmentResolvers);
+        this.resourceResolvers = CollectionUtil.copyOfList(resourceResolvers);
     }
 
     public static Builder builder() {

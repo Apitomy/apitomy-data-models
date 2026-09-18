@@ -149,10 +149,11 @@ public final class JsonSchemaCompatibilityChecker {
 
     private static JFullSchema parseSchema(String schemaJson) {
         var doc = Library.readRootFromJSONString(schemaJson);
-        if (!(doc instanceof JFullSchema jsonSchemaDoc)) {
+        if (!(doc instanceof JFullSchema)) {
             throw new IllegalArgumentException(
                     "Input is not a JSON Schema document. Detected type: " + doc.root().modelType());
         }
+        JFullSchema jsonSchemaDoc = (JFullSchema) doc;
         return jsonSchemaDoc;
     }
 }

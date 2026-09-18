@@ -14,14 +14,163 @@ import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
 import io.apitomy.datamodels.models.visitors.diff.CollectionDiff;
 import io.apitomy.datamodels.models.visitors.diff.DefaultPairingKey;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static io.apitomy.datamodels.jsonschema.compat.DiffType.*;
-import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ADDITIONAL_ITEMS_EXTENDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ADDITIONAL_ITEMS_FALSE_TO_TRUE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ADDITIONAL_ITEMS_TRUE_TO_FALSE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ALL_ITEM_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ITEM_SCHEMAS_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ITEM_SCHEMAS_NARROWED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ITEM_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MAX_ITEMS_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MAX_ITEMS_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MAX_ITEMS_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MAX_ITEMS_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MIN_ITEMS_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MIN_ITEMS_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MIN_ITEMS_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MIN_ITEMS_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_UNIQUE_ITEMS_FALSE_TO_TRUE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_UNIQUE_ITEMS_TRUE_TO_FALSE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ALL_OF_SIZE_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ALL_OF_SIZE_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ANY_OF_SIZE_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ANY_OF_SIZE_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_CRITERION_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_CRITERION_EXTENDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_CRITERION_NARROWED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ONE_OF_SIZE_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ONE_OF_SIZE_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_BOTH;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_NONE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_IF_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_BOTH;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_NONE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_IF_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_THEN_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_BOTH;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_NONE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_THEN_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONST_TYPE_VALUE_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONST_TYPE_VALUE_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONST_TYPE_VALUE_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ENUM_TYPE_VALUES_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ENUM_TYPE_VALUES_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ENUM_TYPE_VALUES_MEMBER_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ENUM_TYPE_VALUES_MEMBER_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NOT_TYPE_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NOT_TYPE_SCHEMA_COMPATIBLE_BOTH;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NOT_TYPE_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NOT_TYPE_SCHEMA_COMPATIBLE_NONE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_INTEGER_REQUIRED_FALSE_TO_TRUE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_INTEGER_REQUIRED_TRUE_TO_FALSE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MAXIMUM_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MAXIMUM_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MAXIMUM_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MAXIMUM_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MINIMUM_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MINIMUM_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MINIMUM_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MINIMUM_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MULTIPLE_OF_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MULTIPLE_OF_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MULTIPLE_OF_UPDATED_IS_DIVISIBLE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MULTIPLE_OF_UPDATED_IS_NOT_DIVISIBLE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_EXTENDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_FALSE_TO_TRUE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_NARROWED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_TRUE_TO_FALSE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MAX_PROPERTIES_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MAX_PROPERTIES_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MAX_PROPERTIES_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MAX_PROPERTIES_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MIN_PROPERTIES_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MIN_PROPERTIES_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MIN_PROPERTIES_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MIN_PROPERTIES_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PATTERN_PROPERTY_KEYS_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PATTERN_PROPERTY_KEYS_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PATTERN_PROPERTY_KEYS_MEMBER_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PATTERN_PROPERTY_KEYS_MEMBER_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PATTERN_PROPERTY_KEYS_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_MEMBER_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_MEMBER_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_BOTH;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_NONE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_REQUIRED_PROPERTIES_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_REQUIRED_PROPERTIES_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_REQUIRED_PROPERTIES_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.REFERENCE_TYPE_TARGET_SCHEMA_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_CONTENT_ENCODING_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_CONTENT_ENCODING_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_CONTENT_ENCODING_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_CONTENT_MEDIA_TYPE_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_CONTENT_MEDIA_TYPE_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_CONTENT_MEDIA_TYPE_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_FORMAT_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_FORMAT_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_FORMAT_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MAX_LENGTH_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MAX_LENGTH_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MAX_LENGTH_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MAX_LENGTH_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MIN_LENGTH_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MIN_LENGTH_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MIN_LENGTH_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MIN_LENGTH_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_PATTERN_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_PATTERN_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_PATTERN_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.SUBSCHEMA_TYPE_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffAddedRemoved;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffBooleanTransition;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffInteger;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffNumberOriginalMultipleOfUpdated;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffObject;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffSetChanged;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.getTypeList;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.getTypeString;
+import io.apitomy.datamodels.util.NumberUtil;
 
 /**
  * Diff visitor driven by the generated {@link JCDiffTraverser}.
@@ -64,20 +213,21 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         var compoundOriginal = toCompoundIfNeeded(original);
         var compoundUpdated = toCompoundIfNeeded(updated);
 
-        var pairKey = System.identityHashCode(original)
-                + ":" + System.identityHashCode(updated);
+        var pairKey = ctx.identityId(original) + ":" + ctx.identityId(updated);
         if (ctx.visited.contains(pairKey)) {
             return;
         }
         ctx.visited.add(pairKey);
         try {
-            if (!(compoundOriginal instanceof JCFullSchema origCompound)
-                    || !(compoundUpdated instanceof JCFullSchema updCompound)) {
+            if (!(compoundOriginal instanceof JCFullSchema)
+                    || !(compoundUpdated instanceof JCFullSchema)) {
                 throw new IllegalStateException(
                         "diffSchemas requires both operands to be compound (JCFullSchema) after conversion, "
                         + "but one could not be converted. original=" + compoundOriginal.getClass().getName()
                         + ", updated=" + compoundUpdated.getClass().getName());
             }
+            var origCompound = (JCFullSchema) compoundOriginal;
+            var updCompound = (JCFullSchema) compoundUpdated;
 
             var visitor = new CompoundSchemaDiffVisitor(ctx);
             var traverser = new JCDiffTraverser<>(visitor);
@@ -94,7 +244,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         var modelType = DiffUtil.detectModelType(schema);
         if (modelType != null) {
             var converted = CompoundSchemaConverter.toCompound((JsonSchema) schema, modelType);
-            if (converted instanceof JFullSchema fs) {
+            if (converted instanceof JFullSchema) {
+                JFullSchema fs = (JFullSchema) converted;
                 return fs;
             }
         }
@@ -224,11 +375,13 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 || schema.getPatternProperties() != null) {
             return false;
         }
-        if (schema instanceof JCFullSchema c
-                && (c.getMinimum() != null || c.getMaximum() != null
+        if (schema instanceof JCFullSchema) {
+            var c = (JCFullSchema) schema;
+            if (c.getMinimum() != null || c.getMaximum() != null
                     || c.getItems() != null || c.getAdditionalItems() != null
-                    || c.getConst() != null)) {
-            return false;
+                    || c.getConst() != null) {
+                return false;
+            }
         }
         return true;
     }
@@ -336,7 +489,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         Number origVal = original.getValue();
         Number updVal = updated.getValue();
         if (origVal != null && updVal != null) {
-            int cmp = toBigDecimal(origVal).compareTo(toBigDecimal(updVal));
+            int cmp = NumberUtil.compare(origVal, updVal);
             boolean origExcl = Boolean.TRUE.equals(original.isExclusive());
             boolean updExcl = Boolean.TRUE.equals(updated.isExclusive());
             if (cmp < 0 || (cmp == 0 && !origExcl && updExcl)) {
@@ -368,7 +521,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         Number origVal = original.getValue();
         Number updVal = updated.getValue();
         if (origVal != null && updVal != null) {
-            int cmp = toBigDecimal(origVal).compareTo(toBigDecimal(updVal));
+            int cmp = NumberUtil.compare(origVal, updVal);
             boolean origExcl = Boolean.TRUE.equals(original.isExclusive());
             boolean updExcl = Boolean.TRUE.equals(updated.isExclusive());
             if (cmp > 0 || (cmp == 0 && !origExcl && updExcl)) {
@@ -463,7 +616,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         }
 
         if (updList.size() > origList.size()) {
-            var origAI = currentOriginal instanceof JCFullSchema c ? c.getAdditionalItems() : null;
+            var origAI = currentOriginal instanceof JCFullSchema ? ((JCFullSchema) currentOriginal).getAdditionalItems() : null;
             if (origAI != null && origAI.isBoolean() && !origAI.asBoolean()) {
                 ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED, origList.size(), updList.size());
             } else if (origAI != null && origAI.isFullSchema()) {
@@ -488,7 +641,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
             }
         } else if (updList.size() < origList.size()) {
-            var updAI = currentUpdated instanceof JCFullSchema c ? c.getAdditionalItems() : null;
+            var updAI = currentUpdated instanceof JCFullSchema ? ((JCFullSchema) currentUpdated).getAdditionalItems() : null;
             var updPermitsAdditional = updAI == null || (updAI.isBoolean() ? updAI.asBoolean() : true);
             if (!updPermitsAdditional) {
                 ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
@@ -1088,8 +1241,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
     @Override
     public void diffFullSchemaEnum(List<JsonNode> original, List<JsonNode> updated) {
-        var origConst = currentOriginal instanceof JCFullSchema c ? c.getConst() : null;
-        var updConst = currentUpdated instanceof JCFullSchema c ? c.getConst() : null;
+        var origConst = currentOriginal instanceof JCFullSchema ? ((JCFullSchema) currentOriginal).getConst() : null;
+        var updConst = currentUpdated instanceof JCFullSchema ? ((JCFullSchema) currentUpdated).getConst() : null;
 
         if (original != null || updated != null) {
             if (original == null) {
@@ -1107,10 +1260,14 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     ctx.addDifference(ENUM_TYPE_VALUES_CHANGED, original, null);
                 }
             } else {
-                var origSet = new HashSet<>(original.stream()
-                        .map(Object::toString).toList());
-                var updSet = new HashSet<>(updated.stream()
-                        .map(Object::toString).toList());
+                var origSet = new HashSet<String>();
+                for (var v : original) {
+                    origSet.add(v.toString());
+                }
+                var updSet = new HashSet<String>();
+                for (var v : updated) {
+                    updSet.add(v.toString());
+                }
                 if (!origSet.equals(updSet)) {
                     ctx.addDifference(ENUM_TYPE_VALUES_CHANGED, original, updated);
                     for (var v : updSet) {
@@ -1310,9 +1467,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         return prefix + range.getValue();
     }
 
-    private static BigDecimal toBigDecimal(Number n) {
-        return new BigDecimal(n.toString());
-    }
 
     private static boolean permitsAdditional(JsonSchema additionalProperties) {
         if (additionalProperties == null) return true;
