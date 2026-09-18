@@ -135,7 +135,8 @@ public final class JsonRef {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof JsonRef r)) return false;
+        if (!(o instanceof JsonRef)) return false;
+        JsonRef r = (JsonRef) o;
         return raw.equals(r.raw);
     }
 

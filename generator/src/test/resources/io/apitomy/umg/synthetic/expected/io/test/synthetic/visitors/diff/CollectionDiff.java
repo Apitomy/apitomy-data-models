@@ -49,16 +49,16 @@ public class CollectionDiff<P, T> {
 	 * one map are classified as added or removed.
 	 */
 	public static <P, T> CollectionDiff<P, T> pairByKey(Map<P, T> original, Map<P, T> updated) {
-		Map<P, T> orig = original != null ? original : new LinkedHashMap<>();
-		Map<P, T> upd = updated != null ? updated : new LinkedHashMap<>();
+		Map<P, T> orig = original != null ? original : new LinkedHashMap<P, T>();
+		Map<P, T> upd = updated != null ? updated : new LinkedHashMap<P, T>();
 
-		Set<P> allKeys = new LinkedHashSet<>();
+		Set<P> allKeys = new LinkedHashSet<P>();
 		allKeys.addAll(orig.keySet());
 		allKeys.addAll(upd.keySet());
 
-		List<Entry<P, T>> added = new ArrayList<>();
-		List<Entry<P, T>> removed = new ArrayList<>();
-		List<MatchedPair<P, T>> matched = new ArrayList<>();
+		List<Entry<P, T>> added = new ArrayList<Entry<P, T>>();
+		List<Entry<P, T>> removed = new ArrayList<Entry<P, T>>();
+		List<MatchedPair<P, T>> matched = new ArrayList<MatchedPair<P, T>>();
 
 		for (P key : allKeys) {
 			boolean inOrig = orig.containsKey(key);

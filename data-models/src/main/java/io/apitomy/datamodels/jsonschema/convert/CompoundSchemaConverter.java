@@ -1,7 +1,7 @@
 package io.apitomy.datamodels.jsonschema.convert;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.apitomy.datamodels.models.util.JsonUtil;
 import io.apitomy.datamodels.models.Any;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaFullSchemaListUnion;
@@ -50,8 +50,6 @@ public class CompoundSchemaConverter {
         return (JsonSchema) result;
     }
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
     /**
      * Splits a d4-d7 {@code dependencies} map into {@code dependentSchemas}
      * and {@code dependentRequired} on the compound target.
@@ -67,7 +65,7 @@ public class CompoundSchemaConverter {
                 if (requiredMap == null) {
                     requiredMap = new LinkedHashMap<>();
                 }
-                requiredMap.put(entry.getKey(), MAPPER.valueToTree(dep.asStringList()));
+                requiredMap.put(entry.getKey(), JsonUtil.toArrayNode(dep.asStringList()));
             }
         }
         if (requiredMap != null) {

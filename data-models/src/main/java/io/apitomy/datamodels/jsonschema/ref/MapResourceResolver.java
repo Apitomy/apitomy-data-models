@@ -6,6 +6,8 @@ import io.apitomy.datamodels.models.Node;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Collections;
+import io.apitomy.datamodels.util.CollectionUtil;
 
 /**
  * A resource resolver that looks up schemas from an in-memory map.
@@ -22,7 +24,7 @@ public class MapResourceResolver implements ResourceResolver {
     private final Map<String, String> schemas; // URI → JSON string
 
     private MapResourceResolver(Map<String, String> schemas) {
-        this.schemas = Map.copyOf(schemas);
+        this.schemas = CollectionUtil.copyOfMap(schemas);
     }
 
     public static Builder builder() {
