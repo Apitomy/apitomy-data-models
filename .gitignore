@@ -1,6 +1,10 @@
 *.iml
 .classpath
-.claude
+# Ignore .claude directories in subdirectories (e.g. module/.claude) but keep the root one,
+# so shared rules are versioned while local settings stay out.
+**/.claude
+!/.claude
+.claude/settings.local.json
 claudedocs
 .generated
 .idea
