@@ -5,6 +5,9 @@ import io.apitomy.datamodels.models.Node;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import io.apitomy.datamodels.util.CollectionUtil;
 
 /**
  * Context provided to a {@link JsonSchemaRefResolver} during reference resolution.
@@ -16,9 +19,10 @@ public final class RefResolutionContext {
     private final Map<String, Object> attributes;
 
     private RefResolutionContext(Node from, String baseUri, Map<String, Object> attributes) {
-        this.from = Objects.requireNonNull(from);
+        Objects.requireNonNull(from);
+        this.from = from;
         this.baseUri = baseUri;
-        this.attributes = Map.copyOf(attributes);
+        this.attributes = CollectionUtil.copyOfMap(attributes);
     }
 
     /**

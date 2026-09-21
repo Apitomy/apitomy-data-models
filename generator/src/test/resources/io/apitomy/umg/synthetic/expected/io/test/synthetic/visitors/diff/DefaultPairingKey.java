@@ -1,7 +1,5 @@
 package io.test.synthetic.visitors.diff;
 
-import java.util.Objects;
-
 /**
  * Default pairing key for index-based (lists) and key-based (maps) pairing. For
  * the default strategies, original and updated positions are the same (same
@@ -47,12 +45,15 @@ public class DefaultPairingKey implements PairingKey {
 		if (!(o instanceof DefaultPairingKey))
 			return false;
 		DefaultPairingKey that = (DefaultPairingKey) o;
-		return Objects.equals(index, that.index) && Objects.equals(key, that.key);
+		return (index == null ? that.index == null : index.equals(that.index))
+				&& (key == null ? that.key == null : key.equals(that.key));
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(index, key);
+		int result = index == null ? 0 : index.hashCode();
+		result = 31 * result + (key == null ? 0 : key.hashCode());
+		return result;
 	}
 
 	@Override

@@ -14,14 +14,163 @@ import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
 import io.apitomy.datamodels.models.visitors.diff.CollectionDiff;
 import io.apitomy.datamodels.models.visitors.diff.DefaultPairingKey;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static io.apitomy.datamodels.jsonschema.compat.DiffType.*;
-import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.*;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ADDITIONAL_ITEMS_EXTENDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ADDITIONAL_ITEMS_FALSE_TO_TRUE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ADDITIONAL_ITEMS_TRUE_TO_FALSE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ALL_ITEM_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ITEM_SCHEMAS_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ITEM_SCHEMAS_NARROWED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ITEM_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MAX_ITEMS_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MAX_ITEMS_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MAX_ITEMS_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MAX_ITEMS_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MIN_ITEMS_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MIN_ITEMS_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MIN_ITEMS_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_MIN_ITEMS_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_UNIQUE_ITEMS_FALSE_TO_TRUE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_UNIQUE_ITEMS_TRUE_TO_FALSE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ALL_OF_SIZE_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ALL_OF_SIZE_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ANY_OF_SIZE_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ANY_OF_SIZE_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_CRITERION_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_CRITERION_EXTENDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_CRITERION_NARROWED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ONE_OF_SIZE_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ONE_OF_SIZE_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_BOTH;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_NONE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_IF_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_BOTH;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_IF_SCHEMA_COMPATIBLE_NONE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_IF_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_THEN_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_BOTH;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_THEN_SCHEMA_COMPATIBLE_NONE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_THEN_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONST_TYPE_VALUE_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONST_TYPE_VALUE_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONST_TYPE_VALUE_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ENUM_TYPE_VALUES_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ENUM_TYPE_VALUES_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ENUM_TYPE_VALUES_MEMBER_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ENUM_TYPE_VALUES_MEMBER_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NOT_TYPE_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NOT_TYPE_SCHEMA_COMPATIBLE_BOTH;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NOT_TYPE_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NOT_TYPE_SCHEMA_COMPATIBLE_NONE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_INTEGER_REQUIRED_FALSE_TO_TRUE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_INTEGER_REQUIRED_TRUE_TO_FALSE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MAXIMUM_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MAXIMUM_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MAXIMUM_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MAXIMUM_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MINIMUM_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MINIMUM_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MINIMUM_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MINIMUM_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MULTIPLE_OF_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MULTIPLE_OF_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MULTIPLE_OF_UPDATED_IS_DIVISIBLE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.NUMBER_TYPE_MULTIPLE_OF_UPDATED_IS_NOT_DIVISIBLE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_EXTENDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_FALSE_TO_TRUE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_NARROWED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_ADDITIONAL_PROPERTIES_TRUE_TO_FALSE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MAX_PROPERTIES_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MAX_PROPERTIES_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MAX_PROPERTIES_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MAX_PROPERTIES_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MIN_PROPERTIES_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MIN_PROPERTIES_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MIN_PROPERTIES_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_MIN_PROPERTIES_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PATTERN_PROPERTY_KEYS_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PATTERN_PROPERTY_KEYS_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PATTERN_PROPERTY_KEYS_MEMBER_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PATTERN_PROPERTY_KEYS_MEMBER_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PATTERN_PROPERTY_KEYS_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_MEMBER_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_MEMBER_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_BOTH;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_FORWARD_NOT_BACKWARD;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_COMPATIBLE_NONE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_NAMES_SCHEMA_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_REQUIRED_PROPERTIES_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_REQUIRED_PROPERTIES_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_REQUIRED_PROPERTIES_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.REFERENCE_TYPE_TARGET_SCHEMA_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_CONTENT_ENCODING_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_CONTENT_ENCODING_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_CONTENT_ENCODING_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_CONTENT_MEDIA_TYPE_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_CONTENT_MEDIA_TYPE_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_CONTENT_MEDIA_TYPE_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_FORMAT_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_FORMAT_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_FORMAT_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MAX_LENGTH_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MAX_LENGTH_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MAX_LENGTH_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MAX_LENGTH_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MIN_LENGTH_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MIN_LENGTH_DECREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MIN_LENGTH_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MIN_LENGTH_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_PATTERN_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_PATTERN_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_PATTERN_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.SUBSCHEMA_TYPE_CHANGED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffAddedRemoved;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffBooleanTransition;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffInteger;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffNumberOriginalMultipleOfUpdated;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffObject;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffSetChanged;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.getTypeList;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.getTypeString;
+import io.apitomy.datamodels.util.NumberUtil;
 
 /**
  * Diff visitor driven by the generated {@link JCDiffTraverser}.
@@ -61,26 +210,27 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
      * the dereferencer before calling this method.
      */
     static void diffSchemas(DiffContext ctx, JFullSchema original, JFullSchema updated) {
-        var compoundOriginal = toCompoundIfNeeded(original);
-        var compoundUpdated = toCompoundIfNeeded(updated);
+        JFullSchema compoundOriginal = toCompoundIfNeeded(original);
+        JFullSchema compoundUpdated = toCompoundIfNeeded(updated);
 
-        var pairKey = System.identityHashCode(original)
-                + ":" + System.identityHashCode(updated);
+        String pairKey = ctx.identityId(original) + ":" + ctx.identityId(updated);
         if (ctx.visited.contains(pairKey)) {
             return;
         }
         ctx.visited.add(pairKey);
         try {
-            if (!(compoundOriginal instanceof JCFullSchema origCompound)
-                    || !(compoundUpdated instanceof JCFullSchema updCompound)) {
+            if (!(compoundOriginal instanceof JCFullSchema)
+                    || !(compoundUpdated instanceof JCFullSchema)) {
                 throw new IllegalStateException(
                         "diffSchemas requires both operands to be compound (JCFullSchema) after conversion, "
                         + "but one could not be converted. original=" + compoundOriginal.getClass().getName()
                         + ", updated=" + compoundUpdated.getClass().getName());
             }
+            JCFullSchema origCompound = (JCFullSchema) compoundOriginal;
+            JCFullSchema updCompound = (JCFullSchema) compoundUpdated;
 
-            var visitor = new CompoundSchemaDiffVisitor(ctx);
-            var traverser = new JCDiffTraverser<>(visitor);
+            CompoundSchemaDiffVisitor visitor = new CompoundSchemaDiffVisitor(ctx);
+            JCDiffTraverser<DefaultPairingKey> traverser = new JCDiffTraverser<>(visitor);
             traverser.traverseFullSchema(origCompound, updCompound);
         } finally {
             ctx.visited.remove(pairKey);
@@ -91,10 +241,11 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         if (schema instanceof JCFullSchema) {
             return schema;
         }
-        var modelType = DiffUtil.detectModelType(schema);
+        ModelType modelType = DiffUtil.detectModelType(schema);
         if (modelType != null) {
-            var converted = CompoundSchemaConverter.toCompound((JsonSchema) schema, modelType);
-            if (converted instanceof JFullSchema fs) {
+            JsonSchema converted = CompoundSchemaConverter.toCompound((JsonSchema) schema, modelType);
+            if (converted instanceof JFullSchema) {
+                JFullSchema fs = (JFullSchema) converted;
                 return fs;
             }
         }
@@ -118,8 +269,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         // If either side has a remaining $ref (cyclic back-edge or unresolved),
         // skip field-by-field comparison — the $ref stub has no meaningful fields.
         // Only compare the $ref strings themselves.
-        var origRef = DiffUtil.get$ref(original);
-        var updRef = DiffUtil.get$ref(updated);
+        String origRef = DiffUtil.get$ref(original);
+        String updRef = DiffUtil.get$ref(updated);
         if (origRef != null || updRef != null) {
             if (origRef != null && updRef != null && !origRef.equals(updRef)) {
                 ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_CHANGED, origRef, updRef);
@@ -127,14 +278,14 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             traversalContext.skip(); return;
         }
 
-        var origTypeList = DiffUtil.getTypeList(original);
-        var updTypeList = DiffUtil.getTypeList(updated);
-        var originalType = DiffUtil.getTypeString(original);
-        var updatedType = DiffUtil.getTypeString(updated);
+        List<String> origTypeList = DiffUtil.getTypeList(original);
+        List<String> updTypeList = DiffUtil.getTypeList(updated);
+        String originalType = DiffUtil.getTypeString(original);
+        String updatedType = DiffUtil.getTypeString(updated);
 
         if (origTypeList != null && updTypeList != null) {
-            var origSet = new HashSet<>(origTypeList);
-            var updSet = new HashSet<>(updTypeList);
+            HashSet<String> origSet = new HashSet<>(origTypeList);
+            HashSet<String> updSet = new HashSet<>(updTypeList);
             // Normalize: integer is a subset of number
             if (origSet.contains("integer") && updSet.contains("number")) {
                 origSet.remove("integer");
@@ -145,9 +296,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 updSet.add("number");
             }
             if (!origSet.equals(updSet)) {
-                var added = new HashSet<>(updSet);
+                HashSet<String> added = new HashSet<>(updSet);
                 added.removeAll(origSet);
-                var removed = new HashSet<>(origSet);
+                HashSet<String> removed = new HashSet<>(origSet);
                 removed.removeAll(updSet);
                 if (!removed.isEmpty() && added.isEmpty()) {
                     ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, origTypeList, updTypeList);
@@ -172,14 +323,14 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, originalType, "");
                 traversalContext.skip(); return;
             }
-            var updAnyOf = updated.getAnyOf();
-            var updOneOf = updated.getOneOf();
+            List<JsonSchema> updAnyOf = updated.getAnyOf();
+            List<JsonSchema> updOneOf = updated.getOneOf();
             if (updAnyOf != null || updOneOf != null) {
-                var compositionList = updAnyOf != null ? updAnyOf : updOneOf;
-                var origMatchesAny = false;
-                for (var sub : compositionList) {
+                List<JsonSchema> compositionList = updAnyOf != null ? updAnyOf : updOneOf;
+                boolean origMatchesAny = false;
+                for (JsonSchema sub : compositionList) {
                     if (sub.isFullSchema()) {
-                        var subCtx = ctx.sub("compositionCheck");
+                        DiffContext subCtx = ctx.sub("compositionCheck");
                         if (isSchemaCompatible(subCtx, original, sub.asFullSchema(), true)) {
                             origMatchesAny = true;
                             break;
@@ -224,11 +375,13 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 || schema.getPatternProperties() != null) {
             return false;
         }
-        if (schema instanceof JCFullSchema c
-                && (c.getMinimum() != null || c.getMaximum() != null
+        if (schema instanceof JCFullSchema) {
+            JCFullSchema c = (JCFullSchema) schema;
+            if (c.getMinimum() != null || c.getMaximum() != null
                     || c.getItems() != null || c.getAdditionalItems() != null
-                    || c.getConst() != null)) {
-            return false;
+                    || c.getConst() != null) {
+                return false;
+            }
         }
         return true;
     }
@@ -252,7 +405,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void visitFullSchemaDependentSchema(JsonSchema original, JsonSchema updated) {
         if (original != null && updated != null
                 && original.isFullSchema() && updated.isFullSchema()) {
-            var subCtx = ctx.sub("dependentSchemas");
+            DiffContext subCtx = ctx.sub("dependentSchemas");
             if (!isSchemaCompatible(subCtx, original.asFullSchema(),
                     updated.asFullSchema(), true)) {
                 subCtx.addDifference(OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED,
@@ -336,7 +489,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         Number origVal = original.getValue();
         Number updVal = updated.getValue();
         if (origVal != null && updVal != null) {
-            int cmp = toBigDecimal(origVal).compareTo(toBigDecimal(updVal));
+            int cmp = NumberUtil.compare(origVal, updVal);
             boolean origExcl = Boolean.TRUE.equals(original.isExclusive());
             boolean updExcl = Boolean.TRUE.equals(updated.isExclusive());
             if (cmp < 0 || (cmp == 0 && !origExcl && updExcl)) {
@@ -368,7 +521,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         Number origVal = original.getValue();
         Number updVal = updated.getValue();
         if (origVal != null && updVal != null) {
-            int cmp = toBigDecimal(origVal).compareTo(toBigDecimal(updVal));
+            int cmp = NumberUtil.compare(origVal, updVal);
             boolean origExcl = Boolean.TRUE.equals(original.isExclusive());
             boolean updExcl = Boolean.TRUE.equals(updated.isExclusive());
             if (cmp > 0 || (cmp == 0 && !origExcl && updExcl)) {
@@ -428,7 +581,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
         if (original != null && updated != null) {
             if (original.isFullSchema() && updated.isFullSchema()) {
-                var subCtx = ctx.sub("items");
+                DiffContext subCtx = ctx.sub("items");
                 if (!isSchemaCompatible(subCtx, original.asFullSchema(),
                         updated.asFullSchema(), true)) {
                     subCtx.addDifference(ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED, original, updated);
@@ -446,15 +599,15 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                                            CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
         if (original == null && updated == null) return;
 
-        var origList = original != null ? original : List.<JsonSchema>of();
-        var updList = updated != null ? updated : List.<JsonSchema>of();
-        var minSize = Math.min(origList.size(), updList.size());
+        List<JsonSchema> origList = original != null ? original : List.<JsonSchema>of();
+        List<JsonSchema> updList = updated != null ? updated : List.<JsonSchema>of();
+        int minSize = Math.min(origList.size(), updList.size());
 
-        for (var i = 0; i < minSize; i++) {
-            var origSchema = origList.get(i);
-            var updSchema = updList.get(i);
+        for (int i = 0; i < minSize; i++) {
+            JsonSchema origSchema = origList.get(i);
+            JsonSchema updSchema = updList.get(i);
             if (origSchema.isFullSchema() && updSchema.isFullSchema()) {
-                var subCtx = ctx.sub("prefixItems/" + i);
+                DiffContext subCtx = ctx.sub("prefixItems/" + i);
                 if (!isSchemaCompatible(subCtx, origSchema.asFullSchema(),
                         updSchema.asFullSchema(), true)) {
                     subCtx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, origSchema, updSchema);
@@ -463,14 +616,14 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         }
 
         if (updList.size() > origList.size()) {
-            var origAI = currentOriginal instanceof JCFullSchema c ? c.getAdditionalItems() : null;
+            JsonSchema origAI = currentOriginal instanceof JCFullSchema ? ((JCFullSchema) currentOriginal).getAdditionalItems() : null;
             if (origAI != null && origAI.isBoolean() && !origAI.asBoolean()) {
                 ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED, origList.size(), updList.size());
             } else if (origAI != null && origAI.isFullSchema()) {
-                var allCompatible = true;
-                for (var i = minSize; i < updList.size(); i++) {
+                boolean allCompatible = true;
+                for (int i = minSize; i < updList.size(); i++) {
                     if (updList.get(i).isFullSchema()) {
-                        var subCtx = ctx.sub("prefixItems/" + i);
+                        DiffContext subCtx = ctx.sub("prefixItems/" + i);
                         if (!isSchemaCompatible(subCtx, origAI.asFullSchema(),
                                 updList.get(i).asFullSchema(), true)) {
                             allCompatible = false;
@@ -488,15 +641,15 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
             }
         } else if (updList.size() < origList.size()) {
-            var updAI = currentUpdated instanceof JCFullSchema c ? c.getAdditionalItems() : null;
-            var updPermitsAdditional = updAI == null || (updAI.isBoolean() ? updAI.asBoolean() : true);
+            JsonSchema updAI = currentUpdated instanceof JCFullSchema ? ((JCFullSchema) currentUpdated).getAdditionalItems() : null;
+            boolean updPermitsAdditional = updAI == null || (updAI.isBoolean() ? updAI.asBoolean() : true);
             if (!updPermitsAdditional) {
                 ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
             } else if (updAI != null && updAI.isFullSchema()) {
-                var allCompatible = true;
-                for (var i = minSize; i < origList.size(); i++) {
+                boolean allCompatible = true;
+                for (int i = minSize; i < origList.size(); i++) {
                     if (origList.get(i).isFullSchema()) {
-                        var subCtx = ctx.sub("prefixItems/" + i);
+                        DiffContext subCtx = ctx.sub("prefixItems/" + i);
                         if (!isSchemaCompatible(subCtx, origList.get(i).asFullSchema(),
                                 updAI.asFullSchema(), true)) {
                             allCompatible = false;
@@ -519,12 +672,12 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaAdditionalItems(JsonSchema original, JsonSchema updated) {
         if (original == null && updated == null) { traversalContext.skip(); return; }
 
-        var origPermits = original == null || (original.isBoolean() ? original.asBoolean() : true);
-        var updPermits = updated == null || (updated.isBoolean() ? updated.asBoolean() : true);
-        var origIsBoolean = original != null && original.isBoolean();
-        var updIsBoolean = updated != null && updated.isBoolean();
-        var origIsSchema = original != null && original.isFullSchema();
-        var updIsSchema = updated != null && updated.isFullSchema();
+        boolean origPermits = original == null || (original.isBoolean() ? original.asBoolean() : true);
+        boolean updPermits = updated == null || (updated.isBoolean() ? updated.asBoolean() : true);
+        boolean origIsBoolean = original != null && original.isBoolean();
+        boolean updIsBoolean = updated != null && updated.isBoolean();
+        boolean origIsSchema = original != null && original.isFullSchema();
+        boolean updIsSchema = updated != null && updated.isFullSchema();
 
         if ((origIsBoolean || original == null) && (updIsBoolean || updated == null)) {
             diffBooleanTransition(ctx, origPermits, updPermits, true,
@@ -560,7 +713,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             ctx.addDifference(ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_REMOVED, original, null);
             traversalContext.skip(); return;
         }
-        var subCtx = ctx.sub("contains");
+        DiffContext subCtx = ctx.sub("contains");
         if (!isUnionSchemaCompatible(subCtx, original, updated, true)) {
             subCtx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, original, updated);
         }
@@ -620,8 +773,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaRequired(List<String> original, List<String> updated) {
         if (original == null && updated == null) return;
 
-        var origSet = original != null ? new HashSet<>(original) : new HashSet<String>();
-        var updSet = updated != null ? new HashSet<>(updated) : new HashSet<String>();
+        HashSet<String> origSet = original != null ? new HashSet<>(original) : new HashSet<String>();
+        HashSet<String> updSet = updated != null ? new HashSet<>(updated) : new HashSet<String>();
 
         diffSetChanged(ctx, origSet, updSet,
                 OBJECT_TYPE_REQUIRED_PROPERTIES_ADDED, OBJECT_TYPE_REQUIRED_PROPERTIES_REMOVED,
@@ -637,40 +790,40 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         // Suppress auto-recursion for matched property schemas — we handle it ourselves
         if (original == null && updated == null) return;
 
-        var origKeys = original != null ? new HashSet<>(original.keySet()) : new HashSet<String>();
-        var updKeys = updated != null ? new HashSet<>(updated.keySet()) : new HashSet<String>();
+        HashSet<String> origKeys = original != null ? new HashSet<>(original.keySet()) : new HashSet<String>();
+        HashSet<String> updKeys = updated != null ? new HashSet<>(updated.keySet()) : new HashSet<String>();
 
         // Properties present in both
-        var commonKeys = new HashSet<>(origKeys);
+        HashSet<String> commonKeys = new HashSet<>(origKeys);
         commonKeys.retainAll(updKeys);
-        for (var key : commonKeys) {
-            var subCtx = ctx.sub(key);
-            var origSchema = original.get(key);
-            var updSchema = updated.get(key);
+        for (String key : commonKeys) {
+            DiffContext subCtx = ctx.sub(key);
+            JsonSchema origSchema = original.get(key);
+            JsonSchema updSchema = updated.get(key);
             if (!isUnionSchemaCompatible(subCtx, origSchema, updSchema, true)) {
                 subCtx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED, origSchema, updSchema);
             }
         }
 
-        var origAdditional = currentOriginal != null
+        JsonSchema origAdditional = currentOriginal != null
                 ? currentOriginal.getAdditionalProperties() : null;
-        var updAdditional = currentUpdated != null
+        JsonSchema updAdditional = currentUpdated != null
                 ? currentUpdated.getAdditionalProperties() : null;
-        var origPermitsAdditional = permitsAdditional(origAdditional);
-        var updPermitsAdditional = permitsAdditional(updAdditional);
+        boolean origPermitsAdditional = permitsAdditional(origAdditional);
+        boolean updPermitsAdditional = permitsAdditional(updAdditional);
 
         // Properties added in updated
-        var addedKeys = new HashSet<>(updKeys);
+        HashSet<String> addedKeys = new HashSet<>(updKeys);
         addedKeys.removeAll(origKeys);
         if (!addedKeys.isEmpty()) {
             if (!origPermitsAdditional) {
                 ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED, null, addedKeys);
             } else if (origAdditional != null && origAdditional.isFullSchema()
                     && updated != null) {
-                var allCompatible = true;
-                for (var key : addedKeys) {
-                    var addedSchema = updated.get(key);
-                    var subCtx = ctx.sub(key);
+                boolean allCompatible = true;
+                for (String key : addedKeys) {
+                    JsonSchema addedSchema = updated.get(key);
+                    DiffContext subCtx = ctx.sub(key);
                     if (!isUnionSchemaCompatible(subCtx, origAdditional, addedSchema, true)) {
                         allCompatible = false;
                         break;
@@ -689,17 +842,17 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         }
 
         // Properties removed in updated
-        var removedKeys = new HashSet<>(origKeys);
+        HashSet<String> removedKeys = new HashSet<>(origKeys);
         removedKeys.removeAll(updKeys);
         if (!removedKeys.isEmpty()) {
             if (!updPermitsAdditional) {
                 ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED, removedKeys, null);
             } else if (updAdditional != null && updAdditional.isFullSchema()
                     && original != null) {
-                var allCompatible = true;
-                for (var key : removedKeys) {
-                    var removedSchema = original.get(key);
-                    var subCtx = ctx.sub(key);
+                boolean allCompatible = true;
+                for (String key : removedKeys) {
+                    JsonSchema removedSchema = original.get(key);
+                    DiffContext subCtx = ctx.sub(key);
                     if (!isUnionSchemaCompatible(subCtx, removedSchema, updAdditional, true)) {
                         allCompatible = false;
                         break;
@@ -720,13 +873,13 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaAdditionalProperties(JsonSchema original, JsonSchema updated) {
         if (original == null && updated == null) { traversalContext.skip(); return; }
 
-        var origPermits = permitsAdditional(original);
-        var updPermits = permitsAdditional(updated);
+        boolean origPermits = permitsAdditional(original);
+        boolean updPermits = permitsAdditional(updated);
 
-        var origIsBoolean = original != null && original.isBoolean();
-        var updIsBoolean = updated != null && updated.isBoolean();
-        var origIsSchema = original != null && original.isFullSchema();
-        var updIsSchema = updated != null && updated.isFullSchema();
+        boolean origIsBoolean = original != null && original.isBoolean();
+        boolean updIsBoolean = updated != null && updated.isBoolean();
+        boolean origIsSchema = original != null && original.isFullSchema();
+        boolean updIsSchema = updated != null && updated.isFullSchema();
 
         if ((origIsBoolean || original == null) && (updIsBoolean || updated == null)) {
             diffBooleanTransition(ctx, origPermits, updPermits, true,
@@ -764,8 +917,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         // Suppress auto-recursion for matched pattern property schemas
         if (original == null && updated == null) return;
 
-        var origKeys = original != null ? new HashSet<>(original.keySet()) : new HashSet<String>();
-        var updKeys = updated != null ? new HashSet<>(updated.keySet()) : new HashSet<String>();
+        HashSet<String> origKeys = original != null ? new HashSet<>(original.keySet()) : new HashSet<String>();
+        HashSet<String> updKeys = updated != null ? new HashSet<>(updated.keySet()) : new HashSet<String>();
 
         diffSetChanged(ctx, origKeys, updKeys,
                 OBJECT_TYPE_PATTERN_PROPERTY_KEYS_ADDED,
@@ -775,12 +928,12 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 OBJECT_TYPE_PATTERN_PROPERTY_KEYS_MEMBER_REMOVED);
 
         if (original != null && updated != null) {
-            var commonKeys = new HashSet<>(origKeys);
+            HashSet<String> commonKeys = new HashSet<>(origKeys);
             commonKeys.retainAll(updKeys);
-            for (var key : commonKeys) {
-                var subCtx = ctx.sub("patternProperties/" + key);
-                var origSchema = original.get(key);
-                var updSchema = updated.get(key);
+            for (String key : commonKeys) {
+                DiffContext subCtx = ctx.sub("patternProperties/" + key);
+                JsonSchema origSchema = original.get(key);
+                JsonSchema updSchema = updated.get(key);
                 if (!isUnionSchemaCompatible(subCtx, origSchema, updSchema, true)) {
                     subCtx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED,
                             origSchema, updSchema);
@@ -811,9 +964,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                                                 CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
         if (original == null && updated == null) return;
 
-        var origKeys = original != null
+        HashSet<String> origKeys = original != null
                 ? new HashSet<>(original.keySet()) : new HashSet<String>();
-        var updKeys = updated != null
+        HashSet<String> updKeys = updated != null
                 ? new HashSet<>(updated.keySet()) : new HashSet<String>();
 
         diffSetChanged(ctx, origKeys, updKeys,
@@ -829,9 +982,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                                                  Map<String, JsonNode> updated) {
         if (original == null && updated == null) return;
 
-        var origKeys = original != null
+        HashSet<String> origKeys = original != null
                 ? new HashSet<>(original.keySet()) : new HashSet<String>();
-        var updKeys = updated != null
+        HashSet<String> updKeys = updated != null
                 ? new HashSet<>(updated.keySet()) : new HashSet<String>();
 
         diffSetChanged(ctx, origKeys, updKeys,
@@ -842,21 +995,21 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_MEMBER_REMOVED);
 
         if (original != null && updated != null) {
-            var commonKeys = new HashSet<>(origKeys);
+            HashSet<String> commonKeys = new HashSet<>(origKeys);
             commonKeys.retainAll(updKeys);
-            for (var key : commonKeys) {
-                var origArray = original.get(key);
-                var updArray = updated.get(key);
-                var origSet = jsonArrayToStringSet(origArray);
-                var updSet = jsonArrayToStringSet(updArray);
-                for (var v : origSet) {
+            for (String key : commonKeys) {
+                JsonNode origArray = original.get(key);
+                JsonNode updArray = updated.get(key);
+                Set<String> origSet = jsonArrayToStringSet(origArray);
+                Set<String> updSet = jsonArrayToStringSet(updArray);
+                for (String v : origSet) {
                     if (!updSet.contains(v)) {
                         ctx.addDifference(
                                 OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_REMOVED,
                                 v, null);
                     }
                 }
-                for (var v : updSet) {
+                for (String v : updSet) {
                     if (!origSet.contains(v)) {
                         ctx.addDifference(
                                 OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_ADDED,
@@ -873,9 +1026,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     }
 
     private static Set<String> jsonArrayToStringSet(JsonNode arrayNode) {
-        var set = new HashSet<String>();
+        HashSet<String> set = new HashSet<String>();
         if (arrayNode != null && arrayNode.isArray()) {
-            for (var element : arrayNode) {
+            for (JsonNode element : arrayNode) {
                 if (element.isTextual()) {
                     set.add(element.asText());
                 }
@@ -897,7 +1050,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
         // Cross-field transition detection: check if composition keyword changed
         if (currentOriginal != null && currentUpdated != null) {
-            var updAnyOf = currentUpdated.getAnyOf();
+            List<JsonSchema> updAnyOf = currentUpdated.getAnyOf();
 
             // allOf -> anyOf transition
             if (original != null && updAnyOf != null && updated == null) {
@@ -907,7 +1060,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 return;
             }
             // anyOf -> allOf transition
-            var origAnyOf = currentOriginal.getAnyOf();
+            List<JsonSchema> origAnyOf = currentOriginal.getAnyOf();
             if (origAnyOf != null && updated != null && original == null
                     && currentUpdated.getAnyOf() == null) {
                 ctx.addDifference(COMBINED_TYPE_CRITERION_NARROWED, "anyOf", "allOf");
@@ -923,10 +1076,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaAnyOf(List<JsonSchema> original, List<JsonSchema> updated,
                                     CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
         if (currentOriginal != null && currentUpdated != null) {
-            var origAllOf = currentOriginal.getAllOf();
-            var origOneOf = currentOriginal.getOneOf();
-            var updAllOf = currentUpdated.getAllOf();
-            var updOneOf = currentUpdated.getOneOf();
+            List<JsonSchema> origAllOf = currentOriginal.getAllOf();
+            List<JsonSchema> origOneOf = currentOriginal.getOneOf();
+            List<JsonSchema> updAllOf = currentUpdated.getAllOf();
+            List<JsonSchema> updOneOf = currentUpdated.getOneOf();
 
             // allOf -> anyOf: already handled in diffFullSchemaAllOf
             if (origAllOf != null && updated != null && original == null && updAllOf == null) {
@@ -958,8 +1111,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaOneOf(List<JsonSchema> original, List<JsonSchema> updated,
                                     CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
         if (currentOriginal != null && currentUpdated != null) {
-            var origAnyOf = currentOriginal.getAnyOf();
-            var updAnyOf = currentUpdated.getAnyOf();
+            List<JsonSchema> origAnyOf = currentOriginal.getAnyOf();
+            List<JsonSchema> updAnyOf = currentUpdated.getAnyOf();
 
             // oneOf -> anyOf: already handled in diffFullSchemaAnyOf
             if (original != null && updAnyOf != null && updated == null
@@ -992,11 +1145,11 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             ctx.addDifference(decreasedType, originalList.size(), updatedList.size());
         }
 
-        var unmatchedCount = 0;
-        for (var updSub : updatedList) {
-            var matched = false;
-            for (var origSub : originalList) {
-                var subCtx = ctx.sub("composition");
+        int unmatchedCount = 0;
+        for (JsonSchema updSub : updatedList) {
+            boolean matched = false;
+            for (JsonSchema origSub : originalList) {
+                DiffContext subCtx = ctx.sub("composition");
                 if (isUnionSchemaCompatible(subCtx, origSub, updSub, true)
                         && isUnionSchemaCompatible(subCtx, origSub, updSub, false)) {
                     matched = true;
@@ -1004,8 +1157,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 }
             }
             if (!matched) {
-                for (var origSub : originalList) {
-                    var subCtx = ctx.sub("composition");
+                for (JsonSchema origSub : originalList) {
+                    DiffContext subCtx = ctx.sub("composition");
                     if (isUnionSchemaCompatible(subCtx, origSub, updSub, true)) {
                         matched = true;
                         break;
@@ -1016,8 +1169,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 unmatchedCount++;
             }
         }
-        var newSubschemas = Math.max(0, updatedList.size() - originalList.size());
-        var changedSubschemas = unmatchedCount - newSubschemas;
+        int newSubschemas = Math.max(0, updatedList.size() - originalList.size());
+        int changedSubschemas = unmatchedCount - newSubschemas;
         if (changedSubschemas > 0) {
             ctx.addDifference(COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE,
                     originalList, updatedList);
@@ -1088,8 +1241,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
     @Override
     public void diffFullSchemaEnum(List<JsonNode> original, List<JsonNode> updated) {
-        var origConst = currentOriginal instanceof JCFullSchema c ? c.getConst() : null;
-        var updConst = currentUpdated instanceof JCFullSchema c ? c.getConst() : null;
+        JsonNode origConst = currentOriginal instanceof JCFullSchema ? ((JCFullSchema) currentOriginal).getConst() : null;
+        JsonNode updConst = currentUpdated instanceof JCFullSchema ? ((JCFullSchema) currentUpdated).getConst() : null;
 
         if (original != null || updated != null) {
             if (original == null) {
@@ -1107,18 +1260,22 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     ctx.addDifference(ENUM_TYPE_VALUES_CHANGED, original, null);
                 }
             } else {
-                var origSet = new HashSet<>(original.stream()
-                        .map(Object::toString).toList());
-                var updSet = new HashSet<>(updated.stream()
-                        .map(Object::toString).toList());
+                HashSet<String> origSet = new HashSet<String>();
+                for (JsonNode v : original) {
+                    origSet.add(v.toString());
+                }
+                HashSet<String> updSet = new HashSet<String>();
+                for (JsonNode v : updated) {
+                    updSet.add(v.toString());
+                }
                 if (!origSet.equals(updSet)) {
                     ctx.addDifference(ENUM_TYPE_VALUES_CHANGED, original, updated);
-                    for (var v : updSet) {
+                    for (String v : updSet) {
                         if (!origSet.contains(v)) {
                             ctx.addDifference(ENUM_TYPE_VALUES_MEMBER_ADDED, null, v);
                         }
                     }
-                    for (var v : origSet) {
+                    for (String v : origSet) {
                         if (!updSet.contains(v)) {
                             ctx.addDifference(ENUM_TYPE_VALUES_MEMBER_REMOVED, v, null);
                         }
@@ -1136,14 +1293,14 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 ctx.addDifference(CONST_TYPE_VALUE_CHANGED, original, updated);
             }
         } else if (original == null) {
-            var origEnum = currentOriginal != null ? currentOriginal.getEnum() : null;
+            List<JsonNode> origEnum = currentOriginal != null ? currentOriginal.getEnum() : null;
             if (origEnum != null && origEnum.size() == 1
                     && origEnum.get(0).toString().equals(updated.toString())) {
                 return;
             }
             ctx.addDifference(CONST_TYPE_VALUE_ADDED, null, updated);
         } else {
-            var updEnum = currentUpdated != null ? currentUpdated.getEnum() : null;
+            List<JsonNode> updEnum = currentUpdated != null ? currentUpdated.getEnum() : null;
             if (updEnum != null && updEnum.size() == 1
                     && updEnum.get(0).toString().equals(original.toString())) {
                 return;
@@ -1163,13 +1320,13 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         // Type change detection is handled in visitFullSchema.
         // Here we handle integer->number transition for the integer-required logic.
         if (currentOriginal != null && currentUpdated != null) {
-            var origType = DiffUtil.getTypeString(currentOriginal);
-            var updType = DiffUtil.getTypeString(currentUpdated);
-            var effectiveType = origType != null ? origType : updType;
+            String origType = DiffUtil.getTypeString(currentOriginal);
+            String updType = DiffUtil.getTypeString(currentUpdated);
+            String effectiveType = origType != null ? origType : updType;
             if (effectiveType != null
                     && ("integer".equals(effectiveType) || "number".equals(effectiveType))) {
-                var origIsInteger = "integer".equals(origType);
-                var updIsInteger = "integer".equals(updType);
+                boolean origIsInteger = "integer".equals(origType);
+                boolean updIsInteger = "integer".equals(updType);
                 diffBooleanTransition(ctx, origIsInteger, updIsInteger, false,
                         NUMBER_TYPE_INTEGER_REQUIRED_FALSE_TO_TRUE,
                         NUMBER_TYPE_INTEGER_REQUIRED_TRUE_TO_FALSE);
@@ -1201,7 +1358,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaContentSchema(JsonSchema original, JsonSchema updated) {
         if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original != null && updated != null) {
-            var subCtx = ctx.sub("contentSchema");
+            DiffContext subCtx = ctx.sub("contentSchema");
             if (!isUnionSchemaCompatible(subCtx, original, updated, true)) {
                 subCtx.addDifference(SUBSCHEMA_TYPE_CHANGED, original, updated);
             }
@@ -1290,8 +1447,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                                                JsonSchema updated,
                                                DiffType bothType, DiffType backwardType,
                                                DiffType forwardType, DiffType noneType) {
-        var backward = isUnionSchemaCompatible(ctx, original, updated, true);
-        var forward = isUnionSchemaCompatible(ctx, original, updated, false);
+        boolean backward = isUnionSchemaCompatible(ctx, original, updated, true);
+        boolean forward = isUnionSchemaCompatible(ctx, original, updated, false);
 
         if (backward && forward) {
             ctx.addDifference(bothType, original, updated);
@@ -1310,9 +1467,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         return prefix + range.getValue();
     }
 
-    private static BigDecimal toBigDecimal(Number n) {
-        return new BigDecimal(n.toString());
-    }
 
     private static boolean permitsAdditional(JsonSchema additionalProperties) {
         if (additionalProperties == null) return true;

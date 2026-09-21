@@ -6,7 +6,6 @@ import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.union.StringStringListUnion;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,9 +38,9 @@ public final class DiffUtil {
                                            DiffType addedType, DiffType removedType, DiffType changedType,
                                            DiffType addedMemberType, DiffType removedMemberType) {
         if (diffAddedRemoved(ctx, original, updated, addedType, removedType)) {
-            var changed = false;
-            var copyUpdated = new HashSet<>(updated);
-            for (var originalMember : original) {
+            boolean changed = false;
+            Set<T> copyUpdated = new HashSet<T>(updated);
+            for (T originalMember : original) {
                 if (updated.contains(originalMember)) {
                     copyUpdated.remove(originalMember);
                 } else {
@@ -49,7 +48,7 @@ public final class DiffUtil {
                     changed = true;
                 }
             }
-            for (var updatedMemberRemaining : copyUpdated) {
+            for (T updatedMemberRemaining : copyUpdated) {
                 ctx.addDifference(addedMemberType, null, updatedMemberRemaining);
                 changed = true;
             }
@@ -79,9 +78,7 @@ public final class DiffUtil {
                                                             DiffType notMultipleOfType) {
         requireNonNull(original);
         requireNonNull(updated);
-        var o = new BigDecimal(original.toString());
-        var u = new BigDecimal(updated.toString());
-        if (o.remainder(u).compareTo(BigDecimal.ZERO) == 0) {
+        if (isMultipleOf(original, updated)) {
             ctx.addDifference(multipleOfType, original, updated);
         } else {
             ctx.addDifference(notMultipleOfType, original, updated);
@@ -144,9 +141,34 @@ public final class DiffUtil {
     }
 
     public static String get$ref(Node node) {
-        if (node instanceof Referenceable ref) {
+        if (node instanceof Referenceable) {
+            Referenceable ref = (Referenceable) node;
             return ref.get$ref();
         }
         return null;
+    }
+
+    /**
+     * Whether {@code original} is an exact multiple of {@code updated}.
+     * <p>
+     * Tested on the quotient rather than with a remainder, and with a tolerance,
+     * because BigDecimal has no equivalent in the TypeScript target and a plain
+     * floating-point remainder is unreliable for decimals — {@code 0.3 % 0.1} is
+     * not zero in binary floating point, though 0.3 plainly is a multiple of 0.1.
+     * Dividing first keeps that case correct: the quotient rounds to 3 with an
+     * error far below the tolerance.
+     * <p>
+     * A zero divisor yields {@code false}. JSON Schema requires {@code multipleOf}
+     * to be greater than zero, so this only arises for a schema that is already
+     * invalid.
+     */
+    private static boolean isMultipleOf(Number original, Number updated) {
+        double value = original.doubleValue();
+        double divisor = updated.doubleValue();
+        if (divisor == 0.0) {
+            return false;
+        }
+        double quotient = value / divisor;
+        return Math.abs(quotient - Math.round(quotient)) < 1e-9;
     }
 }

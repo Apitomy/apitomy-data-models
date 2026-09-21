@@ -6,6 +6,8 @@ import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefDereferencer;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
+import io.apitomy.datamodels.jsonschema.ref.DereferenceResult;
+import io.apitomy.datamodels.models.RootCapable;
 
 /**
  * Entry point for JSON Schema compatibility checking.
@@ -100,19 +102,19 @@ public final class JsonSchemaCompatibilityChecker {
      *         or if cross-version checking is disabled and the schemas use different draft versions
      */
     public FullCompatibilityCheckResult checkFull(String originalJson, String updatedJson) {
-        var backward = checkBackward(originalJson, updatedJson);
-        var forward = checkForward(originalJson, updatedJson);
+        CompatibilityCheckResult backward = checkBackward(originalJson, updatedJson);
+        CompatibilityCheckResult forward = checkForward(originalJson, updatedJson);
         return new FullCompatibilityCheckResult(backward, forward);
     }
 
     // --- Internal ---
 
     private DiffContext doCheck(String originalSchemaJson, String updatedSchemaJson) {
-        var originalParsed = parseSchema(originalSchemaJson);
-        var updatedParsed = parseSchema(updatedSchemaJson);
+        JFullSchema originalParsed = parseSchema(originalSchemaJson);
+        JFullSchema updatedParsed = parseSchema(updatedSchemaJson);
 
-        var originalModelType = originalParsed.root().modelType();
-        var updatedModelType = updatedParsed.root().modelType();
+        ModelType originalModelType = originalParsed.root().modelType();
+        ModelType updatedModelType = updatedParsed.root().modelType();
 
         if (!allowCrossVersionChecking && originalModelType != updatedModelType) {
             throw new IllegalArgumentException(
@@ -121,19 +123,19 @@ public final class JsonSchemaCompatibilityChecker {
                     + ". Use allowCrossVersionChecking(true) to enable.");
         }
 
-        var ctx = DiffContext.createRootContext();
+        DiffContext ctx = DiffContext.createRootContext();
 
         // Dereference if configured
         if (dereferencer != null) {
-            var origResult = dereferencer.dereference(originalParsed);
-            var updResult = dereferencer.dereference(updatedParsed);
+            DereferenceResult origResult = dereferencer.dereference(originalParsed);
+            DereferenceResult updResult = dereferencer.dereference(updatedParsed);
             origResult.unresolvedRefs().forEach(ctx::addUnsupported);
             updResult.unresolvedRefs().forEach(ctx::addUnsupported);
         }
 
         // Convert both schemas to compound type
-        var originalCompound = toCompoundFullSchema(originalParsed, originalModelType);
-        var updatedCompound = toCompoundFullSchema(updatedParsed, updatedModelType);
+        JFullSchema originalCompound = toCompoundFullSchema(originalParsed, originalModelType);
+        JFullSchema updatedCompound = toCompoundFullSchema(updatedParsed, updatedModelType);
 
         CompoundSchemaDiffVisitor.diffSchemas(ctx, originalCompound, updatedCompound);
         return ctx;
@@ -148,11 +150,12 @@ public final class JsonSchemaCompatibilityChecker {
     }
 
     private static JFullSchema parseSchema(String schemaJson) {
-        var doc = Library.readRootFromJSONString(schemaJson);
-        if (!(doc instanceof JFullSchema jsonSchemaDoc)) {
+        RootCapable doc = Library.readRootFromJSONString(schemaJson);
+        if (!(doc instanceof JFullSchema)) {
             throw new IllegalArgumentException(
                     "Input is not a JSON Schema document. Detected type: " + doc.root().modelType());
         }
+        JFullSchema jsonSchemaDoc = (JFullSchema) doc;
         return jsonSchemaDoc;
     }
 }

@@ -1,15 +1,15 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.apitomy.datamodels.models.util.JsonUtil;
+import io.apitomy.datamodels.util.ResourceUtil;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import io.apitomy.datamodels.util.CollectionUtil;
 
 /**
  * Lazily-loaded, cached index of worked {@link CompatibilityExample}s keyed by {@link DiffType}.
@@ -29,7 +29,10 @@ import java.util.Map;
  */
 final class DiffTypeExamples {
 
-    private static final String RESOURCE = "compatibility-test-data.json";
+    // Kept for error messages. The loader below must repeat the path as a literal,
+    // because the transpiler inlines the resource at the call site and cannot
+    // resolve a constant reference.
+    private static final String RESOURCE = "/io/apitomy/datamodels/jsonschema/compat/compatibility-test-data.json";
 
     private static Map<DiffType, List<CompatibilityExample>> index;
 
@@ -39,37 +42,32 @@ final class DiffTypeExamples {
     /**
      * Returns the examples that demonstrate the given diff type.
      *
-     * @param diffType the diff type to look up
+     * @param diffTypeName the name of the diff type to look up
      * @return an unmodifiable list of examples, empty if none is catalogued
      */
-    static synchronized List<CompatibilityExample> get(DiffType diffType) {
+    static synchronized List<CompatibilityExample> get(String diffTypeName) {
         if (index == null) {
             index = load();
         }
-        return index.getOrDefault(diffType, List.of());
+        // Keyed by name rather than by the constant itself: the transpiler cannot pass
+        // an enum's `this` to a parameter of its own type.
+        return CollectionUtil.copyOfList(
+                index.getOrDefault(DiffType.valueOf(diffTypeName), new ArrayList<>()));
     }
 
     private static Map<DiffType, List<CompatibilityExample>> load() {
-        var mapper = new ObjectMapper();
-        try (InputStream in = DiffTypeExamples.class.getResourceAsStream(RESOURCE)) {
-            if (in == null) {
-                throw new IllegalStateException("Missing example catalog resource: " + RESOURCE);
-            }
-            JsonNode root = mapper.readTree(in);
-            JsonNode tests = root.get("tests");
-            if (tests == null || !tests.isArray()) {
-                throw new IllegalStateException(
-                        "Example catalog is missing a 'tests' array: " + RESOURCE);
-            }
-            Map<DiffType, List<CompatibilityExample>> result = new EnumMap<>(DiffType.class);
-            for (JsonNode testCase : tests) {
-                indexCase(testCase, result);
-            }
-            result.replaceAll((k, v) -> Collections.unmodifiableList(v));
-            return Collections.unmodifiableMap(result);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to read example catalog: " + RESOURCE, e);
+        JsonNode root = JsonUtil.parseJSON(ResourceUtil.readResourceAsString(
+                "/io/apitomy/datamodels/jsonschema/compat/compatibility-test-data.json"));
+        JsonNode tests = root.get("tests");
+        if (tests == null || !tests.isArray()) {
+            throw new IllegalStateException(
+                    "Example catalog is missing a 'tests' array: " + RESOURCE);
         }
+        Map<DiffType, List<CompatibilityExample>> result = new EnumMap<>(DiffType.class);
+        for (JsonNode testCase : tests) {
+            indexCase(testCase, result);
+        }
+        return result;
     }
 
     private static void indexCase(JsonNode testCase,
@@ -115,7 +113,7 @@ final class DiffTypeExamples {
             diffTypes.add(DiffType.valueOf(name.asText()));
         }
         boolean compatible = dirNode.path("compatible").asBoolean();
-        var example = new CompatibilityExample(id, direction, compatible,
+        CompatibilityExample example = new CompatibilityExample(id, direction, compatible,
                 originalSchema, updatedSchema, diffTypes);
         for (DiffType diffType : diffTypes) {
             result.computeIfAbsent(diffType, k -> new ArrayList<>()).add(example);

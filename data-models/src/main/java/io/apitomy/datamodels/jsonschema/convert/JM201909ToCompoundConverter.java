@@ -4,8 +4,8 @@ import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValueImpl;
 import io.apitomy.datamodels.models.jsonschema.modern.v201909.visitors.JM201909ToJCConversionVisitor;
+import io.apitomy.datamodels.util.NumberUtil;
 
-import java.math.BigDecimal;
 
 /**
  * Converts 2019-09 schemas to the compound schema type.
@@ -49,14 +49,14 @@ public class JM201909ToCompoundConverter extends JM201909ToJCConversionVisitor {
     }
 
     private static boolean isTighterMinimum(Number newValue, boolean newExclusive, JCRangeValue existing) {
-        int cmp = new BigDecimal(newValue.toString()).compareTo(new BigDecimal(existing.getValue().toString()));
+        int cmp = NumberUtil.compare(newValue, existing.getValue());
         if (cmp > 0) return true;
         if (cmp < 0) return false;
         return newExclusive && !Boolean.TRUE.equals(existing.isExclusive());
     }
 
     private static boolean isTighterMaximum(Number newValue, boolean newExclusive, JCRangeValue existing) {
-        int cmp = new BigDecimal(newValue.toString()).compareTo(new BigDecimal(existing.getValue().toString()));
+        int cmp = NumberUtil.compare(newValue, existing.getValue());
         if (cmp < 0) return true;
         if (cmp > 0) return false;
         return newExclusive && !Boolean.TRUE.equals(existing.isExclusive());

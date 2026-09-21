@@ -1,12 +1,17 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import io.apitomy.datamodels.util.CollectionUtil;
 
 public class DiffContext {
 
@@ -24,13 +29,32 @@ public class DiffContext {
     private final String pathUpdated;
     // Shared by reference across all sub-contexts
     final Set<String> visited;
+    // Stable per-object ids, shared with visited so sub-contexts agree on identity.
+    // Replaces System.identityHashCode, which has no transpiled equivalent. Model
+    // nodes do not override equals/hashCode, so this map is keyed by identity.
+    private final Map<Object, Integer> identityIds;
 
     private DiffContext(DiffContext rootContext, DiffContext parentContext, String pathUpdated,
-                        Set<String> visited) {
+                        Set<String> visited, Map<Object, Integer> identityIds) {
         this.rootContext = rootContext;
         this.parentContext = parentContext;
         this.pathUpdated = pathUpdated;
         this.visited = visited;
+        this.identityIds = identityIds;
+    }
+
+    /**
+     * A stable id for the given object, assigned on first use. Two calls with the
+     * same instance return the same id; equal-but-distinct instances get different
+     * ids, which is the identity semantics the diff traversal needs.
+     */
+    int identityId(Object o) {
+        Integer id = identityIds.get(o);
+        if (id == null) {
+            id = identityIds.size() + 1;
+            identityIds.put(o, id);
+        }
+        return id;
     }
 
     public static DiffContext createRootContext() {
@@ -41,7 +65,7 @@ public class DiffContext {
         if (visited == null) {
             visited = new HashSet<>();
         }
-        return new DiffContext(null, null, basePath, visited);
+        return new DiffContext(null, null, basePath, visited, new HashMap<>());
     }
 
     public DiffContext sub(String pathFragment) {
@@ -49,7 +73,8 @@ public class DiffContext {
                 rootContext != null ? rootContext : this,
                 this,
                 pathUpdated + "/" + pathFragment,
-                visited
+                visited,
+                identityIds
         );
     }
 
@@ -81,14 +106,19 @@ public class DiffContext {
             throw new IllegalStateException("No scope to pop");
         }
         Scope scope = scopeStack.pop();
-        return scope.diffs.stream().allMatch(d -> d.getDiffType().isBackwardsCompatible());
+        for (Difference d : scope.diffs) {
+            if (!d.getDiffType().isBackwardsCompatible()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void addDifference(DiffType type, Object original, Object updated) {
-        var difference = new Difference(
+        Difference difference = new Difference(
                 type, "",  pathUpdated,
-                Objects.toString(original),
-                Objects.toString(updated)
+                original == null ? "null" : original.toString(),
+                updated == null ? "null" : updated.toString()
         );
         addToDifferenceSets(difference);
     }
@@ -112,13 +142,22 @@ public class DiffContext {
     }
 
     public boolean foundIncompatibleDifference() {
-        return diffs.stream().anyMatch(d -> !d.getDiffType().isBackwardsCompatible());
+        for (Difference d : diffs) {
+            if (!d.getDiffType().isBackwardsCompatible()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Set<Difference> getIncompatibleDifferences() {
-        return diffs.stream()
-                .filter(d -> !d.getDiffType().isBackwardsCompatible())
-                .collect(Collectors.toUnmodifiableSet());
+        Set<Difference> incompatible = new LinkedHashSet<Difference>();
+        for (Difference d : diffs) {
+            if (!d.getDiffType().isBackwardsCompatible()) {
+                incompatible.add(d);
+            }
+        }
+        return incompatible;
     }
 
     public boolean foundAllDifferencesAreCompatible() {
@@ -137,13 +176,14 @@ public class DiffContext {
     }
 
     public List<String> getUnsupportedFeatures() {
-        return List.copyOf(unsupportedFeatures);
+        return CollectionUtil.copyOfList(unsupportedFeatures);
     }
 
     @Override
     public String toString() {
-        return "DiffContext{compatible=%s, diffs=%d, unsupported=%d, path='%s'}"
-                .formatted(foundAllDifferencesAreCompatible(), diffs.size(),
-                        unsupportedFeatures.size(), pathUpdated);
+        return "DiffContext{compatible=" + foundAllDifferencesAreCompatible()
+                + ", diffs=" + diffs.size()
+                + ", unsupported=" + unsupportedFeatures.size()
+                + ", path='" + pathUpdated + "'}";
     }
 }

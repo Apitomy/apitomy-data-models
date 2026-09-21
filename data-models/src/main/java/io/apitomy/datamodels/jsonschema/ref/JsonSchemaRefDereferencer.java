@@ -13,12 +13,14 @@ import io.apitomy.datamodels.util.NodeUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import io.apitomy.datamodels.util.CollectionUtil;
+import java.util.Optional;
+import io.apitomy.datamodels.models.ParentPropertyType;
 
 /**
  * Dereferences all {@code $ref} nodes in a JSON Schema tree by resolving them
@@ -123,26 +125,29 @@ public class JsonSchemaRefDereferencer {
      * @throws DereferenceException if the maximum recursion depth is exceeded
      */
     public DereferenceResult dereference(JFullSchema schema) {
-        var ctx = new DereferenceContext();
+        DereferenceContext ctx = new DereferenceContext();
         dereferenceNode(schema, ctx);
         return new DereferenceResult(
                 schema,
-                List.copyOf(ctx.unresolvedRefs),
-                Map.copyOf(ctx.cyclicRefs));
+                CollectionUtil.copyOfList(ctx.unresolvedRefs),
+                CollectionUtil.copyOfMap(ctx.cyclicRefs));
     }
 
     private void dereferenceNode(JFullSchema node, DereferenceContext ctx) {
         if (ctx.depth > maxDepth) {
             throw new DereferenceException(
-                    "Maximum recursion depth (%d) exceeded during dereferencing. "
+                    "Maximum recursion depth (" + maxDepth + ") exceeded during dereferencing. "
                     + "This may indicate a cycle that was not detected due to "
-                    + "identity-distinct resolver results for the same logical document."
-                    .formatted(maxDepth));
+                    + "identity-distinct resolver results for the same logical document.");
         }
 
-        if (node instanceof Referenceable ref && ref.get$ref() != null) {
+        // Computed up front rather than as an instanceof pattern in the condition,
+        // which the transpiler cannot express. A Referenceable carrying no $ref must
+        // still fall through to the child traversal below.
+        boolean hasRef = node instanceof Referenceable && ((Referenceable) node).get$ref() != null;
+        if (hasRef) {
             // Follow the ref chain to the final non-$ref target
-            var target = resolveRefChain(node, ctx);
+            JFullSchema target = resolveRefChain(node, ctx);
             if (target == null) {
                 return;
             }
@@ -176,16 +181,24 @@ public class JsonSchemaRefDereferencer {
     }
 
     private JFullSchema resolveRefChain(JFullSchema node, DereferenceContext ctx) {
-        var current = node;
-        var chainRefs = new HashSet<String>();
-        while (current instanceof Referenceable ref && ref.get$ref() != null) {
-            var refValue = ref.get$ref();
+        JFullSchema current = node;
+        HashSet<String> chainRefs = new HashSet<String>();
+        // The loop condition is unrolled into the body because the transpiler cannot
+        // express an instanceof pattern variable used within the same condition.
+        while (true) {
+            if (!(current instanceof Referenceable)) {
+                break;
+            }
+            String refValue = ((Referenceable) current).get$ref();
+            if (refValue == null) {
+                break;
+            }
             if (!chainRefs.add(refValue)) {
                 ctx.cyclicRefs.put(refValue, current);
                 return null;
             }
             try {
-                var resolved = refTraversal.resolveRef(refValue, current);
+                Optional<Node> resolved = refTraversal.resolveRef(refValue, current);
                 if (resolved.isEmpty()) {
                     handleUnresolvable(refValue, ctx);
                     return null;
@@ -202,7 +215,7 @@ public class JsonSchemaRefDereferencer {
     }
 
     private void dereferenceChildren(JFullSchema node, DereferenceContext ctx) {
-        var visitor = new ChildSchemaVisitor(node, ctx);
+        JsonSchemaRefDereferencer.ChildSchemaVisitor visitor = new ChildSchemaVisitor(node, ctx);
         VisitorUtil.visitTree(node, visitor, TraverserDirection.down);
     }
 
@@ -243,35 +256,35 @@ public class JsonSchemaRefDereferencer {
         }
     }
 
-    private void handleUnresolvable(String ref, DereferenceContext ctx) {
+    private void handleUnresolvable(String refValue, DereferenceContext ctx) {
         switch (strategy) {
             case FAIL:
-                throw new ReferenceResolutionException("Unresolvable $ref: " + ref, ref);
+                throw new ReferenceResolutionException("Unresolvable $ref: " + refValue, refValue);
             case COLLECT:
-                ctx.unresolvedRefs.add("Unresolvable $ref: " + ref);
+                ctx.unresolvedRefs.add("Unresolvable $ref: " + refValue);
                 break;
         }
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static void replaceInParent(Node refNode, Node target) {
-        var parent = refNode.parent();
+        Node parent = refNode.parent();
         if (parent == null) {
-            if (refNode instanceof Referenceable ref) {
-                ref.set$ref(null);
+            if (refNode instanceof Referenceable) {
+                ((Referenceable) refNode).set$ref(null);
             }
             return;
         }
 
-        var propName = refNode.parentPropertyName();
-        var propType = refNode.parentPropertyType();
+        String propName = refNode.parentPropertyName();
+        ParentPropertyType propType = refNode.parentPropertyType();
 
         switch (propType) {
             case standard:
                 NodeUtil.setProperty(parent, propName, target);
                 break;
             case array:
-                var list = (List) NodeUtil.getProperty(parent, propName);
+                List list = (List) NodeUtil.getProperty(parent, propName);
                 if (list != null) {
                     int index = list.indexOf(refNode);
                     if (index >= 0) {
@@ -280,9 +293,9 @@ public class JsonSchemaRefDereferencer {
                 }
                 break;
             case map:
-                var map = (Map) NodeUtil.getProperty(parent, propName);
+                Map map = (Map) NodeUtil.getProperty(parent, propName);
                 if (map != null) {
-                    var key = refNode.mapPropertyName();
+                    String key = refNode.mapPropertyName();
                     if (key != null) {
                         map.put(key, target);
                     }
@@ -292,8 +305,10 @@ public class JsonSchemaRefDereferencer {
     }
 
     private static class DereferenceContext {
-        final Set<Node> ancestry = Collections.newSetFromMap(new IdentityHashMap<>());
-        final Set<Node> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        // Model nodes do not override equals/hashCode, so a plain HashSet already
+        // compares by identity -- which is what this traversal needs.
+        final Set<Node> ancestry = new HashSet<>();
+        final Set<Node> visited = new HashSet<>();
         final Map<String, JFullSchema> cyclicRefs = new LinkedHashMap<>();
         final List<String> unresolvedRefs = new ArrayList<>();
         int depth = 0;
@@ -360,7 +375,7 @@ public class JsonSchemaRefDereferencer {
             if (refResolver == null) {
                 refResolver = JsonSchemaRefResolverChain.withDefaults();
             }
-            var refTraversal = new JsonSchemaRefTraversal(refResolver);
+            JsonSchemaRefTraversal refTraversal = new JsonSchemaRefTraversal(refResolver);
             return new JsonSchemaRefDereferencer(refTraversal, strategy, maxDepth);
         }
     }

@@ -86,6 +86,16 @@ public class JacksonAdapter extends PrinterAdapter {
                     return true;
                 }
                 break;
+            case "io.apitomy.datamodels.util.ResourceUtil":
+                // There is no classpath in the TypeScript target, so the resource is
+                // read here, at transpile time, and inlined as a string literal. The
+                // argument must therefore be a literal path, not a computed one.
+                if ("readResourceAsString".equals(targetMethodName)) {
+                    printMacroName(targetMethodName);
+                    print(inlineResource(invocation.getArgument(0).toString()));
+                    return true;
+                }
+                break;
             case "java.util.function.UnaryOperator":
                 if ("identity".equals(targetMethodName)) {
                     printMacroName(targetMethodName);
@@ -97,6 +107,65 @@ public class JacksonAdapter extends PrinterAdapter {
         }
 
         return super.substituteMethodInvocation(invocation);
+    }
+
+    /**
+     * Reads a bundled resource from the module's resource directory and renders it
+     * as a TypeScript string literal.
+     *
+     * @param literalArgument the call-site argument, including its quotes
+     */
+    private String inlineResource(String literalArgument) {
+        String path = literalArgument.trim();
+        if (path.length() < 2 || path.charAt(0) != '"' || path.charAt(path.length() - 1) != '"') {
+            throw new RuntimeException(
+                    "ResourceUtil.readResourceAsString needs a string literal so the resource can be "
+                    + "inlined at transpile time, but got: " + literalArgument);
+        }
+        path = path.substring(1, path.length() - 1);
+        // The transpiler's working directory is the reactor root rather than the module,
+        // so the module-relative path is tried as well.
+        String[] roots = {"data-models/src/main/resources", "src/main/resources"};
+        java.io.File file = null;
+        for (String root : roots) {
+            java.io.File candidate = new java.io.File(root, path);
+            if (candidate.isFile()) {
+                file = candidate;
+                break;
+            }
+        }
+        if (file == null) {
+            throw new RuntimeException("Cannot inline missing resource '" + path
+                    + "'; looked under " + java.util.Arrays.toString(roots)
+                    + " relative to " + new java.io.File(".").getAbsolutePath());
+        }
+        String content;
+        try {
+            content = new String(java.nio.file.Files.readAllBytes(file.toPath()),
+                    java.nio.charset.StandardCharsets.UTF_8);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Cannot inline resource: " + file.getAbsolutePath(), e);
+        }
+        StringBuilder out = new StringBuilder(content.length() + 64);
+        out.append('"');
+        for (int i = 0; i < content.length(); i++) {
+            char c = content.charAt(i);
+            switch (c) {
+            case '\\': out.append("\\\\"); break;
+            case '"':  out.append("\\\""); break;
+            case '\n': out.append("\\n"); break;
+            case '\r': out.append("\\r"); break;
+            case '\t': out.append("\\t"); break;
+            default:
+                if (c < 0x20) {
+                    out.append(String.format("\\u%04x", (int) c));
+                } else {
+                    out.append(c);
+                }
+            }
+        }
+        out.append('"');
+        return out.toString();
     }
 
     public boolean substituteInstanceof(String exprStr, ExtendedElement expr, TypeMirror type) {

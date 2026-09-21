@@ -43,7 +43,7 @@ public final class JsonRef {
     public static JsonRef parse(String ref) {
         Objects.requireNonNull(ref, "$ref value must not be null");
 
-        var hashIndex = ref.indexOf('#');
+        int hashIndex = ref.indexOf('#');
         String resource;
         String fragment;
 
@@ -135,7 +135,8 @@ public final class JsonRef {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof JsonRef r)) return false;
+        if (!(o instanceof JsonRef)) return false;
+        JsonRef r = (JsonRef) o;
         return raw.equals(r.raw);
     }
 

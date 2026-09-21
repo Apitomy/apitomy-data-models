@@ -25,6 +25,10 @@ public class JsonSchemaRefTraversal {
 
     private final JsonSchemaRefResolver resolver;
     private final Map<String, Node> cache = new HashMap<>();
+    // Stable per-document ids, replacing System.identityHashCode, which has no
+    // transpiled equivalent. Model nodes do not override equals/hashCode, so this
+    // map is keyed by identity. Scoped to this traversal, so it cannot grow unbounded.
+    private final Map<Node, Integer> documentIds = new HashMap<>();
     private final Set<String> visiting = new HashSet<>();
 
     public JsonSchemaRefTraversal(JsonSchemaRefResolver resolver) {
@@ -54,9 +58,9 @@ public class JsonSchemaRefTraversal {
         //  For now, internal refs don't need base URI resolution.
 
         // Cache key includes document identity to avoid cross-document collisions
-        var cacheKey = System.identityHashCode(from.root()) + ":" + ref.raw();
+        String cacheKey = documentId((Node) from.root()) + ":" + ref.raw();
 
-        var cached = cache.get(cacheKey);
+        Node cached = cache.get(cacheKey);
         if (cached != null) {
             return Optional.of(cached);
         }
@@ -67,12 +71,22 @@ public class JsonSchemaRefTraversal {
 
         visiting.add(cacheKey);
         try {
-            var ctx = RefResolutionContext.builder(from).build();
-            var result = resolver.resolve(ref, ctx);
+            RefResolutionContext ctx = RefResolutionContext.builder(from).build();
+            Optional<Node> result = resolver.resolve(ref, ctx);
             result.ifPresent(r -> cache.put(cacheKey, r));
             return result;
         } finally {
             visiting.remove(cacheKey);
         }
+    }
+
+    /** A stable id for a document root, assigned on first use. */
+    private int documentId(Node root) {
+        Integer id = documentIds.get(root);
+        if (id == null) {
+            id = documentIds.size() + 1;
+            documentIds.put(root, id);
+        }
+        return id;
     }
 }
