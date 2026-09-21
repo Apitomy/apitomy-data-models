@@ -1,7 +1,7 @@
 package io.apitomy.datamodels.jsonschema.convert;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.apitomy.datamodels.models.util.JsonUtil;
 import io.apitomy.datamodels.models.Any;
 import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaFullSchemaListUnion;
@@ -16,6 +16,7 @@ import io.apitomy.datamodels.models.jsonschema.modern.v202012.visitors.JM202012T
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 
 /**
  * Converts any JSON Schema version to the compound schema type.
@@ -50,8 +51,6 @@ public class CompoundSchemaConverter {
         return (JsonSchema) result;
     }
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
     /**
      * Splits a d4-d7 {@code dependencies} map into {@code dependentSchemas}
      * and {@code dependentRequired} on the compound target.
@@ -60,14 +59,14 @@ public class CompoundSchemaConverter {
         if (value == null) return;
         Map<String, JsonNode> requiredMap = null;
         for (Map.Entry<String, Dependency> entry : value.entrySet()) {
-            var dep = entry.getValue();
+            Dependency dep = entry.getValue();
             if (dep.isFullSchema()) {
                 target.addDependentSchema(entry.getKey(), (JsonSchema) dep.asFullSchema());
             } else if (dep.isStringList()) {
                 if (requiredMap == null) {
                     requiredMap = new LinkedHashMap<>();
                 }
-                requiredMap.put(entry.getKey(), MAPPER.valueToTree(dep.asStringList()));
+                requiredMap.put(entry.getKey(), JsonUtil.toArrayNode(dep.asStringList()));
             }
         }
         if (requiredMap != null) {
@@ -82,7 +81,7 @@ public class CompoundSchemaConverter {
     static void normalizeItems(BooleanFullSchemaFullSchemaListUnion value, JCFullSchema target) {
         if (value == null) return;
         if (value.isFullSchemaList()) {
-            for (var schema : value.asFullSchemaList()) {
+            for (JFullSchema schema : value.asFullSchemaList()) {
                 target.addPrefixItem((JsonSchema) schema);
             }
         } else {

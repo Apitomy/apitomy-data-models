@@ -14,11 +14,16 @@ public final class Difference {
 
     public Difference(DiffType diffType, String pathOriginal, String pathUpdated,
                       String subSchemaOriginal, String subSchemaUpdated) {
-        this.diffType = Objects.requireNonNull(diffType);
-        this.pathOriginal = Objects.requireNonNull(pathOriginal);
-        this.pathUpdated = Objects.requireNonNull(pathUpdated);
-        this.subSchemaOriginal = Objects.requireNonNull(subSchemaOriginal);
-        this.subSchemaUpdated = Objects.requireNonNull(subSchemaUpdated);
+        Objects.requireNonNull(diffType);
+        this.diffType = diffType;
+        Objects.requireNonNull(pathOriginal);
+        this.pathOriginal = pathOriginal;
+        Objects.requireNonNull(pathUpdated);
+        this.pathUpdated = pathUpdated;
+        Objects.requireNonNull(subSchemaOriginal);
+        this.subSchemaOriginal = subSchemaOriginal;
+        Objects.requireNonNull(subSchemaUpdated);
+        this.subSchemaUpdated = subSchemaUpdated;
     }
 
     public DiffType getDiffType() {
@@ -70,7 +75,8 @@ public final class Difference {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Difference d)) return false;
+        if (!(o instanceof Difference)) return false;
+        Difference d = (Difference) o;
         return diffType == d.diffType
                 && pathOriginal.equals(d.pathOriginal)
                 && pathUpdated.equals(d.pathUpdated)
@@ -85,6 +91,6 @@ public final class Difference {
 
     @Override
     public String toString() {
-        return "Difference{type=%s, pathUpdated='%s'}".formatted(diffType, pathUpdated);
+        return "Difference{type=" + diffType + ", pathUpdated='" + pathUpdated + "'}";
     }
 }

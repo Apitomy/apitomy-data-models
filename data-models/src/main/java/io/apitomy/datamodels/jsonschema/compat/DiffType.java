@@ -242,6 +242,6 @@ public enum DiffType {
      * @return an unmodifiable list of examples, possibly empty
      */
     public List<CompatibilityExample> getExamples() {
-        return DiffTypeExamples.get(this);
+        return DiffTypeExamples.get(name());
     }
 }

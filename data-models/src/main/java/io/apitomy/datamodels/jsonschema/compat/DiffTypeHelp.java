@@ -1,14 +1,14 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.apitomy.datamodels.models.util.JsonUtil;
+import io.apitomy.datamodels.util.ResourceUtil;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Iterator;
 
 /**
  * Lazily-loaded, cached store of long-form, {@code --explain}-style help text for {@link DiffType}
@@ -26,7 +26,10 @@ import java.util.Optional;
  */
 final class DiffTypeHelp {
 
-    private static final String RESOURCE = "difftype-help.json";
+    // Kept for error messages. The loader below must repeat the path as a literal,
+    // because the transpiler inlines the resource at the call site and cannot
+    // resolve a constant reference.
+    private static final String RESOURCE = "/io/apitomy/datamodels/jsonschema/compat/difftype-help.json";
 
     private static Map<String, String> help;
 
@@ -47,30 +50,23 @@ final class DiffTypeHelp {
     }
 
     private static Map<String, String> load() {
-        var mapper = new ObjectMapper();
-        try (InputStream in = DiffTypeHelp.class.getResourceAsStream(RESOURCE)) {
-            if (in == null) {
-                throw new IllegalStateException("Missing help manifest resource: " + RESOURCE);
-            }
-            JsonNode root = mapper.readTree(in);
-            JsonNode helpNode = root.get("help");
-            if (helpNode == null || !helpNode.isObject()) {
-                throw new IllegalStateException(
-                        "Help manifest is missing a 'help' object: " + RESOURCE);
-            }
-            Map<String, String> result = new LinkedHashMap<>();
-            var fields = helpNode.fields();
-            while (fields.hasNext()) {
-                var entry = fields.next();
-                String name = entry.getKey();
-                // Fail fast on typos: every key must name a real DiffType constant.
-                DiffType.valueOf(name);
-                result.put(name, joinLines(name, entry.getValue()));
-            }
-            return Collections.unmodifiableMap(result);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to read help manifest: " + RESOURCE, e);
+        JsonNode root = JsonUtil.parseJSON(ResourceUtil.readResourceAsString(
+                "/io/apitomy/datamodels/jsonschema/compat/difftype-help.json"));
+        JsonNode helpNode = root.get("help");
+        if (helpNode == null || !helpNode.isObject()) {
+            throw new IllegalStateException(
+                    "Help manifest is missing a 'help' object: " + RESOURCE);
         }
+        Map<String, String> result = new LinkedHashMap<>();
+        // Iterated by name rather than by entry: Map.Entry has no transpiled equivalent.
+        Iterator<String> fieldNames = helpNode.fieldNames();
+        while (fieldNames.hasNext()) {
+            String name = fieldNames.next();
+            // Fail fast on typos: every key must name a real DiffType constant.
+            DiffType.valueOf(name);
+            result.put(name, joinLines(name, helpNode.get(name)));
+        }
+        return result;
     }
 
     private static String joinLines(String name, JsonNode value) {
@@ -82,7 +78,7 @@ final class DiffTypeHelp {
                     "Help entry '" + name + "' must be a string or array of strings, was: "
                             + value.getNodeType());
         }
-        var sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < value.size(); i++) {
             if (i > 0) {
                 sb.append('\n');

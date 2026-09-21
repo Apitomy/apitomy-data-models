@@ -2,6 +2,9 @@ package io.apitomy.datamodels.jsonschema.compat;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.ArrayList;
+import java.util.Collections;
+import io.apitomy.datamodels.util.CollectionUtil;
 
 /**
  * A worked example of a compatibility {@link DiffType}, drawn from the bundled example catalog.
@@ -24,12 +27,16 @@ public final class CompatibilityExample {
 
     CompatibilityExample(String id, Direction direction, boolean compatible,
                          String originalSchema, String updatedSchema, List<DiffType> diffTypes) {
-        this.id = Objects.requireNonNull(id);
-        this.direction = Objects.requireNonNull(direction);
+        Objects.requireNonNull(id);
+        this.id = id;
+        Objects.requireNonNull(direction);
+        this.direction = direction;
         this.compatible = compatible;
-        this.originalSchema = Objects.requireNonNull(originalSchema);
-        this.updatedSchema = Objects.requireNonNull(updatedSchema);
-        this.diffTypes = List.copyOf(diffTypes);
+        Objects.requireNonNull(originalSchema);
+        this.originalSchema = originalSchema;
+        Objects.requireNonNull(updatedSchema);
+        this.updatedSchema = updatedSchema;
+        this.diffTypes = CollectionUtil.copyOfList(diffTypes);
     }
 
     /** The catalog case id this example was drawn from. */
@@ -65,7 +72,8 @@ public final class CompatibilityExample {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof CompatibilityExample e)) return false;
+        if (!(o instanceof CompatibilityExample)) return false;
+        CompatibilityExample e = (CompatibilityExample) o;
         return compatible == e.compatible
                 && id.equals(e.id)
                 && direction == e.direction
@@ -81,7 +89,7 @@ public final class CompatibilityExample {
 
     @Override
     public String toString() {
-        return "CompatibilityExample{id='%s', direction=%s, compatible=%s, diffTypes=%s}"
-                .formatted(id, direction, compatible, diffTypes);
+        return "CompatibilityExample{id='" + id + "', direction=" + direction
+                + ", compatible=" + compatible + ", diffTypes=" + diffTypes + "}";
     }
 }

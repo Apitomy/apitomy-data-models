@@ -7,8 +7,8 @@ import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValueImpl;
 import io.apitomy.datamodels.models.jsonschema.draft.draft6.visitors.JD6ToJCConversionVisitor;
 
-import java.math.BigDecimal;
 import java.util.Map;
+import io.apitomy.datamodels.util.NumberUtil;
 
 /**
  * Converts Draft 6 schemas to the compound schema type.
@@ -66,7 +66,7 @@ public class JD6ToCompoundConverter extends JD6ToJCConversionVisitor {
      * At the same value, exclusive is tighter than inclusive.
      */
     private static boolean isTighterMinimum(Number newValue, boolean newExclusive, JCRangeValue existing) {
-        int cmp = new BigDecimal(newValue.toString()).compareTo(new BigDecimal(existing.getValue().toString()));
+        int cmp = NumberUtil.compare(newValue, existing.getValue());
         if (cmp > 0) return true;
         if (cmp < 0) return false;
         // Same value: exclusive is tighter
@@ -78,7 +78,7 @@ public class JD6ToCompoundConverter extends JD6ToJCConversionVisitor {
      * At the same value, exclusive is tighter than inclusive.
      */
     private static boolean isTighterMaximum(Number newValue, boolean newExclusive, JCRangeValue existing) {
-        int cmp = new BigDecimal(newValue.toString()).compareTo(new BigDecimal(existing.getValue().toString()));
+        int cmp = NumberUtil.compare(newValue, existing.getValue());
         if (cmp < 0) return true;
         if (cmp > 0) return false;
         // Same value: exclusive is tighter
