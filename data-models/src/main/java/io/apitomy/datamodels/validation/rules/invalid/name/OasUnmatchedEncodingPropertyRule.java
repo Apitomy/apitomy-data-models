@@ -19,6 +19,7 @@ package io.apitomy.datamodels.validation.rules.invalid.name;
 import io.apitomy.datamodels.models.Schema;
 import io.apitomy.datamodels.models.openapi.OpenApiEncoding;
 import io.apitomy.datamodels.models.openapi.OpenApiMediaType;
+import io.apitomy.datamodels.util.NodeUtil;
 import io.apitomy.datamodels.validation.ValidationRuleMetaData;
 
 /**
@@ -42,10 +43,14 @@ public class OasUnmatchedEncodingPropertyRule extends OasInvalidPropertyNameRule
      * @return {boolean}
      */
     private boolean isValidSchemaProperty(Schema schema, String propertyName) {
-        if (isNullOrUndefined(schema) && isNullOrUndefined(schema.getProperties())) {
+        if (isNullOrUndefined(schema)) {
             return false;
         }
-        return !isNullOrUndefined(schema.getProperties().get(propertyName));
+        Object properties = NodeUtil.getNodeProperty(schema, "properties");
+        if (isNullOrUndefined(properties)) {
+            return false;
+        }
+        return !isNullOrUndefined(NodeUtil.getProperty(properties, propertyName));
     }
 
     /**

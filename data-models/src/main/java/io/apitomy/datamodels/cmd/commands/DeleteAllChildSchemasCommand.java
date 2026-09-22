@@ -12,6 +12,7 @@ import io.apitomy.datamodels.paths.NodePath;
 import io.apitomy.datamodels.paths.NodePathUtil;
 import io.apitomy.datamodels.util.LoggerUtil;
 import io.apitomy.datamodels.util.ModelTypeUtil;
+import io.apitomy.datamodels.util.JsonSchemaUtil;
 import io.apitomy.datamodels.util.NodeUtil;
 
 import java.util.ArrayList;
@@ -50,15 +51,15 @@ public class DeleteAllChildSchemasCommand extends AbstractSchemaInhCommand {
         // Pull the schemas out (if allOf, anyOf, or oneOf)
         List<? extends Schema> schemas = new ArrayList<>();
         if (NodeUtil.equals(TYPE_ALL_OF, this._childSchemaType)) {
-            schemas = new LinkedList<>(schema.getAllOf());
+            schemas = new LinkedList<>(JsonSchemaUtil.toSchemaList((List<?>) NodeUtil.invokeMethod(schema, "getAllOf")));
             for (int i = 0; i < schemas.size(); i++) {
                 Schema s = schemas.get(i);
                 if (has$Ref(s)) {
-                    schema.removeAllOf(s);
+                    NodeUtil.invokeMethod(schema, "removeAllOf", s);
                     addOldSchema(s);
                 }
             }
-            if (schema.getAllOf().isEmpty()) {
+            if (JsonSchemaUtil.toSchemaList((List<?>) NodeUtil.invokeMethod(schema, "getAllOf")).isEmpty()) {
                 NodeUtil.setProperty(schema, TYPE_ALL_OF, null);
             }
         }
@@ -120,7 +121,7 @@ public class DeleteAllChildSchemasCommand extends AbstractSchemaInhCommand {
             return schema30.getAnyOf();
         } else if (ModelTypeUtil.isOpenApi31Model(schema)) {
             OpenApi31Schema schema31 = (OpenApi31Schema) schema;
-            return schema31.getAnyOf();
+            return JsonSchemaUtil.toSchemaList(schema31.getAnyOf());
         } else if (ModelTypeUtil.isAsyncApiModel(schema)) {
             AsyncApiSchema s = (AsyncApiSchema) schema;
             return s.getAnyOf();
@@ -134,7 +135,7 @@ public class DeleteAllChildSchemasCommand extends AbstractSchemaInhCommand {
             return schema30.getOneOf();
         } else if (ModelTypeUtil.isOpenApi31Model(schema)) {
             OpenApi31Schema schema31 = (OpenApi31Schema) schema;
-            return schema31.getOneOf();
+            return JsonSchemaUtil.toSchemaList(schema31.getOneOf());
         } else if (ModelTypeUtil.isAsyncApiModel(schema)) {
             AsyncApiSchema s = (AsyncApiSchema) schema;
             return s.getOneOf();

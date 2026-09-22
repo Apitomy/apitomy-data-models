@@ -30,7 +30,7 @@ public abstract class AbstractSchemaInhCommand extends AbstractCommand {
      */
     static String getInheritanceType(Schema schema) {
         if (ModelTypeUtil.isOpenApiModel(schema)) {
-            if (NodeUtil.isDefined(schema.getAllOf())) {
+            if (NodeUtil.isDefined(NodeUtil.getNodeProperty(schema, TYPE_ALL_OF))) {
                 return TYPE_ALL_OF;
             }
             if (ModelTypeUtil.isOpenApi3Model(schema)) {
@@ -100,11 +100,11 @@ public abstract class AbstractSchemaInhCommand extends AbstractCommand {
     }
     
     private static void addAllOfSchema(Schema to, Schema from) {
-        to.addAllOf(from);
+        NodeUtil.invokeMethod(to, "addAllOf", from);
     }
     
     private static Schema createAllOfSchema(Schema schema) {
-        return schema.createSchema();
+        return (Schema) NodeUtil.invokeMethod(schema, "createSchema");
     }
     
     private static void addAnyOfSchema(Schema to, Schema from) {
@@ -118,7 +118,7 @@ public abstract class AbstractSchemaInhCommand extends AbstractCommand {
     }
     
     private static Schema createAnyOfSchema(Schema schema) {
-        return schema.createSchema();
+        return (Schema) NodeUtil.invokeMethod(schema, "createSchema");
     }
     
     private static void addOneOfSchema(Schema to, Schema from) {
@@ -132,7 +132,7 @@ public abstract class AbstractSchemaInhCommand extends AbstractCommand {
     }
     
     private static Schema createOneOfSchema(Schema schema) {
-        return schema.createSchema();
+        return (Schema) NodeUtil.invokeMethod(schema, "createSchema");
     }
 
     protected boolean has$Ref(Node node) {

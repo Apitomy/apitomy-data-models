@@ -1,0 +1,114 @@
+{
+  "documents": [
+    {
+      "id": "oas31-schema-fidelity",
+      "family": "3.1",
+      "document": {
+        "openapi": "3.1.0",
+        "info": {"title": "Fidelity", "version": "1"},
+        "paths": {},
+        "components": {
+          "schemas": {
+            "Item": {
+              "$id": "https://schemas.example/item",
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$comment": "root schema for fidelity checks",
+              "$defs": {"closed": false},
+              "type": "object",
+              "properties": {
+                "blocked": false,
+                "free": true,
+                "other": {"type": "string"}
+              },
+              "patternProperties": {
+                "^x-": true
+              },
+              "dependentSchemas": {
+                "free": {"required": ["other"]}
+              },
+              "dependentRequired": {
+                "other": ["free"]
+              },
+              "propertyNames": {"pattern": "^[a-z]+$"},
+              "if": {"required": ["free"]},
+              "then": {"properties": {"other": {"type": "string"}}},
+              "else": false,
+              "allOf": [true],
+              "anyOf": [false, {"type": "object"}],
+              "oneOf": [{"type": "string"}, true],
+              "not": false,
+              "items": true,
+              "prefixItems": [{"type": "string"}, false],
+              "contains": {"type": "number"},
+              "minContains": 1,
+              "maxContains": 3,
+              "unevaluatedItems": false,
+              "unevaluatedProperties": false,
+              "contentMediaType": "application/json",
+              "contentEncoding": "base64",
+              "contentSchema": {"type": "object"},
+              "enum": [0, "a", 1],
+              "const": 0,
+              "examples": [0, {"a": 1}]
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "oas32-schema-fidelity",
+      "family": "3.2",
+      "document": {
+        "openapi": "3.2.0",
+        "info": {"title": "Fidelity", "version": "1"},
+        "paths": {},
+        "components": {
+          "schemas": {
+            "Item": {
+              "$id": "https://schemas.example/item",
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$comment": "root schema for fidelity checks",
+              "$defs": {"closed": false},
+              "type": "object",
+              "properties": {
+                "blocked": false,
+                "free": true,
+                "other": {"type": "string"}
+              },
+              "patternProperties": {
+                "^x-": true
+              },
+              "dependentSchemas": {
+                "free": {"required": ["other"]}
+              },
+              "dependentRequired": {
+                "other": ["free"]
+              },
+              "propertyNames": {"pattern": "^[a-z]+$"},
+              "if": {"required": ["free"]},
+              "then": {"properties": {"other": {"type": "string"}}},
+              "else": false,
+              "allOf": [true],
+              "anyOf": [false, {"type": "object"}],
+              "oneOf": [{"type": "string"}, true],
+              "not": false,
+              "items": true,
+              "prefixItems": [{"type": "string"}, false],
+              "contains": {"type": "number"},
+              "minContains": 1,
+              "maxContains": 3,
+              "unevaluatedItems": false,
+              "unevaluatedProperties": false,
+              "contentMediaType": "application/json",
+              "contentEncoding": "base64",
+              "contentSchema": {"type": "object"},
+              "enum": [0, "a", 1],
+              "const": 0,
+              "examples": [0, {"a": 1}]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

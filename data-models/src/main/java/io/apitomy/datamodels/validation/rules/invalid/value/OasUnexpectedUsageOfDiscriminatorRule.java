@@ -28,7 +28,9 @@ import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Schema;
 import io.apitomy.datamodels.models.openapi.v3x.v31.OpenApi31Schema;
 import io.apitomy.datamodels.models.visitors.CombinedVisitorAdapter;
 import io.apitomy.datamodels.refs.ReferenceUtil;
+import io.apitomy.datamodels.util.JsonSchemaUtil;
 import io.apitomy.datamodels.util.ModelTypeUtil;
+import io.apitomy.datamodels.util.NodeUtil;
 import io.apitomy.datamodels.validation.ValidationRuleMetaData;
 
 /**
@@ -63,7 +65,7 @@ public class OasUnexpectedUsageOfDiscriminatorRule extends AbstractInvalidProper
      * @return true if the schema has at least one composition keyword
      */
     private boolean schemaHasComposition(Schema schema) {
-        if (hasValue(schema.getAllOf())) {
+        if (hasValue(NodeUtil.getNodeProperty(schema, "allOf"))) {
             return true;
         }
         if (ModelTypeUtil.isOpenApi30Model(schema)) {
@@ -112,7 +114,7 @@ public class OasUnexpectedUsageOfDiscriminatorRule extends AbstractInvalidProper
                 return;
             }
             // Check allOf (available on base Schema interface)
-            referenced = checkCompositionListForRef(node.getAllOf(), node);
+            referenced = checkCompositionListForRef(JsonSchemaUtil.toSchemaList((List<?>) NodeUtil.getNodeProperty(node, "allOf")), node);
             if (referenced) {
                 return;
             }
@@ -125,9 +127,9 @@ public class OasUnexpectedUsageOfDiscriminatorRule extends AbstractInvalidProper
                 }
             } else if (ModelTypeUtil.isOpenApi31Model(node)) {
                 OpenApi31Schema schema31 = (OpenApi31Schema) node;
-                referenced = checkCompositionListForRef(schema31.getOneOf(), node);
+                referenced = checkCompositionListForRef(JsonSchemaUtil.toSchemaList(schema31.getOneOf()), node);
                 if (!referenced) {
-                    referenced = checkCompositionListForRef(schema31.getAnyOf(), node);
+                    referenced = checkCompositionListForRef(JsonSchemaUtil.toSchemaList(schema31.getAnyOf()), node);
                 }
             }
         }

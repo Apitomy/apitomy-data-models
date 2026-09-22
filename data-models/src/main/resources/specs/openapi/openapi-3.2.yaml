@@ -43,6 +43,10 @@ traits:
       - name: headers
         type: '{Header}'
 
+typeAliases:
+  - name: SchemaOrBoolean
+    type: boolean|Schema
+
 root:
   type: Document
 
@@ -354,6 +358,10 @@ entities:
         type: '{Example}'
       - name: encoding
         type: '{Encoding}'
+      - name: prefixEncoding
+        type: '[Encoding]'
+      - name: itemEncoding
+        type: Encoding
     propertyOrder:
       - $this
       - $Extensible
@@ -373,6 +381,8 @@ entities:
         type: boolean
       - name: allowReserved
         type: boolean
+      - name: encoding
+        type: '{Encoding}'
     propertyOrder:
       - $this
       - $Extensible
@@ -526,6 +536,20 @@ entities:
       - Extensible
       - Referenceable
     properties:
+      - name: '$id'
+        type: string
+      - name: '$schema'
+        type: string
+      - name: '$anchor'
+        type: string
+      - name: '$dynamicRef'
+        type: string
+      - name: '$dynamicAnchor'
+        type: string
+      - name: '$comment'
+        type: string
+      - name: '$defs'
+        type: '{SchemaOrBoolean}'
       - name: format
         type: string
       - name: title
@@ -569,13 +593,51 @@ entities:
       - name: type
         type: 'string|[string]'
       - name: items
-        type: Schema
+        type: SchemaOrBoolean
+      - name: prefixItems
+        type: '[SchemaOrBoolean]'
+      - name: contains
+        type: SchemaOrBoolean
+      - name: minContains
+        type: integer
+      - name: maxContains
+        type: integer
+      - name: unevaluatedItems
+        type: SchemaOrBoolean
       - name: allOf
-        type: '[Schema]'
+        type: '[SchemaOrBoolean]'
+      - name: anyOf
+        type: '[SchemaOrBoolean]'
+      - name: oneOf
+        type: '[SchemaOrBoolean]'
+      - name: not
+        type: SchemaOrBoolean
+      - name: if
+        type: SchemaOrBoolean
+      - name: then
+        type: SchemaOrBoolean
+      - name: else
+        type: SchemaOrBoolean
       - name: properties
-        type: '{Schema}'
+        type: '{SchemaOrBoolean}'
+      - name: patternProperties
+        type: '{SchemaOrBoolean}'
       - name: additionalProperties
-        type: 'boolean|Schema'
+        type: SchemaOrBoolean
+      - name: propertyNames
+        type: SchemaOrBoolean
+      - name: unevaluatedProperties
+        type: SchemaOrBoolean
+      - name: dependentSchemas
+        type: '{SchemaOrBoolean}'
+      - name: dependentRequired
+        type: '{any}'
+      - name: contentMediaType
+        type: string
+      - name: contentEncoding
+        type: string
+      - name: contentSchema
+        type: SchemaOrBoolean
       - name: readOnly
         type: boolean
       - name: xml
@@ -584,12 +646,8 @@ entities:
         type: ExternalDocumentation
       - name: example
         type: any
-      - name: oneOf
-        type: '[Schema]'
-      - name: anyOf
-        type: '[Schema]'
-      - name: not
-        type: Schema
+      - name: examples
+        type: '[any]'
       - name: discriminator
         type: Discriminator
       - name: writeOnly

@@ -8,6 +8,8 @@ import io.apitomy.datamodels.models.Schema;
 import io.apitomy.datamodels.paths.NodePath;
 import io.apitomy.datamodels.paths.NodePathUtil;
 import io.apitomy.datamodels.util.LoggerUtil;
+import io.apitomy.datamodels.util.JsonSchemaUtil;
+import io.apitomy.datamodels.util.NodeUtil;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -48,14 +50,15 @@ public class DeleteAllPropertiesCommand extends AbstractCommand {
         }
 
         List<String> propertyNames = new ArrayList<>();
-        propertyNames.addAll(schema.getProperties().keySet());
+        Map<String, ?> properties = (Map<String, ?>) NodeUtil.invokeMethod(schema, "getProperties");
+        propertyNames.addAll(properties.keySet());
         propertyNames.forEach(pname -> {
-            Schema pvalue = schema.getProperties().get(pname);
-            this._oldProperties.put(pname, Library.writeNode(pvalue));
+            Object pvalue = properties.get(pname);
+            this._oldProperties.put(pname, Library.writeNode(JsonSchemaUtil.asSchema(pvalue)));
             if (isRequired(schema, pname)) {
                 this._oldRequired.add(pname);
             }
-            schema.removeProperty(pname);
+            NodeUtil.invokeMethod(schema, "removeProperty", pname);
             removeRequired(schema, pname);
         });
         if (schema.getRequired() != null && schema.getRequired().isEmpty()) {
@@ -89,9 +92,9 @@ public class DeleteAllPropertiesCommand extends AbstractCommand {
         }
 
         this._oldProperties.keySet().forEach( pname -> {
-            Schema pschema = schema.createSchema();
+            Schema pschema = (Schema) NodeUtil.invokeMethod(schema, "createSchema");
             Library.readNode(this._oldProperties.get(pname), pschema);
-            schema.addProperty(pname, pschema);
+            NodeUtil.invokeMethod(schema, "addProperty", pname, pschema);
             if (this._oldRequired.contains(pname)) {
                 addRequired(schema, pname);
             }

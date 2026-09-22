@@ -4,6 +4,7 @@ import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.Schema;
 import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Document;
+import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Schema;
 import io.apitomy.datamodels.paths.NodePath;
 import io.apitomy.datamodels.paths.NodePathUtil;
 import org.junit.jupiter.api.Assertions;
@@ -20,15 +21,16 @@ public class CreateNodesTest {
         doc.setPaths(doc.createPaths());
         doc.getPaths().addItem("/widgets", doc.getPaths().createPathItem());
         Schema fooTypeSchema = doc.getComponents().getSchemas().get("fooType");
-        fooTypeSchema.addAllOf(fooTypeSchema.createSchema());
-        fooTypeSchema.addAllOf(fooTypeSchema.createSchema());
-        fooTypeSchema.getAllOf().get(0).setDescription("allOf Schema #1");
-        fooTypeSchema.getAllOf().get(1).setDescription("allOf Schema #2");
+        OpenApi30Schema fooType30Schema = (OpenApi30Schema) fooTypeSchema;
+        fooType30Schema.addAllOf((OpenApi30Schema) fooType30Schema.createSchema());
+        fooType30Schema.addAllOf((OpenApi30Schema) fooType30Schema.createSchema());
+        fooType30Schema.getAllOf().get(0).setDescription("allOf Schema #1");
+        fooType30Schema.getAllOf().get(1).setDescription("allOf Schema #2");
 
         NodePath infoNP = createNodePath(doc.getInfo());
         NodePath pathNP = createNodePath(doc.getPaths().getItem("/widgets"));
         NodePath schemaNP = createNodePath(doc.getComponents().getSchemas().get("fooType"));
-        NodePath allOfNP = createNodePath(doc.getComponents().getSchemas().get("fooType").getAllOf().get(0));
+        NodePath allOfNP = createNodePath(((OpenApi30Schema) doc.getComponents().getSchemas().get("fooType")).getAllOf().get(0));
 
         Assertions.assertEquals("/info", infoNP.toString());
         Assertions.assertEquals("/components/schemas[fooType]", schemaNP.toString());

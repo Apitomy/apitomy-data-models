@@ -11,6 +11,9 @@ import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Document;
 import io.apitomy.datamodels.models.openapi.v3x.v31.OpenApi31Document;
 import io.apitomy.datamodels.util.LoggerUtil;
 import io.apitomy.datamodels.util.ModelTypeUtil;
+import io.apitomy.datamodels.util.NodeUtil;
+
+import java.util.Map;
 
 /**
  * A command used to add a new property to a schema definition in a document.
@@ -50,17 +53,18 @@ public class AddSchemaPropertyCommand extends AbstractCommand {
         }
 
         // Do nothing if the property already exists.
-        if (!this.isNullOrUndefined(schema.getProperties()) && schema.getProperties().containsKey(this._propertyName)) {
+        Map<String, ?> properties = (Map<String, ?>) NodeUtil.invokeMethod(schema, "getProperties");
+        if (!this.isNullOrUndefined(properties) && properties.containsKey(this._propertyName)) {
             LoggerUtil.info("[AddSchemaPropertyCommand] Property '%s' already exists on schema '%s'.", this._propertyName, this._schemaDefinitionName);
             this._propertyExisted = true;
             return;
         }
 
-        this._nullProperties = this.isNullOrUndefined(schema.getProperties());
+        this._nullProperties = this.isNullOrUndefined(properties);
 
-        Schema newPropSchema = schema.createSchema();
+        Schema newPropSchema = (Schema) NodeUtil.invokeMethod(schema, "createSchema");
         Library.readNode(this._propertySchema, newPropSchema);
-        schema.addProperty(this._propertyName, newPropSchema);
+        NodeUtil.invokeMethod(schema, "addProperty", this._propertyName, newPropSchema);
     }
 
     /**
@@ -79,9 +83,9 @@ public class AddSchemaPropertyCommand extends AbstractCommand {
             return;
         }
 
-        schema.removeProperty(this._propertyName);
+        NodeUtil.invokeMethod(schema, "removeProperty", this._propertyName);
         if (this._nullProperties) {
-            schema.clearProperties();
+            NodeUtil.invokeMethod(schema, "clearProperties");
         }
     }
 

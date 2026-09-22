@@ -11,8 +11,11 @@ import io.apitomy.datamodels.models.openapi.v3x.v30.OpenApi30Document;
 import io.apitomy.datamodels.models.openapi.v3x.v31.OpenApi31Document;
 import io.apitomy.datamodels.util.LoggerUtil;
 import io.apitomy.datamodels.util.ModelTypeUtil;
+import io.apitomy.datamodels.util.JsonSchemaUtil;
+import io.apitomy.datamodels.util.NodeUtil;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * A command used to delete a single property from a schema definition in a document.
@@ -50,20 +53,21 @@ public class DeleteSchemaPropertyCommand extends AbstractCommand {
         }
 
         // Do nothing if the property does not exist.
-        if (this.isNullOrUndefined(schema.getProperties()) || !schema.getProperties().containsKey(this._propertyName)) {
+        Map<String, ?> properties = (Map<String, ?>) NodeUtil.invokeMethod(schema, "getProperties");
+        if (this.isNullOrUndefined(properties) || !properties.containsKey(this._propertyName)) {
             LoggerUtil.info("[DeleteSchemaPropertyCommand] Property '%s' not found on schema '%s'.", this._propertyName, this._schemaDefinitionName);
             return;
         }
 
         // Serialize the property for undo.
-        Schema propertySchema = schema.getProperties().get(this._propertyName);
-        this._oldProperty = Library.writeNode(propertySchema);
+        Object propertySchema = properties.get(this._propertyName);
+        this._oldProperty = Library.writeNode(JsonSchemaUtil.asSchema(propertySchema));
 
         // Check if the property is in the required array.
         this._oldRequired = schema.getRequired() != null && schema.getRequired().contains(this._propertyName);
 
         // Remove the property.
-        schema.removeProperty(this._propertyName);
+        NodeUtil.invokeMethod(schema, "removeProperty", this._propertyName);
 
         // Remove from required if present.
         if (this._oldRequired) {
@@ -91,9 +95,9 @@ public class DeleteSchemaPropertyCommand extends AbstractCommand {
         }
 
         // Re-add the property.
-        Schema restoredSchema = schema.createSchema();
+        Schema restoredSchema = (Schema) NodeUtil.invokeMethod(schema, "createSchema");
         Library.readNode(this._oldProperty, restoredSchema);
-        schema.addProperty(this._propertyName, restoredSchema);
+        NodeUtil.invokeMethod(schema, "addProperty", this._propertyName, restoredSchema);
 
         // Restore required if it was there.
         if (this._oldRequired) {
