@@ -126,6 +126,42 @@ you can try using the `build.sh` script provided at the root of the project.
 All testing is integrated into the maven build, so the standard `mvn clean package -Ptranspilation` will also execute
 all unit tests.  If the maven build succeeds, then you know everything worked!
 
+### Build the Documentation
+The documentation under `docs/` is a [MkDocs](https://www.mkdocs.org/) site using the
+[Material](https://squidfunk.github.io/mkdocs-material/) theme.  It is built separately from the maven
+build, and needs Python 3.
+
+Install the toolchain from `docs-requirements.txt` — the same file CI installs from, so a local build
+matches the published one:
+
+```bash
+pip install -r docs-requirements.txt
+```
+
+Preview the site with live reload while editing:
+
+```bash
+mkdocs serve
+```
+
+Note that it rebuilds on save but does **not** serve from the root — because `site_url` in
+`mkdocs.yml` points at the published location, the local site is at
+<http://127.0.0.1:8000/projects/data-models/docs/>.  The exact URL is printed on startup.
+
+To check the site the way CI does, build it in strict mode.  This turns broken internal links,
+missing nav entries, and unrecognised configuration into errors instead of warnings:
+
+```bash
+mkdocs build --strict
+```
+
+The output goes to `site/`, which is git-ignored.  The same command runs in the `Verify Docs Build`
+job on every pull request, and again in `publish-docs.yml` when changes land on `main`, so a clean
+local build means both will pass.
+
+**Note**: prefer installing into a virtual environment (or with a tool installer such as
+[uv](https://docs.astral.sh/uv/) or [pipx](https://pipx.pypa.io/)) rather than into the system Python.
+
 
 ## Contribute Fixes and Features
 This project is open source, and we welcome anybody who wants to participate and contribute!
