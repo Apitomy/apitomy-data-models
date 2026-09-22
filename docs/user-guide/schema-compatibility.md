@@ -208,8 +208,11 @@ than failing a build.
 
 ## Unsupported Features
 
-A schema may use a construct the checker does not model. When that happens the check still
-returns a result, and that result reports it.
+`getUnsupportedFeatures()` lists the parts of the comparison that could not be fully carried
+out. Today that means exactly one thing: **references the dereferencer could not resolve**.
+
+It is therefore only ever populated when you have [configured a
+dereferencer](#resolving-references). Without one, the list is always empty.
 
 === "Java"
 
@@ -231,10 +234,29 @@ returns a result, and that result reports it.
     }
     ```
 
+Each entry names the reference that failed to resolve:
+
+```
+Unresolvable $ref: http://schemas.example.com/address.json
+```
+
+Both schemas are dereferenced, so the same reference can appear twice — once per side — and the
+entry does not say which side it came from.
+
 !!! warning "Check this before trusting a pass"
-    A schema using an unmodelled construct produces `isCompatible() == true` together with
-    `hasUnsupportedFeatures() == true`. Treating the verdict alone as authoritative will pass
-    schemas that were never fully compared. Gate on both.
+    A result can be `isCompatible() == true` while `hasUnsupportedFeatures()` is also true. The
+    sub-schemas behind an unresolved reference were never compared, so the verdict covers less
+    than it appears to. Gate on both:
+
+    ```java
+    boolean safe = result.isCompatible() && !result.hasUnsupportedFeatures();
+    ```
+
+!!! note "Without a dereferencer, `$ref`s are compared as strings"
+    The checker does not silently ignore them: two schemas whose `$ref` strings differ are
+    reported as different. But two schemas sharing a `$ref` string are treated as equal at that
+    point, even if the document it points to has changed underneath them. Configure a
+    dereferencer whenever the referenced content itself might move.
 
 ---
 
@@ -270,7 +292,7 @@ The checker detects a wide range of schema differences. Here are some common exa
 
 | Change | Backward Compatible? |
 |--------|---------------------|
-| Adding an optional property | Yes |
+| Adding a property to `properties` | **No** — see note below |
 | Adding a required property | **No** |
 | Removing a required property | Yes |
 | Widening a type (e.g., `integer` → `number`) | Yes |
@@ -282,6 +304,14 @@ The checker detects a wide range of schema differences. Here are some common exa
 | Adding an enum member | Yes |
 | Removing an enum member | **No** |
 | Setting `additionalProperties: false` | **No** |
+
+!!! note "Adding a property is not a safe change in JSON Schema"
+    This is the row that most often surprises people, because the equivalent change *is* safe in
+    Avro and Protobuf. In JSON Schema, a name absent from `properties` is unconstrained, so
+    adding `"m": {"type": "string"}` starts rejecting `{"m": 42}`, which the original schema
+    accepted. The checker reports it as `OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED`.
+
+    Adding the name to `required` as well is a second, separate incompatibility.
 
 ---
 
