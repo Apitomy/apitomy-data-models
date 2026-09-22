@@ -52,6 +52,9 @@ nav:
     - Dereferencing: user-guide/dereferencing.md
     - Document Transformation: user-guide/document-transformation.md
     - Schema Compatibility: user-guide/schema-compatibility.md
+  - Migration:
+    - migration/index.md
+    - 3.x → 4.0: migration/3.x-to-4.0.md
   - Examples: examples/index.md
 
 docs_dir: ./docs
