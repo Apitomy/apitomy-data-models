@@ -1,0 +1,49 @@
+{
+  "cases": [
+    {
+      "id": "o30-request-enum-widened",
+      "family": "3.0",
+      "original": {
+        "openapi": "3.0.4",
+        "info": {"title": "Test", "version": "1"},
+        "paths": {
+          "/pets": {
+            "get": {
+              "parameters": [{"name": "state", "in": "query", "schema": {"enum": ["a"]}}],
+              "responses": {"200": {"description": "ok"}}
+            }
+          }
+        }
+      },
+      "updated": {
+        "openapi": "3.0.4",
+        "info": {"title": "Test", "version": "2"},
+        "paths": {
+          "/pets": {
+            "get": {
+              "parameters": [{"name": "state", "in": "query", "schema": {"enum": ["a", "b"]}}],
+              "responses": {"200": {"description": "ok"}}
+            }
+          }
+        }
+      },
+      "options": {
+        "originalUri": "https://api.example/openapi",
+        "updatedUri": "https://api.example/openapi"
+      },
+      "expected": {
+        "backward": {
+          "verdict": "COMPATIBLE",
+          "breakingCodes": [],
+          "unresolvedCodes": []
+        },
+        "forward": {
+          "verdict": "INCOMPATIBLE",
+          "breakingCodes": ["SCHEMA_INPUT_NARROWED"],
+          "unresolvedCodes": []
+        }
+      },
+      "reason": "Every old query enum value is still accepted; the reverse direction rejects the new value b."
+    }
+  ]
+}
