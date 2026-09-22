@@ -6,6 +6,7 @@ on:
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
+      - 'docs-requirements.txt'
   workflow_dispatch:
 
 jobs:
@@ -22,11 +23,10 @@ jobs:
         with:
           python-version: '3.14.7'
 
+      # Shared with verify.yaml's docs-verify job, so the build that gated the pull request is
+      # the same one that publishes here.
       - name: Install MkDocs and dependencies
-        run: |
-          pip install mkdocs>=1.5.0
-          pip install mkdocs-material>=9.0.0
-          pip install pymdown-extensions
+        run: pip install -r docs-requirements.txt
 
       - name: Build documentation
         run: mkdocs build --strict

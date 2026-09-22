@@ -17,6 +17,31 @@ on:
     branches: [main, 3.1.x]
 
 jobs:
+  # The documentation is published by publish-docs.yml on push to main, which means a broken
+  # docs build previously surfaced only after merge, as a failed publish. This job moves that
+  # failure onto the pull request. It deliberately runs the same `mkdocs build --strict` from
+  # the same docs-requirements.txt, so passing here predicts a successful publish.
+  docs-verify:
+    name: Verify Docs Build
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'Apitomy'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.14.7'
+
+      - name: Install MkDocs and dependencies
+        run: pip install -r docs-requirements.txt
+
+      # --strict turns broken internal links, missing nav targets and unrecognised config into
+      # errors rather than warnings.
+      - name: Build Documentation
+        run: mkdocs build --strict
+
   build-verify:
     name: Verify Build (${{ matrix.java-version }})
     runs-on: ubuntu-latest

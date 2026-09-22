@@ -19,5 +19,7 @@ claudedocs
 bin
 **/jsweet_extension/**/*.class
 schema-samples
+# MkDocs build output (site_dir in mkdocs.yml); built in CI, never committed.
+site
 target
 website
