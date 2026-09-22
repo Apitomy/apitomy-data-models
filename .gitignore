@@ -21,3 +21,4 @@ bin
 schema-samples
 target
 website
+.worktrees/
