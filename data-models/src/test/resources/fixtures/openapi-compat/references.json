@@ -1,0 +1,109 @@
+{
+  "cases": [
+    {
+      "id": "same-uri-different-content-per-side",
+      "description": "The same absolute resource URI resolves to independently different content on the original and updated side.",
+      "original": {
+        "uri": "https://api.example/components.json",
+        "document": {
+          "openapi": "3.0.4",
+          "info": { "title": "Common", "version": "1" },
+          "paths": {},
+          "components": {
+            "schemas": {
+              "Address": { "type": "object", "properties": { "city": { "type": "string" } } }
+            }
+          }
+        }
+      },
+      "updated": {
+        "uri": "https://api.example/components.json",
+        "document": {
+          "openapi": "3.0.4",
+          "info": { "title": "Common", "version": "2" },
+          "paths": {},
+          "components": {
+            "schemas": {
+              "Address": { "type": "object", "properties": { "city": { "type": "string" }, "postalCode": { "type": "string" } } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "pointer-escaping",
+      "description": "Internal JSON Pointer references escape ~0 and ~1 in property names containing '~' and '/'.",
+      "document": {
+        "openapi": "3.0.4",
+        "info": { "title": "Escaping", "version": "1" },
+        "paths": {
+          "/widgets": {
+            "get": {
+              "parameters": [
+                { "name": "filter", "in": "query", "schema": { "$ref": "#/components/schemas/Widget/properties/a~1b" } },
+                { "name": "unit", "in": "query", "schema": { "$ref": "#/components/schemas/Widget/properties/c~0d" } }
+              ],
+              "responses": { "200": { "description": "ok" } }
+            }
+          }
+        },
+        "components": {
+          "schemas": {
+            "Widget": {
+              "type": "object",
+              "properties": {
+                "a/b": { "type": "string" },
+                "c~d": { "type": "integer" }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "unresolved-resource-affects-one-operation",
+      "description": "A missing external resource affects only the operation that references it; the sibling operation resolves normally.",
+      "document": {
+        "openapi": "3.0.4",
+        "info": { "title": "Partial", "version": "1" },
+        "paths": {
+          "/known": {
+            "get": {
+              "parameters": [
+                { "name": "id", "in": "query", "schema": { "type": "string" } }
+              ],
+              "responses": { "200": { "description": "ok" } }
+            }
+          },
+          "/unknown": {
+            "get": {
+              "parameters": [
+                { "name": "id", "in": "query", "schema": { "$ref": "missing.json#/Id" } }
+              ],
+              "responses": { "200": { "description": "ok" } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "cyclic-internal-references",
+      "description": "Two schemas reference each other through allOf; indexing and resolution must terminate.",
+      "document": {
+        "openapi": "3.0.4",
+        "info": { "title": "Cyclic", "version": "1" },
+        "paths": {},
+        "components": {
+          "schemas": {
+            "A": {
+              "allOf": [ { "$ref": "#/components/schemas/B" } ]
+            },
+            "B": {
+              "allOf": [ { "$ref": "#/components/schemas/A" } ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

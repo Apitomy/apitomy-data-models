@@ -79,14 +79,6 @@ public final class JsonPointer {
             MappedNode mn = (MappedNode) current;
             return mn.getItem(segment);
         }
-        if (current instanceof Node) {
-            Node n = (Node) current;
-            return NodeUtil.getProperty(n, segment);
-        }
-        if (current instanceof java.util.Map) {
-            java.util.Map<?, ?> map = (java.util.Map<?, ?>) current;
-            return map.get(segment);
-        }
         if (current instanceof java.util.List) {
             java.util.List<?> list = (java.util.List<?>) current;
             try {
@@ -95,7 +87,15 @@ public final class JsonPointer {
                 return null;
             }
         }
-        return null;
+        // Both a Node's own properties and a plain (non-MappedNode) map/object field
+        // are reached the same way here: NodeUtil.getProperty performs a Node getter
+        // call, or (in the TypeScript build) a plain bracket-property access, which
+        // is what a Schema's "properties"/"$defs"/etc. field actually is at runtime
+        // in both languages. Do not reintroduce an inline `(Map<?, ?>) current`
+        // cast-and-`.get()` here: that pattern transpiles to a java.util.Map
+        // emulation that assumes an `entries` array, which these plain fields do
+        // not have.
+        return NodeUtil.getProperty(current, segment);
     }
 
     private static Node toNode(Object obj) {
