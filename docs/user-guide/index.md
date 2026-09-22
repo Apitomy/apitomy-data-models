@@ -60,3 +60,8 @@ The library auto-detects the specification type and version when parsing a docum
 | AsyncAPI | 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 3.0, 3.1 |
 | OpenRPC | 1.3, 1.4 |
 | JSON Schema | Draft 4, Draft 6, Draft 7, 2019-09, 2020-12 |
+
+!!! info "JSON Schema in TypeScript"
+    As of 4.0 the JSON Schema API — compatibility checking, reference dereferencing, and
+    compound schema conversion — is part of the TypeScript package as well as the Java one,
+    with the same shape in both. Earlier releases shipped it only for Java.
