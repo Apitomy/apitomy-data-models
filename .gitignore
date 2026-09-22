@@ -26,3 +26,5 @@ website
 
 # Bytecode from loading mkdocs_hooks.py during a docs build
 __pycache__/
+
+.worktrees/
