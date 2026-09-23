@@ -50,6 +50,13 @@
       "",
       "Backward compatible. The forward direction does not hold: old readers may reject new data that omits the now-optional property."
     ],
+    "OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED": [
+      "A schema under `dependentSchemas` (or a schema-valued entry of draft 4–7 `dependencies`) was changed so that it accepts fewer objects.",
+      "",
+      "A dependent schema is not a property schema: it applies to the *whole object*, but only when the object has the key property. So the change can look unrelated to the data, yet it rejects any object that has the key property and no longer satisfies the dependent schema.",
+      "",
+      "Not backward compatible: a reader using the new schema may reject previously-valid data that contains the key property."
+    ],
     "SUBSCHEMA_TYPE_CHANGED": [
       "The declared `type` was changed to a different, non-overlapping type (for example `string` to `integer`).",
       "",

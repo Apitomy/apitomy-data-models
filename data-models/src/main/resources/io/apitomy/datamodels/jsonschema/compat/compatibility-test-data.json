@@ -1726,6 +1726,61 @@
     },
     {
       "enabled" : true,
+      "id" : "Object: schema dependency narrowed",
+      "expected" : {
+        "backward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED"
+          ]
+        },
+        "forward" : {
+          "compatible" : true
+        }
+      },
+      "original" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "type" : "object",
+        "properties" : {
+          "credit_card" : {
+            "type" : "string"
+          }
+        },
+        "dependencies" : {
+          "credit_card" : {
+            "properties" : {
+              "billing_address" : {
+                "type" : "string",
+                "maxLength" : 100
+              }
+            },
+            "required" : [ "billing_address" ]
+          }
+        }
+      },
+      "updated" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "type" : "object",
+        "properties" : {
+          "credit_card" : {
+            "type" : "string"
+          }
+        },
+        "dependencies" : {
+          "credit_card" : {
+            "properties" : {
+              "billing_address" : {
+                "type" : "string",
+                "maxLength" : 50
+              }
+            },
+            "required" : [ "billing_address" ]
+          }
+        }
+      }
+    },
+    {
+      "enabled" : true,
       "id" : "Object: property added and additionalProperties opened",
       "expected" : {
         "backward" : {
