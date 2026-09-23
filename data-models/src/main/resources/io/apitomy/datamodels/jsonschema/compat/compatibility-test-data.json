@@ -1821,6 +1821,60 @@
     },
     {
       "enabled" : true,
+      "id" : "Object: property removed (additionalProperties false)",
+      "$comment" : "The definitions are unrelated to the change. They used to flip this verdict (#1226).",
+      "expected" : {
+        "backward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED"
+          ]
+        },
+        "forward" : {
+          "compatible" : true,
+          "diffTypes" : [
+            "OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED"
+          ]
+        }
+      },
+      "original" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "definitions" : {
+          "postalCode" : {
+            "type" : "string",
+            "pattern" : "^[0-9]{5}$"
+          }
+        },
+        "type" : "object",
+        "properties" : {
+          "postal_code" : {
+            "$ref" : "#/definitions/postalCode"
+          },
+          "street" : {
+            "type" : "string"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "updated" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "definitions" : {
+          "postalCode" : {
+            "type" : "string",
+            "pattern" : "^[0-9]{5}$"
+          }
+        },
+        "type" : "object",
+        "properties" : {
+          "postal_code" : {
+            "$ref" : "#/definitions/postalCode"
+          }
+        },
+        "additionalProperties" : false
+      }
+    },
+    {
+      "enabled" : true,
       "id" : "Object: property added with additionalProperties schema",
       "expected" : {
         "backward" : {
