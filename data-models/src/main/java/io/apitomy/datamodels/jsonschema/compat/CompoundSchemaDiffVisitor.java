@@ -424,6 +424,53 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     @Override
     public void visitFullSchemaOneOfItem(JsonSchema original, JsonSchema updated) { traversalContext.skip(); }
 
+    // Auto-recursion would reuse this visitor for the nested pair, overwriting currentOriginal and
+    // currentUpdated for every cross-field decision made after it. Positions are compared in
+    // diffFullSchemaPrefixItems, and definitions in diffDefinitions.
+
+    @Override
+    public void visitFullSchemaPrefixItemsItem(JsonSchema original, JsonSchema updated) { traversalContext.skip(); }
+
+    @Override
+    public void visitFullSchemaDefinition(JsonSchema original, JsonSchema updated) { traversalContext.skip(); }
+
+    @Override
+    public void visitFullSchema$def(JsonSchema original, JsonSchema updated) { traversalContext.skip(); }
+
+    @Override
+    public void diffFullSchemaDefinitions(Map<String, JsonSchema> original, Map<String, JsonSchema> updated,
+                                          CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
+        diffDefinitions(ctx, "definitions", original, updated);
+    }
+
+    @Override
+    public void diffFullSchema$defs(Map<String, JsonSchema> original, Map<String, JsonSchema> updated,
+                                    CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
+        diffDefinitions(ctx, "$defs", original, updated);
+    }
+
+    /**
+     * Compares definitions present on both sides. A definition affects validation only through a
+     * {@code $ref}. With a dereferencer the reference is inlined, so the change is also seen where
+     * it is used. Without one, references are compared as strings, and this is the only place a
+     * changed target is noticed. Each pair gets its own visitor, so nothing it sets can leak into
+     * the enclosing schema's comparison.
+     */
+    private static void diffDefinitions(DiffContext ctx, String keyword, Map<String, JsonSchema> original,
+                                        Map<String, JsonSchema> updated) {
+        if (original == null || updated == null) {
+            return;
+        }
+        HashSet<String> keys = new HashSet<String>(original.keySet());
+        for (String key : keys) {
+            JsonSchema origSchema = original.get(key);
+            JsonSchema updSchema = updated.get(key);
+            if (updSchema != null && origSchema.isFullSchema() && updSchema.isFullSchema()) {
+                diffSchemas(ctx.sub(keyword + "/" + key), origSchema.asFullSchema(), updSchema.asFullSchema());
+            }
+        }
+    }
+
     // -----------------------------------------------------------------------
     // String type fields
     // -----------------------------------------------------------------------
