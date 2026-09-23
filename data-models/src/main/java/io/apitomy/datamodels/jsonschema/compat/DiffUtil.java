@@ -3,7 +3,6 @@ package io.apitomy.datamodels.jsonschema.compat;
 import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.Referenceable;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
-import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.union.StringStringListUnion;
 
 import java.util.HashSet;
@@ -112,16 +111,6 @@ public final class DiffUtil {
         if (diffAddedRemoved(ctx, original, updated, addedType, removedType) && !original.equals(updated)) {
             ctx.addDifference(changedType, original, updated);
         }
-    }
-
-    static ModelType detectModelType(JFullSchema schema) {
-        if (schema instanceof io.apitomy.datamodels.models.jsonschema.modern.v202012.JM202012FullSchema) return ModelType.JM202012;
-        if (schema instanceof io.apitomy.datamodels.models.jsonschema.modern.v201909.JM201909FullSchema) return ModelType.JM201909;
-        if (schema instanceof io.apitomy.datamodels.models.jsonschema.draft.draft7.JD7FullSchema) return ModelType.JD7;
-        if (schema instanceof io.apitomy.datamodels.models.jsonschema.draft.draft6.JD6FullSchema) return ModelType.JD6;
-        if (schema instanceof io.apitomy.datamodels.models.jsonschema.draft.draft4.JD4FullSchema) return ModelType.JD4;
-        throw new IllegalArgumentException("Unhandled schema type: " + schema.getClass().getName()
-                + ". Add support for this type in detectModelType().");
     }
 
     public static String getTypeString(JFullSchema schema) {

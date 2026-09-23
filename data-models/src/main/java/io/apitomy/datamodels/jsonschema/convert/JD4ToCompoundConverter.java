@@ -1,5 +1,6 @@
 package io.apitomy.datamodels.jsonschema.convert;
 
+import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaFullSchemaListUnion;
 import io.apitomy.datamodels.models.jsonschema.Dependency;
 import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
@@ -49,7 +50,7 @@ public class JD4ToCompoundConverter extends JD4ToJCConversionVisitor {
 
     @Override
     public void convertFullSchemaItems(BooleanFullSchemaFullSchemaListUnion value, JCFullSchema target) {
-        CompoundSchemaConverter.normalizeItems(value, target);
+        CompoundSchemaConverter.normalizeItems(value, target, ModelType.JD4);
     }
 
     @Override
