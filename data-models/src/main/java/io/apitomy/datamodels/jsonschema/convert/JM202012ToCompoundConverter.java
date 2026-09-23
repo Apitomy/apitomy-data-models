@@ -12,7 +12,7 @@ import io.apitomy.datamodels.util.NumberUtil;
 /**
  * Converts 2020-12 schemas to the compound schema type.
  * Handles: minimum/maximum number and exclusiveMinimum/Maximum number to RangeValue,
- *          items JsonSchema to boolean|FullSchema|[FullSchema] union.
+ *          items to additionalItems next to prefixItems, otherwise to the compound items union.
  */
 public class JM202012ToCompoundConverter extends JM202012ToJCConversionVisitor {
 
@@ -50,9 +50,20 @@ public class JM202012ToCompoundConverter extends JM202012ToJCConversionVisitor {
         }
     }
 
+    /**
+     * Next to {@code prefixItems}, 2020-12 {@code items} constrains only the elements after the
+     * tuple, which the compound schema holds in {@code additionalItems} as drafts 4-7 do. Without a
+     * tuple it constrains every element, as compound {@code items} does. The generated traverser
+     * converts {@code prefixItems} first, so the target already has it.
+     */
     @Override
     public void convertFullSchemaItems(JsonSchema value, JCFullSchema target) {
-        if (value != null) {
+        if (value == null) {
+            return;
+        }
+        if (target.getPrefixItems() != null) {
+            target.setAdditionalItems(value);
+        } else {
             target.setItems((BooleanFullSchemaFullSchemaListUnion) value);
         }
     }

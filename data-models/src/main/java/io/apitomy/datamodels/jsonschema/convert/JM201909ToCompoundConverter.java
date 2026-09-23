@@ -1,5 +1,7 @@
 package io.apitomy.datamodels.jsonschema.convert;
 
+import io.apitomy.datamodels.models.ModelType;
+import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaFullSchemaListUnion;
 import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValueImpl;
@@ -11,6 +13,7 @@ import io.apitomy.datamodels.util.NumberUtil;
  * Converts 2019-09 schemas to the compound schema type.
  * Handles: minimum/maximum number and exclusiveMinimum/Maximum number to RangeValue.
  * When both minimum and exclusiveMinimum are present, the tighter constraint wins.
+ * Tuple {@code items} becomes {@code prefixItems}, as in drafts 4-7, whose tuple syntax 2019-09 keeps.
  */
 public class JM201909ToCompoundConverter extends JM201909ToJCConversionVisitor {
 
@@ -46,6 +49,11 @@ public class JM201909ToCompoundConverter extends JM201909ToJCConversionVisitor {
                 target.setMaximum(rangeValue(value, true));
             }
         }
+    }
+
+    @Override
+    public void convertFullSchemaItems(BooleanFullSchemaFullSchemaListUnion value, JCFullSchema target) {
+        CompoundSchemaConverter.normalizeItems(value, target, ModelType.JM201909);
     }
 
     private static boolean isTighterMinimum(Number newValue, boolean newExclusive, JCRangeValue existing) {
