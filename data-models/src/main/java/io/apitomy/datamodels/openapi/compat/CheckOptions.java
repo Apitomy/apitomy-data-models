@@ -22,14 +22,23 @@ public final class CheckOptions {
     /** The default virtual retrieval URI for the updated document, when none is supplied. */
     public static final String DEFAULT_UPDATED_URI = "urn:openapi-compat:updated";
 
+    /** The default cap on total external resources acquired across both sides of a check. */
+    public static final int DEFAULT_MAX_RESOURCE_COUNT = 500;
+
+    /** The default cap on discovery rounds (a round is one "discover, then load everything newly reachable" pass). */
+    public static final int DEFAULT_MAX_DISCOVERY_ROUNDS = 100;
+
     private final String originalUri;
     private final String updatedUri;
     private final ResourceSet originalResources;
     private final ResourceSet updatedResources;
     private final CheckCancellation cancellation;
+    private final int maxResourceCount;
+    private final int maxDiscoveryRounds;
 
     private CheckOptions(String originalUri, String updatedUri, ResourceSet originalResources,
-            ResourceSet updatedResources, CheckCancellation cancellation) {
+            ResourceSet updatedResources, CheckCancellation cancellation, int maxResourceCount,
+            int maxDiscoveryRounds) {
         if (originalUri == null || originalUri.length() == 0) {
             throw new IllegalArgumentException("originalUri must not be null or empty");
         }
@@ -48,42 +57,68 @@ public final class CheckOptions {
         if (updatedResources.getSide() != ResourceSide.UPDATED) {
             throw new IllegalArgumentException("updatedResources must be a ResourceSet for ResourceSide.UPDATED");
         }
+        if (maxResourceCount <= 0) {
+            throw new IllegalArgumentException("maxResourceCount must be positive");
+        }
+        if (maxDiscoveryRounds <= 0) {
+            throw new IllegalArgumentException("maxDiscoveryRounds must be positive");
+        }
         this.originalUri = originalUri;
         this.updatedUri = updatedUri;
         this.originalResources = originalResources;
         this.updatedResources = updatedResources;
         this.cancellation = cancellation;
+        this.maxResourceCount = maxResourceCount;
+        this.maxDiscoveryRounds = maxDiscoveryRounds;
     }
 
-    /** Default options: empty resource sets, no cancellation, distinct virtual root URIs. */
+    /** Default options: empty resource sets, no cancellation, distinct virtual root URIs, default budgets. */
     public static CheckOptions defaults() {
         return new CheckOptions(DEFAULT_ORIGINAL_URI, DEFAULT_UPDATED_URI,
-                new ResourceSet(ResourceSide.ORIGINAL), new ResourceSet(ResourceSide.UPDATED), null);
+                new ResourceSet(ResourceSide.ORIGINAL), new ResourceSet(ResourceSide.UPDATED), null,
+                DEFAULT_MAX_RESOURCE_COUNT, DEFAULT_MAX_DISCOVERY_ROUNDS);
     }
 
     /** A copy of these options with the original document's retrieval URI replaced. */
     public CheckOptions withOriginalUri(String uri) {
-        return new CheckOptions(uri, updatedUri, originalResources, updatedResources, cancellation);
+        return new CheckOptions(uri, updatedUri, originalResources, updatedResources, cancellation,
+                maxResourceCount, maxDiscoveryRounds);
     }
 
     /** A copy of these options with the updated document's retrieval URI replaced. */
     public CheckOptions withUpdatedUri(String uri) {
-        return new CheckOptions(originalUri, uri, originalResources, updatedResources, cancellation);
+        return new CheckOptions(originalUri, uri, originalResources, updatedResources, cancellation,
+                maxResourceCount, maxDiscoveryRounds);
     }
 
     /** A copy of these options with the original side's pre-acquired external resources replaced. */
     public CheckOptions withOriginalResources(ResourceSet resources) {
-        return new CheckOptions(originalUri, updatedUri, resources, updatedResources, cancellation);
+        return new CheckOptions(originalUri, updatedUri, resources, updatedResources, cancellation,
+                maxResourceCount, maxDiscoveryRounds);
     }
 
     /** A copy of these options with the updated side's pre-acquired external resources replaced. */
     public CheckOptions withUpdatedResources(ResourceSet resources) {
-        return new CheckOptions(originalUri, updatedUri, originalResources, resources, cancellation);
+        return new CheckOptions(originalUri, updatedUri, originalResources, resources, cancellation,
+                maxResourceCount, maxDiscoveryRounds);
     }
 
     /** A copy of these options with the given cooperative cancellation signal. */
     public CheckOptions withCancellation(CheckCancellation cancellation) {
-        return new CheckOptions(originalUri, updatedUri, originalResources, updatedResources, cancellation);
+        return new CheckOptions(originalUri, updatedUri, originalResources, updatedResources, cancellation,
+                maxResourceCount, maxDiscoveryRounds);
+    }
+
+    /** A copy of these options with the cap on total acquired external resources replaced. */
+    public CheckOptions withMaxResourceCount(int maxResourceCount) {
+        return new CheckOptions(originalUri, updatedUri, originalResources, updatedResources, cancellation,
+                maxResourceCount, maxDiscoveryRounds);
+    }
+
+    /** A copy of these options with the cap on discovery rounds replaced. */
+    public CheckOptions withMaxDiscoveryRounds(int maxDiscoveryRounds) {
+        return new CheckOptions(originalUri, updatedUri, originalResources, updatedResources, cancellation,
+                maxResourceCount, maxDiscoveryRounds);
     }
 
     /** The original document's retrieval URI. */
@@ -109,5 +144,15 @@ public final class CheckOptions {
     /** The cancellation signal for this check, or {@code null} if none was supplied. */
     public CheckCancellation getCancellation() {
         return cancellation;
+    }
+
+    /** The cap on total external resources acquired across both sides of a check. */
+    public int getMaxResourceCount() {
+        return maxResourceCount;
+    }
+
+    /** The cap on discovery rounds during asynchronous resource acquisition. */
+    public int getMaxDiscoveryRounds() {
+        return maxDiscoveryRounds;
     }
 }

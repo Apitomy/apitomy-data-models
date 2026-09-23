@@ -204,6 +204,8 @@
                             </allowedDependencyScopes>
                             <excludes>
                                 <exclude>**/_*/**</exclude>
+                                <exclude>**/openapi/compat/resource/AsyncResourceLoader.java</exclude>
+                                <exclude>**/openapi/compat/resource/AsyncResourceAcquirer.java</exclude>
                             </excludes>
                         </configuration>
                         <executions>
