@@ -44,6 +44,31 @@
     },
     {
       "enabled" : true,
+      "id" : "Basic: type added to an untyped schema",
+      "$comment" : "maxLength applies only to strings, so the original also accepts numbers, objects and so on.",
+      "expected" : {
+        "backward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "SUBSCHEMA_TYPE_CHANGED"
+          ]
+        },
+        "forward" : {
+          "compatible" : true
+        }
+      },
+      "original" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "maxLength" : 10
+      },
+      "updated" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "type" : "string",
+        "maxLength" : 10
+      }
+    },
+    {
+      "enabled" : true,
       "id" : "Basic: 'false' property schema replaced with string",
       "expected" : {
         "backward" : {
