@@ -64,6 +64,13 @@
       "",
       "Not backward compatible: a reader using the new schema rejects fractional values that the old schema accepted."
     ],
+    "ARRAY_TYPE_ALL_ITEM_SCHEMA_CHANGED": [
+      "The schema under `items`, which every element of the array must match, was changed so that it accepts fewer values.",
+      "",
+      "Arrays whose elements matched the old item schema but not the new one are rejected now. A boolean item schema is the extreme case: `items: false` accepts no element at all, so only empty arrays remain valid, and `items: true` replaced by a schema starts constraining elements that were unconstrained.",
+      "",
+      "Not backward compatible: a reader using the new schema may reject arrays written with the old schema."
+    ],
     "ENUM_TYPE_VALUES_MEMBER_ADDED": [
       "A value was added to the `enum` allowed set, widening it.",
       "",
