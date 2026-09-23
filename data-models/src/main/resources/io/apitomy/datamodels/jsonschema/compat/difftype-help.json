@@ -62,6 +62,8 @@
       "",
       "Instances of the old type are not instances of the new type, so data written with the old schema is rejected.",
       "",
+      "The same difference is reported when `type` is *added* to a schema that had none. That is surprising when the schema already looked typed: keywords such as `maxLength`, `minimum` or `properties` constrain only values of their own type and let every other type through, so `{\"maxLength\": 10}` accepts `1` and `{\"type\": \"string\", \"maxLength\": 10}` does not. The checker judges each subschema on its own, so it also reports this inside `then`, `else` or `allOf` branches whose enclosing schema already fixes the type. Adding `type` is not reported when `enum` or `const` already admitted only values of that type.",
+      "",
       "Not backward compatible. Broadening `type` — removing it or changing it to a superset of the old one — is reported separately and can be compatible."
     ],
     "NUMBER_TYPE_INTEGER_REQUIRED_FALSE_TO_TRUE": [
