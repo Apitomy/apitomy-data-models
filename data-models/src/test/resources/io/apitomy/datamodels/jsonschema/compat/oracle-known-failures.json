@@ -17,7 +17,6 @@
     {"issue": "#1235", "category": "FALSE_COMPATIBLE", "pattern": "unevaluatedProperties @* / *"},
     {"issue": "#1235", "category": "FALSE_COMPATIBLE", "pattern": "unevaluatedItems @* / prefixItems *"},
     {"issue": "#1232", "category": "FALSE_COMPATIBLE", "pattern": "oneOf @* /oneOf/*"},
-    {"issue": "#1232", "category": "FALSE_COMPATIBLE", "pattern": "catalogue: Complex: oneOf *"},
-    {"issue": "#1233", "category": "FALSE_COMPATIBLE", "pattern": "catalogue: Multi-type: integer subset of number is compatible forward"}
+    {"issue": "#1232", "category": "FALSE_COMPATIBLE", "pattern": "catalogue: Complex: oneOf *"}
   ]
 }

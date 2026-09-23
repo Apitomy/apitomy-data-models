@@ -6922,13 +6922,19 @@
     },
     {
       "enabled" : true,
-      "id" : "Multi-type: integer subset of number is compatible",
+      "id" : "Multi-type: integer widened to number",
       "expected" : {
         "backward" : {
-          "compatible" : true
+          "compatible" : true,
+          "diffTypes" : [
+            "NUMBER_TYPE_INTEGER_REQUIRED_TRUE_TO_FALSE"
+          ]
         },
         "forward" : {
-          "compatible" : true
+          "compatible" : false,
+          "diffTypes" : [
+            "NUMBER_TYPE_INTEGER_REQUIRED_FALSE_TO_TRUE"
+          ]
         }
       },
       "original" : {

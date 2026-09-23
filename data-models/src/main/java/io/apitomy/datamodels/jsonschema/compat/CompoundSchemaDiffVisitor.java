@@ -1359,22 +1359,25 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaType(
             io.apitomy.datamodels.models.union.StringStringListUnion original,
             io.apitomy.datamodels.models.union.StringStringListUnion updated) {
-        // Type change detection is handled in visitFullSchema.
-        // Here we handle integer->number transition for the integer-required logic.
+        // Type change detection is handled in visitFullSchema, which treats integer and number as
+        // the same type so that the transition between them is reported here instead.
         if (currentOriginal != null && currentUpdated != null) {
-            String origType = DiffUtil.getTypeString(currentOriginal);
-            String updType = DiffUtil.getTypeString(currentUpdated);
-            String effectiveType = origType != null ? origType : updType;
-            if (effectiveType != null
-                    && ("integer".equals(effectiveType) || "number".equals(effectiveType))) {
-                boolean origIsInteger = "integer".equals(origType);
-                boolean updIsInteger = "integer".equals(updType);
-                diffBooleanTransition(ctx, origIsInteger, updIsInteger, false,
+            List<String> origTypes = DiffUtil.getTypeList(currentOriginal);
+            List<String> updTypes = DiffUtil.getTypeList(currentUpdated);
+            List<String> effectiveTypes = origTypes != null ? origTypes : updTypes;
+            if (effectiveTypes != null
+                    && (effectiveTypes.contains("integer") || effectiveTypes.contains("number"))) {
+                diffBooleanTransition(ctx, requiresInteger(origTypes), requiresInteger(updTypes), false,
                         NUMBER_TYPE_INTEGER_REQUIRED_FALSE_TO_TRUE,
                         NUMBER_TYPE_INTEGER_REQUIRED_TRUE_TO_FALSE);
             }
         }
         return;
+    }
+
+    /** Whether numeric values must be integers: {@code integer} is allowed and {@code number} is not. */
+    private static boolean requiresInteger(List<String> types) {
+        return types != null && types.contains("integer") && !types.contains("number");
     }
 
     // -----------------------------------------------------------------------
