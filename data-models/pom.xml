@@ -83,6 +83,13 @@
             <version>${version.org.skyscreamer}</version>
             <scope>test</scope>
         </dependency>
+        <!-- JSON Schema validator used as the test oracle for compatibility verdicts -->
+        <dependency>
+            <groupId>com.networknt</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>${version.com.networknt.json-schema-validator}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
