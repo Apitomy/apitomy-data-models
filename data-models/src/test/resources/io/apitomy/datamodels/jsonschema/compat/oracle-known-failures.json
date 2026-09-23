@@ -1,0 +1,33 @@
+{
+  "$comment": "Findings of CompatibilityOracleTest that are tracked by an open issue. Each entry matches finding ids ('*' matches anything); the first matching entry wins, so more specific entries come first. The test fails on a finding matched by no entry, and on an entry that matches no finding, so the fix for an issue removes its entries. Ids read '<base> @<draft> <location> <edit> apply|revert' for mutations and 'catalogue: <case id> backward|forward' for catalogue cases.",
+  "knownFailures": [
+    {"issue": "#1225", "category": "NO_VERDICT", "pattern": "* / replace with true *"},
+    {"issue": "#1225", "category": "NO_VERDICT", "pattern": "* / replace with false *"},
+    {"issue": "#1225", "category": "NO_VERDICT", "pattern": "catalogue: Basic: typed schema replaced with 'true' *"},
+    {"issue": "#1225", "category": "NO_VERDICT", "pattern": "definitions through $ref @* /definitions/s replace with *"},
+    {"issue": "#1225", "category": "NO_VERDICT", "pattern": "$defs through $ref @* /$defs/s replace with *"},
+    {"issue": "#1234", "category": "NO_VERDICT", "pattern": "closed tuple @* /items/* replace with *"},
+    {"issue": "#1234", "category": "NO_VERDICT", "pattern": "open tuple @* /items/* replace with *"},
+    {"issue": "#1226", "category": "NEUTRAL_EDIT_CHANGED_VERDICT", "pattern": "*"},
+    {"issue": "#1229", "category": "FALSE_COMPATIBLE", "pattern": "closed tuple @2019-09 *"},
+    {"issue": "#1229", "category": "FALSE_COMPATIBLE", "pattern": "open tuple @2019-09 *"},
+    {"issue": "#1229", "category": "FALSE_COMPATIBLE", "pattern": "closed tuple @2020-12 / prefixItems *"},
+    {"issue": "#1229", "category": "FALSE_COMPATIBLE", "pattern": "open tuple @2020-12 / prefixItems *"},
+    {"issue": "#1228", "category": "FALSE_COMPATIBLE", "pattern": "* /prefixItems/* replace with *"},
+    {"issue": "#1228", "category": "FALSE_COMPATIBLE", "pattern": "* /items replace with *"},
+    {"issue": "#1228", "category": "FALSE_COMPATIBLE", "pattern": "* /unevaluatedItems replace with *"},
+    {"issue": "#1228", "category": "FALSE_COMPATIBLE", "pattern": "* /unevaluatedProperties replace with *"},
+    {"issue": "#1228", "category": "FALSE_COMPATIBLE", "pattern": "* /dependentSchemas/a replace with *"},
+    {"issue": "#1228", "category": "FALSE_COMPATIBLE", "pattern": "* /dependencies/a replace with false *"},
+    {"issue": "#1231", "category": "FALSE_COMPATIBLE", "pattern": "* remove type revert"},
+    {"issue": "#1227", "category": "FALSE_COMPATIBLE", "pattern": "schema dependency @* /dependencies/*"},
+    {"issue": "#1227", "category": "FALSE_COMPATIBLE", "pattern": "dependentSchemas @* /dependentSchemas/*"},
+    {"issue": "#1226", "category": "FALSE_COMPATIBLE", "pattern": "definitions through $ref @* / *"},
+    {"issue": "#1226", "category": "FALSE_COMPATIBLE", "pattern": "$defs through $ref @* / *"},
+    {"issue": "#1235", "category": "FALSE_COMPATIBLE", "pattern": "unevaluatedProperties @* / *"},
+    {"issue": "#1235", "category": "FALSE_COMPATIBLE", "pattern": "unevaluatedItems @* / prefixItems *"},
+    {"issue": "#1232", "category": "FALSE_COMPATIBLE", "pattern": "oneOf @* /oneOf/*"},
+    {"issue": "#1232", "category": "FALSE_COMPATIBLE", "pattern": "catalogue: Complex: oneOf *"},
+    {"issue": "#1233", "category": "FALSE_COMPATIBLE", "pattern": "catalogue: Multi-type: integer subset of number is compatible forward"}
+  ]
+}

@@ -1,0 +1,216 @@
+{
+  "$comment": "Base schemas for CompatibilityOracleTest. Every single edit at every subschema location of each base becomes a schema pair, rendered once per listed draft. Bases are small on purpose: coverage comes from the edits, and a small base keeps a failing pair readable.",
+  "bases": [
+    {
+      "id": "string",
+      "drafts": ["draft-04", "draft-07", "2020-12"],
+      "schema": {"type": "string", "minLength": 1, "maxLength": 10}
+    },
+    {
+      "id": "number",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {"type": "number", "minimum": 0, "maximum": 100}
+    },
+    {
+      "id": "number with boolean exclusiveMinimum",
+      "drafts": ["draft-04"],
+      "schema": {"type": "number", "minimum": 0, "exclusiveMinimum": true, "maximum": 100}
+    },
+    {
+      "id": "integer enum",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {"type": "integer", "enum": [1, 2, 3]}
+    },
+    {
+      "id": "multiple types",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {"type": ["string", "null"], "maxLength": 5}
+    },
+    {
+      "id": "const",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {"const": "a"}
+    },
+    {
+      "id": "object",
+      "drafts": ["draft-04", "draft-07", "2020-12"],
+      "schema": {
+        "type": "object",
+        "properties": {"a": {"type": "string", "maxLength": 10}, "b": {"type": "integer", "minimum": 0}},
+        "required": ["a"]
+      }
+    },
+    {
+      "id": "closed object",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {
+        "type": "object",
+        "properties": {"a": {"type": "string"}, "b": {"type": "integer"}},
+        "additionalProperties": false
+      }
+    },
+    {
+      "id": "object with additionalProperties schema",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {
+        "type": "object",
+        "properties": {"a": {"type": "string"}},
+        "additionalProperties": {"type": "integer"}
+      }
+    },
+    {
+      "id": "nested object",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "o": {"type": "object", "properties": {"s": {"type": "string", "maxLength": 5}}, "required": ["s"]}
+        }
+      }
+    },
+    {
+      "id": "object size",
+      "drafts": ["draft-07"],
+      "schema": {"type": "object", "minProperties": 1, "maxProperties": 3}
+    },
+    {
+      "id": "patternProperties",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {"type": "object", "patternProperties": {"^x": {"type": "integer", "maximum": 10}}}
+    },
+    {
+      "id": "propertyNames",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {"type": "object", "propertyNames": {"maxLength": 3}}
+    },
+    {
+      "id": "definitions through $ref",
+      "drafts": ["draft-04", "draft-07"],
+      "schema": {
+        "definitions": {"s": {"type": "string", "maxLength": 10}},
+        "type": "object",
+        "properties": {"a": {"$ref": "#/definitions/s"}},
+        "additionalProperties": false
+      }
+    },
+    {
+      "id": "$defs through $ref",
+      "drafts": ["2019-09", "2020-12"],
+      "schema": {
+        "$defs": {"s": {"type": "string", "maxLength": 10}},
+        "type": "object",
+        "properties": {"a": {"$ref": "#/$defs/s"}},
+        "additionalProperties": false
+      }
+    },
+    {
+      "id": "schema dependency",
+      "drafts": ["draft-04", "draft-07"],
+      "schema": {
+        "type": "object",
+        "properties": {"a": {"type": "integer"}},
+        "dependencies": {"a": {"properties": {"b": {"type": "string", "maxLength": 10}}}}
+      }
+    },
+    {
+      "id": "property dependency",
+      "drafts": ["draft-07"],
+      "schema": {"type": "object", "dependencies": {"a": ["b"]}}
+    },
+    {
+      "id": "dependentSchemas",
+      "drafts": ["2019-09", "2020-12"],
+      "schema": {
+        "type": "object",
+        "properties": {"a": {"type": "integer"}},
+        "dependentSchemas": {"a": {"properties": {"b": {"type": "string", "maxLength": 10}}}}
+      }
+    },
+    {
+      "id": "dependentRequired",
+      "drafts": ["2020-12"],
+      "schema": {"type": "object", "dependentRequired": {"a": ["b"]}}
+    },
+    {
+      "id": "unevaluatedProperties",
+      "drafts": ["2019-09", "2020-12"],
+      "schema": {"type": "object", "properties": {"a": {"type": "string"}}, "unevaluatedProperties": false}
+    },
+    {
+      "id": "array",
+      "drafts": ["draft-07", "2019-09", "2020-12"],
+      "schema": {"type": "array", "items": {"type": "string", "maxLength": 5}, "maxItems": 3}
+    },
+    {
+      "id": "uniqueItems",
+      "drafts": ["draft-07"],
+      "schema": {"type": "array", "items": {"type": "integer"}, "uniqueItems": true}
+    },
+    {
+      "id": "closed tuple",
+      "drafts": ["draft-04", "draft-07", "2019-09"],
+      "schema": {"type": "array", "items": [{"type": "string"}, {"type": "integer"}], "additionalItems": false}
+    },
+    {
+      "id": "closed tuple",
+      "drafts": ["2020-12"],
+      "schema": {"type": "array", "prefixItems": [{"type": "string"}, {"type": "integer"}], "items": false}
+    },
+    {
+      "id": "open tuple",
+      "drafts": ["draft-07", "2019-09"],
+      "schema": {"type": "array", "items": [{"type": "string"}], "additionalItems": {"type": "integer"}}
+    },
+    {
+      "id": "open tuple",
+      "drafts": ["2020-12"],
+      "schema": {"type": "array", "prefixItems": [{"type": "string"}], "items": {"type": "integer"}}
+    },
+    {
+      "id": "unevaluatedItems",
+      "drafts": ["2020-12"],
+      "schema": {"type": "array", "prefixItems": [{"type": "string"}], "unevaluatedItems": {"type": "integer"}}
+    },
+    {
+      "id": "contains",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {"type": "array", "contains": {"type": "integer", "minimum": 5}}
+    },
+    {
+      "id": "anyOf",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {"anyOf": [{"type": "string", "maxLength": 5}, {"type": "integer", "minimum": 0}]}
+    },
+    {
+      "id": "oneOf",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {"oneOf": [{"type": "string"}, {"type": "integer", "maximum": 10}]}
+    },
+    {
+      "id": "allOf",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {
+        "allOf": [
+          {"type": "object", "properties": {"a": {"type": "string", "maxLength": 5}}},
+          {"required": ["a"]}
+        ]
+      }
+    },
+    {
+      "id": "not",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {"type": "string", "not": {"enum": ["x"]}}
+    },
+    {
+      "id": "if/then/else",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {
+        "type": "object",
+        "properties": {"k": {"type": "string"}},
+        "if": {"properties": {"k": {"const": "a"}}, "required": ["k"]},
+        "then": {"required": ["x"]},
+        "else": {"required": ["y"]}
+      }
+    }
+  ]
+}
