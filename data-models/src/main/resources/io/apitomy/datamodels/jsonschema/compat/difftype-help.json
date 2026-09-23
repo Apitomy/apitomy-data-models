@@ -71,6 +71,15 @@
       "",
       "Not backward compatible: a reader using the new schema rejects fractional values that the old schema accepted."
     ],
+    "ARRAY_TYPE_ITEM_SCHEMAS_NARROWED": [
+      "The positional (tuple) item schemas were changed so that fewer arrays are accepted.",
+      "",
+      "A common and surprising cause is *appending* a position when elements beyond the tuple were unconstrained: the position that used to accept anything is now constrained by the new item schema. Removing a position narrows the array as well when elements beyond the tuple are forbidden, because arrays that had that element are now too long.",
+      "",
+      "Elements beyond the tuple are governed by `additionalItems` in drafts 4 to 2019-09, and by `items` in 2020-12, where `items: false` closes the tuple.",
+      "",
+      "Not backward compatible: a reader using the new schema may reject arrays written with the old schema. Note that appending a tuple position is therefore not automatically a safe change."
+    ],
     "ARRAY_TYPE_ALL_ITEM_SCHEMA_CHANGED": [
       "The schema under `items`, which every element of the array must match, was changed so that it accepts fewer values.",
       "",

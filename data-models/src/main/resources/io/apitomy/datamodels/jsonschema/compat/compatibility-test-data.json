@@ -6347,6 +6347,122 @@
     },
     {
       "enabled" : true,
+      "id" : "Cross-version: d7 closed tuple vs 2020-12 closed tuple",
+      "$comment" : "The same closed tuple in each draft's syntax: additionalItems in draft 7, items next to prefixItems in 2020-12.",
+      "expected" : {
+        "backward" : {
+          "compatible" : true
+        },
+        "forward" : {
+          "compatible" : true
+        }
+      },
+      "original" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "type" : "array",
+        "items" : [
+          {
+            "type" : "string"
+          },
+          {
+            "type" : "integer"
+          }
+        ],
+        "additionalItems" : false
+      },
+      "updated" : {
+        "$schema" : "https://json-schema.org/draft/2020-12/schema",
+        "type" : "array",
+        "prefixItems" : [
+          {
+            "type" : "string"
+          },
+          {
+            "type" : "integer"
+          }
+        ],
+        "items" : false
+      }
+    },
+    {
+      "enabled" : true,
+      "id" : "Modern: prefixItems item removed (items false)",
+      "expected" : {
+        "backward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "ARRAY_TYPE_ITEM_SCHEMAS_NARROWED"
+          ]
+        },
+        "forward" : {
+          "compatible" : true,
+          "diffTypes" : [
+            "ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED"
+          ]
+        }
+      },
+      "original" : {
+        "$schema" : "https://json-schema.org/draft/2020-12/schema",
+        "type" : "array",
+        "prefixItems" : [
+          {
+            "type" : "string"
+          },
+          {
+            "type" : "integer"
+          }
+        ],
+        "items" : false
+      },
+      "updated" : {
+        "$schema" : "https://json-schema.org/draft/2020-12/schema",
+        "type" : "array",
+        "prefixItems" : [
+          {
+            "type" : "string"
+          }
+        ],
+        "items" : false
+      }
+    },
+    {
+      "enabled" : true,
+      "id" : "Modern: 2019-09 tuple item type changed",
+      "expected" : {
+        "backward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "ARRAY_TYPE_ITEM_SCHEMAS_CHANGED"
+          ]
+        },
+        "forward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "ARRAY_TYPE_ITEM_SCHEMAS_CHANGED"
+          ]
+        }
+      },
+      "original" : {
+        "$schema" : "https://json-schema.org/draft/2019-09/schema",
+        "type" : "array",
+        "items" : [
+          {
+            "type" : "string"
+          }
+        ]
+      },
+      "updated" : {
+        "$schema" : "https://json-schema.org/draft/2019-09/schema",
+        "type" : "array",
+        "items" : [
+          {
+            "type" : "integer"
+          }
+        ]
+      }
+    },
+    {
+      "enabled" : true,
       "id" : "Modern: unevaluatedProperties added",
       "expected" : {
         "backward" : {
