@@ -4564,9 +4564,7 @@
         },
         "then" : {
           "properties" : {
-            "data" : {
-              "type" : "string"
-            }
+            "data" : {}
           }
         },
         "else" : {
@@ -4669,9 +4667,7 @@
         },
         "else" : {
           "properties" : {
-            "data" : {
-              "type" : "string"
-            }
+            "data" : {}
           }
         }
       }
@@ -5695,7 +5691,8 @@
           "compatible" : false,
           "diffTypes" : [
             "ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED",
-            "ARRAY_TYPE_ITEM_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES"
+            "ARRAY_TYPE_ITEM_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES",
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         }
       },
