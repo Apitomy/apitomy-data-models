@@ -404,16 +404,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
     @Override
     public void visitFullSchemaDependentSchema(JsonSchema original, JsonSchema updated) {
-        if (original != null && updated != null
-                && original.isFullSchema() && updated.isFullSchema()) {
-            DiffContext subCtx = ctx.sub("dependentSchemas");
-            if (!isSchemaCompatible(subCtx, original.asFullSchema(),
-                    updated.asFullSchema(), true)) {
-                subCtx.addDifference(OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED,
-                        original, updated);
-            }
-        }
-        traversalContext.skip(); return;
+        // Compared in diffFullSchemaDependentSchemas, where the key is known.
+        traversalContext.skip();
     }
 
     @Override
@@ -1012,6 +1004,19 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_CHANGED,
                 OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_MEMBER_ADDED,
                 OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_MEMBER_REMOVED);
+
+        // A dependent schema applies to the whole object whenever its key is present, so narrowing
+        // it rejects objects that have the key.
+        for (String key : origKeys) {
+            if (updKeys.contains(key)) {
+                JsonSchema origSchema = original.get(key);
+                JsonSchema updSchema = updated.get(key);
+                DiffContext subCtx = ctx.sub("dependentSchemas/" + key);
+                if (!isUnionSchemaCompatible(subCtx, origSchema, updSchema, true)) {
+                    subCtx.addDifference(OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED, origSchema, updSchema);
+                }
+            }
+        }
     }
 
     @Override

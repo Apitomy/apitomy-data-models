@@ -202,9 +202,9 @@ the documents is:
 **Validation.** Against the original it is valid: `b` has 10 characters, the limit is 10. Against
 the updated schema it is invalid: the limit is now 9. So it is a counterexample.
 
-**Checker.** The checker reports one difference, `OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED`, which is
-flagged backward-compatible, so the verdict is **compatible**. That is a `FALSE_COMPATIBLE`
-finding, and the test prints:
+**Checker.** When the test was first run, the checker reported one difference,
+`OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED`, which was flagged backward-compatible, so the verdict
+was **compatible**. That is a `FALSE_COMPATIBLE` finding, and the test printed:
 
 ```
 FALSE_COMPATIBLE  schema dependency @draft-07 /dependencies/a/properties/b maxLength - 1 apply
@@ -214,12 +214,17 @@ FALSE_COMPATIBLE  schema dependency @draft-07 /dependencies/a/properties/b maxLe
   differences: [OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED]
 ```
 
-This is issue [#1227](https://github.com/Apitomy/apitomy-data-models/issues/1227). Every edit inside a dependency schema hits the same cause, so one entry in
-the known-failures file covers all of them:
+**Tracking.** It was filed as [#1227](https://github.com/Apitomy/apitomy-data-models/issues/1227).
+Every edit inside a dependency schema had the same cause, so one entry in the known-failures
+file covered all of them:
 
 ```json
 {"issue": "#1227", "category": "FALSE_COMPATIBLE", "pattern": "schema dependency @* /dependencies/*"}
 ```
+
+**Fixing.** The fix made the constant incompatible. It also removed that entry, which the test
+would otherwise have reported as stale. The same pair now yields an incompatible verdict confirmed
+by the same document.
 
 ## Known failures
 

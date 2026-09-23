@@ -172,7 +172,7 @@ public enum DiffType {
     OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED(false, "A property was made 'required'."),
     OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_REMOVED(true, "A property is no longer 'required'."),
     OBJECT_TYPE_REQUIRED_PROPERTIES_REMOVED(true, "The 'required' properties constraint was removed."),
-    OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED(true, "The set of schema dependencies was changed."),
+    OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED(false, "A schema in 'dependentSchemas' (or a schema-valued 'dependencies' entry) was changed."),
 
     REFERENCE_TYPE_TARGET_SCHEMA_CHANGED(false, "A '$ref' now points to a different or changed target schema."),
 
