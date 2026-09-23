@@ -156,7 +156,35 @@
           { "type": "string" },
           { "type": "number" }
         ],
+        "additionalItems": { "type": "boolean" }
+      }
+    },
+    {
+      "id": "2020-12: items without prefixItems",
+      "modelType": "JM202012",
+      "input": {
         "items": { "type": "boolean" }
+      },
+      "expected": {
+        "items": { "type": "boolean" }
+      }
+    },
+    {
+      "id": "2019-09: tuple items",
+      "modelType": "JM201909",
+      "input": {
+        "items": [
+          { "type": "string" },
+          { "type": "number" }
+        ],
+        "additionalItems": false
+      },
+      "expected": {
+        "prefixItems": [
+          { "type": "string" },
+          { "type": "number" }
+        ],
+        "additionalItems": false
       }
     },
     {
