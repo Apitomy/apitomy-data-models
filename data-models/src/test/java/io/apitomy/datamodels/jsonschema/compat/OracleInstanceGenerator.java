@@ -529,7 +529,9 @@ final class OracleInstanceGenerator {
     private static JsonNode number(BigDecimal value) {
         var stripped = value.stripTrailingZeros();
         if (stripped.scale() <= 0) {
-            return F.numberNode(stripped.longValueExact());
+            // Same node type as the literals in ONE_OF_EACH_TYPE, so equal values deduplicate.
+            var asLong = stripped.longValueExact();
+            return asLong == (int) asLong ? F.numberNode((int) asLong) : F.numberNode(asLong);
         }
         return F.numberNode(stripped.doubleValue());
     }
