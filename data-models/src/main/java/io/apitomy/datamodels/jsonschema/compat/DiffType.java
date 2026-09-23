@@ -50,6 +50,7 @@ public enum DiffType {
     ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED(false, "The schema for additional array items was narrowed to accept fewer items."),
     ARRAY_TYPE_ADDITIONAL_ITEMS_TRUE_TO_FALSE(false, "Additional array items changed from allowed to disallowed."),
     ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED(false, "A schema constraining all array items was added."),
+    ARRAY_TYPE_ALL_ITEM_SCHEMA_CHANGED(false, "The schema constraining all array items was changed."),
     ARRAY_TYPE_ALL_ITEM_SCHEMA_REMOVED(true, "The schema constraining all array items was removed."),
     ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_ADDED(false, "A constraint requiring at least one matching array item was added."),
     ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_REMOVED(true, "The constraint requiring at least one matching array item was removed."),

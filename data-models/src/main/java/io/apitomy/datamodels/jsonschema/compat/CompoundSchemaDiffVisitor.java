@@ -24,6 +24,7 @@ import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ADDITI
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ADDITIONAL_ITEMS_TRUE_TO_FALSE;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ALL_ITEM_SCHEMA_CHANGED;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_ALL_ITEM_SCHEMA_REMOVED;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_ADDED;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_REMOVED;
@@ -627,11 +628,11 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         if (original == null && updated == null) { traversalContext.skip(); return; }
 
         if (original != null && updated != null) {
-            if (original.isFullSchema() && updated.isFullSchema()) {
+            // A tuple list here is a 2019-09 tuple that was not normalised (#1229); it is skipped.
+            if (!original.isFullSchemaList() && !updated.isFullSchemaList()) {
                 DiffContext subCtx = ctx.sub("items");
-                if (!isSchemaCompatible(subCtx, original.asFullSchema(),
-                        updated.asFullSchema(), true)) {
-                    subCtx.addDifference(ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED, original, updated);
+                if (!isUnionSchemaCompatible(subCtx, (JsonSchema) original, (JsonSchema) updated, true)) {
+                    subCtx.addDifference(ARRAY_TYPE_ALL_ITEM_SCHEMA_CHANGED, original, updated);
                 }
             }
         } else {
@@ -653,12 +654,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         for (int i = 0; i < minSize; i++) {
             JsonSchema origSchema = origList.get(i);
             JsonSchema updSchema = updList.get(i);
-            if (origSchema.isFullSchema() && updSchema.isFullSchema()) {
-                DiffContext subCtx = ctx.sub("prefixItems/" + i);
-                if (!isSchemaCompatible(subCtx, origSchema.asFullSchema(),
-                        updSchema.asFullSchema(), true)) {
-                    subCtx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, origSchema, updSchema);
-                }
+            DiffContext subCtx = ctx.sub("prefixItems/" + i);
+            if (!isUnionSchemaCompatible(subCtx, origSchema, updSchema, true)) {
+                subCtx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, origSchema, updSchema);
             }
         }
 
@@ -669,13 +667,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             } else if (origAI != null && origAI.isFullSchema()) {
                 boolean allCompatible = true;
                 for (int i = minSize; i < updList.size(); i++) {
-                    if (updList.get(i).isFullSchema()) {
-                        DiffContext subCtx = ctx.sub("prefixItems/" + i);
-                        if (!isSchemaCompatible(subCtx, origAI.asFullSchema(),
-                                updList.get(i).asFullSchema(), true)) {
-                            allCompatible = false;
-                            break;
-                        }
+                    DiffContext subCtx = ctx.sub("prefixItems/" + i);
+                    if (!isUnionSchemaCompatible(subCtx, origAI, updList.get(i), true)) {
+                        allCompatible = false;
+                        break;
                     }
                 }
                 if (allCompatible) {
@@ -695,13 +690,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             } else if (updAI != null && updAI.isFullSchema()) {
                 boolean allCompatible = true;
                 for (int i = minSize; i < origList.size(); i++) {
-                    if (origList.get(i).isFullSchema()) {
-                        DiffContext subCtx = ctx.sub("prefixItems/" + i);
-                        if (!isSchemaCompatible(subCtx, origList.get(i).asFullSchema(),
-                                updAI.asFullSchema(), true)) {
-                            allCompatible = false;
-                            break;
-                        }
+                    DiffContext subCtx = ctx.sub("prefixItems/" + i);
+                    if (!isUnionSchemaCompatible(subCtx, origList.get(i), updAI, true)) {
+                        allCompatible = false;
+                        break;
                     }
                 }
                 if (allCompatible) {
@@ -770,8 +762,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     @Override
     public void diffFullSchemaUnevaluatedItems(JsonSchema original, JsonSchema updated) {
         if (original == null && updated == null) { traversalContext.skip(); return; }
-        if (original != null && updated != null
-                && original.isFullSchema() && updated.isFullSchema()) {
+        if (original != null && updated != null) {
             if (!isUnionSchemaCompatible(ctx, original, updated, true)) {
                 ctx.addDifference(ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED, original, updated);
             }
@@ -785,8 +776,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     @Override
     public void diffFullSchemaUnevaluatedProperties(JsonSchema original, JsonSchema updated) {
         if (original == null && updated == null) { traversalContext.skip(); return; }
-        if (original != null && updated != null
-                && original.isFullSchema() && updated.isFullSchema()) {
+        if (original != null && updated != null) {
             if (!isUnionSchemaCompatible(ctx, original, updated, true)) {
                 ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_CHANGED, original, updated);
             }
