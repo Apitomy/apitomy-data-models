@@ -2,7 +2,6 @@ package io.apitomy.datamodels.jsonschema.compat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.apitomy.datamodels.jsonschema.convert.CompoundSchemaConverter;
-import io.apitomy.datamodels.models.ModelType;
 import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaFullSchemaListUnion;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
@@ -204,31 +203,24 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     /**
-     * Entry point: compare original and updated schemas. Either operand is converted to
-     * compound on demand (see {@link #toCompoundIfNeeded}); once the deep conversion is
-     * genuinely deep (tuple {@code items} elements included) this becomes a passthrough
-     * and the on-demand step can be dropped. Any {@code $ref} nodes should be resolved by
-     * the dereferencer before calling this method.
+     * Entry point: compare original and updated schemas. Both must already be compound, that is
+     * converted by {@link CompoundSchemaConverter}, which converts every subschema. Any
+     * {@code $ref} nodes should be resolved by the dereferencer before calling this method.
      */
     static void diffSchemas(DiffContext ctx, JFullSchema original, JFullSchema updated) {
-        JFullSchema compoundOriginal = toCompoundIfNeeded(original);
-        JFullSchema compoundUpdated = toCompoundIfNeeded(updated);
-
         String pairKey = ctx.identityId(original) + ":" + ctx.identityId(updated);
         if (ctx.visited.contains(pairKey)) {
             return;
         }
         ctx.visited.add(pairKey);
         try {
-            if (!(compoundOriginal instanceof JCFullSchema)
-                    || !(compoundUpdated instanceof JCFullSchema)) {
+            if (!(original instanceof JCFullSchema) || !(updated instanceof JCFullSchema)) {
                 throw new IllegalStateException(
-                        "diffSchemas requires both operands to be compound (JCFullSchema) after conversion, "
-                        + "but one could not be converted. original=" + compoundOriginal.getClass().getName()
-                        + ", updated=" + compoundUpdated.getClass().getName());
+                        "diffSchemas requires both operands to be compound (JCFullSchema). original="
+                        + original.getClass().getName() + ", updated=" + updated.getClass().getName());
             }
-            JCFullSchema origCompound = (JCFullSchema) compoundOriginal;
-            JCFullSchema updCompound = (JCFullSchema) compoundUpdated;
+            JCFullSchema origCompound = (JCFullSchema) original;
+            JCFullSchema updCompound = (JCFullSchema) updated;
 
             CompoundSchemaDiffVisitor visitor = new CompoundSchemaDiffVisitor(ctx);
             JCDiffTraverser<DefaultPairingKey> traverser = new JCDiffTraverser<>(visitor);
@@ -236,21 +228,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         } finally {
             ctx.visited.remove(pairKey);
         }
-    }
-
-    private static JFullSchema toCompoundIfNeeded(JFullSchema schema) {
-        if (schema instanceof JCFullSchema) {
-            return schema;
-        }
-        ModelType modelType = DiffUtil.detectModelType(schema);
-        if (modelType != null) {
-            JsonSchema converted = CompoundSchemaConverter.toCompound((JsonSchema) schema, modelType);
-            if (converted instanceof JFullSchema) {
-                JFullSchema fs = (JFullSchema) converted;
-                return fs;
-            }
-        }
-        return schema;
     }
 
     // -----------------------------------------------------------------------

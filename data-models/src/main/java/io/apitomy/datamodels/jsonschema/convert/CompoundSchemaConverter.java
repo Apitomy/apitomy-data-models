@@ -75,14 +75,17 @@ public class CompoundSchemaConverter {
     }
 
     /**
-     * Normalizes d4-d7 {@code items} into compound fields:
+     * Normalizes d4-2019-09 {@code items} into compound fields:
      * tuple (list) → {@code prefixItems}, single schema → {@code items}.
+     * The generated traverser converts a single-schema {@code items} but not the elements of a
+     * tuple, so they are converted here.
      */
-    static void normalizeItems(BooleanFullSchemaFullSchemaListUnion value, JCFullSchema target) {
+    static void normalizeItems(BooleanFullSchemaFullSchemaListUnion value, JCFullSchema target,
+                               ModelType modelType) {
         if (value == null) return;
         if (value.isFullSchemaList()) {
             for (JFullSchema schema : value.asFullSchemaList()) {
-                target.addPrefixItem((JsonSchema) schema);
+                target.addPrefixItem(toCompound((JsonSchema) schema, modelType));
             }
         } else {
             target.setItems(value);
