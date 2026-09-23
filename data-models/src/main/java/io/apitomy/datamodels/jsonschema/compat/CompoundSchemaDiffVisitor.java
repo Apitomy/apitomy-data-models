@@ -8,6 +8,7 @@ import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.visitors.JCDiffTraverser;
 import io.apitomy.datamodels.models.jsonschema.compound.visitors.JCDiffVisitor;
+import io.apitomy.datamodels.models.util.JsonUtil;
 
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
 import io.apitomy.datamodels.models.visitors.diff.CollectionDiff;
@@ -258,8 +259,6 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
         List<String> origTypeList = DiffUtil.getTypeList(original);
         List<String> updTypeList = DiffUtil.getTypeList(updated);
-        String originalType = DiffUtil.getTypeString(original);
-        String updatedType = DiffUtil.getTypeString(updated);
 
         if (origTypeList != null && updTypeList != null) {
             HashSet<String> origSet = new HashSet<>(origTypeList);
@@ -287,18 +286,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 }
                 traversalContext.skip(); return;
             }
-        } else if (originalType != null && updatedType != null && !originalType.equals(updatedType)) {
-            if ("integer".equals(originalType) && "number".equals(updatedType)) {
-                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, originalType, updatedType);
-            } else if (updatedType.isEmpty() || isEmptyOrTrueSchema(updated)) {
-                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, originalType, updatedType);
-            } else {
-                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, originalType, updatedType);
-            }
-            traversalContext.skip(); return;
-        } else if (originalType != null && updatedType == null) {
+        } else if (origTypeList != null) {
+            // Type removed: a widening. Nothing is reported unless the rest of the schema says more.
             if (isEmptyOrTrueSchema(updated)) {
-                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, originalType, "");
+                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, origTypeList, "");
                 traversalContext.skip(); return;
             }
             List<JsonSchema> updAnyOf = updated.getAnyOf();
@@ -316,19 +307,63 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     }
                 }
                 if (origMatchesAny) {
-                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, originalType, "anyOf/oneOf");
+                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, origTypeList, "anyOf/oneOf");
                     traversalContext.skip(); return;
                 }
             }
-        } else if (originalType == null && updatedType != null) {
-            if (isEmptyOrTrueSchema(original)) {
-                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "", updatedType);
-                traversalContext.skip(); return;
+        } else if (updTypeList != null) {
+            // Type added: a narrowing, since keywords such as maxLength apply only to their own type
+            // and let every other type through. Unless enum or const already admitted only the
+            // added types. The other keywords still apply to the same values, so they are compared.
+            // This is conservative inside if/then/else and allOf branches, where the enclosing
+            // schema may already fix the type.
+            if (!valuesAdmitOnly(original, updTypeList)) {
+                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "", updTypeList);
             }
         }
 
         // Return true to let the traverser call all field-level diff methods
         return;
+    }
+
+    /**
+     * Whether the schema's {@code enum} or {@code const} admits only values of the given types.
+     * {@code false} when the schema has neither, since then it admits every type.
+     */
+    private static boolean valuesAdmitOnly(JFullSchema schema, List<String> types) {
+        List<JsonNode> values = schema.getEnum();
+        if (values == null && schema instanceof JCFullSchema && ((JCFullSchema) schema).getConst() != null) {
+            values = List.of(((JCFullSchema) schema).getConst());
+        }
+        if (values == null) {
+            return false;
+        }
+        for (JsonNode value : values) {
+            if (!typesAdmit(types, value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean typesAdmit(List<String> types, JsonNode value) {
+        if (JsonUtil.isNumber(value)) {
+            double number = JsonUtil.toNumber(value).doubleValue();
+            return types.contains("number") || (types.contains("integer") && number == Math.floor(number));
+        }
+        if (JsonUtil.isString(value)) {
+            return types.contains("string");
+        }
+        if (JsonUtil.isBoolean(value)) {
+            return types.contains("boolean");
+        }
+        if (JsonUtil.isArray(value)) {
+            return types.contains("array");
+        }
+        if (JsonUtil.isObject(value)) {
+            return types.contains("object");
+        }
+        return types.contains("null");
     }
 
     private boolean isEmptyOrTrueSchema(JFullSchema schema) {

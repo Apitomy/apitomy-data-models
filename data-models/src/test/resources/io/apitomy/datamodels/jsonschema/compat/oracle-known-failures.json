@@ -9,7 +9,6 @@
     {"issue": "#1234", "category": "NO_VERDICT", "pattern": "closed tuple @* /items/* replace with *"},
     {"issue": "#1234", "category": "NO_VERDICT", "pattern": "open tuple @* /items/* replace with *"},
     {"issue": "#1234", "category": "FALSE_COMPATIBLE", "pattern": "* /dependencies/a replace with false *"},
-    {"issue": "#1231", "category": "FALSE_COMPATIBLE", "pattern": "* remove type revert"},
     {"issue": "#1235", "category": "FALSE_COMPATIBLE", "pattern": "unevaluatedProperties @* / *"},
     {"issue": "#1235", "category": "FALSE_COMPATIBLE", "pattern": "unevaluatedItems @* / prefixItems *"},
     {"issue": "#1232", "category": "FALSE_COMPATIBLE", "pattern": "oneOf @* /oneOf/*"},
