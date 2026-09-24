@@ -11,21 +11,14 @@ public final class Difference {
     private final DiffType diffType;
     private final JsonPointer pathOriginal;
     private final JsonPointer pathUpdated;
-    private final String subSchemaOriginal;
-    private final String subSchemaUpdated;
 
-    public Difference(DiffType diffType, JsonPointer pathOriginal, JsonPointer pathUpdated,
-                      String subSchemaOriginal, String subSchemaUpdated) {
+    public Difference(DiffType diffType, JsonPointer pathOriginal, JsonPointer pathUpdated) {
         Objects.requireNonNull(diffType);
         this.diffType = diffType;
         Objects.requireNonNull(pathOriginal);
         this.pathOriginal = pathOriginal;
         Objects.requireNonNull(pathUpdated);
         this.pathUpdated = pathUpdated;
-        Objects.requireNonNull(subSchemaOriginal);
-        this.subSchemaOriginal = subSchemaOriginal;
-        Objects.requireNonNull(subSchemaUpdated);
-        this.subSchemaUpdated = subSchemaUpdated;
     }
 
     public DiffType getDiffType() {
@@ -45,7 +38,7 @@ public final class Difference {
      * its {@link DiffType}. Delegates to {@link DiffType#getHelp()}.
      * <p>
      * This accessor lives on {@code Difference} (not only {@code DiffType}) so that future help can
-     * be enriched with the concrete paths and sub-schemas carried by this instance.
+     * be enriched with the concrete paths carried by this instance.
      */
     public Optional<String> getHelp() {
         return diffType.getHelp();
@@ -61,7 +54,9 @@ public final class Difference {
     /**
      * Where the change is in the original schema: a JSON Pointer ending in the keyword that changed,
      * e.g. {@code /properties/name/maxLength}, or pointing at the subschema when the subschema as a
-     * whole changed. Keywords are named as the original schema's draft names them.
+     * whole changed, or at the member of a list or map that was removed ({@code /required/1}).
+     * Keywords are named as the original schema's draft names them. The value at the path is not
+     * copied into the difference; resolve the path against the schema to get it.
      */
     public JsonPointer getPathOriginal() {
         return pathOriginal;
@@ -72,14 +67,6 @@ public final class Difference {
         return pathUpdated;
     }
 
-    public String getSubSchemaOriginal() {
-        return subSchemaOriginal;
-    }
-
-    public String getSubSchemaUpdated() {
-        return subSchemaUpdated;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -87,14 +74,13 @@ public final class Difference {
         Difference d = (Difference) o;
         return diffType == d.diffType
                 && pathOriginal.equals(d.pathOriginal)
-                && pathUpdated.equals(d.pathUpdated)
-                && subSchemaOriginal.equals(d.subSchemaOriginal)
-                && subSchemaUpdated.equals(d.subSchemaUpdated);
+                && pathUpdated.equals(d.pathUpdated);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(diffType, pathOriginal, pathUpdated, subSchemaOriginal, subSchemaUpdated);
+        // Hand-written: Objects.hash does not transpile
+        return (diffType.hashCode() * 31 + pathOriginal.hashCode()) * 31 + pathUpdated.hashCode();
     }
 
     @Override

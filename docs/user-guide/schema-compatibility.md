@@ -255,8 +255,10 @@ than failing a build.
 `getPathOriginal()` and `getPathUpdated()` locate the change in each schema, in the keywords that
 schema uses: for a draft-7 tuple the path is `/items/0/…`, for 2020-12 `/prefixItems/0/…`, even
 when the two schemas of a cross-version check differ. The path of a tree node resolves against
-the schema it belongs to with `JsonPointer.evaluate`. `getSubSchemaOriginal()` /
-`getSubSchemaUpdated()` give the sub-schema on each side.
+the schema it belongs to with `JsonPointer.evaluate`. A difference in one member of a list or
+map points at that member on the side that has it: a name added to `required` is at
+`/required/1` in the updated schema and at `/required` in the original. A difference does not
+copy the values it refers to; the paths lead to them.
 
 ---
 

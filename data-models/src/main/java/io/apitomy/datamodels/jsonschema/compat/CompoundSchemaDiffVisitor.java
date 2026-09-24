@@ -172,8 +172,9 @@ import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffAddedRemoved;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffBooleanTransition;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffInteger;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffNumberOriginalMultipleOfUpdated;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffMemberLists;
+import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffMembers;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffObject;
-import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffSetChanged;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.getTypeList;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.getTypeString;
 import io.apitomy.datamodels.util.NumberUtil;
@@ -221,9 +222,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         boolean originalFalse = original.isBoolean() && !original.asBoolean();
         boolean updatedFalse = updated.isBoolean() && !updated.asBoolean();
         if (originalFalse && !updatedFalse) {
-            ctx.addDifference(SUBSCHEMA_CHANGED_FROM_FALSE, original, updated);
+            ctx.addDifference(SUBSCHEMA_CHANGED_FROM_FALSE);
         } else if (updatedFalse && !originalFalse) {
-            ctx.addDifference(SUBSCHEMA_CHANGED_TO_FALSE, original, updated);
+            ctx.addDifference(SUBSCHEMA_CHANGED_TO_FALSE);
         } else if (!originalFalse) {
             diffSchemas(ctx, asFullSchema(original), asFullSchema(updated));
         }
@@ -284,7 +285,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         String updRef = DiffUtil.get$ref(updated);
         if (origRef != null || updRef != null) {
             if (origRef != null && updRef != null && !origRef.equals(updRef)) {
-                ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_CHANGED, "$ref", origRef, updRef);
+                ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_CHANGED, "$ref");
             }
             traversalContext.skip(); return;
         }
@@ -310,18 +311,18 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 HashSet<String> removed = new HashSet<>(origSet);
                 removed.removeAll(updSet);
                 if (!removed.isEmpty() && added.isEmpty()) {
-                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "type", origTypeList, updTypeList);
+                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "type");
                 } else if (removed.isEmpty() && !added.isEmpty()) {
-                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, "type", origTypeList, updTypeList);
+                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, "type");
                 } else {
-                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "type", origTypeList, updTypeList);
+                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "type");
                 }
                 traversalContext.skip(); return;
             }
         } else if (origTypeList != null) {
             // Type removed: a widening. Nothing is reported unless the rest of the schema says more.
             if (isEmptyOrTrueSchema(updated)) {
-                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, "type", origTypeList, "");
+                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, "type");
                 traversalContext.skip(); return;
             }
             List<JsonSchema> updAnyOf = updated.getAnyOf();
@@ -338,7 +339,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     }
                 }
                 if (origMatchesAny) {
-                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, "type", origTypeList, "anyOf/oneOf");
+                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, "type");
                     traversalContext.skip(); return;
                 }
             }
@@ -349,7 +350,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             // This is conservative inside if/then/else and allOf branches, where the enclosing
             // schema may already fix the type.
             if (!valuesAdmitOnly(original, updTypeList)) {
-                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "type", "", updTypeList);
+                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "type");
             }
         }
 
@@ -560,11 +561,11 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaMinimum(JCRangeValue original, JCRangeValue updated) {
         if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original == null) {
-            ctx.addDifference(NUMBER_TYPE_MINIMUM_ADDED, null, rangeToString(updated));
+            ctx.addDifference(NUMBER_TYPE_MINIMUM_ADDED);
             traversalContext.skip(); return;
         }
         if (updated == null) {
-            ctx.addDifference(NUMBER_TYPE_MINIMUM_REMOVED, rangeToString(original), null);
+            ctx.addDifference(NUMBER_TYPE_MINIMUM_REMOVED);
             traversalContext.skip(); return;
         }
         // Both present -- compare values
@@ -576,12 +577,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             boolean updExcl = Boolean.TRUE.equals(updated.isExclusive());
             if (cmp < 0 || (cmp == 0 && !origExcl && updExcl)) {
                 // minimum increased (tightened)
-                ctx.addDifference(NUMBER_TYPE_MINIMUM_INCREASED,
-                        rangeToString(original), rangeToString(updated));
+                ctx.addDifference(NUMBER_TYPE_MINIMUM_INCREASED);
             } else if (cmp > 0 || (cmp == 0 && origExcl && !updExcl)) {
                 // minimum decreased (relaxed)
-                ctx.addDifference(NUMBER_TYPE_MINIMUM_DECREASED,
-                        rangeToString(original), rangeToString(updated));
+                ctx.addDifference(NUMBER_TYPE_MINIMUM_DECREASED);
             }
             // else: same value and exclusivity -- no diff
         }
@@ -592,11 +591,11 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaMaximum(JCRangeValue original, JCRangeValue updated) {
         if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original == null) {
-            ctx.addDifference(NUMBER_TYPE_MAXIMUM_ADDED, null, rangeToString(updated));
+            ctx.addDifference(NUMBER_TYPE_MAXIMUM_ADDED);
             traversalContext.skip(); return;
         }
         if (updated == null) {
-            ctx.addDifference(NUMBER_TYPE_MAXIMUM_REMOVED, rangeToString(original), null);
+            ctx.addDifference(NUMBER_TYPE_MAXIMUM_REMOVED);
             traversalContext.skip(); return;
         }
         // Both present -- compare values
@@ -608,12 +607,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             boolean updExcl = Boolean.TRUE.equals(updated.isExclusive());
             if (cmp > 0 || (cmp == 0 && !origExcl && updExcl)) {
                 // maximum decreased (tightened)
-                ctx.addDifference(NUMBER_TYPE_MAXIMUM_DECREASED,
-                        rangeToString(original), rangeToString(updated));
+                ctx.addDifference(NUMBER_TYPE_MAXIMUM_DECREASED);
             } else if (cmp < 0 || (cmp == 0 && origExcl && !updExcl)) {
                 // maximum increased (relaxed)
-                ctx.addDifference(NUMBER_TYPE_MAXIMUM_INCREASED,
-                        rangeToString(original), rangeToString(updated));
+                ctx.addDifference(NUMBER_TYPE_MAXIMUM_INCREASED);
             }
             // else: same value and exclusivity -- no diff
         }
@@ -693,9 +690,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         if (updList.size() > origList.size()) {
             JsonSchema origAI = restOfItems(currentOriginal);
             if (!restOfItemsIsKnown(currentOriginal, origList.size())) {
-                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
+                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED);
             } else if (origAI != null && origAI.isBoolean() && !origAI.asBoolean()) {
-                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED, origList.size(), updList.size());
+                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED);
             } else if (origAI != null && origAI.isFullSchema()) {
                 boolean allCompatible = true;
                 for (int i = minSize; i < updList.size(); i++) {
@@ -705,19 +702,18 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     }
                 }
                 if (allCompatible) {
-                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES,
-                            origList.size(), updList.size());
+                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES);
                 } else {
-                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
+                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED);
                 }
             } else {
-                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
+                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED);
             }
         } else if (updList.size() < origList.size()) {
             JsonSchema updAI = restOfItems(currentUpdated);
             boolean updPermitsAdditional = updAI == null || (updAI.isBoolean() ? updAI.asBoolean() : true);
             if (!updPermitsAdditional || !restOfItemsIsKnown(currentUpdated, updList.size())) {
-                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
+                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED);
             } else if (updAI != null && updAI.isFullSchema()) {
                 boolean allCompatible = true;
                 for (int i = minSize; i < origList.size(); i++) {
@@ -727,12 +723,12 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     }
                 }
                 if (allCompatible) {
-                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED, origList.size(), updList.size());
+                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED);
                 } else {
-                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
+                    ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED);
                 }
             } else {
-                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED, origList.size(), updList.size());
+                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED);
             }
         }
     }
@@ -755,15 +751,15 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         } else if (origIsSchema && updIsSchema) {
             diffNested(ctx.sub("additionalItems"), original, updated, ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED);
         } else if (!origPermits && updIsSchema) {
-            ctx.addDifference(ARRAY_TYPE_ADDITIONAL_ITEMS_EXTENDED, original, updated);
+            ctx.addDifference(ARRAY_TYPE_ADDITIONAL_ITEMS_EXTENDED);
         } else if (origPermits && !updPermits) {
-            ctx.addDifference(ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED, original, updated);
+            ctx.addDifference(ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED);
         } else if (origIsSchema && (updated == null || (updIsBoolean && updPermits))) {
-            ctx.addDifference(ARRAY_TYPE_ADDITIONAL_ITEMS_EXTENDED, original, updated);
+            ctx.addDifference(ARRAY_TYPE_ADDITIONAL_ITEMS_EXTENDED);
         } else if (origIsSchema && updIsBoolean && !updPermits) {
-            ctx.addDifference(ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED, original, updated);
+            ctx.addDifference(ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED);
         } else if ((original == null || (origIsBoolean && origPermits)) && updIsSchema) {
-            ctx.addDifference(ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED, original, updated);
+            ctx.addDifference(ARRAY_TYPE_ADDITIONAL_ITEMS_NARROWED);
         }
         traversalContext.skip(); return;
     }
@@ -772,11 +768,11 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaContains(JsonSchema original, JsonSchema updated) {
         if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original == null) {
-            ctx.addDifference(ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_ADDED, null, updated);
+            ctx.addDifference(ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_ADDED);
             traversalContext.skip(); return;
         }
         if (updated == null) {
-            ctx.addDifference(ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_REMOVED, original, null);
+            ctx.addDifference(ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_REMOVED);
             traversalContext.skip(); return;
         }
         diffNested(ctx.sub("contains"), original, updated, ARRAY_TYPE_ITEM_SCHEMAS_CHANGED);
@@ -815,7 +811,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         int updCount = Math.max(updPrefix, applicatorEvaluatedItemCount(upd, 0));
         int origCount = applicatorEvaluatedItemCount((JCFullSchema) currentOriginal, 0);
         if (origCount > updCount) {
-            ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, itemCount(origCount), itemCount(updCount));
+            ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED);
         }
     }
 
@@ -892,7 +888,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         }
         // A branch that evaluated names it does not list was dropped: which names is unknown.
         if (!lost.isEmpty() || (!origComplete && updComplete)) {
-            ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED, lost, null);
+            ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED);
         }
     }
 
@@ -965,10 +961,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaRequired(List<String> original, List<String> updated) {
         if (original == null && updated == null) return;
 
-        HashSet<String> origSet = original != null ? new HashSet<>(original) : new HashSet<String>();
-        HashSet<String> updSet = updated != null ? new HashSet<>(updated) : new HashSet<String>();
-
-        diffSetChanged(ctx, origSet, updSet,
+        diffMembers(ctx, orEmpty(original), orEmpty(updated), false,
                 OBJECT_TYPE_REQUIRED_PROPERTIES_ADDED, OBJECT_TYPE_REQUIRED_PROPERTIES_REMOVED,
                 OBJECT_TYPE_REQUIRED_PROPERTIES_CHANGED,
                 OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED,
@@ -1001,9 +994,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         addedKeys.removeAll(origKeys);
         if (!addedKeys.isEmpty()) {
             if (!restOfPropertiesIsKnown(currentOriginal, addedKeys)) {
-                ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED, null, addedKeys);
+                ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED);
             } else if (!origPermitsAdditional) {
-                ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED, null, addedKeys);
+                ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED);
             } else if (origAdditional != null && origAdditional.isFullSchema()
                     && updated != null) {
                 boolean allCompatible = true;
@@ -1015,14 +1008,12 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     }
                 }
                 if (allCompatible) {
-                    ctx.addDifference(
-                            OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES,
-                            null, addedKeys);
+                    ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES);
                 } else {
-                    ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED, null, addedKeys);
+                    ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED);
                 }
             } else {
-                ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED, null, addedKeys);
+                ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED);
             }
         }
 
@@ -1031,7 +1022,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         removedKeys.removeAll(updKeys);
         if (!removedKeys.isEmpty()) {
             if (!updPermitsAdditional || !restOfPropertiesIsKnown(currentUpdated, removedKeys)) {
-                ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED, removedKeys, null);
+                ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED);
             } else if (updAdditional != null && updAdditional.isFullSchema()
                     && original != null) {
                 boolean allCompatible = true;
@@ -1043,12 +1034,12 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     }
                 }
                 if (allCompatible) {
-                    ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED, removedKeys, null);
+                    ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED);
                 } else {
-                    ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED, removedKeys, null);
+                    ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED);
                 }
             } else {
-                ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED, removedKeys, null);
+                ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED);
             }
         }
     }
@@ -1073,20 +1064,20 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             diffNested(ctx.sub("additionalProperties"), original, updated,
                     OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_CHANGED);
         } else if (!origPermits && updIsSchema) {
-            ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_EXTENDED, original, updated);
+            ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_EXTENDED);
         } else if (origPermits && !updPermits) {
-            ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_NARROWED, original, updated);
+            ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_NARROWED);
         } else if (origIsSchema && (updated == null || (updIsBoolean && updPermits))) {
-            ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_EXTENDED, original, updated);
+            ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_EXTENDED);
         } else if (origIsSchema && updIsBoolean && !updPermits) {
-            ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_NARROWED, original, updated);
+            ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_NARROWED);
         } else if ((original == null || (origIsBoolean && origPermits)) && updIsSchema) {
-            ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_NARROWED, original, updated);
+            ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_NARROWED);
         } else {
             if (origPermits && !updPermits) {
-                ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_NARROWED, original, updated);
+                ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_NARROWED);
             } else if (!origPermits && updPermits) {
-                ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_EXTENDED, original, updated);
+                ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_EXTENDED);
             }
         }
         traversalContext.skip(); return;
@@ -1099,10 +1090,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         // Suppress auto-recursion for matched pattern property schemas
         if (original == null && updated == null) return;
 
-        HashSet<String> origKeys = original != null ? new HashSet<>(original.keySet()) : new HashSet<String>();
-        HashSet<String> updKeys = updated != null ? new HashSet<>(updated.keySet()) : new HashSet<String>();
-
-        diffSetChanged(ctx, origKeys, updKeys,
+        diffMembers(ctx, keys(original), keys(updated), true,
                 OBJECT_TYPE_PATTERN_PROPERTY_KEYS_ADDED,
                 OBJECT_TYPE_PATTERN_PROPERTY_KEYS_REMOVED,
                 OBJECT_TYPE_PATTERN_PROPERTY_KEYS_CHANGED,
@@ -1139,12 +1127,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                                                 CollectionDiff<DefaultPairingKey, JsonSchema> diff) {
         if (original == null && updated == null) return;
 
-        HashSet<String> origKeys = original != null
-                ? new HashSet<>(original.keySet()) : new HashSet<String>();
-        HashSet<String> updKeys = updated != null
-                ? new HashSet<>(updated.keySet()) : new HashSet<String>();
-
-        diffSetChanged(ctx, origKeys, updKeys,
+        diffMembers(ctx, keys(original), keys(updated), true,
                 OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_ADDED,
                 OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_REMOVED,
                 OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_CHANGED,
@@ -1164,12 +1147,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                                                  Map<String, JsonNode> updated) {
         if (original == null && updated == null) return;
 
-        HashSet<String> origKeys = original != null
-                ? new HashSet<>(original.keySet()) : new HashSet<String>();
-        HashSet<String> updKeys = updated != null
-                ? new HashSet<>(updated.keySet()) : new HashSet<String>();
-
-        diffSetChanged(ctx, origKeys, updKeys,
+        diffMembers(ctx, keys(original), keys(updated), true,
                 OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_ADDED,
                 OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_REMOVED,
                 OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_CHANGED,
@@ -1178,43 +1156,45 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
         if (original != null && updated != null) {
             for (String key : commonKeys(original, updated)) {
-                JsonNode origArray = original.get(key);
-                JsonNode updArray = updated.get(key);
-                Set<String> origSet = jsonArrayToStringSet(origArray);
-                Set<String> updSet = jsonArrayToStringSet(updArray);
-                for (String v : origSet) {
-                    if (!updSet.contains(v)) {
-                        ctx.addDifference(
-                                OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_REMOVED,
-                                v, null);
-                    }
-                }
-                for (String v : updSet) {
-                    if (!origSet.contains(v)) {
-                        ctx.addDifference(
-                                OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_ADDED,
-                                null, v);
-                    }
-                }
-                if (!origSet.equals(updSet)) {
-                    ctx.addDifference(
-                            OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_CHANGED,
-                            origArray, updArray);
+                if (diffMemberLists(ctx, key, jsonArrayToStrings(original.get(key)),
+                        jsonArrayToStrings(updated.get(key)), false,
+                        OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_ADDED,
+                        OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_REMOVED)) {
+                    ctx.addMemberDifference(OBJECT_TYPE_PROPERTY_DEPENDENCIES_VALUE_MEMBER_CHANGED, key, null, null);
                 }
             }
         }
     }
 
-    private static Set<String> jsonArrayToStringSet(JsonNode arrayNode) {
-        HashSet<String> set = new HashSet<String>();
+    /** The string elements of a JSON array, in order; other elements are skipped. */
+    private static List<String> jsonArrayToStrings(JsonNode arrayNode) {
+        List<String> strings = new ArrayList<String>();
         if (arrayNode != null && arrayNode.isArray()) {
             for (JsonNode element : arrayNode) {
                 if (element.isTextual()) {
-                    set.add(element.asText());
+                    strings.add(element.asText());
                 }
             }
         }
-        return set;
+        return strings;
+    }
+
+    /** The JSON text of each value, in order, so that values compare by content. */
+    private static List<String> jsonTexts(List<JsonNode> values) {
+        List<String> texts = new ArrayList<String>();
+        for (JsonNode value : values) {
+            texts.add(value.toString());
+        }
+        return texts;
+    }
+
+    /** The keys of a map in its order; none for an absent map. */
+    private static List<String> keys(Map<String, ?> map) {
+        return map != null ? new ArrayList<String>(map.keySet()) : new ArrayList<String>();
+    }
+
+    private static List<String> orEmpty(List<String> list) {
+        return list != null ? list : new ArrayList<String>();
     }
 
     // -----------------------------------------------------------------------
@@ -1236,14 +1216,14 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             if (original != null && updAnyOf != null && updated == null) {
                 diffCompositionList(ctx, original, updAnyOf,
                         COMBINED_TYPE_CRITERION_EXTENDED, COMBINED_TYPE_CRITERION_EXTENDED, false);
-                ctx.addDifference(COMBINED_TYPE_CRITERION_EXTENDED, "allOf", "anyOf");
+                ctx.addDifference(COMBINED_TYPE_CRITERION_EXTENDED);
                 return;
             }
             // anyOf -> allOf transition
             List<JsonSchema> origAnyOf = currentOriginal.getAnyOf();
             if (origAnyOf != null && updated != null && original == null
                     && currentUpdated.getAnyOf() == null) {
-                ctx.addDifference(COMBINED_TYPE_CRITERION_NARROWED, "anyOf", "allOf");
+                ctx.addDifference(COMBINED_TYPE_CRITERION_NARROWED);
                 return;
             }
         }
@@ -1269,7 +1249,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             if (origOneOf != null && updated != null && original == null && updOneOf == null) {
                 diffCompositionList(ctx, origOneOf, updated,
                         COMBINED_TYPE_CRITERION_EXTENDED, COMBINED_TYPE_CRITERION_EXTENDED, true);
-                ctx.addDifference(COMBINED_TYPE_CRITERION_EXTENDED, "oneOf", "anyOf");
+                ctx.addDifference(COMBINED_TYPE_CRITERION_EXTENDED);
                 return;
             }
             // anyOf -> allOf: already handled in diffFullSchemaAllOf
@@ -1282,7 +1262,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     diffCompositionList(ctx, original, updOneOf,
                             COMBINED_TYPE_ANY_OF_SIZE_INCREASED, COMBINED_TYPE_ANY_OF_SIZE_DECREASED, true);
                 } else {
-                    ctx.addDifference(COMBINED_TYPE_CRITERION_NARROWED, "anyOf", "oneOf");
+                    ctx.addDifference(COMBINED_TYPE_CRITERION_NARROWED);
                 }
                 return;
             }
@@ -1326,16 +1306,16 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
      */
     private void diffOneOfLists(List<JsonSchema> original, List<JsonSchema> updated) {
         if (updated.size() > original.size()) {
-            ctx.addDifference(COMBINED_TYPE_ONE_OF_SIZE_INCREASED, original.size(), updated.size());
+            ctx.addDifference(COMBINED_TYPE_ONE_OF_SIZE_INCREASED);
         } else if (updated.size() < original.size()) {
-            ctx.addDifference(COMBINED_TYPE_ONE_OF_SIZE_DECREASED, original.size(), updated.size());
+            ctx.addDifference(COMBINED_TYPE_ONE_OF_SIZE_DECREASED);
         }
         int excused = Math.max(0, original.size() - updated.size());
         if (countUncovered(ctx, original, updated) > excused) {
-            ctx.addDifference(COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE, original, updated);
+            ctx.addDifference(COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE);
         } else if (hasNewOrRelaxedBranch(original, updated)
                 && !pairwiseDisjoint(updated, DiffUtil.getTypeList(currentOriginal))) {
-            ctx.addDifference(COMBINED_TYPE_ONE_OF_SUBSCHEMAS_MAY_OVERLAP, original, updated);
+            ctx.addDifference(COMBINED_TYPE_ONE_OF_SUBSCHEMAS_MAY_OVERLAP);
         }
     }
 
@@ -1530,14 +1510,14 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                                      boolean originalMustBeCovered) {
         if (originalList == null && updatedList == null) return;
         if (originalList == null || updatedList == null) {
-            ctx.addDifference(COMBINED_TYPE_CRITERION_CHANGED, originalList, updatedList);
+            ctx.addDifference(COMBINED_TYPE_CRITERION_CHANGED);
             return;
         }
 
         if (updatedList.size() > originalList.size()) {
-            ctx.addDifference(increasedType, originalList.size(), updatedList.size());
+            ctx.addDifference(increasedType);
         } else if (updatedList.size() < originalList.size()) {
-            ctx.addDifference(decreasedType, originalList.size(), updatedList.size());
+            ctx.addDifference(decreasedType);
         }
 
         if (originalMustBeCovered) {
@@ -1545,7 +1525,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             int excused = decreasedType.isBackwardsCompatible()
                     ? 0 : Math.max(0, originalList.size() - updatedList.size());
             if (countUncovered(ctx, originalList, updatedList) > excused) {
-                ctx.addDifference(COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE, originalList, updatedList);
+                ctx.addDifference(COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE);
             }
             return;
         }
@@ -1575,8 +1555,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         int newSubschemas = Math.max(0, updatedList.size() - originalList.size());
         int changedSubschemas = unmatchedCount - newSubschemas;
         if (changedSubschemas > 0) {
-            ctx.addDifference(COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE,
-                    originalList, updatedList);
+            ctx.addDifference(COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE);
         }
     }
 
@@ -1671,36 +1650,22 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                         && updated.get(0).toString().equals(origConst.toString())) {
                     // enum added is equivalent to existing const
                 } else {
-                    ctx.addDifference(ENUM_TYPE_VALUES_ADDED, null, updated);
+                    ctx.addDifference(ENUM_TYPE_VALUES_ADDED);
                 }
             } else if (updated == null) {
                 if (updConst != null && original.size() == 1
                         && original.get(0).toString().equals(updConst.toString())) {
                     // enum removed is equivalent to new const
                 } else {
-                    ctx.addDifference(ENUM_TYPE_VALUES_CHANGED, original, null);
+                    ctx.addDifference(ENUM_TYPE_VALUES_CHANGED);
                 }
             } else {
-                HashSet<String> origSet = new HashSet<String>();
-                for (JsonNode v : original) {
-                    origSet.add(v.toString());
-                }
-                HashSet<String> updSet = new HashSet<String>();
-                for (JsonNode v : updated) {
-                    updSet.add(v.toString());
-                }
-                if (!origSet.equals(updSet)) {
-                    ctx.addDifference(ENUM_TYPE_VALUES_CHANGED, original, updated);
-                    for (String v : updSet) {
-                        if (!origSet.contains(v)) {
-                            ctx.addDifference(ENUM_TYPE_VALUES_MEMBER_ADDED, null, v);
-                        }
-                    }
-                    for (String v : origSet) {
-                        if (!updSet.contains(v)) {
-                            ctx.addDifference(ENUM_TYPE_VALUES_MEMBER_REMOVED, v, null);
-                        }
-                    }
+                List<String> origValues = jsonTexts(original);
+                List<String> updValues = jsonTexts(updated);
+                if (!new HashSet<String>(origValues).equals(new HashSet<String>(updValues))) {
+                    ctx.addDifference(ENUM_TYPE_VALUES_CHANGED);
+                    diffMemberLists(ctx, null, origValues, updValues, false,
+                            ENUM_TYPE_VALUES_MEMBER_ADDED, ENUM_TYPE_VALUES_MEMBER_REMOVED);
                 }
             }
         }
@@ -1711,7 +1676,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         if (original == null && updated == null) return;
         if (original != null && updated != null) {
             if (!original.equals(updated)) {
-                ctx.addDifference(CONST_TYPE_VALUE_CHANGED, original, updated);
+                ctx.addDifference(CONST_TYPE_VALUE_CHANGED);
             }
         } else if (original == null) {
             List<JsonNode> origEnum = currentOriginal != null ? currentOriginal.getEnum() : null;
@@ -1719,14 +1684,14 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     && origEnum.get(0).toString().equals(updated.toString())) {
                 return;
             }
-            ctx.addDifference(CONST_TYPE_VALUE_ADDED, null, updated);
+            ctx.addDifference(CONST_TYPE_VALUE_ADDED);
         } else {
             List<JsonNode> updEnum = currentUpdated != null ? currentUpdated.getEnum() : null;
             if (updEnum != null && updEnum.size() == 1
                     && updEnum.get(0).toString().equals(original.toString())) {
                 return;
             }
-            ctx.addDifference(CONST_TYPE_VALUE_REMOVED, original, null);
+            ctx.addDifference(CONST_TYPE_VALUE_REMOVED);
         }
     }
 
@@ -1770,7 +1735,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         // different $ref values — a one-sided $ref (cyclic or unresolved) is not
         // a compatibility issue by itself.
         if (original != null && updated != null && !original.equals(updated)) {
-            ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_CHANGED, original, updated);
+            ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_CHANGED);
         }
     }
 
@@ -1824,7 +1789,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     private static void diffNested(DiffContext location, JsonSchema original, JsonSchema updated,
                                    DiffType containerType) {
         if (!isUnionSchemaCompatible(location, original, updated, true) && location.isCompatible()) {
-            location.addDifference(containerType, null, original, updated);
+            location.addDifference(containerType, null);
         }
     }
 
@@ -1881,13 +1846,13 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         boolean forward = isUnionSchemaCompatible(ctx.probe(), original, updated, false);
 
         if (backward && forward) {
-            ctx.addDifference(bothType, original, updated);
+            ctx.addDifference(bothType);
         } else if (backward) {
-            ctx.addDifference(backwardType, original, updated);
+            ctx.addDifference(backwardType);
         } else if (forward) {
-            ctx.addDifference(forwardType, original, updated);
+            ctx.addDifference(forwardType);
         } else {
-            ctx.addDifference(noneType, original, updated);
+            ctx.addDifference(noneType);
         }
     }
 
