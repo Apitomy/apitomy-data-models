@@ -4,7 +4,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.List;
 import java.util.Map;
 
-public interface SynSchema extends Node, SchemaOrBoolean, BooleanSchemaSchemaListUnion, BooleanSchemaUnion {
+public interface SynSchema
+		extends
+			Node,
+			SchemaOrBoolean,
+			BooleanSchemaSchemaOrBooleanListUnion,
+			BooleanSchemaSchemaListUnion,
+			BooleanSchemaUnion {
 
 	public SynSchema createSchema();
 
@@ -113,6 +119,10 @@ public interface SynSchema extends Node, SchemaOrBoolean, BooleanSchemaSchemaLis
 	 *            shifting existing items to the right
 	 */
 	public void insertProperty(String name, BooleanSchemaUnion value, int atIndex);
+
+	public BooleanSchemaSchemaOrBooleanListUnion getTupleItems();
+
+	public void setTupleItems(BooleanSchemaSchemaOrBooleanListUnion value);
 
 	public String getType();
 

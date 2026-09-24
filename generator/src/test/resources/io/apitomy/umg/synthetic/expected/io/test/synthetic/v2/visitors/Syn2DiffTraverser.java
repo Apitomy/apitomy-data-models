@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.test.synthetic.Any;
 import io.test.synthetic.BooleanSchemaSchemaListUnion;
+import io.test.synthetic.BooleanSchemaSchemaOrBooleanListUnion;
 import io.test.synthetic.BooleanSchemaUnion;
 import io.test.synthetic.SchemaOrBoolean;
 import io.test.synthetic.SynContact;
@@ -46,6 +47,9 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			return;
 		if (target instanceof SchemaOrBoolean) {
 			this.traverseSchemaOrBoolean((SchemaOrBoolean) original, (SchemaOrBoolean) updated);
+		} else if (target instanceof BooleanSchemaSchemaOrBooleanListUnion) {
+			this.traverseBooleanSchemaSchemaOrBooleanListUnion((BooleanSchemaSchemaOrBooleanListUnion) original,
+					(BooleanSchemaSchemaOrBooleanListUnion) updated);
 		} else if (target instanceof BooleanSchemaSchemaListUnion) {
 			this.traverseBooleanSchemaSchemaListUnion((BooleanSchemaSchemaListUnion) original,
 					(BooleanSchemaSchemaListUnion) updated);
@@ -429,6 +433,16 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 			pop();
 		}
 		{
+			pushProperty("tupleItems");
+			this.originalContext.resetAction();
+			visitor.diffSchemaTupleItems(original.getTupleItems(), updated.getTupleItems());
+			if (this.originalContext.consumeAction() != TraversalAction.SKIP) {
+				this.traverseBooleanSchemaSchemaOrBooleanListUnion(original.getTupleItems(), updated.getTupleItems());
+			}
+			visitor.afterDiffSchemaTupleItems(original.getTupleItems(), updated.getTupleItems());
+			pop();
+		}
+		{
 			pushProperty("minLength");
 			visitor.diffSchemaMinLength(original.getMinLength(), updated.getMinLength());
 			pop();
@@ -584,6 +598,16 @@ public class Syn2DiffTraverser<P extends PairingKey> extends AbstractDiffTravers
 		if (original == null && updated == null)
 			return;
 		visitor.diffSchemaOrBoolean(original, updated);
+		if (original instanceof Syn2Schema && updated instanceof Syn2Schema) {
+			this.traverseSchema((Syn2Schema) original, (Syn2Schema) updated);
+		}
+	}
+
+	public void traverseBooleanSchemaSchemaOrBooleanListUnion(BooleanSchemaSchemaOrBooleanListUnion original,
+			BooleanSchemaSchemaOrBooleanListUnion updated) {
+		if (original == null && updated == null)
+			return;
+		visitor.diffBooleanSchemaSchemaOrBooleanListUnion(original, updated);
 		if (original instanceof Syn2Schema && updated instanceof Syn2Schema) {
 			this.traverseSchema((Syn2Schema) original, (Syn2Schema) updated);
 		}

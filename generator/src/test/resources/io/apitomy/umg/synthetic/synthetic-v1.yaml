@@ -172,6 +172,9 @@ entities:
       # Feature 22: List of type alias (union)
       - name: composedSchemas
         type: '[SchemaOrBoolean]'
+      # Feature 23: Union with a list-of-type-alias variant
+      - name: tupleItems
+        type: 'boolean|Schema|[SchemaOrBoolean]'
       - name: minLength
         type: integer
       - name: maxLength

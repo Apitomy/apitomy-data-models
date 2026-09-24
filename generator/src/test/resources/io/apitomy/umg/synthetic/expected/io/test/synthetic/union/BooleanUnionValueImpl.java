@@ -1,6 +1,7 @@
 package io.test.synthetic.union;
 
 import io.test.synthetic.ModelType;
+import io.test.synthetic.SchemaOrBoolean;
 import io.test.synthetic.SynSchema;
 import java.util.List;
 
@@ -31,6 +32,16 @@ public class BooleanUnionValueImpl extends PrimitiveUnionValueImpl<Boolean> impl
 
 	@Override
 	public SynSchema asSchema() {
+		throw new ClassCastException();
+	}
+
+	@Override
+	public boolean isSchemaOrBooleanList() {
+		return false;
+	}
+
+	@Override
+	public List<SchemaOrBoolean> asSchemaOrBooleanList() {
 		throw new ClassCastException();
 	}
 

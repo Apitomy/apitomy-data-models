@@ -133,7 +133,7 @@ public abstract class AbstractTraverser implements Traverser, Visitor {
 			if (union.isEntity()) {
 				this.traverseNode(propertyName, (Node) union);
 			} else if (union.isEntityList()) {
-				EntityListUnionValue<? extends Node> value = (EntityListUnionValue<? extends Node>) union;
+				EntityListUnionValue<? extends Any> value = (EntityListUnionValue<? extends Any>) union;
 				this.traverseList(propertyName, value.getValue());
 			} else if (union.isEntityMap()) {
 				EntityMapUnionValue<? extends Node> value = (EntityMapUnionValue<? extends Node>) union;

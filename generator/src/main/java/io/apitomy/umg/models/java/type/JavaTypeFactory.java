@@ -143,6 +143,11 @@ public class JavaTypeFactory {
         } else if (type instanceof MapType mapType) {
             return getUnionComponentName(mapType.getValueType()) + "Map";
         } else if (type instanceof UnionType unionType) {
+            // A type alias names the union, e.g. the list variant in 'boolean|Schema|[SchemaOrBoolean]'
+            // is 'SchemaOrBooleanList'.
+            if (unionType.getAliasName() != null) {
+                return unionType.getAliasName();
+            }
             return unionType.getTypes().stream()
                     .map(JavaTypeFactory::getUnionComponentName)
                     .collect(Collectors.joining()) + "Union";

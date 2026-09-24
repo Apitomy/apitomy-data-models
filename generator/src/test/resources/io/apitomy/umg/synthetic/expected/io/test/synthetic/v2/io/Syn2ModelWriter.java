@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.test.synthetic.BooleanSchemaSchemaListUnion;
+import io.test.synthetic.BooleanSchemaSchemaOrBooleanListUnion;
 import io.test.synthetic.BooleanSchemaUnion;
 import io.test.synthetic.RootCapable;
 import io.test.synthetic.SchemaOrBoolean;
@@ -238,6 +239,11 @@ public class Syn2ModelWriter implements ModelWriter {
 				JsonUtil.setProperty(json, "composedSchemas", array);
 			}
 		}
+		{
+			JsonNode value = this.writeBooleanSchemaSchemaOrBooleanListUnion(node.getTupleItems());
+			if (value != null)
+				JsonUtil.setProperty(json, "tupleItems", value);
+		}
 		JsonUtil.setProperty(json, "minLength", JsonUtil.toJsonNode(node.getMinLength()));
 		JsonUtil.setProperty(json, "maxLength", JsonUtil.toJsonNode(node.getMaxLength()));
 		JsonUtil.setProperty(json, "enum", JsonUtil.toArrayNode(node.getEnum()));
@@ -371,6 +377,30 @@ public class Syn2ModelWriter implements ModelWriter {
 			ObjectNode jsonValue = JsonUtil.objectNode();
 			this.writeSchema((Syn2Schema) union.asSchema(), jsonValue);
 			return jsonValue;
+		}
+		if (union.isBoolean()) {
+			return JsonUtil.toJsonNode(union.asBoolean());
+		}
+		return null;
+	}
+
+	private JsonNode writeBooleanSchemaSchemaOrBooleanListUnion(BooleanSchemaSchemaOrBooleanListUnion union) {
+		if (union == null)
+			return null;
+		if (union.isSchema()) {
+			ObjectNode jsonValue = JsonUtil.objectNode();
+			this.writeSchema((Syn2Schema) union.asSchema(), jsonValue);
+			return jsonValue;
+		}
+		if (union.isSchemaOrBooleanList()) {
+			ArrayNode array = JsonUtil.arrayNode();
+			for (Object item : union.asSchemaOrBooleanList()) {
+				JsonNode itemNode = this.writeSchemaOrBoolean((SchemaOrBoolean) item);
+				if (itemNode != null) {
+					array.add(itemNode);
+				}
+			}
+			return array;
 		}
 		if (union.isBoolean()) {
 			return JsonUtil.toJsonNode(union.asBoolean());

@@ -214,6 +214,42 @@ public class ReaderMethod implements Method {
                 body.append("    return unionValue;");
                 body.append("}");
             } else if (variantType instanceof ListType listType
+                    && listType.getValueType() instanceof UnionType elementUnion) {
+                // A list of a union type alias: read each element with the alias's own reader.
+                String typeName = JavaTypeFactory.getUnionComponentName(variantType);
+                JavaClassSource unionValueClass = ctx.getJavaIndex().lookupClass(
+                        ctx.resolveUnionPackage(unionType) + "." + typeName + "UnionValueImpl");
+                if (unionValueClass == null) continue;
+
+                var elementJt = ctx.getJavaTypeFactory().createJavaType(elementUnion, nsModel);
+                elementJt.addImportsTo(readerClassSource);
+                readerClassSource.addImport(unionValueClass);
+                readerClassSource.addImport(java.util.List.class);
+                readerClassSource.addImport(java.util.ArrayList.class);
+
+                body.addContext(Map.of(
+                        "elementType", elementJt.toJavaTypeString(),
+                        "readMethodName", new ReaderMethod(elementJt.getSimpleName()).getName(),
+                        "readMethodExtraArgs", elementUnion.isRoot() ? ", null" : "",
+                        "unionValueClass", unionValueClass.getName()
+                ));
+
+                if (!first) body.append(" else ");
+                first = false;
+
+                body.append("if (JsonUtil.isArray(json)) {");
+                body.append("    List<JsonNode> array = JsonUtil.toList(json);");
+                body.append("    List<${elementType}> items = new ArrayList<>();");
+                body.append("    for (int _idx = 0; _idx < array.size(); _idx++) {");
+                body.append("        ${elementType} item = this.${readMethodName}(array.get(_idx)${readMethodExtraArgs});");
+                body.append("        if (item == null) {");
+                body.append("            return null;");
+                body.append("        }");
+                body.append("        items.add(item);");
+                body.append("    }");
+                body.append("    return new ${unionValueClass}(items);");
+                body.append("}");
+            } else if (variantType instanceof ListType listType
                     && listType.getValueType() instanceof PrimitiveType primType) {
                 String typeName = JavaTypeFactory.getUnionComponentName(variantType);
                 String unionValueClassFQN = ctx.getUnionTypeFQN(typeName + "UnionValueImpl");
