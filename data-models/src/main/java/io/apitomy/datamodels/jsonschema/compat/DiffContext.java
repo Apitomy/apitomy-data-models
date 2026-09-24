@@ -1,189 +1,196 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import io.apitomy.datamodels.jsonschema.convert.CompoundSchemaConverter;
+import io.apitomy.datamodels.jsonschema.ref.JsonPointer;
+import io.apitomy.datamodels.models.jsonschema.JFullSchema;
+import io.apitomy.datamodels.models.visitors.TraversalContext;
+import io.apitomy.datamodels.util.CollectionUtil;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.Stack;
-import java.util.stream.Collectors;
-import java.util.Collections;
 import java.util.LinkedHashSet;
-import io.apitomy.datamodels.util.CollectionUtil;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public class DiffContext {
+/**
+ * Records the differences found while comparing two schemas, as a tree of schema locations.
+ * <p>
+ * Each context is one location, identified by a JSON Pointer into each schema. A nested schema
+ * that is compared as part of this one gets an attached child ({@link #sub}); its differences
+ * become part of the result. A speculative comparison, whose outcome only decides what to report
+ * here, runs in a detached context ({@link #probe}) that never enters the tree.
+ * <p>
+ * Internal to the checker. {@link CompatibilityCheckResult} takes an immutable snapshot of the
+ * tree ({@link DifferenceNode}) when the check finishes.
+ */
+final class DiffContext {
 
-    private final Set<Difference> diffs = new HashSet<>();
-    private final List<String> unsupportedFeatures = new ArrayList<>();
-    private final Stack<Scope> scopeStack = new Stack<>();
-
-    private static class Scope {
-        final Set<Difference> diffs = new HashSet<>();
-        final boolean isolated;
-        Scope(boolean isolated) { this.isolated = isolated; }
+    /** State shared by every context of one check. */
+    private static final class Shared {
+        final Set<String> visited = new HashSet<String>();
+        // Stable per-object ids. Replaces System.identityHashCode, which has no transpiled
+        // equivalent. Model nodes do not override equals/hashCode, so this map is keyed by identity.
+        final Map<Object, Integer> identityIds = new HashMap<Object, Integer>();
+        final List<String> unsupportedFeatures = new ArrayList<String>();
     }
-    private final DiffContext parentContext;
-    private final DiffContext rootContext;
-    private final String pathUpdated;
-    // Shared by reference across all sub-contexts
-    final Set<String> visited;
-    // Stable per-object ids, shared with visited so sub-contexts agree on identity.
-    // Replaces System.identityHashCode, which has no transpiled equivalent. Model
-    // nodes do not override equals/hashCode, so this map is keyed by identity.
-    private final Map<Object, Integer> identityIds;
 
-    private DiffContext(DiffContext rootContext, DiffContext parentContext, String pathUpdated,
-                        Set<String> visited, Map<Object, Integer> identityIds) {
-        this.rootContext = rootContext;
-        this.parentContext = parentContext;
+    private final Shared shared;
+    private final JsonPointer pathOriginal;
+    private final JsonPointer pathUpdated;
+    private final Set<Difference> differences = new LinkedHashSet<Difference>();
+    private final List<DiffContext> children = new ArrayList<DiffContext>();
+
+    /** The schemas compared at this location, which own the keywords named in paths. */
+    private JFullSchema originalSchema;
+    private JFullSchema updatedSchema;
+    /** The traversal comparing this location's schemas; its current property is the keyword. */
+    private TraversalContext traversal;
+
+    private DiffContext(Shared shared, JsonPointer pathOriginal, JsonPointer pathUpdated) {
+        this.shared = shared;
+        this.pathOriginal = pathOriginal;
         this.pathUpdated = pathUpdated;
-        this.visited = visited;
-        this.identityIds = identityIds;
+    }
+
+    static DiffContext createRootContext() {
+        return new DiffContext(new Shared(), JsonPointer.root(), JsonPointer.root());
+    }
+
+    // -----------------------------------------------------------------------
+    // Tree
+    // -----------------------------------------------------------------------
+
+    /**
+     * The attached child for the nested schema under {@code keyword}, e.g. {@code items}. The
+     * keyword is given in compound-schema terms and is written into each path in the terms of that
+     * side's schema.
+     */
+    DiffContext sub(String keyword) {
+        return attach(new DiffContext(shared,
+                pathOriginal.append(sourceKeyword(originalSchema, keyword)),
+                pathUpdated.append(sourceKeyword(updatedSchema, keyword))));
+    }
+
+    /** The attached child for the nested schema {@code keyword/key}, e.g. {@code properties/a}. */
+    DiffContext sub(String keyword, String key) {
+        return attach(new DiffContext(shared,
+                pathOriginal.append(sourceKeyword(originalSchema, keyword)).append(key),
+                pathUpdated.append(sourceKeyword(updatedSchema, keyword)).append(key)));
     }
 
     /**
-     * A stable id for the given object, assigned on first use. Two calls with the
-     * same instance return the same id; equal-but-distinct instances get different
-     * ids, which is the identity semantics the diff traversal needs.
+     * A detached context for a speculative comparison, e.g. matching an {@code anyOf} branch. Only
+     * its verdict ({@link #isCompatible()}) is used; nothing recorded in it enters the result.
      */
-    int identityId(Object o) {
-        Integer id = identityIds.get(o);
-        if (id == null) {
-            id = identityIds.size() + 1;
-            identityIds.put(o, id);
-        }
-        return id;
+    DiffContext probe() {
+        return new DiffContext(shared, pathOriginal, pathUpdated);
     }
 
-    public static DiffContext createRootContext() {
-        return createRootContext("", null);
+    private DiffContext attach(DiffContext child) {
+        children.add(child);
+        return child;
     }
 
-    public static DiffContext createRootContext(String basePath, Set<String> visited) {
-        if (visited == null) {
-            visited = new HashSet<>();
-        }
-        return new DiffContext(null, null, basePath, visited, new HashMap<>());
+    /** Called when the schemas at this location are compared. */
+    void startComparison(JFullSchema original, JFullSchema updated, TraversalContext traversalContext) {
+        this.originalSchema = original;
+        this.updatedSchema = updated;
+        this.traversal = traversalContext;
     }
 
-    public DiffContext sub(String pathFragment) {
-        return new DiffContext(
-                rootContext != null ? rootContext : this,
-                this,
-                pathUpdated + "/" + pathFragment,
-                visited,
-                identityIds
-        );
-    }
+    // -----------------------------------------------------------------------
+    // Differences
+    // -----------------------------------------------------------------------
 
-    public String getPathUpdated() {
-        return pathUpdated;
+    /**
+     * Records a difference in the keyword that is currently being compared at this location, or at
+     * the location itself when no keyword is being compared.
+     */
+    void addDifference(DiffType type, Object original, Object updated) {
+        addDifference(type, traversal != null ? traversal.getMostRecentPropertyStep() : null, original, updated);
     }
 
     /**
-     * Start a scope that collects diffs AND propagates them to the parent.
-     * Use with afterDiff callbacks to inspect results of auto-recursion.
+     * Records a difference in the given keyword (compound-schema terms) of this location, or at the
+     * location itself when {@code keyword} is {@code null}.
      */
-    public void pushScope() {
-        scopeStack.push(new Scope(false));
+    void addDifference(DiffType type, String keyword, Object original, Object updated) {
+        JsonPointer originalPath = keyword == null
+                ? pathOriginal : pathOriginal.append(sourceKeyword(originalSchema, keyword));
+        JsonPointer updatedPath = keyword == null
+                ? pathUpdated : pathUpdated.append(sourceKeyword(updatedSchema, keyword));
+        differences.add(new Difference(type, originalPath, updatedPath,
+                original == null ? "null" : original.toString(),
+                updated == null ? "null" : updated.toString()));
     }
 
-    /**
-     * Start an isolated scope — diffs are collected but NOT propagated to the parent.
-     */
-    public void pushIsolatedScope() {
-        scopeStack.push(new Scope(true));
+    private static String sourceKeyword(JFullSchema owner, String keyword) {
+        return CompoundSchemaConverter.getSourceKeyword(owner, keyword);
     }
 
-    /**
-     * End the current scope and return whether all diffs collected in it
-     * are backward-compatible.
-     */
-    public boolean popScopeIsCompatible() {
-        if (scopeStack.isEmpty()) {
-            throw new IllegalStateException("No scope to pop");
-        }
-        Scope scope = scopeStack.pop();
-        for (Difference d : scope.diffs) {
+    /** Whether nothing recorded at this location or below it breaks backward compatibility. */
+    boolean isCompatible() {
+        for (Difference d : differences) {
             if (!d.getDiffType().isBackwardsCompatible()) {
+                return false;
+            }
+        }
+        for (DiffContext child : children) {
+            if (!child.isCompatible()) {
                 return false;
             }
         }
         return true;
     }
 
-    public void addDifference(DiffType type, Object original, Object updated) {
-        Difference difference = new Difference(
-                type, "",  pathUpdated,
-                original == null ? "null" : original.toString(),
-                updated == null ? "null" : updated.toString()
-        );
-        addToDifferenceSets(difference);
-    }
-
-    private void addToDifferenceSets(Difference difference) {
-        if (!scopeStack.isEmpty()) {
-            Scope activeScope = scopeStack.peek();
-            activeScope.diffs.add(difference);
-            if (activeScope.isolated) {
-                return;
+    /** An immutable snapshot of this location and the attached locations below it. */
+    DifferenceNode toNode() {
+        List<DifferenceNode> childNodes = new ArrayList<DifferenceNode>();
+        for (DiffContext child : children) {
+            DifferenceNode node = child.toNode();
+            if (!node.isEmpty()) {
+                childNodes.add(node);
             }
         }
-        diffs.add(difference);
-        if (parentContext != null) {
-            parentContext.addToDifferenceSets(difference);
+        return new DifferenceNode(pathOriginal, pathUpdated,
+                CollectionUtil.copyOfList(new ArrayList<Difference>(differences)), childNodes);
+    }
+
+    // -----------------------------------------------------------------------
+    // Per-check state
+    // -----------------------------------------------------------------------
+
+    Set<String> visited() {
+        return shared.visited;
+    }
+
+    /**
+     * A stable id for the given object, assigned on first use. Two calls with the same instance
+     * return the same id; equal-but-distinct instances get different ids, which is the identity
+     * semantics the diff traversal needs.
+     */
+    int identityId(Object o) {
+        Integer id = shared.identityIds.get(o);
+        if (id == null) {
+            id = shared.identityIds.size() + 1;
+            shared.identityIds.put(o, id);
         }
+        return id;
     }
 
-    public Set<Difference> getDiffs() {
-        return new HashSet<>(diffs);
+    void addUnsupported(String feature) {
+        shared.unsupportedFeatures.add(feature);
     }
 
-    public boolean foundIncompatibleDifference() {
-        for (Difference d : diffs) {
-            if (!d.getDiffType().isBackwardsCompatible()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public Set<Difference> getIncompatibleDifferences() {
-        Set<Difference> incompatible = new LinkedHashSet<Difference>();
-        for (Difference d : diffs) {
-            if (!d.getDiffType().isBackwardsCompatible()) {
-                incompatible.add(d);
-            }
-        }
-        return incompatible;
-    }
-
-    public boolean foundAllDifferencesAreCompatible() {
-        return !foundIncompatibleDifference();
-    }
-
-    public void addUnsupported(String feature) {
-        unsupportedFeatures.add(feature);
-        if (parentContext != null) {
-            parentContext.addUnsupported(feature);
-        }
-    }
-
-    public boolean hasUnsupportedFeatures() {
-        return !unsupportedFeatures.isEmpty();
-    }
-
-    public List<String> getUnsupportedFeatures() {
-        return CollectionUtil.copyOfList(unsupportedFeatures);
+    List<String> getUnsupportedFeatures() {
+        return CollectionUtil.copyOfList(shared.unsupportedFeatures);
     }
 
     @Override
     public String toString() {
-        return "DiffContext{compatible=" + foundAllDifferencesAreCompatible()
-                + ", diffs=" + diffs.size()
-                + ", unsupported=" + unsupportedFeatures.size()
-                + ", path='" + pathUpdated + "'}";
+        return "DiffContext{path='" + pathUpdated + "', differences=" + differences.size()
+                + ", children=" + children.size() + "}";
     }
 }

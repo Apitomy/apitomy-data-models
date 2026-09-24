@@ -241,10 +241,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
      */
     static void diffSchemas(DiffContext ctx, JFullSchema original, JFullSchema updated) {
         String pairKey = ctx.identityId(original) + ":" + ctx.identityId(updated);
-        if (ctx.visited.contains(pairKey)) {
+        if (ctx.visited().contains(pairKey)) {
             return;
         }
-        ctx.visited.add(pairKey);
+        ctx.visited().add(pairKey);
         try {
             if (!(original instanceof JCFullSchema) || !(updated instanceof JCFullSchema)) {
                 throw new IllegalStateException(
@@ -256,9 +256,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
             CompoundSchemaDiffVisitor visitor = new CompoundSchemaDiffVisitor(ctx);
             JCDiffTraverser<DefaultPairingKey> traverser = new JCDiffTraverser<>(visitor);
+            ctx.startComparison(origCompound, updCompound, visitor.traversalContext);
             traverser.traverseFullSchema(origCompound, updCompound);
         } finally {
-            ctx.visited.remove(pairKey);
+            ctx.visited().remove(pairKey);
         }
     }
 
@@ -283,7 +284,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         String updRef = DiffUtil.get$ref(updated);
         if (origRef != null || updRef != null) {
             if (origRef != null && updRef != null && !origRef.equals(updRef)) {
-                ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_CHANGED, origRef, updRef);
+                ctx.addDifference(REFERENCE_TYPE_TARGET_SCHEMA_CHANGED, "$ref", origRef, updRef);
             }
             traversalContext.skip(); return;
         }
@@ -309,18 +310,18 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 HashSet<String> removed = new HashSet<>(origSet);
                 removed.removeAll(updSet);
                 if (!removed.isEmpty() && added.isEmpty()) {
-                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, origTypeList, updTypeList);
+                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "type", origTypeList, updTypeList);
                 } else if (removed.isEmpty() && !added.isEmpty()) {
-                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, origTypeList, updTypeList);
+                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, "type", origTypeList, updTypeList);
                 } else {
-                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, origTypeList, updTypeList);
+                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "type", origTypeList, updTypeList);
                 }
                 traversalContext.skip(); return;
             }
         } else if (origTypeList != null) {
             // Type removed: a widening. Nothing is reported unless the rest of the schema says more.
             if (isEmptyOrTrueSchema(updated)) {
-                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, origTypeList, "");
+                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, "type", origTypeList, "");
                 traversalContext.skip(); return;
             }
             List<JsonSchema> updAnyOf = updated.getAnyOf();
@@ -330,15 +331,14 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 boolean origMatchesAny = false;
                 for (JsonSchema sub : compositionList) {
                     if (sub.isFullSchema()) {
-                        DiffContext subCtx = ctx.sub("compositionCheck");
-                        if (isSchemaCompatible(subCtx, original, sub.asFullSchema(), true)) {
+                        if (isSchemaCompatible(ctx.probe(), original, sub.asFullSchema(), true)) {
                             origMatchesAny = true;
                             break;
                         }
                     }
                 }
                 if (origMatchesAny) {
-                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, origTypeList, "anyOf/oneOf");
+                    ctx.addDifference(SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE, "type", origTypeList, "anyOf/oneOf");
                     traversalContext.skip(); return;
                 }
             }
@@ -349,7 +349,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             // This is conservative inside if/then/else and allOf branches, where the enclosing
             // schema may already fix the type.
             if (!valuesAdmitOnly(original, updTypeList)) {
-                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "", updTypeList);
+                ctx.addDifference(SUBSCHEMA_TYPE_CHANGED, "type", "", updTypeList);
             }
         }
 
@@ -497,12 +497,11 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         if (original == null || updated == null) {
             return;
         }
-        HashSet<String> keys = new HashSet<String>(original.keySet());
-        for (String key : keys) {
+        for (String key : commonKeys(original, updated)) {
             JsonSchema origSchema = original.get(key);
             JsonSchema updSchema = updated.get(key);
-            if (updSchema != null && origSchema.isFullSchema() && updSchema.isFullSchema()) {
-                diffSchemas(ctx.sub(keyword + "/" + key), origSchema.asFullSchema(), updSchema.asFullSchema());
+            if (origSchema.isFullSchema() && updSchema.isFullSchema()) {
+                diffSchemas(ctx.sub(keyword, key), origSchema.asFullSchema(), updSchema.asFullSchema());
             }
         }
     }
@@ -665,10 +664,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         if (original != null && updated != null) {
             // A tuple list here is a 2019-09 tuple that was not normalised (#1229); it is skipped.
             if (!original.isJsonSchemaList() && !updated.isJsonSchemaList()) {
-                DiffContext subCtx = ctx.sub("items");
-                if (!isUnionSchemaCompatible(subCtx, (JsonSchema) original, (JsonSchema) updated, true)) {
-                    subCtx.addDifference(ARRAY_TYPE_ALL_ITEM_SCHEMA_CHANGED, original, updated);
-                }
+                diffNested(ctx.sub("items"), (JsonSchema) original, (JsonSchema) updated,
+                        ARRAY_TYPE_ALL_ITEM_SCHEMA_CHANGED);
             }
         } else {
             diffAddedRemoved(ctx, original, updated,
@@ -689,10 +686,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         for (int i = 0; i < minSize; i++) {
             JsonSchema origSchema = origList.get(i);
             JsonSchema updSchema = updList.get(i);
-            DiffContext subCtx = ctx.sub("prefixItems/" + i);
-            if (!isUnionSchemaCompatible(subCtx, origSchema, updSchema, true)) {
-                subCtx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, origSchema, updSchema);
-            }
+            diffNested(ctx.sub("prefixItems", String.valueOf(i)), origSchema, updSchema,
+                    ARRAY_TYPE_ITEM_SCHEMAS_CHANGED);
         }
 
         if (updList.size() > origList.size()) {
@@ -704,8 +699,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             } else if (origAI != null && origAI.isFullSchema()) {
                 boolean allCompatible = true;
                 for (int i = minSize; i < updList.size(); i++) {
-                    DiffContext subCtx = ctx.sub("prefixItems/" + i);
-                    if (!isUnionSchemaCompatible(subCtx, origAI, updList.get(i), true)) {
+                    if (!isUnionSchemaCompatible(ctx.probe(), origAI, updList.get(i), true)) {
                         allCompatible = false;
                         break;
                     }
@@ -727,8 +721,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             } else if (updAI != null && updAI.isFullSchema()) {
                 boolean allCompatible = true;
                 for (int i = minSize; i < origList.size(); i++) {
-                    DiffContext subCtx = ctx.sub("prefixItems/" + i);
-                    if (!isUnionSchemaCompatible(subCtx, origList.get(i), updAI, true)) {
+                    if (!isUnionSchemaCompatible(ctx.probe(), origList.get(i), updAI, true)) {
                         allCompatible = false;
                         break;
                     }
@@ -760,10 +753,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     ARRAY_TYPE_ADDITIONAL_ITEMS_FALSE_TO_TRUE,
                     ARRAY_TYPE_ADDITIONAL_ITEMS_TRUE_TO_FALSE);
         } else if (origIsSchema && updIsSchema) {
-            if (!isUnionSchemaCompatible(ctx, original, updated, true)) {
-                ctx.addDifference(ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED,
-                        original, updated);
-            }
+            diffNested(ctx.sub("additionalItems"), original, updated, ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED);
         } else if (!origPermits && updIsSchema) {
             ctx.addDifference(ARRAY_TYPE_ADDITIONAL_ITEMS_EXTENDED, original, updated);
         } else if (origPermits && !updPermits) {
@@ -789,10 +779,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             ctx.addDifference(ARRAY_TYPE_CONTAINED_ITEM_SCHEMA_REMOVED, original, null);
             traversalContext.skip(); return;
         }
-        DiffContext subCtx = ctx.sub("contains");
-        if (!isUnionSchemaCompatible(subCtx, original, updated, true)) {
-            subCtx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_CHANGED, original, updated);
-        }
+        diffNested(ctx.sub("contains"), original, updated, ARRAY_TYPE_ITEM_SCHEMAS_CHANGED);
         traversalContext.skip(); return;
     }
 
@@ -800,9 +787,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaUnevaluatedItems(JsonSchema original, JsonSchema updated) {
         if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original != null && updated != null) {
-            if (!isUnionSchemaCompatible(ctx, original, updated, true)) {
-                ctx.addDifference(ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED, original, updated);
-            }
+            diffNested(ctx.sub("unevaluatedItems"), original, updated, ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED);
         } else {
             diffAddedRemoved(ctx, original, updated,
                     ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED, ARRAY_TYPE_ALL_ITEM_SCHEMA_REMOVED);
@@ -872,9 +857,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaUnevaluatedProperties(JsonSchema original, JsonSchema updated) {
         if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original != null && updated != null) {
-            if (!isUnionSchemaCompatible(ctx, original, updated, true)) {
-                ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_CHANGED, original, updated);
-            }
+            diffNested(ctx.sub("unevaluatedProperties"), original, updated,
+                    OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_CHANGED);
         } else {
             diffAddedRemoved(ctx, original, updated,
                     OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_ADDED,
@@ -1001,16 +985,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         HashSet<String> origKeys = original != null ? new HashSet<>(original.keySet()) : new HashSet<String>();
         HashSet<String> updKeys = updated != null ? new HashSet<>(updated.keySet()) : new HashSet<String>();
 
-        // Properties present in both
-        HashSet<String> commonKeys = new HashSet<>(origKeys);
-        commonKeys.retainAll(updKeys);
-        for (String key : commonKeys) {
-            DiffContext subCtx = ctx.sub(key);
-            JsonSchema origSchema = original.get(key);
-            JsonSchema updSchema = updated.get(key);
-            if (!isUnionSchemaCompatible(subCtx, origSchema, updSchema, true)) {
-                subCtx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED, origSchema, updSchema);
-            }
+        // Properties present in both, in schema order
+        for (String key : commonKeys(original, updated)) {
+            diffNested(ctx.sub("properties", key), original.get(key), updated.get(key),
+                    OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED);
         }
 
         JsonSchema origAdditional = restOfProperties(currentOriginal);
@@ -1031,8 +1009,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 boolean allCompatible = true;
                 for (String key : addedKeys) {
                     JsonSchema addedSchema = updated.get(key);
-                    DiffContext subCtx = ctx.sub(key);
-                    if (!isUnionSchemaCompatible(subCtx, origAdditional, addedSchema, true)) {
+                    if (!isUnionSchemaCompatible(ctx.probe(), origAdditional, addedSchema, true)) {
                         allCompatible = false;
                         break;
                     }
@@ -1060,8 +1037,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 boolean allCompatible = true;
                 for (String key : removedKeys) {
                     JsonSchema removedSchema = original.get(key);
-                    DiffContext subCtx = ctx.sub(key);
-                    if (!isUnionSchemaCompatible(subCtx, removedSchema, updAdditional, true)) {
+                    if (!isUnionSchemaCompatible(ctx.probe(), removedSchema, updAdditional, true)) {
                         allCompatible = false;
                         break;
                     }
@@ -1094,10 +1070,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     OBJECT_TYPE_ADDITIONAL_PROPERTIES_FALSE_TO_TRUE,
                     OBJECT_TYPE_ADDITIONAL_PROPERTIES_TRUE_TO_FALSE);
         } else if (origIsSchema && updIsSchema) {
-            if (!isUnionSchemaCompatible(ctx, original, updated, true)) {
-                ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_CHANGED,
-                        original, updated);
-            }
+            diffNested(ctx.sub("additionalProperties"), original, updated,
+                    OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_CHANGED);
         } else if (!origPermits && updIsSchema) {
             ctx.addDifference(OBJECT_TYPE_ADDITIONAL_PROPERTIES_EXTENDED, original, updated);
         } else if (origPermits && !updPermits) {
@@ -1136,16 +1110,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 OBJECT_TYPE_PATTERN_PROPERTY_KEYS_MEMBER_REMOVED);
 
         if (original != null && updated != null) {
-            HashSet<String> commonKeys = new HashSet<>(origKeys);
-            commonKeys.retainAll(updKeys);
-            for (String key : commonKeys) {
-                DiffContext subCtx = ctx.sub("patternProperties/" + key);
-                JsonSchema origSchema = original.get(key);
-                JsonSchema updSchema = updated.get(key);
-                if (!isUnionSchemaCompatible(subCtx, origSchema, updSchema, true)) {
-                    subCtx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED,
-                            origSchema, updSchema);
-                }
+            for (String key : commonKeys(original, updated)) {
+                diffNested(ctx.sub("patternProperties", key), original.get(key), updated.get(key),
+                        OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED);
             }
         }
     }
@@ -1186,15 +1153,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
 
         // A dependent schema applies to the whole object whenever its key is present, so narrowing
         // it rejects objects that have the key.
-        for (String key : origKeys) {
-            if (updKeys.contains(key)) {
-                JsonSchema origSchema = original.get(key);
-                JsonSchema updSchema = updated.get(key);
-                DiffContext subCtx = ctx.sub("dependentSchemas/" + key);
-                if (!isUnionSchemaCompatible(subCtx, origSchema, updSchema, true)) {
-                    subCtx.addDifference(OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED, origSchema, updSchema);
-                }
-            }
+        for (String key : commonKeys(original, updated)) {
+            diffNested(ctx.sub("dependentSchemas", key), original.get(key), updated.get(key),
+                    OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED);
         }
     }
 
@@ -1216,9 +1177,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 OBJECT_TYPE_PROPERTY_DEPENDENCIES_KEYS_MEMBER_REMOVED);
 
         if (original != null && updated != null) {
-            HashSet<String> commonKeys = new HashSet<>(origKeys);
-            commonKeys.retainAll(updKeys);
-            for (String key : commonKeys) {
+            for (String key : commonKeys(original, updated)) {
                 JsonNode origArray = original.get(key);
                 JsonNode updArray = updated.get(key);
                 Set<String> origSet = jsonArrayToStringSet(origArray);
@@ -1385,9 +1344,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         for (JsonSchema updSub : updated) {
             boolean equivalent = false;
             for (JsonSchema origSub : original) {
-                DiffContext subCtx = ctx.sub("composition");
-                if (isUnionSchemaCompatible(subCtx, origSub, updSub, true)
-                        && isUnionSchemaCompatible(subCtx, origSub, updSub, false)) {
+                if (isUnionSchemaCompatible(ctx.probe(), origSub, updSub, true)
+                        && isUnionSchemaCompatible(ctx.probe(), origSub, updSub, false)) {
                     equivalent = true;
                     break;
                 }
@@ -1596,17 +1554,15 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         for (JsonSchema updSub : updatedList) {
             boolean matched = false;
             for (JsonSchema origSub : originalList) {
-                DiffContext subCtx = ctx.sub("composition");
-                if (isUnionSchemaCompatible(subCtx, origSub, updSub, true)
-                        && isUnionSchemaCompatible(subCtx, origSub, updSub, false)) {
+                if (isUnionSchemaCompatible(ctx.probe(), origSub, updSub, true)
+                        && isUnionSchemaCompatible(ctx.probe(), origSub, updSub, false)) {
                     matched = true;
                     break;
                 }
             }
             if (!matched) {
                 for (JsonSchema origSub : originalList) {
-                    DiffContext subCtx = ctx.sub("composition");
-                    if (isUnionSchemaCompatible(subCtx, origSub, updSub, true)) {
+                    if (isUnionSchemaCompatible(ctx.probe(), origSub, updSub, true)) {
                         matched = true;
                         break;
                     }
@@ -1630,7 +1586,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         for (JsonSchema origSub : originalList) {
             boolean covered = false;
             for (JsonSchema updSub : updatedList) {
-                if (isUnionSchemaCompatible(ctx.sub("composition"), origSub, updSub, true)) {
+                if (isUnionSchemaCompatible(ctx.probe(), origSub, updSub, true)) {
                     covered = true;
                     break;
                 }
@@ -1826,10 +1782,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     public void diffFullSchemaContentSchema(JsonSchema original, JsonSchema updated) {
         if (original == null && updated == null) { traversalContext.skip(); return; }
         if (original != null && updated != null) {
-            DiffContext subCtx = ctx.sub("contentSchema");
-            if (!isUnionSchemaCompatible(subCtx, original, updated, true)) {
-                subCtx.addDifference(SUBSCHEMA_TYPE_CHANGED, original, updated);
-            }
+            diffNested(ctx.sub("contentSchema"), original, updated, SUBSCHEMA_TYPE_CHANGED);
         }
         traversalContext.skip(); return;
     }
@@ -1847,23 +1800,32 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
 
     /**
-     * Compare two sub-schemas for compatibility. Pushes an isolated scope so the nested
-     * comparison doesn't leak into the surrounding diff, while sharing the visited set to
-     * prevent infinite recursion on cyclic schemas.
-     *
-     * <p>Delegates to {@link #diffSchemas}, which converts either operand to compound
-     * ({@link JCFullSchema}) on demand — so raw draft sub-schemas that the top-level
-     * conversion didn't reach (e.g. tuple {@code items} elements) are handled transparently.
+     * Compares two sub-schemas into {@code ctx} and returns whether they are compatible. The
+     * context must be fresh: an attached child ({@link DiffContext#sub}) when the differences
+     * explain the change, a detached one ({@link DiffContext#probe}) when only the verdict matters.
+     * The visited set is shared, which prevents infinite recursion on cyclic schemas.
      */
     private static boolean isSchemaCompatible(DiffContext ctx, JFullSchema original, JFullSchema updated,
                                               boolean backward) {
-        ctx.pushIsolatedScope();
         if (backward) {
             diffSchemas(ctx, original, updated);
         } else {
             diffSchemas(ctx, updated, original);
         }
-        return ctx.popScopeIsCompatible();
+        return ctx.isCompatible();
+    }
+
+    /**
+     * Compares a nested schema in its own location. The differences found there explain the
+     * change, so they are reported instead of a difference for the container. The container
+     * difference is recorded only when the nested schemas are incompatible and nothing found there
+     * says why, for example when a boolean schema is replaced with a full one.
+     */
+    private static void diffNested(DiffContext location, JsonSchema original, JsonSchema updated,
+                                   DiffType containerType) {
+        if (!isUnionSchemaCompatible(location, original, updated, true) && location.isCompatible()) {
+            location.addDifference(containerType, null, original, updated);
+        }
     }
 
     private static boolean isUnionSchemaCompatible(DiffContext ctx, JsonSchema original,
@@ -1915,8 +1877,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                                                JsonSchema updated,
                                                DiffType bothType, DiffType backwardType,
                                                DiffType forwardType, DiffType noneType) {
-        boolean backward = isUnionSchemaCompatible(ctx, original, updated, true);
-        boolean forward = isUnionSchemaCompatible(ctx, original, updated, false);
+        boolean backward = isUnionSchemaCompatible(ctx.probe(), original, updated, true);
+        boolean forward = isUnionSchemaCompatible(ctx.probe(), original, updated, false);
 
         if (backward && forward) {
             ctx.addDifference(bothType, original, updated);
@@ -1935,6 +1897,19 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         return prefix + range.getValue();
     }
 
+
+    /** The keys present in both maps, in the original map's order, so results follow the schema. */
+    private static List<String> commonKeys(Map<String, ?> original, Map<String, ?> updated) {
+        List<String> keys = new ArrayList<String>();
+        if (original != null && updated != null) {
+            for (String key : original.keySet()) {
+                if (updated.containsKey(key)) {
+                    keys.add(key);
+                }
+            }
+        }
+        return keys;
+    }
 
     private static boolean permitsAdditional(JsonSchema additionalProperties) {
         if (additionalProperties == null) return true;

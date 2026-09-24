@@ -36,6 +36,7 @@ public class JM202012ToCompoundConverter extends JM202012ToJCConversionVisitor {
             JCRangeValue existing = target.getMinimum();
             if (existing == null || isTighterMinimum(value, true, existing)) {
                 target.setMinimum(rangeValue(value, true));
+                CompoundSchemaConverter.recordSourceKeyword(target, "minimum", "exclusiveMinimum");
             }
         }
     }
@@ -46,6 +47,7 @@ public class JM202012ToCompoundConverter extends JM202012ToJCConversionVisitor {
             JCRangeValue existing = target.getMaximum();
             if (existing == null || isTighterMaximum(value, true, existing)) {
                 target.setMaximum(rangeValue(value, true));
+                CompoundSchemaConverter.recordSourceKeyword(target, "maximum", "exclusiveMaximum");
             }
         }
     }
@@ -63,6 +65,7 @@ public class JM202012ToCompoundConverter extends JM202012ToJCConversionVisitor {
         }
         if (target.getPrefixItems() != null) {
             target.setAdditionalItems(value);
+            CompoundSchemaConverter.recordSourceKeyword(target, "additionalItems", "items");
         } else {
             target.setItems((BooleanFullSchemaJsonSchemaListUnion) value);
         }

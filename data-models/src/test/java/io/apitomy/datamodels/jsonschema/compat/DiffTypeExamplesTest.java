@@ -1,5 +1,6 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import io.apitomy.datamodels.jsonschema.ref.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -108,7 +109,7 @@ class DiffTypeExamplesTest {
     @Test
     void differenceDelegatesToDiffType() {
         DiffType diffType = DiffType.SUBSCHEMA_TYPE_CHANGED;
-        Difference difference = new Difference(diffType, "#", "#", "{}", "{}");
+        Difference difference = new Difference(diffType, JsonPointer.root(), JsonPointer.root(), "{}", "{}");
         assertEquals(diffType.getExamples(), difference.getExamples());
         assertFalse(difference.getExamples().isEmpty(), "SUBSCHEMA_TYPE_CHANGED should have examples");
     }
