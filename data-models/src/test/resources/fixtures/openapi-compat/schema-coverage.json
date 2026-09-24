@@ -1,0 +1,11 @@
+{
+  "dialectDefaults": [
+    {"schemaUri": "http://json-schema.org/draft-04/schema#", "expected": "DRAFT4"},
+    {"schemaUri": "http://json-schema.org/draft-06/schema#", "expected": "DRAFT6"},
+    {"schemaUri": "http://json-schema.org/draft-07/schema#", "expected": "DRAFT7"},
+    {"schemaUri": "https://json-schema.org/draft/2019-09/schema", "expected": "DRAFT2019_09"},
+    {"schemaUri": "https://json-schema.org/draft/2020-12/schema", "expected": "DRAFT2020_12"},
+    {"schemaUri": "https://spec.openapi.org/oas/3.1/dialect/base", "expected": "OAS31"},
+    {"schemaUri": "https://example.com/my-custom-dialect", "expected": "UNSUPPORTED"}
+  ]
+}
