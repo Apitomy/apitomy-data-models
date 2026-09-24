@@ -39,15 +39,9 @@ final class CompatCaseSupport {
         }
     }
 
-    /**
-     * Renders a schema node as a JSON string, or {@code null} for a boolean schema
-     * (not supported as a top-level document yet, so such cases are skipped).
-     */
+    /** Renders a schema node, which may be a boolean schema, as a JSON string. */
     static String schemaString(JsonNode node) {
-        if (node == null || node.isBoolean()) {
-            return null;
-        }
-        return node.toString();
+        return node == null ? null : node.toString();
     }
 
     /** Builds (and caches) the checker configured for a case's {@code config}/{@code externalRefs}. */

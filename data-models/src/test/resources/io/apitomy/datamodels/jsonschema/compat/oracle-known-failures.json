@@ -1,9 +1,6 @@
 {
   "$comment": "Findings of CompatibilityOracleTest that are tracked by an open issue. Each entry matches finding ids ('*' matches anything); the first matching entry wins, so more specific entries come first. The test fails on a finding matched by no entry, and on an entry that matches no finding, so the fix for an issue removes its entries. Ids read '<base> @<draft> <location> <edit> apply|revert' for mutations and 'catalogue: <case id> backward|forward' for catalogue cases.",
   "knownFailures": [
-    {"issue": "#1225", "category": "NO_VERDICT", "pattern": "* / replace with true *"},
-    {"issue": "#1225", "category": "NO_VERDICT", "pattern": "* / replace with false *"},
-    {"issue": "#1225", "category": "NO_VERDICT", "pattern": "catalogue: Basic: typed schema replaced with 'true' *"},
     {"issue": "#1225", "category": "NO_VERDICT", "pattern": "definitions through $ref @* /definitions/s replace with *"},
     {"issue": "#1225", "category": "NO_VERDICT", "pattern": "$defs through $ref @* /$defs/s replace with *"}
   ]

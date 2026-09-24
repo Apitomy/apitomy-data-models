@@ -30,10 +30,16 @@
       "id" : "Basic: typed schema replaced with 'true'",
       "expected" : {
         "backward" : {
-          "compatible" : false
+          "compatible" : true,
+          "diffTypes" : [
+            "SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE"
+          ]
         },
         "forward" : {
-          "compatible" : false
+          "compatible" : false,
+          "diffTypes" : [
+            "SUBSCHEMA_TYPE_CHANGED"
+          ]
         }
       },
       "original" : {

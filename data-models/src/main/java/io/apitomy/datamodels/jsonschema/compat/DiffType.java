@@ -198,6 +198,8 @@ public enum DiffType {
     STRING_TYPE_PATTERN_CHANGED(false, "The 'pattern' regular expression was changed."),
     STRING_TYPE_PATTERN_REMOVED(true, "The 'pattern' regular-expression constraint was removed."),
 
+    SUBSCHEMA_CHANGED_FROM_FALSE(true, "The schema 'false', which rejected every value, was replaced; everything valid before is still valid."),
+    SUBSCHEMA_CHANGED_TO_FALSE(false, "The schema was replaced with 'false', which rejects every value."),
     SUBSCHEMA_TYPE_CHANGED(false, "The declared 'type' of the schema was changed."),
     SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE(true, "The schema's 'type' was broadened to allow any type (removed or empty).");
 
