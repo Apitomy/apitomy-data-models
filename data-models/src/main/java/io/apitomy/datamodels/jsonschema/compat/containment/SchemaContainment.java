@@ -53,6 +53,11 @@ public final class SchemaContainment {
                         "The source schema is `true` (matches every instance) but the target schema is `false` "
                                 + "(matches none)"), JsonUtil.toJsonNode(Boolean.TRUE));
             }
+            if (isScalarOnly(source) && ScalarContainment.isProvenUnsatisfiable(source)) {
+                return ContainmentResult.yes(evidence(source, target, "empty-source-interval",
+                        "The source schema's own numeric/length constraints admit no value, so containment "
+                                + "against the `false` target holds vacuously"));
+            }
             return ContainmentResult.unknown(evidence(source, target, "empty-target",
                     "The target schema is `false`; whether the source schema is itself satisfiable by no instance "
                             + "is not established here"));
@@ -64,29 +69,25 @@ public final class SchemaContainment {
             return targetGap;
         }
 
-        if (source.isTrue()) {
-            if (hasAnyAssertion(target)) {
-                return ContainmentResult.unknown(evidence(source, target, "no-proof-rule",
-                        "The source schema is `true` (matches every instance); the target schema has at least one "
-                                + "constraining keyword, and no scalar/object/array/composition proof rule is "
-                                + "implemented yet to determine whether it excludes some instance"));
+        boolean sourceIsTrue = source.isTrue();
+        if (!sourceIsTrue) {
+            ContainmentResult sourceGap = coverageGap(source);
+            if (sourceGap != null) {
+                return sourceGap;
             }
-            return ContainmentResult.yes(evidence(source, target, "universal-source-unconstrained-target",
-                    "The source schema is `true`, and the target schema has no constraining keyword under its dialect"));
         }
 
-        ContainmentResult sourceGap = coverageGap(source);
-        if (sourceGap != null) {
-            return sourceGap;
-        }
-
-        if (!hasAnyAssertion(source) && !hasAnyAssertion(target)) {
+        if (!sourceIsTrue && !hasAnyAssertion(source) && !hasAnyAssertion(target)) {
             return ContainmentResult.yes(evidence(source, target, "both-unconstrained",
                     "Neither schema has a constraining keyword under its dialect"));
         }
 
+        if ((sourceIsTrue || isScalarOnly(source)) && isScalarOnly(target)) {
+            return ScalarContainment.compare(source, target, context);
+        }
+
         return ContainmentResult.unknown(evidence(source, target, "no-proof-rule",
-                "No scalar/object/array/composition proof rule is implemented yet for this schema shape"));
+                "No object/array/composition proof rule is implemented yet for this schema shape"));
     }
 
     /**
@@ -95,7 +96,7 @@ public final class SchemaContainment {
      * {@link ContainmentVerdict#UNKNOWN} result naming the first unsupported or
      * unrecognized keyword found.
      */
-    private static ContainmentResult coverageGap(SchemaView schema) {
+    static ContainmentResult coverageGap(SchemaView schema) {
         if (!schema.isObject()) {
             return null;
         }
@@ -117,7 +118,7 @@ public final class SchemaContainment {
     }
 
     /** True if {@code schema} is an object schema with at least one keyword classified as {@link CoverageRegistry.Category#ASSERTION}. */
-    private static boolean hasAnyAssertion(SchemaView schema) {
+    static boolean hasAnyAssertion(SchemaView schema) {
         if (!schema.isObject()) {
             return false;
         }
@@ -130,6 +131,25 @@ public final class SchemaContainment {
             }
         }
         return false;
+    }
+
+    /** True if {@code schema} is either the {@code true} schema or an object schema with no {@link CoverageRegistry.Category#SCHEMA_CHILD} keyword. */
+    static boolean isScalarOnly(SchemaView schema) {
+        if (schema.isTrue()) {
+            return true;
+        }
+        if (!schema.isObject()) {
+            return false;
+        }
+        ObjectNode object = JsonUtil.toObject(schema.getNode());
+        List<String> keys = JsonUtil.keys(object);
+        for (int i = 0; i < keys.size(); i++) {
+            CoverageRegistry.Coverage coverage = CoverageRegistry.classify(schema.getDialect(), keys.get(i));
+            if (coverage != null && coverage.getCategory() == CoverageRegistry.Category.SCHEMA_CHILD) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static SchemaEvidence evidence(SchemaView source, SchemaView target, String rule, String message) {

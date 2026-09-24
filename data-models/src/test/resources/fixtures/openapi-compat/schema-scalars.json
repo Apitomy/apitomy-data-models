@@ -1,0 +1,84 @@
+{
+  "cases": [
+    {
+      "id": "integer-subset-of-number",
+      "source": {"type": "integer"},
+      "target": {"type": "number"},
+      "expected": "YES"
+    },
+    {
+      "id": "number-not-subset-of-integer",
+      "source": {"type": "number"},
+      "target": {"type": "integer"},
+      "expected": "NO",
+      "witness": 0.5
+    },
+    {
+      "id": "enum-finite-inclusion",
+      "source": {"enum": ["a"]},
+      "target": {"enum": ["a", "b"]},
+      "expected": "YES"
+    },
+    {
+      "id": "enum-not-included",
+      "source": {"enum": ["a", "b"]},
+      "target": {"enum": ["a"]},
+      "expected": "NO",
+      "witness": "b"
+    },
+    {
+      "id": "min-length-narrower",
+      "source": {"type": "string", "minLength": 5},
+      "target": {"type": "string", "minLength": 10},
+      "expected": "NO"
+    },
+    {
+      "id": "minimum-interval-containment",
+      "source": {"type": "number", "minimum": 10},
+      "target": {"type": "number", "minimum": 5},
+      "expected": "YES"
+    },
+    {
+      "id": "empty-source-vs-false",
+      "source": {"type": "integer", "minimum": 10, "maximum": 5},
+      "target": false,
+      "expected": "YES"
+    },
+    {
+      "id": "multiple-of-exact-divisibility",
+      "source": {"type": "number", "multipleOf": 0.3},
+      "target": {"type": "number", "multipleOf": 0.1},
+      "expected": "YES"
+    },
+    {
+      "id": "pattern-no-general-inclusion",
+      "source": {"type": "string", "pattern": "^a"},
+      "target": {"type": "string", "pattern": "a"},
+      "expected": "UNKNOWN"
+    },
+    {
+      "id": "reordered-object-enum-values-equal",
+      "source": {"enum": [{"a": 1, "b": 2}]},
+      "target": {"enum": [{"b": 2, "a": 1.0}]},
+      "expected": "YES"
+    },
+    {
+      "id": "null-versus-missing-in-enum",
+      "source": {"enum": [null]},
+      "target": {"enum": ["not-null"]},
+      "expected": "NO"
+    },
+    {
+      "id": "near-integer-multiple-of-rejected",
+      "source": {"type": "number", "multipleOf": 1.0000000001},
+      "target": {"type": "number", "multipleOf": 1},
+      "expected": "NO"
+    },
+    {
+      "id": "adjacent-large-bound-selects-exact-minimum",
+      "source": {"type": "integer", "minimum": 9007199254740993},
+      "target": {"type": "integer", "exclusiveMinimum": 9007199254740992},
+      "expected": "YES"
+    }
+  ]
+}
