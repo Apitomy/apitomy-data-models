@@ -27,11 +27,13 @@ import java.util.Set;
 public class AnchorFragmentResolver implements FragmentResolver {
 
     @Override
-    public Optional<Node> resolveFragment(JsonRef ref, Node targetDocument, RefResolutionContext context) {
-        if (!ref.isAnchor()) {
+    public Optional<JsonSchema> resolveFragment(JsonRef ref, JsonSchema targetDocument, RefResolutionContext context) {
+        // A boolean schema cannot declare an anchor.
+        if (!ref.isAnchor() || !targetDocument.isFullSchema()) {
             return Optional.empty();
         }
-        return Optional.ofNullable(findAnchor(targetDocument, ref.anchor(), new HashSet<>()));
+        Node found = findAnchor(targetDocument.asFullSchema(), ref.anchor(), new HashSet<>());
+        return found instanceof JsonSchema ? Optional.of((JsonSchema) found) : Optional.empty();
     }
 
     private static Node findAnchor(Node node, String anchorName, Set<Node> visited) {

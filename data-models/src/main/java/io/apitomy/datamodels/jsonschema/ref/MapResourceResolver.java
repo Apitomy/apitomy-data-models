@@ -1,7 +1,8 @@
 package io.apitomy.datamodels.jsonschema.ref;
 
+import io.apitomy.datamodels.models.RootCapable;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.Library;
-import io.apitomy.datamodels.models.Node;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,12 +33,13 @@ public class MapResourceResolver implements ResourceResolver {
     }
 
     @Override
-    public Optional<Node> resolveResource(String resource, RefResolutionContext context) {
+    public Optional<JsonSchema> resolveResource(String resource, RefResolutionContext context) {
         String json = schemas.get(resource);
         if (json == null) {
             return Optional.empty();
         }
-        return Optional.of((Node) Library.readRootFromJSONString(json));
+        RootCapable root = Library.readRootFromJSONString(json);
+        return root instanceof JsonSchema ? Optional.of((JsonSchema) root) : Optional.empty();
     }
 
     public static final class Builder {

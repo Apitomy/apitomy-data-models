@@ -1,6 +1,6 @@
 package io.apitomy.datamodels.jsonschema.ref;
 
-import io.apitomy.datamodels.models.Node;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,13 +48,13 @@ public final class JsonSchemaRefResolverChain implements JsonSchemaRefResolver {
     }
 
     @Override
-    public Optional<Node> resolve(JsonRef ref, RefResolutionContext context) {
+    public Optional<JsonSchema> resolve(JsonRef ref, RefResolutionContext context) {
         // Step 1: Determine the target document
-        Node targetDocument;
+        JsonSchema targetDocument;
         if (ref.isInternal()) {
-            targetDocument = (Node) context.from().root();
+            targetDocument = (JsonSchema) context.from().root();
         } else {
-            Optional<Node> doc = resolveResource(ref.resource(), context);
+            Optional<JsonSchema> doc = resolveResource(ref.resource(), context);
             if (doc.isEmpty()) {
                 return Optional.empty();
             }
@@ -70,9 +70,9 @@ public final class JsonSchemaRefResolverChain implements JsonSchemaRefResolver {
         return Optional.of(targetDocument);
     }
 
-    private Optional<Node> resolveResource(String resource, RefResolutionContext context) {
+    private Optional<JsonSchema> resolveResource(String resource, RefResolutionContext context) {
         for (ResourceResolver resolver : resourceResolvers) {
-            Optional<Node> result = resolver.resolveResource(resource, context);
+            Optional<JsonSchema> result = resolver.resolveResource(resource, context);
             if (result.isPresent()) {
                 return result;
             }
@@ -80,9 +80,9 @@ public final class JsonSchemaRefResolverChain implements JsonSchemaRefResolver {
         return Optional.empty();
     }
 
-    private Optional<Node> resolveFragment(JsonRef ref, Node targetDocument, RefResolutionContext context) {
+    private Optional<JsonSchema> resolveFragment(JsonRef ref, JsonSchema targetDocument, RefResolutionContext context) {
         for (FragmentResolver resolver : fragmentResolvers) {
-            Optional<Node> result = resolver.resolveFragment(ref, targetDocument, context);
+            Optional<JsonSchema> result = resolver.resolveFragment(ref, targetDocument, context);
             if (result.isPresent()) {
                 return result;
             }

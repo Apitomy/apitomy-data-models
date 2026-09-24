@@ -5,6 +5,7 @@ import io.apitomy.datamodels.VisitorUtil;
 import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.Referenceable;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.visitors.AllNodeVisitor;
 import io.apitomy.datamodels.models.visitors.TraversalContext;
 import io.apitomy.datamodels.models.visitors.TraversingVisitor;
@@ -147,10 +148,16 @@ public class JsonSchemaRefDereferencer {
         boolean hasRef = node instanceof Referenceable && ((Referenceable) node).get$ref() != null;
         if (hasRef) {
             // Follow the ref chain to the final non-$ref target
-            JFullSchema target = resolveRefChain(node, ctx);
-            if (target == null) {
+            JsonSchema resolved = resolveRefChain(node, ctx);
+            if (resolved == null) {
                 return;
             }
+            if (resolved.isBoolean()) {
+                // A boolean target has no children and cannot take part in a cycle.
+                replaceInParent(node, resolved);
+                return;
+            }
+            JFullSchema target = resolved.asFullSchema();
 
             if (ctx.ancestry.contains(target)) {
                 ctx.cyclicRefs.put(((Referenceable) node).get$ref(), target);
@@ -180,7 +187,8 @@ public class JsonSchemaRefDereferencer {
         ctx.ancestry.remove(node);
     }
 
-    private JFullSchema resolveRefChain(JFullSchema node, DereferenceContext ctx) {
+    /** The final target of a chain of references, which may be a boolean schema. */
+    private JsonSchema resolveRefChain(JFullSchema node, DereferenceContext ctx) {
         JFullSchema current = node;
         HashSet<String> chainRefs = new HashSet<String>();
         // The loop condition is unrolled into the body because the transpiler cannot
@@ -198,12 +206,15 @@ public class JsonSchemaRefDereferencer {
                 return null;
             }
             try {
-                Optional<Node> resolved = refTraversal.resolveRef(refValue, current);
+                Optional<JsonSchema> resolved = refTraversal.resolveRef(refValue, current);
                 if (resolved.isEmpty()) {
                     handleUnresolvable(refValue, ctx);
                     return null;
                 }
-                current = (JFullSchema) resolved.get();
+                if (resolved.get().isBoolean()) {
+                    return resolved.get();
+                }
+                current = resolved.get().asFullSchema();
             } catch (ReferenceResolutionException e) {
                 throw e;
             } catch (Exception e) {
@@ -267,7 +278,7 @@ public class JsonSchemaRefDereferencer {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static void replaceInParent(Node refNode, Node target) {
+    private static void replaceInParent(Node refNode, JsonSchema target) {
         Node parent = refNode.parent();
         if (parent == null) {
             if (refNode instanceof Referenceable) {
