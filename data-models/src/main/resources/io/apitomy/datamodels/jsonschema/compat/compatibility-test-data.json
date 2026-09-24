@@ -50,6 +50,29 @@
     },
     {
       "enabled" : true,
+      "id" : "Basic: typed schema replaced with 'false'",
+      "expected" : {
+        "backward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "SUBSCHEMA_CHANGED_TO_FALSE"
+          ]
+        },
+        "forward" : {
+          "compatible" : true,
+          "diffTypes" : [
+            "SUBSCHEMA_CHANGED_FROM_FALSE"
+          ]
+        }
+      },
+      "original" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "type" : "string"
+      },
+      "updated" : false
+    },
+    {
+      "enabled" : true,
       "id" : "Basic: type added to an untyped schema",
       "$comment" : "maxLength applies only to strings, so the original also accepts numbers, objects and so on.",
       "expected" : {
@@ -5486,6 +5509,47 @@
           "Subject" : {
             "$ref" : "#/definitions/Subject"
           }
+        }
+      }
+    },
+    {
+      "enabled" : true,
+      "id" : "References: $ref target replaced with 'false'",
+      "expected" : {
+        "backward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED"
+          ]
+        },
+        "forward" : {
+          "compatible" : true
+        }
+      },
+      "original" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "type" : "object",
+        "properties" : {
+          "a" : {
+            "$ref" : "#/definitions/s"
+          }
+        },
+        "definitions" : {
+          "s" : {
+            "type" : "string"
+          }
+        }
+      },
+      "updated" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "type" : "object",
+        "properties" : {
+          "a" : {
+            "$ref" : "#/definitions/s"
+          }
+        },
+        "definitions" : {
+          "s" : false
         }
       }
     },

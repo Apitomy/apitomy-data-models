@@ -345,8 +345,9 @@ resolver; `MapResourceResolver` serves schemas held in memory.
     implement the interfaces directly and can be passed as they are.
 
 To fetch schemas from somewhere else — a registry, the filesystem, the network — implement
-`JsonSchemaRefResolver` (in Java, a functional interface returning `Optional<Node>`; in
-TypeScript, a plain function) and pass it to `refResolver`.
+`JsonSchemaRefResolver` (in Java, a functional interface returning `Optional<JsonSchema>`; in
+TypeScript, a plain function) and pass it to `refResolver`. The result may be a boolean schema:
+a reference to `true` or `false` is inlined like any other target.
 
 `JsonSchemaRefResolverChain.withDefaults()` builds a chain with the pointer and anchor fragment
 resolvers and no resource resolvers, which is what the dereferencer uses when you configure none.
