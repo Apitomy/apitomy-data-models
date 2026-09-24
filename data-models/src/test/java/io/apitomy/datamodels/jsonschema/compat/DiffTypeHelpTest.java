@@ -1,5 +1,6 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import io.apitomy.datamodels.jsonschema.ref.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
@@ -79,7 +80,7 @@ public class DiffTypeHelpTest {
     @Test
     public void differenceDelegatesToDiffType() {
         DiffType type = DiffType.OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED;
-        Difference diff = new Difference(type, "#/foo", "#/foo", "{}", "{}");
+        Difference diff = new Difference(type, JsonPointer.parse("/foo"), JsonPointer.parse("/foo"), "{}", "{}");
         Assertions.assertEquals(type.getShortDescription(), diff.getShortDescription());
         Assertions.assertEquals(type.getHelp(), diff.getHelp());
         Assertions.assertTrue(diff.getHelp().isPresent());

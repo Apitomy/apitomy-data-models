@@ -1,31 +1,43 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import io.apitomy.datamodels.util.CollectionUtil;
+
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import io.apitomy.datamodels.util.CollectionUtil;
 
 /**
  * Result of a single-direction compatibility check (backward or forward).
  * <p>
- * Wraps the internal {@link DiffContext} into a clean, immutable public API.
- * Instances are created by {@link JsonSchemaCompatibilityChecker} and are not
- * directly constructible by callers.
+ * The differences are available as a tree of schema locations ({@link #getRoot()}), for example
+ * to display them, or as a flat set ({@link #getDifferences()}). Instances are created by
+ * {@link JsonSchemaCompatibilityChecker} and are not directly constructible by callers.
  */
 public final class CompatibilityCheckResult {
 
+    private final DifferenceNode root;
     private final Set<Difference> differences;
     private final List<String> unsupportedFeatures;
 
     /**
-     * Package-private constructor — created by the checker.
+     * Package-private constructor — created by the checker from the finished comparison.
      */
     CompatibilityCheckResult(DiffContext ctx) {
-        this.differences = ctx.getDiffs();
+        this.root = ctx.toNode();
+        // Filled in a loop: the LinkedHashSet copy constructor does not transpile
+        this.differences = new LinkedHashSet<Difference>();
+        for (Difference difference : root.flatten()) {
+            this.differences.add(difference);
+        }
         this.unsupportedFeatures = ctx.getUnsupportedFeatures();
+    }
+
+    /**
+     * The differences as a tree of schema locations. The root is the whole schema; each child is a
+     * nested schema with a difference at or below it. See {@link DifferenceNode}.
+     */
+    public DifferenceNode getRoot() {
+        return root;
     }
 
     /**
@@ -45,7 +57,8 @@ public final class CompatibilityCheckResult {
 
     /**
      * Returns all differences found between the original and updated schemas,
-     * regardless of whether they are compatible or incompatible.
+     * regardless of whether they are compatible or incompatible: every difference in the tree,
+     * depth-first ({@code getRoot().flatten()}).
      *
      * @return an unmodifiable set of all differences
      */

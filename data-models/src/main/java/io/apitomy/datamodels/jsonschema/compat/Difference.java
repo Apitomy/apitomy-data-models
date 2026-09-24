@@ -1,5 +1,7 @@
 package io.apitomy.datamodels.jsonschema.compat;
 
+import io.apitomy.datamodels.jsonschema.ref.JsonPointer;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -7,12 +9,12 @@ import java.util.Optional;
 public final class Difference {
 
     private final DiffType diffType;
-    private final String pathOriginal;
-    private final String pathUpdated;
+    private final JsonPointer pathOriginal;
+    private final JsonPointer pathUpdated;
     private final String subSchemaOriginal;
     private final String subSchemaUpdated;
 
-    public Difference(DiffType diffType, String pathOriginal, String pathUpdated,
+    public Difference(DiffType diffType, JsonPointer pathOriginal, JsonPointer pathUpdated,
                       String subSchemaOriginal, String subSchemaUpdated) {
         Objects.requireNonNull(diffType);
         this.diffType = diffType;
@@ -56,11 +58,17 @@ public final class Difference {
         return diffType.getExamples();
     }
 
-    public String getPathOriginal() {
+    /**
+     * Where the change is in the original schema: a JSON Pointer ending in the keyword that changed,
+     * e.g. {@code /properties/name/maxLength}, or pointing at the subschema when the subschema as a
+     * whole changed. Keywords are named as the original schema's draft names them.
+     */
+    public JsonPointer getPathOriginal() {
         return pathOriginal;
     }
 
-    public String getPathUpdated() {
+    /** As {@link #getPathOriginal()}, in the updated schema. */
+    public JsonPointer getPathUpdated() {
         return pathUpdated;
     }
 

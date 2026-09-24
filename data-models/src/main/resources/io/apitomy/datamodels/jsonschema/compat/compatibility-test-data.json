@@ -1030,13 +1030,13 @@
         "backward" : {
           "compatible" : false,
           "diffTypes" : [
-            "OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED"
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED"
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         }
       },
@@ -1159,12 +1159,15 @@
       "id" : "Object: additionalProperties schema relaxed",
       "expected" : {
         "backward" : {
-          "compatible" : true
+          "compatible" : true,
+          "diffTypes" : [
+            "STRING_TYPE_MIN_LENGTH_DECREASED"
+          ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_CHANGED"
+            "STRING_TYPE_MIN_LENGTH_INCREASED"
           ]
         }
       },
@@ -1599,13 +1602,13 @@
         "backward" : {
           "compatible" : false,
           "diffTypes" : [
-            "OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED"
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED"
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         }
       },
@@ -1785,11 +1788,14 @@
         "backward" : {
           "compatible" : false,
           "diffTypes" : [
-            "OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED"
+            "STRING_TYPE_MAX_LENGTH_DECREASED"
           ]
         },
         "forward" : {
-          "compatible" : true
+          "compatible" : true,
+          "diffTypes" : [
+            "STRING_TYPE_MAX_LENGTH_INCREASED"
+          ]
         }
       },
       "original" : {
@@ -2181,12 +2187,15 @@
       "id" : "Array: items schema relaxed",
       "expected" : {
         "backward" : {
-          "compatible" : true
+          "compatible" : true,
+          "diffTypes" : [
+            "NUMBER_TYPE_MINIMUM_DECREASED"
+          ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "ARRAY_TYPE_ALL_ITEM_SCHEMA_CHANGED"
+            "NUMBER_TYPE_MINIMUM_INCREASED"
           ]
         }
       },
@@ -2239,12 +2248,15 @@
       "id" : "Array: contains schema relaxed",
       "expected" : {
         "backward" : {
-          "compatible" : true
+          "compatible" : true,
+          "diffTypes" : [
+            "NUMBER_TYPE_MINIMUM_DECREASED"
+          ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "ARRAY_TYPE_ITEM_SCHEMAS_CHANGED"
+            "NUMBER_TYPE_MINIMUM_INCREASED"
           ]
         }
       },
@@ -2270,12 +2282,15 @@
       "id" : "Array: tuple item schema relaxed",
       "expected" : {
         "backward" : {
-          "compatible" : true
+          "compatible" : true,
+          "diffTypes" : [
+            "NUMBER_TYPE_MINIMUM_DECREASED"
+          ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "ARRAY_TYPE_ITEM_SCHEMAS_CHANGED"
+            "NUMBER_TYPE_MINIMUM_INCREASED"
           ]
         }
       },
@@ -2350,13 +2365,13 @@
         "backward" : {
           "compatible" : false,
           "diffTypes" : [
-            "ARRAY_TYPE_ITEM_SCHEMAS_CHANGED"
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "ARRAY_TYPE_ITEM_SCHEMAS_CHANGED"
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         }
       },
@@ -2392,15 +2407,15 @@
         "backward" : {
           "compatible" : false,
           "diffTypes" : [
-            "ARRAY_TYPE_ITEM_SCHEMAS_CHANGED",
-            "ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED"
+            "ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED",
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "ARRAY_TYPE_ITEM_SCHEMAS_CHANGED",
-            "ARRAY_TYPE_ITEM_SCHEMAS_NARROWED"
+            "ARRAY_TYPE_ITEM_SCHEMAS_NARROWED",
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         }
       },
@@ -2582,12 +2597,15 @@
       "id" : "Array: additionalItems schema widened",
       "expected" : {
         "backward" : {
-          "compatible" : true
+          "compatible" : true,
+          "diffTypes" : [
+            "NUMBER_TYPE_INTEGER_REQUIRED_TRUE_TO_FALSE"
+          ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED"
+            "NUMBER_TYPE_INTEGER_REQUIRED_FALSE_TO_TRUE"
           ]
         }
       },
@@ -2623,13 +2641,13 @@
         "backward" : {
           "compatible" : false,
           "diffTypes" : [
-            "ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED"
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "ARRAY_TYPE_SCHEMA_OF_ADDITIONAL_ITEMS_CHANGED"
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         }
       },
@@ -5143,15 +5161,16 @@
           "compatible" : true,
           "diffTypes" : [
             "OBJECT_TYPE_REQUIRED_PROPERTIES_CHANGED",
-            "OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_REMOVED"
+            "OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_REMOVED",
+            "STRING_TYPE_MIN_LENGTH_DECREASED"
           ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED",
             "OBJECT_TYPE_REQUIRED_PROPERTIES_CHANGED",
-            "OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED"
+            "OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED",
+            "STRING_TYPE_MIN_LENGTH_INCREASED"
           ]
         }
       },
@@ -5280,15 +5299,16 @@
           "compatible" : true,
           "diffTypes" : [
             "OBJECT_TYPE_REQUIRED_PROPERTIES_CHANGED",
-            "OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_REMOVED"
+            "OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_REMOVED",
+            "STRING_TYPE_MIN_LENGTH_DECREASED"
           ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED",
             "OBJECT_TYPE_REQUIRED_PROPERTIES_CHANGED",
-            "OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED"
+            "OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED",
+            "STRING_TYPE_MIN_LENGTH_INCREASED"
           ]
         }
       },
@@ -5558,12 +5578,16 @@
       "id" : "Properties: property type widened via anyOf",
       "expected" : {
         "backward" : {
-          "compatible" : true
+          "compatible" : true,
+          "diffTypes" : [
+            "SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE"
+          ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED"
+            "COMBINED_TYPE_CRITERION_CHANGED",
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         }
       },
@@ -5600,12 +5624,15 @@
       "id" : "Properties: property type widened via type array",
       "expected" : {
         "backward" : {
-          "compatible" : true
+          "compatible" : true,
+          "diffTypes" : [
+            "SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE"
+          ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "OBJECT_TYPE_PROPERTY_SCHEMAS_CHANGED"
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         }
       },
@@ -6877,13 +6904,13 @@
         "backward" : {
           "compatible" : false,
           "diffTypes" : [
-            "ARRAY_TYPE_ITEM_SCHEMAS_CHANGED"
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         },
         "forward" : {
           "compatible" : false,
           "diffTypes" : [
-            "ARRAY_TYPE_ITEM_SCHEMAS_CHANGED"
+            "SUBSCHEMA_TYPE_CHANGED"
           ]
         }
       },
