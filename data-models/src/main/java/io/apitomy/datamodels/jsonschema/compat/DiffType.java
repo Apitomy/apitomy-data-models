@@ -79,6 +79,7 @@ public enum DiffType {
     COMBINED_TYPE_CRITERION_NARROWED(false, "The composition criterion was tightened to a more restrictive keyword."),
     COMBINED_TYPE_ONE_OF_SIZE_DECREASED(false, "The number of 'oneOf' subschemas decreased."),
     COMBINED_TYPE_ONE_OF_SIZE_INCREASED(true, "The number of 'oneOf' subschemas increased."),
+    COMBINED_TYPE_ONE_OF_SUBSCHEMAS_MAY_OVERLAP(false, "A value may now match more than one 'oneOf' subschema, which 'oneOf' rejects."),
     COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE(false, "A composition subschema (allOf/anyOf/oneOf) is not compatible."),
 
     CONDITIONAL_TYPE_ELSE_SCHEMA_ADDED(false, "An 'else' subschema was added."),
