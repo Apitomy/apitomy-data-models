@@ -53,7 +53,7 @@
       "Backward compatible. The forward direction does not hold: old readers may reject new data that omits the now-optional property."
     ],
     "OBJECT_TYPE_SCHEMA_DEPENDENCIES_CHANGED": [
-      "A schema under `dependentSchemas` (or a schema-valued entry of draft 4–7 `dependencies`) was changed so that it accepts fewer objects.",
+      "A schema under `dependentSchemas` (or a schema-valued entry of draft 4–7 `dependencies`) was replaced so that it accepts fewer objects. This is reported when no single keyword inside the dependent schema explains the change, typically when it was replaced with `false`; when a keyword inside it changed, that keyword is reported instead, at a path under `/dependentSchemas/<key>` (`/dependencies/<key>` in drafts 4–7), and what follows applies to it just the same.",
       "",
       "A dependent schema is not a property schema: it applies to the *whole object*, but only when the object has the key property. So the change can look unrelated to the data, yet it rejects any object that has the key property and no longer satisfies the dependent schema.",
       "",
@@ -89,9 +89,9 @@
       "Not backward compatible: a reader using the new schema may reject arrays written with the old schema. Note that appending a tuple position is therefore not automatically a safe change."
     ],
     "ARRAY_TYPE_ALL_ITEM_SCHEMA_CHANGED": [
-      "The schema under `items`, which every element of the array must match, was changed so that it accepts fewer values.",
+      "The schema under `items`, which every element of the array must match, was replaced so that it accepts fewer values. This is reported when no single keyword inside the item schema explains the change, typically when a boolean schema is involved; when a keyword inside it changed, such as `maxLength`, that keyword is reported instead, at a path under `/items`.",
       "",
-      "Arrays whose elements matched the old item schema but not the new one are rejected now. A boolean item schema is the extreme case: `items: false` accepts no element at all, so only empty arrays remain valid, and `items: true` replaced by a schema starts constraining elements that were unconstrained.",
+      "Arrays whose elements matched the old item schema but not the new one are rejected now. `items: false` accepts no element at all, so only empty arrays remain valid, and `items: true` replaced by a schema starts constraining elements that were unconstrained.",
       "",
       "Not backward compatible: a reader using the new schema may reject arrays written with the old schema."
     ],
