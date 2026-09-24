@@ -17,14 +17,14 @@ depending on your platform.
     <dependency>
         <groupId>io.apitomy</groupId>
         <artifactId>apitomy-data-models</artifactId>
-        <version>3.1.1</version>
+        <version>3.1.3</version>
     </dependency>
     ```
 
 === "Gradle"
 
     ```groovy
-    implementation 'io.apitomy:apitomy-data-models:3.1.1'
+    implementation 'io.apitomy:apitomy-data-models:3.1.3'
     ```
 
 === "npm"

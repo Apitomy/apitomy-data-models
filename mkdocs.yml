@@ -1,7 +1,9 @@
 site_name: Apitomy Data Models
 site_description: A library for reading, writing, and manipulating OpenAPI, AsyncAPI, OpenRPC, and JSON Schema documents
 site_author: Apitomy
-site_url: https://www.apitomy.io/projects/data-models/docs/
+# Each release line is published into its own directory: this branch (3.1.x) is the 3.x line.
+# The version selector lists the lines from ../versions.json, maintained in the website repository.
+site_url: https://www.apitomy.io/projects/data-models/docs/3.x/
 
 repo_name: Apitomy/apitomy-data-models
 repo_url: https://github.com/Apitomy/apitomy-data-models
@@ -61,6 +63,11 @@ plugins:
   - search
 
 extra:
+  version:
+    # The selector reads ../versions.json in the mike format; mike itself is not used. The line that
+    # carries the 'latest' alias there is the recommended one; the others show the 'outdated' banner.
+    provider: mike
+    default: latest
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/Apitomy/apitomy-data-models

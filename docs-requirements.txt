@@ -1,0 +1,13 @@
+# Documentation toolchain.
+#
+# Shared by .github/workflows/verify.yaml and .github/workflows/publish-docs.yml so that the
+# build gating a pull request is the same one that publishes the site. Installing these
+# separately in each workflow lets them drift, at which point a green verify stops predicting a
+# successful publish.
+#
+# The upper bound on mkdocs is deliberate. MkDocs 2.0 removes the plugin system and rewrites
+# theming with no migration path, so an unpinned `mkdocs>=1.5.0` would pick it up the day it
+# ships and break both workflows at once. Raise it only alongside a tested theme migration.
+mkdocs>=1.5.0,<2.0
+mkdocs-material>=9.0.0,<10.0
+pymdown-extensions
