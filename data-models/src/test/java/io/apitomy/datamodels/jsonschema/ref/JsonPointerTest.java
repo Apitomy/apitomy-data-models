@@ -75,4 +75,25 @@ public class JsonPointerTest {
         var result = ptr.evaluate(doc);
         Assertions.assertNull(result, "Non-existent path should return null");
     }
+
+    @Test
+    public void testAppendEscapesAndRoundTrips() {
+        var ptr = JsonPointer.root().append("properties").append("a/b~c").append("0");
+        Assertions.assertEquals("/properties/a~1b~0c/0", ptr.toString());
+        Assertions.assertEquals(ptr, JsonPointer.parse(ptr.toString()));
+        Assertions.assertEquals("", JsonPointer.root().toString());
+    }
+
+    @Test
+    public void testEvaluateIntoTupleItems() {
+        var schema = """
+            {"$schema": "http://json-schema.org/draft-07/schema#",
+             "items": [{"type": "string"}, false]}""";
+        var doc = (io.apitomy.datamodels.models.jsonschema.JsonSchema) io.apitomy.datamodels.Library.readRootFromJSONString(schema);
+
+        var first = JsonPointer.parse("/items/0").evaluate(doc);
+        Assertions.assertTrue(first != null && first.isFullSchema(), "A tuple element resolves through the union");
+        var second = JsonPointer.parse("/items/1").evaluate(doc);
+        Assertions.assertTrue(second != null && second.isBoolean(), "A boolean tuple element resolves");
+    }
 }
