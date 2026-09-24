@@ -3,6 +3,7 @@ package io.apitomy.datamodels.jsonschema.ref;
 import io.apitomy.datamodels.models.MappedNode;
 import io.apitomy.datamodels.models.Node;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
+import io.apitomy.datamodels.models.union.UnionValue;
 import io.apitomy.datamodels.util.NodeUtil;
 
 import java.util.ArrayList;
@@ -18,6 +19,8 @@ import java.util.Objects;
  * @see <a href="https://www.rfc-editor.org/rfc/rfc6901">RFC 6901 — JavaScript Object Notation (JSON) Pointer</a>
  */
 public final class JsonPointer {
+
+    private static final JsonPointer ROOT = new JsonPointer("", new ArrayList<String>());
 
     private final String raw;
     private final List<String> segments;
@@ -44,6 +47,21 @@ public final class JsonPointer {
             segments.add(unescape(part));
         }
         return new JsonPointer(pointer, segments);
+    }
+
+    /** The empty pointer, which refers to the whole document. */
+    public static JsonPointer root() {
+        return ROOT;
+    }
+
+    /**
+     * Returns a new pointer with one more reference token. The token is given unescaped, e.g. a
+     * property name such as {@code "a/b"}, and is escaped in the string form.
+     */
+    public JsonPointer append(String segment) {
+        ArrayList<String> appended = new ArrayList<String>(segments);
+        appended.add(segment);
+        return new JsonPointer(raw + "/" + escape(segment), appended);
     }
 
     public String raw() {
@@ -76,6 +94,11 @@ public final class JsonPointer {
 
     @SuppressWarnings("rawtypes")
     private static Object resolveSegment(Object current, String segment) {
+        // A union value that is not itself a node wraps the value to step into, e.g. the list of a
+        // draft 4 to 2019-09 tuple 'items'.
+        if (!(current instanceof Node) && current instanceof UnionValue) {
+            current = ((UnionValue) current).getValue();
+        }
         if (current instanceof MappedNode) {
             MappedNode mn = (MappedNode) current;
             return mn.getItem(segment);
@@ -106,6 +129,11 @@ public final class JsonPointer {
     // RFC 6901 §4: ~1 → '/', ~0 → '~' (order matters: ~1 first)
     private static String unescape(String token) {
         return token.replace("~1", "/").replace("~0", "~");
+    }
+
+    // The reverse, in the reverse order: '~' first, so the '~' of a '~1' is not escaped again
+    private static String escape(String token) {
+        return token.replace("~", "~0").replace("/", "~1");
     }
 
     @Override
