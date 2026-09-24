@@ -7,7 +7,6 @@
     {"issue": "#1225", "category": "NO_VERDICT", "pattern": "definitions through $ref @* /definitions/s replace with *"},
     {"issue": "#1225", "category": "NO_VERDICT", "pattern": "$defs through $ref @* /$defs/s replace with *"},
     {"issue": "#1234", "category": "NO_VERDICT", "pattern": "closed tuple @* /items/* replace with *"},
-    {"issue": "#1234", "category": "NO_VERDICT", "pattern": "open tuple @* /items/* replace with *"},
-    {"issue": "#1234", "category": "FALSE_COMPATIBLE", "pattern": "* /dependencies/a replace with false *"}
+    {"issue": "#1234", "category": "NO_VERDICT", "pattern": "open tuple @* /items/* replace with *"}
   ]
 }

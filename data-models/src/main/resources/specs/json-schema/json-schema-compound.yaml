@@ -23,7 +23,7 @@ typeAliases:
   - name: JsonSchema
     type: boolean|FullSchema
   - name: Dependency
-    type: FullSchema|[string]
+    type: boolean|FullSchema|[string]
 
 root:
   type: JsonSchema
