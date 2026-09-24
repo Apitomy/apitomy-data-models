@@ -86,3 +86,13 @@ allTests.forEach(spec => {
         });
     });
 });
+
+describe("Boolean JSON Schema roots", () => {
+    test.each([true, false])("%p reads, knows its own root and writes back", (value: boolean) => {
+        const root = Library.readRoot(value);
+        expect(root.isNode()).toBe(false);
+        expect(root.root()).toBe(root);
+        expect(Library.writeRoot(root)).toBe(value);
+        expect(Library.writeRootToJSONString(Library.readRootFromJSONString(String(value)))).toBe(String(value));
+    });
+});
