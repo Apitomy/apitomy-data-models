@@ -9,7 +9,10 @@ like `openapi`, `asyncapi`, `swagger`, `openrpc`, and `$schema`.
 
 `readRoot` and `readRootFromJSONString` return a `RootCapable` — the supertype of everything
 that can sit at the root of a document. For OpenAPI, AsyncAPI and OpenRPC that is a `Document`;
-for JSON Schema it is a schema, which is not a `Document`.
+for JSON Schema it is a schema, which is not a `Document`. A JSON Schema document may also be
+the literal `true` or `false`: it is read as a `BooleanUnionValue`, which is a `JsonSchema` and a
+`RootCapable` but not a `Node`, and written with `writeRoot` (see below). It carries no
+`$schema`, so it is read as draft 7.
 
 ### From a JSON String
 
@@ -192,8 +195,9 @@ using typed setters and `createXxx()` factory methods.
 
 ## Writing a Document
 
-`writeNode` serializes any node, including a document or schema root, so it is the one method
-that works across every specification.
+`writeNode` serializes any node, including a document or schema root. The one root it cannot
+take is a boolean JSON Schema, which is not a node; `writeRoot` and `writeRootToJSONString` write
+any root, as returned by `readRoot`, including that one.
 
 ### To a JSON Object
 
