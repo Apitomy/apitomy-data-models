@@ -6330,6 +6330,91 @@
     },
     {
       "enabled" : true,
+      "id" : "Modern: property removed (unevaluatedProperties false)",
+      "expected" : {
+        "backward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED"
+          ]
+        },
+        "forward" : {
+          "compatible" : true,
+          "diffTypes" : [
+            "OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED"
+          ]
+        }
+      },
+      "original" : {
+        "$schema" : "https://json-schema.org/draft/2020-12/schema",
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "note" : {
+            "type" : "string"
+          }
+        },
+        "unevaluatedProperties" : false
+      },
+      "updated" : {
+        "$schema" : "https://json-schema.org/draft/2020-12/schema",
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          }
+        },
+        "unevaluatedProperties" : false
+      }
+    },
+    {
+      "enabled" : true,
+      "id" : "Modern: allOf branch relaxed under unevaluatedProperties false",
+      "$comment" : "Relaxing the branch narrows the object: 'note' is no longer evaluated by any branch, so the root's unevaluatedProperties rejects it. Only backward is asserted; forward is over-strict today.",
+      "expected" : {
+        "backward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED"
+          ]
+        }
+      },
+      "original" : {
+        "$schema" : "https://json-schema.org/draft/2020-12/schema",
+        "type" : "object",
+        "allOf" : [
+          {
+            "properties" : {
+              "id" : {
+                "type" : "string"
+              },
+              "note" : {
+                "type" : "string"
+              }
+            }
+          }
+        ],
+        "unevaluatedProperties" : false
+      },
+      "updated" : {
+        "$schema" : "https://json-schema.org/draft/2020-12/schema",
+        "type" : "object",
+        "allOf" : [
+          {
+            "properties" : {
+              "id" : {
+                "type" : "string"
+              }
+            }
+          }
+        ],
+        "unevaluatedProperties" : false
+      }
+    },
+    {
+      "enabled" : true,
       "id" : "Cross-version: d7 tuple items vs 2020-12 prefixItems",
       "config" : {
         "allowCrossVersionChecking" : true

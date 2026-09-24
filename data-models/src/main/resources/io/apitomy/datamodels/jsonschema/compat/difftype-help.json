@@ -13,6 +13,8 @@
       "",
       "A common and surprising cause is *adding* a property definition when the schema otherwise accepted any value for that name (`additionalProperties` absent or `true`): the name that used to accept anything is now constrained by the new property schema. Removing a property while unknown properties are forbidden narrows the object as well.",
       "",
+      "Unknown properties can also be forbidden by `unevaluatedProperties` (2019-09 and later), which treats a property as known when the object's own `properties` or any `allOf`, `anyOf`, `oneOf`, `if`/`then`/`else` or `dependentSchemas` branch declares it. So removing a property from such a *branch* narrows the object too, even though the branch itself was relaxed.",
+      "",
       "Not backward compatible: a reader using the new schema may reject data written with the old schema. Note that adding a property is therefore not automatically a safe change."
     ],
     "OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED_COMPATIBLE_WITH_ADDITIONAL_PROPERTIES": [
@@ -79,6 +81,8 @@
       "A common and surprising cause is *appending* a position when elements beyond the tuple were unconstrained: the position that used to accept anything is now constrained by the new item schema. Removing a position narrows the array as well when elements beyond the tuple are forbidden, because arrays that had that element are now too long.",
       "",
       "Elements beyond the tuple are governed by `additionalItems` in drafts 4 to 2019-09, and by `items` in 2020-12, where `items: false` closes the tuple.",
+      "",
+      "`unevaluatedItems` can close a tuple as well. It treats a position as known when the array's own `prefixItems` or any `allOf`-style branch covers it, so removing a position from such a branch narrows the array too.",
       "",
       "Not backward compatible: a reader using the new schema may reject arrays written with the old schema. Note that appending a tuple position is therefore not automatically a safe change."
     ],
