@@ -78,7 +78,13 @@ public abstract class UnionValueImpl<T> implements UnionValue<T>, Union {
 
 	@Override
 	public RootCapable root() {
-		return this._parent != null ? this._parent.root() : null;
+		if (this._parent != null) {
+			return this._parent.root();
+		}
+		// A parentless union value is its own root when it carries a model type, e.g. a
+		// JSON
+		// Schema document that is the literal 'true'.
+		return this.isRoot() && this instanceof RootCapable ? (RootCapable) this : null;
 	}
 
 	@Override
