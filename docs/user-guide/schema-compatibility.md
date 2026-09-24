@@ -163,6 +163,57 @@ The result carries every difference found, and separately those that break compa
 `getDifferences()` returns everything detected, compatible or not — useful for change logs
 rather than gates.
 
+Each difference is reported where the change is. Its path is a `JsonPointer` into the schema,
+ending in the keyword that changed; `toString()` gives the familiar string form. Tightening a
+nested property, for example, reports the keyword inside it rather than the property as a whole:
+
+```
+STRING_TYPE_MAX_LENGTH_DECREASED at /properties/name/maxLength
+```
+
+A difference that concerns a subschema as a whole, such as a property schema replaced with
+`false`, points at the subschema itself (`/properties/name`). A comparison that only matches
+alternatives, such as the branches of an `anyOf`, is reported once, at the keyword
+(`/properties/choice/anyOf`).
+
+### The result as a tree
+
+`getRoot()` returns the same differences grouped by where they are, for example to display them.
+The root node is the whole schema; each child is a nested schema — a property's schema, the
+schema of an array's items — that has a difference at or below it. `flatten()` on any node lists
+every difference in its subtree, and `getDifferences()` on the result is `getRoot().flatten()`.
+
+=== "Java"
+
+    ```java
+    import io.apitomy.datamodels.jsonschema.compat.DifferenceNode;
+
+    static void print(DifferenceNode node, String indent) {
+        System.out.println(indent + node.getPathUpdated()
+                + (node.isCompatible() ? "" : "  (incompatible)"));
+        for (Difference diff : node.getDifferences()) {
+            System.out.println(indent + "  " + diff.getShortDescription());
+        }
+        for (DifferenceNode child : node.getChildren()) {
+            print(child, indent + "  ");
+        }
+    }
+
+    print(result.getRoot(), "");
+    ```
+
+=== "TypeScript"
+
+    ```typescript
+    function print(node: DifferenceNode, indent: string): void {
+        console.log(`${indent}${node.getPathUpdated()}${node.isCompatible() ? '' : '  (incompatible)'}`);
+        node.getDifferences().forEach(diff => console.log(`${indent}  ${diff.getShortDescription()}`));
+        node.getChildren().forEach(child => print(child, indent + '  '));
+    }
+
+    print(result.getRoot(), '');
+    ```
+
 ### Explaining a difference
 
 Each `Difference` can describe itself, which is handy when surfacing results to a user rather
@@ -201,8 +252,11 @@ than failing a build.
     In Java it returns `Optional<String>`; in TypeScript it returns the string directly, which
     may be absent. The examples above reflect that.
 
-`getPathOriginal()` and `getPathUpdated()` locate the change in each schema, and
-`getSubSchemaOriginal()` / `getSubSchemaUpdated()` give the sub-schema on each side.
+`getPathOriginal()` and `getPathUpdated()` locate the change in each schema, in the keywords that
+schema uses: for a draft-7 tuple the path is `/items/0/…`, for 2020-12 `/prefixItems/0/…`, even
+when the two schemas of a cross-version check differ. The path of a tree node resolves against
+the schema it belongs to with `JsonPointer.evaluate`. `getSubSchemaOriginal()` /
+`getSubSchemaUpdated()` give the sub-schema on each side.
 
 ---
 
