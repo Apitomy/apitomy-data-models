@@ -17,6 +17,27 @@ on:
     branches: [main, 3.1.x]
 
 jobs:
+  docs-verify:
+    name: Verify Docs Build
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'Apitomy'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.14.7'
+
+      - name: Install MkDocs and dependencies
+        run: pip install -r docs-requirements.txt
+
+      # --strict turns broken internal links, missing nav targets and unrecognised config into
+      # errors rather than warnings.
+      - name: Build Documentation
+        run: mkdocs build --strict
+
   build-verify:
     name: Verify Build (${{ matrix.java-version }})
     runs-on: ubuntu-latest
