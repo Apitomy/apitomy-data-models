@@ -1,6 +1,8 @@
 package io.apitomy.datamodels;
 
 import io.apitomy.datamodels.models.ModelType;
+import io.apitomy.datamodels.models.RootCapable;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.jsonschema.modern.v202012.JM202012FullSchema;
 import io.apitomy.datamodels.models.openapi.OpenApiDocument;
 import io.apitomy.datamodels.models.union.StringUnionValueImpl;
@@ -19,6 +21,23 @@ public class LibraryTest {
     public void testReadDocumentFromJSONString() {
         OpenApi30Document document = (OpenApi30Document) Library.readDocumentFromJSONString(EMPTY_OPENAPI);
         Assertions.assertEquals("3.0.1", document.getOpenapi());
+    }
+
+    /**
+     * A JSON Schema document may be the literal true or false. It reads as a root that is not a
+     * Node, knows its own model type and root, and writes back unchanged.
+     */
+    @Test
+    public void testBooleanJsonSchemaRoot() {
+        for (String json : new String[] {"true", "false"}) {
+            RootCapable root = Library.readRootFromJSONString(json);
+            Assertions.assertInstanceOf(JsonSchema.class, root);
+            Assertions.assertFalse(root.isNode());
+            Assertions.assertEquals(ModelType.JD7, root.modelType());
+            Assertions.assertSame(root, root.root());
+            Assertions.assertEquals(json, Library.writeRootToJSONString(root));
+        }
+        Assertions.assertThrows(UnsupportedModelTypeException.class, () -> Library.readRootFromJSONString("42"));
     }
 
     @Test

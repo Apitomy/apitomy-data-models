@@ -16,6 +16,7 @@
 
 package io.apitomy.datamodels;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.apitomy.datamodels.deref.Dereferencer;
 import io.apitomy.datamodels.models.Document;
@@ -109,7 +110,7 @@ public class Library {
     }
 
     /**
-     * @deprecated Use {@link #readRoot(ObjectNode)} instead. This method only works for specs
+     * @deprecated Use {@link #readRoot(JsonNode)} instead. This method only works for specs
      * whose root entity implements {@link Document}. For JSON Schema, use {@code readRoot()}.
      */
     @Deprecated
@@ -125,10 +126,25 @@ public class Library {
 
     /**
      * Reads a root node from JSON data, returning the generic {@link RootCapable} type.
+     * <p>
+     * The root is normally a JSON object. A JSON Schema document may also be the literal
+     * {@code true} or {@code false}; it cannot carry {@code $schema}, so it is read as draft 7 and
+     * returned as a {@code BooleanUnionValue}, which is a {@link RootCapable} but not a
+     * {@link Node}. Write it back with {@link #writeRoot(RootCapable)}.
+     *
+     * @throws UnsupportedModelTypeException if the JSON is neither an object nor a boolean
      */
-    public static RootCapable readRoot(ObjectNode json) {
-        ObjectNode clonedJson = (ObjectNode) JsonUtil.clone(json);
-        ModelType type = ModelTypeDetector.discoverModelType(clonedJson);
+    public static RootCapable readRoot(JsonNode json) {
+        JsonNode clonedJson = JsonUtil.clone(json);
+        ModelType type;
+        if (JsonUtil.isObject(clonedJson)) {
+            type = ModelTypeDetector.discoverModelType((ObjectNode) clonedJson);
+        } else if (JsonUtil.isBoolean(clonedJson)) {
+            type = ModelType.JD7;
+        } else {
+            throw new UnsupportedModelTypeException(
+                    "A document root must be a JSON object, or a boolean for a JSON Schema.");
+        }
         ModelReader reader = ModelReaderFactory.createModelReader(type);
         return reader.readRoot(clonedJson);
     }
@@ -148,8 +164,31 @@ public class Library {
      * Reads a root node from a JSON string, returning the generic {@link RootCapable} type.
      */
     public static RootCapable readRootFromJSONString(String jsonString) {
-        ObjectNode json = (ObjectNode) JsonUtil.parseJSON(jsonString);
-        return readRoot(json);
+        return readRoot(JsonUtil.parseJSON(jsonString));
+    }
+
+    /**
+     * Serializes a root node, as returned by {@link #readRoot(JsonNode)} or
+     * {@link #createRoot(ModelType)}. Unlike {@link #writeNode(Node)}, it also accepts a root that
+     * is not a {@link Node}, such as a boolean JSON Schema, so the result is a {@link JsonNode}
+     * rather than an {@link ObjectNode}.
+     *
+     * @throws UnsupportedModelTypeException if the value is not a root, i.e. has no model type
+     */
+    public static JsonNode writeRoot(RootCapable root) {
+        ModelType type = root.modelType();
+        if (type == null) {
+            throw new UnsupportedModelTypeException("Not a root: the value has no model type.");
+        }
+        ModelWriter writer = ModelWriterFactory.createModelWriter(type);
+        return writer.writeRoot(root);
+    }
+
+    /**
+     * Serializes a root node to a JSON string. See {@link #writeRoot(RootCapable)}.
+     */
+    public static String writeRootToJSONString(RootCapable root) {
+        return JsonUtil.stringify(writeRoot(root));
     }
 
     /**
