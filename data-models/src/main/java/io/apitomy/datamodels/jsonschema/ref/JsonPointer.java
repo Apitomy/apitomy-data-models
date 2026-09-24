@@ -61,16 +61,17 @@ public final class JsonPointer {
     /**
      * Evaluate this pointer against a document tree, starting from the given root node.
      *
-     * @return the target node, or null if the path cannot be resolved
+     * @return the target schema, which may be a boolean schema, or null if the path cannot be
+     *         resolved
      */
     @SuppressWarnings("rawtypes")
-    public Node evaluate(Node root) {
+    public JsonSchema evaluate(JsonSchema root) {
         Object current = root;
         for (String segment : segments) {
             if (current == null) return null;
             current = resolveSegment(current, segment);
         }
-        return toNode(current);
+        return toSchema(current);
     }
 
     @SuppressWarnings("rawtypes")
@@ -98,13 +99,8 @@ public final class JsonPointer {
         return null;
     }
 
-    private static Node toNode(Object obj) {
-        if (obj instanceof Node) return ((Node) obj);
-        if (obj instanceof JsonSchema) {
-            JsonSchema union = (JsonSchema) obj;
-            if (union.isFullSchema()) return union.asFullSchema();
-        }
-        return null;
+    private static JsonSchema toSchema(Object obj) {
+        return obj instanceof JsonSchema ? (JsonSchema) obj : null;
     }
 
     // RFC 6901 §4: ~1 → '/', ~0 → '~' (order matters: ~1 first)

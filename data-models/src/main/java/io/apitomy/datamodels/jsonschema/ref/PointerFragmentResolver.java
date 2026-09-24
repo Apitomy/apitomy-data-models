@@ -1,6 +1,6 @@
 package io.apitomy.datamodels.jsonschema.ref;
 
-import io.apitomy.datamodels.models.Node;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 
 import java.util.Optional;
 
@@ -13,7 +13,7 @@ import java.util.Optional;
 public class PointerFragmentResolver implements FragmentResolver {
 
     @Override
-    public Optional<Node> resolveFragment(JsonRef ref, Node targetDocument, RefResolutionContext context) {
+    public Optional<JsonSchema> resolveFragment(JsonRef ref, JsonSchema targetDocument, RefResolutionContext context) {
         if (!ref.isPointer()) {
             return Optional.empty();
         }

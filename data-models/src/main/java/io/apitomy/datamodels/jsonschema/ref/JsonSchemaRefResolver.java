@@ -1,6 +1,6 @@
 package io.apitomy.datamodels.jsonschema.ref;
 
-import io.apitomy.datamodels.models.Node;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 
 import java.util.Optional;
 
@@ -21,5 +21,5 @@ public interface JsonSchemaRefResolver {
      * @param context resolution context providing the source node and base URI
      * @return the resolved node, or empty if unresolvable
      */
-    Optional<Node> resolve(JsonRef ref, RefResolutionContext context);
+    Optional<JsonSchema> resolve(JsonRef ref, RefResolutionContext context);
 }

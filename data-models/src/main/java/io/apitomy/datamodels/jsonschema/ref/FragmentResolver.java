@@ -1,6 +1,6 @@
 package io.apitomy.datamodels.jsonschema.ref;
 
-import io.apitomy.datamodels.models.Node;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 
 import java.util.Optional;
 
@@ -27,10 +27,11 @@ public interface FragmentResolver {
      * dereferencer.
      *
      * @param ref            the parsed reference (use {@link JsonRef#pointer()} or {@link JsonRef#anchor()})
-     * @param targetDocument the document to search within
+     * @param targetDocument the document to search within, which may be a boolean schema
      * @param context        resolution context
-     * @return the resolved node, or empty if this resolver cannot handle the fragment type
+     * @return the resolved schema, which may be a boolean schema, or empty if this resolver
+     *         cannot handle the fragment type
      * @throws ReferenceResolutionException if resolution fails
      */
-    Optional<Node> resolveFragment(JsonRef ref, Node targetDocument, RefResolutionContext context);
+    Optional<JsonSchema> resolveFragment(JsonRef ref, JsonSchema targetDocument, RefResolutionContext context);
 }

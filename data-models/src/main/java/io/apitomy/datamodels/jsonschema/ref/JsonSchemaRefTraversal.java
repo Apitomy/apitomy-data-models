@@ -1,5 +1,7 @@
 package io.apitomy.datamodels.jsonschema.ref;
 
+import io.apitomy.datamodels.models.RootCapable;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.Node;
 
 import java.util.HashMap;
@@ -24,11 +26,11 @@ import java.util.Set;
 public class JsonSchemaRefTraversal {
 
     private final JsonSchemaRefResolver resolver;
-    private final Map<String, Node> cache = new HashMap<>();
+    private final Map<String, JsonSchema> cache = new HashMap<>();
     // Stable per-document ids, replacing System.identityHashCode, which has no
     // transpiled equivalent. Model nodes do not override equals/hashCode, so this
     // map is keyed by identity. Scoped to this traversal, so it cannot grow unbounded.
-    private final Map<Node, Integer> documentIds = new HashMap<>();
+    private final Map<RootCapable, Integer> documentIds = new HashMap<>();
     private final Set<String> visiting = new HashSet<>();
 
     public JsonSchemaRefTraversal(JsonSchemaRefResolver resolver) {
@@ -44,23 +46,24 @@ public class JsonSchemaRefTraversal {
      *
      * @param ref  the $ref string as it appears in the schema
      * @param from the node containing the $ref
-     * @return the resolved node, or empty if unresolvable or a cycle was detected
+     * @return the resolved schema, which may be a boolean schema, or empty if unresolvable or a
+     *         cycle was detected
      */
-    public Optional<Node> resolveRef(String ref, Node from) {
+    public Optional<JsonSchema> resolveRef(String ref, Node from) {
         if (ref == null) {
             return Optional.empty();
         }
         return resolveRef(JsonRef.parse(ref), from);
     }
 
-    public Optional<Node> resolveRef(JsonRef ref, Node from) {
+    public Optional<JsonSchema> resolveRef(JsonRef ref, Node from) {
         // TODO: Compute baseUri by walking up from 'from' to find $id values.
         //  For now, internal refs don't need base URI resolution.
 
         // Cache key includes document identity to avoid cross-document collisions
-        String cacheKey = documentId((Node) from.root()) + ":" + ref.raw();
+        String cacheKey = documentId(from.root()) + ":" + ref.raw();
 
-        Node cached = cache.get(cacheKey);
+        JsonSchema cached = cache.get(cacheKey);
         if (cached != null) {
             return Optional.of(cached);
         }
@@ -72,7 +75,7 @@ public class JsonSchemaRefTraversal {
         visiting.add(cacheKey);
         try {
             RefResolutionContext ctx = RefResolutionContext.builder(from).build();
-            Optional<Node> result = resolver.resolve(ref, ctx);
+            Optional<JsonSchema> result = resolver.resolve(ref, ctx);
             result.ifPresent(r -> cache.put(cacheKey, r));
             return result;
         } finally {
@@ -81,7 +84,7 @@ public class JsonSchemaRefTraversal {
     }
 
     /** A stable id for a document root, assigned on first use. */
-    private int documentId(Node root) {
+    private int documentId(RootCapable root) {
         Integer id = documentIds.get(root);
         if (id == null) {
             id = documentIds.size() + 1;

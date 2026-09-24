@@ -1,6 +1,6 @@
 package io.apitomy.datamodels.jsonschema.ref;
 
-import io.apitomy.datamodels.models.Node;
+import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 
 import java.util.Optional;
 
@@ -17,9 +17,12 @@ import java.util.Optional;
  * Fragment resolution (the part after {@code #}) is handled separately
  * by {@link FragmentResolver}.
  * <p>
- * <b>Identity contract:</b> Implementations should return the same {@link Node}
- * instance for the same logical resource, even if invoked multiple times with
- * the same resource identifier. The returned node is not cloned by the caller
+ * The result is a {@link JsonSchema}: a full schema, or a boolean schema when the
+ * document is the literal {@code true} or {@code false}.
+ * <p>
+ * <b>Identity contract:</b> Implementations should return the same instance for
+ * the same logical resource, even if invoked multiple times with
+ * the same resource identifier. The returned schema is not cloned by the caller
  * and may be mutated (e.g., by the {@link JsonSchemaRefDereferencer}).
  * If two different resource identifiers refer to the same logical document,
  * implementations should return the same instance for both to enable correct
@@ -41,5 +44,5 @@ public interface ResourceResolver {
      * @return the parsed document node, or empty if this resolver cannot handle the resource
      * @throws ReferenceResolutionException if resolution fails
      */
-    Optional<Node> resolveResource(String resource, RefResolutionContext context);
+    Optional<JsonSchema> resolveResource(String resource, RefResolutionContext context);
 }

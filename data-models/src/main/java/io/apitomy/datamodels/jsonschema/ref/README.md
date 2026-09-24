@@ -82,8 +82,8 @@ JsonSchemaRefTraversal          — caching + cycle detection
 ```
 
 The chain uses two types of resolvers:
-- **`FragmentResolver`**: receives a `JsonRef`, target document `Node`, and `RefResolutionContext`. Finds a node within the document.
+- **`FragmentResolver`**: receives a `JsonRef`, the target document (a `JsonSchema`), and `RefResolutionContext`. Finds a schema within the document.
 - **`ResourceResolver`**: receives a resource identifier (string) and `RefResolutionContext`. Fetches an external document.
 
-Both return `Optional<Node>` — empty if they can't handle the reference.
+Both return `Optional<JsonSchema>` — empty if they can't handle the reference. The result may be a boolean schema (`true`/`false`), which is a `JsonSchema` but not a `Node`; the dereferencer inlines it like any other target.
 Resolved nodes from the same document have `isAttached() == true`; externally parsed nodes have `isAttached() == false`.

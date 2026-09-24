@@ -51,20 +51,25 @@ public class JsonPointerTest {
         var schema = """
             {"$schema": "http://json-schema.org/draft-07/schema#",
              "definitions": {
-               "Address": {"type": "object", "properties": {"street": {"type": "string"}}}
+               "Address": {"type": "object", "properties": {"street": {"type": "string"}}},
+               "Nothing": false
              }}""";
-        var doc = (io.apitomy.datamodels.models.Node) io.apitomy.datamodels.Library.readRootFromJSONString(schema);
+        var doc = (io.apitomy.datamodels.models.jsonschema.JsonSchema) io.apitomy.datamodels.Library.readRootFromJSONString(schema);
 
         var ptr = JsonPointer.parse("/definitions/Address");
         var result = ptr.evaluate(doc);
         Assertions.assertNotNull(result, "Should resolve #/definitions/Address");
+
+        var booleanTarget = JsonPointer.parse("/definitions/Nothing").evaluate(doc);
+        Assertions.assertTrue(booleanTarget != null && booleanTarget.isBoolean() && !booleanTarget.asBoolean(),
+                "A boolean schema is a valid pointer target");
     }
 
     @Test
     public void testEvaluateNonExistentPath() {
         var schema = """
             {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object"}""";
-        var doc = (io.apitomy.datamodels.models.Node) io.apitomy.datamodels.Library.readRootFromJSONString(schema);
+        var doc = (io.apitomy.datamodels.models.jsonschema.JsonSchema) io.apitomy.datamodels.Library.readRootFromJSONString(schema);
 
         var ptr = JsonPointer.parse("/definitions/Missing");
         var result = ptr.evaluate(doc);
