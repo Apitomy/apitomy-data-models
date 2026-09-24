@@ -57,6 +57,8 @@
       "",
       "A dependent schema is not a property schema: it applies to the *whole object*, but only when the object has the key property. So the change can look unrelated to the data, yet it rejects any object that has the key property and no longer satisfies the dependent schema.",
       "",
+      "The extreme case is `false`, which forbids the key property altogether: any object that has it is rejected.",
+      "",
       "Not backward compatible: a reader using the new schema may reject previously-valid data that contains the key property."
     ],
     "SUBSCHEMA_TYPE_CHANGED": [
