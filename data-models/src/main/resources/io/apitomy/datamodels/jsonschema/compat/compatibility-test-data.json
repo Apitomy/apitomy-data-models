@@ -2279,6 +2279,43 @@
     },
     {
       "enabled" : true,
+      "id" : "Array: tuple element 'true' replaced with a schema",
+      "expected" : {
+        "backward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "ARRAY_TYPE_ITEM_SCHEMAS_CHANGED"
+          ]
+        },
+        "forward" : {
+          "compatible" : true
+        }
+      },
+      "original" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "type" : "array",
+        "items" : [
+          true,
+          {
+            "type" : "integer"
+          }
+        ]
+      },
+      "updated" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "type" : "array",
+        "items" : [
+          {
+            "type" : "string"
+          },
+          {
+            "type" : "integer"
+          }
+        ]
+      }
+    },
+    {
+      "enabled" : true,
       "id" : "Array: tuple item schemas reordered",
       "expected" : {
         "backward" : {

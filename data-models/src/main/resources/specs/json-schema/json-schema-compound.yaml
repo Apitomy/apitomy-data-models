@@ -161,7 +161,7 @@ entities:
       # --- Array validation ---
       # items uses the widest type (union of all forms across drafts)
       - name: items
-        type: 'boolean|FullSchema|[FullSchema]'
+        type: 'boolean|FullSchema|[JsonSchema]'
       - name: additionalItems
         type: JsonSchema
         # d4-2019-09
