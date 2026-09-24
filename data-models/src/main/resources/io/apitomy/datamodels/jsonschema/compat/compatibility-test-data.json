@@ -4109,7 +4109,10 @@
       "id" : "Complex: oneOf subschema relaxed",
       "expected" : {
         "backward" : {
-          "compatible" : true
+          "compatible" : false,
+          "diffTypes" : [
+            "COMBINED_TYPE_ONE_OF_SUBSCHEMAS_MAY_OVERLAP"
+          ]
         },
         "forward" : {
           "compatible" : false,
@@ -4180,9 +4183,10 @@
       "id" : "Complex: oneOf branch added",
       "expected" : {
         "backward" : {
-          "compatible" : true,
+          "compatible" : false,
           "diffTypes" : [
-            "COMBINED_TYPE_ONE_OF_SIZE_INCREASED"
+            "COMBINED_TYPE_ONE_OF_SIZE_INCREASED",
+            "COMBINED_TYPE_ONE_OF_SUBSCHEMAS_MAY_OVERLAP"
           ]
         },
         "forward" : {

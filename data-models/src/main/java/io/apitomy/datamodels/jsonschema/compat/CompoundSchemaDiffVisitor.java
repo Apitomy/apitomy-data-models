@@ -53,6 +53,7 @@ import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_CRI
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_CRITERION_NARROWED;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ONE_OF_SIZE_DECREASED;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ONE_OF_SIZE_INCREASED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_ONE_OF_SUBSCHEMAS_MAY_OVERLAP;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_ADDED;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.CONDITIONAL_TYPE_ELSE_SCHEMA_COMPATIBLE_BACKWARD_NOT_FORWARD;
@@ -1249,7 +1250,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             // allOf -> anyOf transition
             if (original != null && updAnyOf != null && updated == null) {
                 diffCompositionList(ctx, original, updAnyOf,
-                        COMBINED_TYPE_CRITERION_EXTENDED, COMBINED_TYPE_CRITERION_EXTENDED);
+                        COMBINED_TYPE_CRITERION_EXTENDED, COMBINED_TYPE_CRITERION_EXTENDED, false);
                 ctx.addDifference(COMBINED_TYPE_CRITERION_EXTENDED, "allOf", "anyOf");
                 return;
             }
@@ -1263,7 +1264,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         }
 
         diffCompositionList(ctx, original, updated,
-                COMBINED_TYPE_ALL_OF_SIZE_INCREASED, COMBINED_TYPE_ALL_OF_SIZE_DECREASED);
+                COMBINED_TYPE_ALL_OF_SIZE_INCREASED, COMBINED_TYPE_ALL_OF_SIZE_DECREASED, false);
     }
 
     @Override
@@ -1282,7 +1283,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             // oneOf -> anyOf
             if (origOneOf != null && updated != null && original == null && updOneOf == null) {
                 diffCompositionList(ctx, origOneOf, updated,
-                        COMBINED_TYPE_CRITERION_EXTENDED, COMBINED_TYPE_CRITERION_EXTENDED);
+                        COMBINED_TYPE_CRITERION_EXTENDED, COMBINED_TYPE_CRITERION_EXTENDED, true);
                 ctx.addDifference(COMBINED_TYPE_CRITERION_EXTENDED, "oneOf", "anyOf");
                 return;
             }
@@ -1290,15 +1291,20 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             if (original != null && updAllOf != null && updated == null) {
                 return;
             }
-            // anyOf -> oneOf
+            // anyOf -> oneOf: equivalent when the oneOf branches cannot overlap
             if (original != null && updOneOf != null && updated == null) {
-                ctx.addDifference(COMBINED_TYPE_CRITERION_NARROWED, "anyOf", "oneOf");
+                if (pairwiseDisjoint(updOneOf, DiffUtil.getTypeList(currentOriginal))) {
+                    diffCompositionList(ctx, original, updOneOf,
+                            COMBINED_TYPE_ANY_OF_SIZE_INCREASED, COMBINED_TYPE_ANY_OF_SIZE_DECREASED, true);
+                } else {
+                    ctx.addDifference(COMBINED_TYPE_CRITERION_NARROWED, "anyOf", "oneOf");
+                }
                 return;
             }
         }
 
         diffCompositionList(ctx, original, updated,
-                COMBINED_TYPE_ANY_OF_SIZE_INCREASED, COMBINED_TYPE_ANY_OF_SIZE_DECREASED);
+                COMBINED_TYPE_ANY_OF_SIZE_INCREASED, COMBINED_TYPE_ANY_OF_SIZE_DECREASED, true);
     }
 
     @Override
@@ -1319,14 +1325,225 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             }
         }
 
-        diffCompositionList(ctx, original, updated,
-                COMBINED_TYPE_ONE_OF_SIZE_INCREASED, COMBINED_TYPE_ONE_OF_SIZE_DECREASED);
+        if (original == null || updated == null) {
+            diffCompositionList(ctx, original, updated,
+                    COMBINED_TYPE_ONE_OF_SIZE_INCREASED, COMBINED_TYPE_ONE_OF_SIZE_DECREASED, true);
+            return;
+        }
+        diffOneOfLists(original, updated);
     }
 
+    /**
+     * A value valid under {@code oneOf} matches exactly one branch. So besides the {@code anyOf}
+     * rule, that every original alternative stays covered, a new or relaxed branch must not let a
+     * value match two branches. That holds when the updated branches are provably disjoint
+     * ({@link #provablyDisjoint}); otherwise it cannot be ruled out, and the change is reported.
+     */
+    private void diffOneOfLists(List<JsonSchema> original, List<JsonSchema> updated) {
+        if (updated.size() > original.size()) {
+            ctx.addDifference(COMBINED_TYPE_ONE_OF_SIZE_INCREASED, original.size(), updated.size());
+        } else if (updated.size() < original.size()) {
+            ctx.addDifference(COMBINED_TYPE_ONE_OF_SIZE_DECREASED, original.size(), updated.size());
+        }
+        int excused = Math.max(0, original.size() - updated.size());
+        if (countUncovered(ctx, original, updated) > excused) {
+            ctx.addDifference(COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE, original, updated);
+        } else if (hasNewOrRelaxedBranch(original, updated)
+                && !pairwiseDisjoint(updated, DiffUtil.getTypeList(currentOriginal))) {
+            ctx.addDifference(COMBINED_TYPE_ONE_OF_SUBSCHEMAS_MAY_OVERLAP, original, updated);
+        }
+    }
+
+    /** Whether some updated branch is not equivalent to any original branch. */
+    private boolean hasNewOrRelaxedBranch(List<JsonSchema> original, List<JsonSchema> updated) {
+        for (JsonSchema updSub : updated) {
+            boolean equivalent = false;
+            for (JsonSchema origSub : original) {
+                DiffContext subCtx = ctx.sub("composition");
+                if (isUnionSchemaCompatible(subCtx, origSub, updSub, true)
+                        && isUnionSchemaCompatible(subCtx, origSub, updSub, false)) {
+                    equivalent = true;
+                    break;
+                }
+            }
+            if (!equivalent) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // -----------------------------------------------------------------------
+    // Disjointness: can two subschemas both accept the same value?
+    // -----------------------------------------------------------------------
+
+    private static final int MAX_DISJOINT_DEPTH = 8;
+
+    private static boolean pairwiseDisjoint(List<JsonSchema> branches, List<String> contextTypes) {
+        for (int i = 0; i < branches.size(); i++) {
+            for (int j = i + 1; j < branches.size(); j++) {
+                if (!provablyDisjoint(branches.get(i), branches.get(j), contextTypes, 0)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Whether no value of one of the {@code contextTypes} ({@code null} for any type) can match both
+     * schemas. Proven from distinct types, distinct {@code enum}/{@code const} values, or a
+     * discriminator: a property both declare with disjoint schemas and at least one requires.
+     * Anything else, such as non-overlapping numeric ranges, is conservatively not disjoint.
+     */
+    private static boolean provablyDisjoint(JsonSchema a, JsonSchema b, List<String> contextTypes, int depth) {
+        if (a == null || b == null || depth > MAX_DISJOINT_DEPTH) {
+            return false;
+        }
+        if ((a.isBoolean() && !a.asBoolean()) || (b.isBoolean() && !b.asBoolean())) {
+            return true;
+        }
+        if (!(a instanceof JCFullSchema) || !(b instanceof JCFullSchema)) {
+            return false;
+        }
+        JCFullSchema left = (JCFullSchema) a;
+        JCFullSchema right = (JCFullSchema) b;
+        List<String> leftTypes = narrowTypes(DiffUtil.getTypeList(left), contextTypes);
+        List<String> rightTypes = narrowTypes(DiffUtil.getTypeList(right), contextTypes);
+        if (leftTypes != null && rightTypes != null && !typesOverlap(leftTypes, rightTypes)) {
+            return true;
+        }
+        List<JsonNode> leftValues = allowedValues(left);
+        List<JsonNode> rightValues = allowedValues(right);
+        if (leftValues != null && !anyValueAdmitted(leftValues, rightValues, rightTypes)) {
+            return true;
+        }
+        if (rightValues != null && !anyValueAdmitted(rightValues, leftValues, leftTypes)) {
+            return true;
+        }
+        return onlyObjects(leftTypes, rightTypes) && hasDiscriminator(left, right, depth);
+    }
+
+    /** The types a schema admits within the context; {@code null} when unrestricted. */
+    private static List<String> narrowTypes(List<String> types, List<String> contextTypes) {
+        if (types == null) {
+            return contextTypes;
+        }
+        if (contextTypes == null) {
+            return types;
+        }
+        List<String> narrowed = new ArrayList<String>();
+        for (String type : types) {
+            List<String> single = new ArrayList<String>();
+            single.add(type);
+            if (typesOverlap(single, contextTypes)) {
+                narrowed.add(type);
+            }
+        }
+        return narrowed;
+    }
+
+    private static boolean typesOverlap(List<String> left, List<String> right) {
+        for (String type : left) {
+            if (right.contains(type)
+                    || ("integer".equals(type) && right.contains("number"))
+                    || ("number".equals(type) && right.contains("integer"))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static List<JsonNode> allowedValues(JCFullSchema schema) {
+        if (schema.getConst() != null) {
+            List<JsonNode> values = new ArrayList<JsonNode>();
+            values.add(schema.getConst());
+            return values;
+        }
+        return schema.getEnum();
+    }
+
+    /**
+     * Whether some value may be accepted by the other side's {@code enum}/{@code const} (or, when it
+     * has none, by its types). Objects and arrays are not compared, so they always may be.
+     */
+    private static boolean anyValueAdmitted(List<JsonNode> values, List<JsonNode> otherValues, List<String> otherTypes) {
+        for (JsonNode value : values) {
+            boolean admitted;
+            if (otherValues != null) {
+                admitted = false;
+                for (JsonNode other : otherValues) {
+                    if (mayBeEqual(value, other)) {
+                        admitted = true;
+                        break;
+                    }
+                }
+            } else {
+                admitted = otherTypes == null || typesAdmit(otherTypes, value);
+            }
+            if (admitted) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean mayBeEqual(JsonNode left, JsonNode right) {
+        if (JsonUtil.isNumber(left) && JsonUtil.isNumber(right)) {
+            return NumberUtil.compare(JsonUtil.toNumber(left), JsonUtil.toNumber(right)) == 0;
+        }
+        if (JsonUtil.isString(left) && JsonUtil.isString(right)) {
+            return JsonUtil.toString(left).equals(JsonUtil.toString(right));
+        }
+        if (JsonUtil.isBoolean(left) && JsonUtil.isBoolean(right)) {
+            return JsonUtil.toBoolean(left).booleanValue() == JsonUtil.toBoolean(right).booleanValue();
+        }
+        if (JsonUtil.isArray(left) || JsonUtil.isObject(left) || JsonUtil.isArray(right) || JsonUtil.isObject(right)) {
+            return true;
+        }
+        // Different scalar kinds never compare equal; two nulls do.
+        return !JsonUtil.isNumber(left) && !JsonUtil.isString(left) && !JsonUtil.isBoolean(left)
+                && !JsonUtil.isNumber(right) && !JsonUtil.isString(right) && !JsonUtil.isBoolean(right);
+    }
+
+    /** Whether a value accepted by both schemas must be an object, where properties apply. */
+    private static boolean onlyObjects(List<String> leftTypes, List<String> rightTypes) {
+        boolean leftObjects = leftTypes != null && leftTypes.size() == 1 && leftTypes.contains("object");
+        boolean rightObjects = rightTypes != null && rightTypes.size() == 1 && rightTypes.contains("object");
+        return leftObjects || rightObjects;
+    }
+
+    private static boolean hasDiscriminator(JCFullSchema left, JCFullSchema right, int depth) {
+        Map<String, JsonSchema> leftProperties = left.getProperties();
+        Map<String, JsonSchema> rightProperties = right.getProperties();
+        if (leftProperties == null || rightProperties == null) {
+            return false;
+        }
+        for (String name : leftProperties.keySet()) {
+            boolean required = (left.getRequired() != null && left.getRequired().contains(name))
+                    || (right.getRequired() != null && right.getRequired().contains(name));
+            if (required && rightProperties.containsKey(name)
+                    && provablyDisjoint(leftProperties.get(name), rightProperties.get(name), null, depth + 1)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Compares two composition lists and reports their size change and incompatible branches.
+     * <p>
+     * Which side must cover the other depends on the keyword. For {@code allOf} every branch
+     * applies, so each updated branch must be implied by some original branch
+     * ({@code originalMustBeCovered} is {@code false}). For {@code anyOf}, and a {@code oneOf} that
+     * behaves like one, a value needs to match only one branch, so each original alternative must
+     * still be covered by some updated alternative ({@code true}).
+     */
     private void diffCompositionList(DiffContext ctx,
                                      List<JsonSchema> originalList,
                                      List<JsonSchema> updatedList,
-                                     DiffType increasedType, DiffType decreasedType) {
+                                     DiffType increasedType, DiffType decreasedType,
+                                     boolean originalMustBeCovered) {
         if (originalList == null && updatedList == null) return;
         if (originalList == null || updatedList == null) {
             ctx.addDifference(COMBINED_TYPE_CRITERION_CHANGED, originalList, updatedList);
@@ -1337,6 +1554,16 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             ctx.addDifference(increasedType, originalList.size(), updatedList.size());
         } else if (updatedList.size() < originalList.size()) {
             ctx.addDifference(decreasedType, originalList.size(), updatedList.size());
+        }
+
+        if (originalMustBeCovered) {
+            // A removed alternative is already reported by an incompatible size difference.
+            int excused = decreasedType.isBackwardsCompatible()
+                    ? 0 : Math.max(0, originalList.size() - updatedList.size());
+            if (countUncovered(ctx, originalList, updatedList) > excused) {
+                ctx.addDifference(COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE, originalList, updatedList);
+            }
+            return;
         }
 
         int unmatchedCount = 0;
@@ -1369,6 +1596,24 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             ctx.addDifference(COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE,
                     originalList, updatedList);
         }
+    }
+
+    /** How many original alternatives no updated alternative accepts everything of. */
+    private static int countUncovered(DiffContext ctx, List<JsonSchema> originalList, List<JsonSchema> updatedList) {
+        int uncovered = 0;
+        for (JsonSchema origSub : originalList) {
+            boolean covered = false;
+            for (JsonSchema updSub : updatedList) {
+                if (isUnionSchemaCompatible(ctx.sub("composition"), origSub, updSub, true)) {
+                    covered = true;
+                    break;
+                }
+            }
+            if (!covered) {
+                uncovered++;
+            }
+        }
+        return uncovered;
     }
 
     // -----------------------------------------------------------------------

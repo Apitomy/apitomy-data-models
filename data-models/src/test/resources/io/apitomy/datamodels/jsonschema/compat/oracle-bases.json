@@ -207,6 +207,22 @@
       "schema": {"oneOf": [{"type": "string"}, {"type": "integer", "maximum": 10}]}
     },
     {
+      "id": "anyOf of types",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {"anyOf": [{"type": "string"}, {"type": "integer"}]}
+    },
+    {
+      "id": "tagged union",
+      "drafts": ["draft-07", "2020-12"],
+      "schema": {
+        "type": "object",
+        "oneOf": [
+          {"properties": {"kind": {"const": "circle"}, "radius": {"type": "number"}}, "required": ["kind"]},
+          {"properties": {"kind": {"const": "square"}, "side": {"type": "number"}}, "required": ["kind"]}
+        ]
+      }
+    },
+    {
       "id": "allOf",
       "drafts": ["draft-07", "2020-12"],
       "schema": {
