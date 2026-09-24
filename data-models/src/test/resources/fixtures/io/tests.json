@@ -687,6 +687,10 @@
     "test": "json-schema/draft-4/boolean-schemas.json"
   },
   {
+    "name": "[JSON Schema Draft-4] Boolean Tuple Items",
+    "test": "json-schema/draft-4/boolean-tuple-items.json"
+  },
+  {
     "name": "[JSON Schema Draft-6] Meta Schema",
     "test": "json-schema/draft-6/meta-schema.json"
   },
@@ -706,6 +710,10 @@
   {
     "name": "[JSON Schema Draft-6] Boolean Schemas",
     "test": "json-schema/draft-6/boolean-schemas.json"
+  },
+  {
+    "name": "[JSON Schema Draft-6] Boolean Tuple Items",
+    "test": "json-schema/draft-6/boolean-tuple-items.json"
   },
   {
     "name": "[JSON Schema Draft-7] GeoJSON",
@@ -774,6 +782,10 @@
     "test": "json-schema/draft-7/boolean-schemas.json"
   },
   {
+    "name": "[JSON Schema Draft-7] Boolean Tuple Items",
+    "test": "json-schema/draft-7/boolean-tuple-items.json"
+  },
+  {
     "name": "[JSON Schema 2019-09] Meta Schema",
     "test": "json-schema/2019-09/meta-schema.json",
     "extraProperties": 1
@@ -817,6 +829,10 @@
   {
     "name": "[JSON Schema 2019-09] Boolean Schemas",
     "test": "json-schema/2019-09/boolean-schemas.json"
+  },
+  {
+    "name": "[JSON Schema 2019-09] Boolean Tuple Items",
+    "test": "json-schema/2019-09/boolean-tuple-items.json"
   },
   {
     "name": "[JSON Schema 2020-12] Meta Schema",

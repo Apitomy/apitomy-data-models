@@ -1,0 +1,13 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$comment": "Boolean schemas as tuple elements: position 0 accepts anything, position 2 accepts nothing",
+    "type": "array",
+    "items": [
+        true,
+        {
+            "type": "string"
+        },
+        false
+    ],
+    "additionalItems": false
+}

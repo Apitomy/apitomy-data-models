@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.apitomy.datamodels.models.util.JsonUtil;
 import io.apitomy.datamodels.models.Any;
 import io.apitomy.datamodels.models.ModelType;
-import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaFullSchemaListUnion;
+import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaJsonSchemaListUnion;
 import io.apitomy.datamodels.models.jsonschema.Dependency;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
@@ -16,7 +16,6 @@ import io.apitomy.datamodels.models.jsonschema.modern.v202012.visitors.JM202012T
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 
 /**
  * Converts any JSON Schema version to the compound schema type.
@@ -81,14 +80,14 @@ public class CompoundSchemaConverter {
      * Normalizes d4-2019-09 {@code items} into compound fields:
      * tuple (list) → {@code prefixItems}, single schema → {@code items}.
      * The generated traverser converts a single-schema {@code items} but not the elements of a
-     * tuple, so they are converted here.
+     * tuple, so they are converted here. Boolean elements pass through unchanged.
      */
-    static void normalizeItems(BooleanFullSchemaFullSchemaListUnion value, JCFullSchema target,
+    static void normalizeItems(BooleanFullSchemaJsonSchemaListUnion value, JCFullSchema target,
                                ModelType modelType) {
         if (value == null) return;
-        if (value.isFullSchemaList()) {
-            for (JFullSchema schema : value.asFullSchemaList()) {
-                target.addPrefixItem(toCompound((JsonSchema) schema, modelType));
+        if (value.isJsonSchemaList()) {
+            for (JsonSchema schema : value.asJsonSchemaList()) {
+                target.addPrefixItem(toCompound(schema, modelType));
             }
         } else {
             target.setItems(value);

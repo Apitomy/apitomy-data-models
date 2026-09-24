@@ -92,7 +92,7 @@ entities:
       - name: contentEncoding
         type: string
       - name: items
-        type: 'boolean|FullSchema|[FullSchema]'
+        type: 'boolean|FullSchema|[JsonSchema]'
       - name: additionalItems
         type: JsonSchema
       - name: minItems

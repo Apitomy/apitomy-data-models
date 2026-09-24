@@ -1,6 +1,6 @@
 package io.apitomy.datamodels.jsonschema.convert;
 
-import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaFullSchemaListUnion;
+import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaJsonSchemaListUnion;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
@@ -64,7 +64,7 @@ public class JM202012ToCompoundConverter extends JM202012ToJCConversionVisitor {
         if (target.getPrefixItems() != null) {
             target.setAdditionalItems(value);
         } else {
-            target.setItems((BooleanFullSchemaFullSchemaListUnion) value);
+            target.setItems((BooleanFullSchemaJsonSchemaListUnion) value);
         }
     }
 

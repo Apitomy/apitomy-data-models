@@ -2,7 +2,7 @@ package io.apitomy.datamodels.jsonschema.compat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.apitomy.datamodels.jsonschema.convert.CompoundSchemaConverter;
-import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaFullSchemaListUnion;
+import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaJsonSchemaListUnion;
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
@@ -631,14 +631,14 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     }
 
     @Override
-    public void diffFullSchemaItems(BooleanFullSchemaFullSchemaListUnion original,
-                                    BooleanFullSchemaFullSchemaListUnion updated) {
+    public void diffFullSchemaItems(BooleanFullSchemaJsonSchemaListUnion original,
+                                    BooleanFullSchemaJsonSchemaListUnion updated) {
         // After normalization, items is always a single schema or boolean (tuples → prefixItems)
         if (original == null && updated == null) { traversalContext.skip(); return; }
 
         if (original != null && updated != null) {
             // A tuple list here is a 2019-09 tuple that was not normalised (#1229); it is skipped.
-            if (!original.isFullSchemaList() && !updated.isFullSchemaList()) {
+            if (!original.isJsonSchemaList() && !updated.isJsonSchemaList()) {
                 DiffContext subCtx = ctx.sub("items");
                 if (!isUnionSchemaCompatible(subCtx, (JsonSchema) original, (JsonSchema) updated, true)) {
                     subCtx.addDifference(ARRAY_TYPE_ALL_ITEM_SCHEMA_CHANGED, original, updated);
