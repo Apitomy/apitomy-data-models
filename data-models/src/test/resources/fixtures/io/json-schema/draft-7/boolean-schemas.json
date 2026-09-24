@@ -50,5 +50,13 @@
             "type": "number"
         }
     ],
+    "dependencies": {
+        "anything": true,
+        "nothing": false,
+        "name": {
+            "required": ["anything"]
+        },
+        "x-list": ["name"]
+    },
     "items": false
 }

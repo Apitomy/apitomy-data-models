@@ -62,6 +62,9 @@ public class CompoundSchemaConverter {
             Dependency dep = entry.getValue();
             if (dep.isFullSchema()) {
                 target.addDependentSchema(entry.getKey(), (JsonSchema) dep.asFullSchema());
+            } else if (dep.isBoolean()) {
+                // A boolean is a schema too: false forbids the key property, true allows anything.
+                target.addDependentSchema(entry.getKey(), (JsonSchema) dep);
             } else if (dep.isStringList()) {
                 if (requiredMap == null) {
                     requiredMap = new LinkedHashMap<>();
