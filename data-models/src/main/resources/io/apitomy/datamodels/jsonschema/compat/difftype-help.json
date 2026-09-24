@@ -107,6 +107,15 @@
       "",
       "Not backward compatible: a reader using the new schema rejects old data that used the removed value."
     ],
+    "COMBINED_TYPE_ONE_OF_SUBSCHEMAS_MAY_OVERLAP": [
+      "A `oneOf` subschema was added or relaxed, and the checker cannot show that a value still matches at most one subschema.",
+      "",
+      "`oneOf` accepts a value only if it matches *exactly one* subschema. Adding an alternative, or widening one, can make a value that used to match a single subschema match two, and `oneOf` then rejects it. For example, `oneOf: [{\"type\": \"string\"}]` accepts `\"abc\"`, but after adding `{\"maxLength\": 5}` the same value matches both subschemas and is invalid.",
+      "",
+      "The change is accepted when the subschemas are provably mutually exclusive: they allow different types, different `const`/`enum` values, or they carry a *discriminator*, a property that one of them requires and that has different allowed values in each (the usual shape of a tagged union: `\"kind\": {\"const\": \"circle\"}` versus `\"kind\": {\"const\": \"square\"}`). Other ways of keeping subschemas apart, such as non-overlapping numeric ranges, are not recognised.",
+      "",
+      "Not backward compatible. If the alternatives are not meant to be exclusive, `anyOf` expresses the intent and does not have this problem."
+    ],
     "CONST_TYPE_VALUE_CHANGED": [
       "The single value fixed by `const` was changed.",
       "",

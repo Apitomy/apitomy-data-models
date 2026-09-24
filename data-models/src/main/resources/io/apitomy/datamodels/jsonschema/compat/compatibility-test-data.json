@@ -4218,6 +4218,189 @@
     },
     {
       "enabled" : true,
+      "id" : "Complex: oneOf branch added (disjoint types)",
+      "expected" : {
+        "backward" : {
+          "compatible" : true,
+          "diffTypes" : [
+            "COMBINED_TYPE_ONE_OF_SIZE_INCREASED"
+          ]
+        },
+        "forward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "COMBINED_TYPE_ONE_OF_SIZE_DECREASED"
+          ]
+        }
+      },
+      "original" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "oneOf" : [
+          {
+            "type" : "string"
+          }
+        ]
+      },
+      "updated" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "oneOf" : [
+          {
+            "type" : "string"
+          },
+          {
+            "type" : "integer"
+          }
+        ]
+      }
+    },
+    {
+      "enabled" : true,
+      "id" : "Complex: oneOf variant added to a tagged union",
+      "$comment" : "The branches are mutually exclusive through the required 'kind' discriminator, so adding a variant cannot make a value match two of them.",
+      "expected" : {
+        "backward" : {
+          "compatible" : true,
+          "diffTypes" : [
+            "COMBINED_TYPE_ONE_OF_SIZE_INCREASED"
+          ]
+        },
+        "forward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "COMBINED_TYPE_ONE_OF_SIZE_DECREASED"
+          ]
+        }
+      },
+      "original" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "type" : "object",
+        "oneOf" : [
+          {
+            "properties" : {
+              "kind" : {
+                "const" : "circle"
+              },
+              "radius" : {
+                "type" : "number"
+              }
+            },
+            "required" : [
+              "kind"
+            ]
+          }
+        ]
+      },
+      "updated" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "type" : "object",
+        "oneOf" : [
+          {
+            "properties" : {
+              "kind" : {
+                "const" : "circle"
+              },
+              "radius" : {
+                "type" : "number"
+              }
+            },
+            "required" : [
+              "kind"
+            ]
+          },
+          {
+            "properties" : {
+              "kind" : {
+                "const" : "square"
+              },
+              "side" : {
+                "type" : "number"
+              }
+            },
+            "required" : [
+              "kind"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "enabled" : true,
+      "id" : "Complex: anyOf alternative replaced",
+      "$comment" : "Both updated alternatives accept strings, and none accepts integers any more (#1245).",
+      "expected" : {
+        "backward" : {
+          "compatible" : false,
+          "diffTypes" : [
+            "COMBINED_TYPE_SUBSCHEMA_NOT_COMPATIBLE"
+          ]
+        },
+        "forward" : {
+          "compatible" : true
+        }
+      },
+      "original" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "anyOf" : [
+          {
+            "type" : "string"
+          },
+          {
+            "type" : "integer"
+          }
+        ]
+      },
+      "updated" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "anyOf" : [
+          {
+            "type" : "string"
+          },
+          {
+            "type" : "string",
+            "maxLength" : 10
+          }
+        ]
+      }
+    },
+    {
+      "enabled" : true,
+      "id" : "Complex: anyOf changed to oneOf (disjoint)",
+      "expected" : {
+        "backward" : {
+          "compatible" : true
+        },
+        "forward" : {
+          "compatible" : true,
+          "diffTypes" : [
+            "COMBINED_TYPE_CRITERION_EXTENDED"
+          ]
+        }
+      },
+      "original" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "anyOf" : [
+          {
+            "type" : "string"
+          },
+          {
+            "type" : "integer"
+          }
+        ]
+      },
+      "updated" : {
+        "$schema" : "http://json-schema.org/draft-07/schema#",
+        "oneOf" : [
+          {
+            "type" : "string"
+          },
+          {
+            "type" : "integer"
+          }
+        ]
+      }
+    },
+    {
+      "enabled" : true,
       "id" : "Complex: not schema narrowed",
       "expected" : {
         "backward" : {
