@@ -42,6 +42,18 @@ final class ScalarWitness {
         return JsonUtil.toJsonNode(Double.valueOf(Double.parseDouble(value.toString())));
     }
 
+    /** A JSON number value strictly less than {@code bound}, for schemas whose bounds are within double precision. */
+    static JsonNode numberValueBelow(ExactDecimal bound) {
+        double value = Double.parseDouble(bound.toString());
+        return JsonUtil.toJsonNode(Double.valueOf(value - 1.0));
+    }
+
+    /** A JSON number value strictly greater than {@code bound}, for schemas whose bounds are within double precision. */
+    static JsonNode numberValueAbove(ExactDecimal bound) {
+        double value = Double.parseDouble(bound.toString());
+        return JsonUtil.toJsonNode(Double.valueOf(value + 1.0));
+    }
+
     /** A string of exactly {@code length} ASCII characters. */
     static JsonNode stringOfLength(int length) {
         if (length < 0) {

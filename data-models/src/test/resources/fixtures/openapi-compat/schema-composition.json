@@ -1,0 +1,76 @@
+{
+  "cases": [
+    {
+      "id": "oneOf-overlapping-branch-addition-breaks-integer",
+      "source": {"oneOf": [{"type": "integer"}]},
+      "target": {"oneOf": [{"type": "integer"}, {"type": "number"}]},
+      "expected": "UNKNOWN"
+    },
+    {
+      "id": "allOf-target-both-conjuncts-satisfied",
+      "source": {"type": "integer", "minimum": 10},
+      "target": {"allOf": [{"type": "number"}, {"minimum": 5}]},
+      "expected": "YES"
+    },
+    {
+      "id": "allOf-target-one-conjunct-rejected",
+      "source": {"type": "integer", "minimum": 10},
+      "target": {"allOf": [{"type": "number"}, {"minimum": 20}]},
+      "expected": "NO"
+    },
+    {
+      "id": "allOf-source-one-conjunct-sufficient",
+      "source": {"allOf": [{"type": "integer", "minimum": 20}, {"maximum": 100}]},
+      "target": {"type": "number", "minimum": 10},
+      "expected": "YES"
+    },
+    {
+      "id": "allOf-source-duplicate-conjuncts",
+      "source": {"allOf": [{"type": "integer"}, {"type": "integer"}]},
+      "target": {"type": "number"},
+      "expected": "YES"
+    },
+    {
+      "id": "not-reversal-contrapositive-holds",
+      "source": {"not": {"type": "string"}},
+      "target": {"not": {"type": "string", "minLength": 5}},
+      "expected": "YES"
+    },
+    {
+      "id": "not-reversal-does-not-hold",
+      "source": {"not": {"type": "string", "minLength": 5}},
+      "target": {"not": {"type": "string"}},
+      "expected": "UNKNOWN"
+    },
+    {
+      "id": "anyOf-source-all-branches-contained",
+      "source": {"anyOf": [{"type": "integer"}, {"type": "boolean"}]},
+      "target": {"type": ["integer", "boolean"]},
+      "expected": "YES"
+    },
+    {
+      "id": "anyOf-target-branch-widening-is-fine",
+      "source": {"type": "integer"},
+      "target": {"anyOf": [{"type": "integer"}, {"type": "string"}]},
+      "expected": "YES"
+    },
+    {
+      "id": "nested-composition-with-changed-leaf-detected",
+      "source": {
+        "type": "object",
+        "properties": {
+          "value": {"type": "integer"},
+          "wrapper": {"allOf": [{"type": "object", "properties": {"inner": {"type": "integer"}}}]}
+        }
+      },
+      "target": {
+        "type": "object",
+        "properties": {
+          "value": {"type": "integer", "minimum": 100},
+          "wrapper": {"allOf": [{"type": "object", "properties": {"inner": {"type": "integer"}}}]}
+        }
+      },
+      "expected": "NO"
+    }
+  ]
+}

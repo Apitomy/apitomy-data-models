@@ -111,9 +111,13 @@ public final class SchemaContainment {
             }
         }
 
-        if (!sourceIsTrue && !hasAnyAssertion(source) && !hasAnyAssertion(target)) {
+        if (!sourceIsTrue && isEmptySchema(source) && isEmptySchema(target)) {
             return ContainmentResult.yes(evidence(source, target, "both-unconstrained",
                     "Neither schema has a constraining keyword under its dialect"));
+        }
+
+        if ((!sourceIsTrue && hasAnyKeyword(source, COMPOSITION_CHILD_KEYWORDS)) || hasAnyKeyword(target, COMPOSITION_CHILD_KEYWORDS)) {
+            return CompositionContainment.compare(source, target, context);
         }
 
         if ((sourceIsTrue || isScalarOnly(source)) && isScalarOnly(target)) {
@@ -157,6 +161,17 @@ public final class SchemaContainment {
             }
         }
         return null;
+    }
+
+    /** True if {@code schema} is the {@code true} schema, or an object schema with no keyword at all -- equivalent to {@code true}. */
+    static boolean isEmptySchema(SchemaView schema) {
+        if (schema.isTrue()) {
+            return true;
+        }
+        if (!schema.isObject()) {
+            return false;
+        }
+        return JsonUtil.keys(JsonUtil.toObject(schema.getNode())).isEmpty();
     }
 
     /** True if {@code schema} is an object schema with at least one keyword classified as {@link CoverageRegistry.Category#ASSERTION}. */

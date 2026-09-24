@@ -43,7 +43,7 @@ public final class WitnessValidator {
         if (SchemaContainment.coverageGap(schema) != null) {
             return ContainmentVerdict.UNKNOWN;
         }
-        if (SchemaContainment.hasAnyKeyword(schema, SchemaContainment.COMPOSITION_CHILD_KEYWORDS)) {
+        if (schema.hasKeyword("if")) {
             return ContainmentVerdict.UNKNOWN;
         }
 
@@ -102,7 +102,81 @@ public final class WitnessValidator {
             }
         }
 
+        ContainmentVerdict compositionVerdict = validateComposition(candidate, schema, context);
+        if (compositionVerdict != ContainmentVerdict.YES) {
+            return compositionVerdict;
+        }
+
         return ContainmentVerdict.YES;
+    }
+
+    /** Validates {@code candidate} against any {@code allOf}/{@code anyOf}/{@code oneOf}/{@code not} on {@code schema}. */
+    private static ContainmentVerdict validateComposition(JsonNode candidate, SchemaView schema, ContainmentContext context) {
+        JsonNode allOfNode = schema.getKeyword("allOf");
+        if (allOfNode != null && JsonUtil.isArray(allOfNode)) {
+            List<JsonNode> branches = JsonUtil.toList(allOfNode);
+            for (int i = 0; i < branches.size(); i++) {
+                ContainmentVerdict branchVerdict = validate(candidate, wrap(schema, branches.get(i)), context);
+                if (branchVerdict != ContainmentVerdict.YES) {
+                    return branchVerdict;
+                }
+            }
+        }
+
+        JsonNode anyOfNode = schema.getKeyword("anyOf");
+        if (anyOfNode != null && JsonUtil.isArray(anyOfNode)) {
+            List<JsonNode> branches = JsonUtil.toList(anyOfNode);
+            boolean matchedAny = false;
+            boolean anyUnknown = false;
+            for (int i = 0; i < branches.size(); i++) {
+                ContainmentVerdict branchVerdict = validate(candidate, wrap(schema, branches.get(i)), context);
+                if (branchVerdict == ContainmentVerdict.YES) {
+                    matchedAny = true;
+                    break;
+                }
+                if (branchVerdict == ContainmentVerdict.UNKNOWN) {
+                    anyUnknown = true;
+                }
+            }
+            if (!matchedAny) {
+                return anyUnknown ? ContainmentVerdict.UNKNOWN : ContainmentVerdict.NO;
+            }
+        }
+
+        JsonNode oneOfNode = schema.getKeyword("oneOf");
+        if (oneOfNode != null && JsonUtil.isArray(oneOfNode)) {
+            List<JsonNode> branches = JsonUtil.toList(oneOfNode);
+            int matchCount = 0;
+            boolean anyUnknown = false;
+            for (int i = 0; i < branches.size(); i++) {
+                ContainmentVerdict branchVerdict = validate(candidate, wrap(schema, branches.get(i)), context);
+                if (branchVerdict == ContainmentVerdict.YES) {
+                    matchCount++;
+                } else if (branchVerdict == ContainmentVerdict.UNKNOWN) {
+                    anyUnknown = true;
+                }
+            }
+            if (matchCount != 1) {
+                return anyUnknown ? ContainmentVerdict.UNKNOWN : ContainmentVerdict.NO;
+            }
+        }
+
+        JsonNode notNode = schema.getKeyword("not");
+        if (notNode != null) {
+            ContainmentVerdict innerVerdict = validate(candidate, wrap(schema, notNode), context);
+            if (innerVerdict == ContainmentVerdict.YES) {
+                return ContainmentVerdict.NO;
+            }
+            if (innerVerdict == ContainmentVerdict.UNKNOWN) {
+                return ContainmentVerdict.UNKNOWN;
+            }
+        }
+
+        return ContainmentVerdict.YES;
+    }
+
+    private static SchemaView wrap(SchemaView parent, JsonNode node) {
+        return new SchemaView(node, parent.getDialect(), parent.getResourceUri(), parent.getPointer());
     }
 
     private static ContainmentVerdict validateNumeric(JsonNode candidate, SchemaView schema) {

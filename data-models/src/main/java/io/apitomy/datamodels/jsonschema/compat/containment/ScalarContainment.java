@@ -229,8 +229,9 @@ public final class ScalarContainment {
         if (isAtLeastAsTightLowerBound(sourceMinimum, targetMinimum)) {
             return null;
         }
-        ExactDecimal witnessValue = sourceMinimum != null ? sourceMinimum.getValue() : targetMinimum.getValue();
-        JsonNode witness = ScalarWitness.numberValue(witnessValue);
+        ExactDecimal witnessValue = sourceMinimum != null ? sourceMinimum.getValue() : null;
+        JsonNode witness = witnessValue != null ? ScalarWitness.numberValue(witnessValue)
+                : ScalarWitness.numberValueBelow(targetMinimum.getValue());
         return checkWitnessOrUnknown(source, target, context, witness, "lower-bound-narrower",
                 "The target schema's `minimum`/`exclusiveMinimum` is not implied by the source schema's own lower bound");
     }
@@ -244,8 +245,9 @@ public final class ScalarContainment {
         if (isAtLeastAsTightUpperBound(sourceMaximum, targetMaximum)) {
             return null;
         }
-        ExactDecimal witnessValue = sourceMaximum != null ? sourceMaximum.getValue() : targetMaximum.getValue();
-        JsonNode witness = ScalarWitness.numberValue(witnessValue);
+        ExactDecimal witnessValue = sourceMaximum != null ? sourceMaximum.getValue() : null;
+        JsonNode witness = witnessValue != null ? ScalarWitness.numberValue(witnessValue)
+                : ScalarWitness.numberValueAbove(targetMaximum.getValue());
         return checkWitnessOrUnknown(source, target, context, witness, "upper-bound-wider",
                 "The target schema's `maximum`/`exclusiveMaximum` is not implied by the source schema's own upper bound");
     }
