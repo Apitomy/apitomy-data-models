@@ -1,0 +1,22 @@
+{
+  "exactComparisons": [
+    {"description": "0.3 is an exact multiple of 0.1 despite double division error", "a": "0.3", "b": "0.1", "isIntegralMultipleOf": true},
+    {"description": "1.0000000001 is not an exact multiple of 1", "a": "1.0000000001", "b": "1", "isIntegralMultipleOf": false},
+    {"description": "9007199254740993 compares greater than 9007199254740992 (indistinguishable as doubles)", "a": "9007199254740993", "b": "9007199254740992", "compareTo": 1},
+    {"description": "1e2 equals 100.0 exactly", "a": "1e2", "b": "100.0", "compareTo": 0}
+  ],
+  "jsonEquality": [
+    {"description": "key order does not matter", "a": {"a": 1, "b": null}, "b": {"b": null, "a": 1.0}, "equal": true},
+    {"description": "array order does matter", "a": [1, 2], "b": [2, 1], "equal": false}
+  ],
+  "numericTokenScan": {
+    "document": "{\"a\": 1, \"b\": [1e2, -0.5], \"c/d\": {\"e~f\": 3}, \"g\": \"contains 42 but is a string\", \"h\": {\"nested\": 9007199254740993}}",
+    "expected": {
+      "/a": "1",
+      "/b/0": "1e2",
+      "/b/1": "-0.5",
+      "/c~1d/e~0f": "3",
+      "/h/nested": "9007199254740993"
+    }
+  }
+}
