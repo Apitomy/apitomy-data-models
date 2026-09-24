@@ -55,6 +55,30 @@ public final class ScalarContainment {
         return false;
     }
 
+    /** Some concrete scalar value satisfying {@code schema}, or {@code null} if one could not be confidently constructed. */
+    public static JsonNode buildSatisfyingWitness(SchemaView schema, ContainmentContext context) {
+        JsonNode constNode = schema.getKeyword("const");
+        if (constNode != null) {
+            return constNode;
+        }
+        JsonNode enumNode = schema.getKeyword("enum");
+        if (enumNode != null) {
+            List<JsonNode> values = JsonUtil.toList(enumNode);
+            for (int i = 0; i < values.size(); i++) {
+                if (WitnessValidator.validate(values.get(i), schema, context) == ContainmentVerdict.YES) {
+                    return values.get(i);
+                }
+            }
+        }
+        List<String> types = SchemaNormalizer.normalizeEffectiveTypes(schema);
+        String type = types != null && !types.isEmpty() ? types.get(0) : ScalarTypes.STRING;
+        JsonNode candidate = ScalarWitness.exampleOfType(type);
+        if (candidate != null && WitnessValidator.validate(candidate, schema, context) == ContainmentVerdict.YES) {
+            return candidate;
+        }
+        return null;
+    }
+
     public static ContainmentResult compare(SchemaView source, SchemaView target, ContainmentContext context) {
         if (isProvenUnsatisfiable(source)) {
             return ContainmentResult.yes(evidence(source, target, "empty-source-interval",
@@ -150,14 +174,33 @@ public final class ScalarContainment {
                 "Could not determine whether the source const value satisfies the target schema"));
     }
 
+    private static final String[] ALL_TYPES = { ScalarTypes.STRING, ScalarTypes.NUMBER, ScalarTypes.BOOLEAN,
+            ScalarTypes.OBJECT, ScalarTypes.ARRAY, ScalarTypes.NULL };
+
     private static ContainmentResult checkType(SchemaView source, SchemaView target, ContainmentContext context) {
-        List<String> sourceTypes = SchemaNormalizer.normalizeEffectiveTypes(source);
-        if (sourceTypes == null) {
-            return null;
-        }
         List<String> targetTypes = SchemaNormalizer.normalizeEffectiveTypes(target);
         if (targetTypes == null) {
             return null;
+        }
+        List<String> sourceTypes = SchemaNormalizer.normalizeEffectiveTypes(source);
+        if (sourceTypes == null) {
+            // The source admits every instance type; find one the target does not.
+            for (int i = 0; i < ALL_TYPES.length; i++) {
+                String candidateType = ALL_TYPES[i];
+                if (ScalarTypes.matchesAny(candidateType, targetTypes)) {
+                    continue;
+                }
+                JsonNode witness = ScalarWitness.exampleOfType(candidateType);
+                if (witness != null && WitnessValidator.validate(witness, source, context) == ContainmentVerdict.YES
+                        && WitnessValidator.validate(witness, target, context) == ContainmentVerdict.NO) {
+                    return ContainmentResult.no(evidence(source, target, "type-mismatch",
+                            "The source schema is unconstrained by `type` and so admits '" + candidateType
+                                    + "', which the target schema does not admit"), witness);
+                }
+            }
+            return ContainmentResult.unknown(evidence(source, target, "type-mismatch-unresolved",
+                    "The source schema is unconstrained by `type`, which the target schema restricts, but no "
+                            + "witness could be validated"));
         }
         for (int i = 0; i < sourceTypes.size(); i++) {
             String sourceType = sourceTypes.get(i);

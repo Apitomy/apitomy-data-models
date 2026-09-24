@@ -2,6 +2,7 @@ package io.apitomy.datamodels.jsonschema.compat.containment;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.apitomy.datamodels.models.util.JsonUtil;
@@ -19,6 +20,16 @@ import io.apitomy.datamodels.models.util.JsonUtil;
  * "unimplemented means compatible" path here.
  */
 public final class SchemaContainment {
+
+    /** Schema-child keywords that shape object instances (not array or composition). */
+    static final String[] OBJECT_CHILD_KEYWORDS = { "properties", "patternProperties", "additionalProperties",
+            "propertyNames", "dependentSchemas", "unevaluatedProperties" };
+
+    /** Schema-child keywords that shape array instances (not object or composition). */
+    static final String[] ARRAY_CHILD_KEYWORDS = { "items", "prefixItems", "contains", "unevaluatedItems" };
+
+    /** Schema-child keywords that combine other schemas (require T9's composition rules). */
+    static final String[] COMPOSITION_CHILD_KEYWORDS = { "allOf", "anyOf", "oneOf", "not", "if", "then", "else" };
 
     private SchemaContainment() {
     }
@@ -58,6 +69,29 @@ public final class SchemaContainment {
                         "The source schema's own numeric/length constraints admit no value, so containment "
                                 + "against the `false` target holds vacuously"));
             }
+            if (isObjectOnly(source) && ObjectContainment.isProvenUnsatisfiable(source)) {
+                return ContainmentResult.yes(evidence(source, target, "empty-source-object",
+                        "The source schema's own size/requiredness constraints admit no object, so containment "
+                                + "against the `false` target holds vacuously"));
+            }
+            if (isArrayOnly(source) && ArrayContainment.isProvenUnsatisfiable(source)) {
+                return ContainmentResult.yes(evidence(source, target, "empty-source-array",
+                        "The source schema's own `minItems`/`maxItems` admit no array, so containment against "
+                                + "the `false` target holds vacuously"));
+            }
+            JsonNode witness = null;
+            if (isScalarOnly(source)) {
+                witness = ScalarContainment.buildSatisfyingWitness(source, context);
+            } else if (isObjectOnly(source)) {
+                witness = ObjectContainment.buildSatisfyingWitness(source, context);
+            } else if (isArrayOnly(source)) {
+                witness = ArrayContainment.buildSatisfyingWitness(source, context);
+            }
+            if (witness != null && WitnessValidator.validate(witness, source, context) == ContainmentVerdict.YES) {
+                return ContainmentResult.no(evidence(source, target, "satisfiable-source-vs-empty-target",
+                        "A concrete instance satisfies the source schema, but the target schema is `false` and "
+                                + "matches no instance"), witness);
+            }
             return ContainmentResult.unknown(evidence(source, target, "empty-target",
                     "The target schema is `false`; whether the source schema is itself satisfiable by no instance "
                             + "is not established here"));
@@ -86,8 +120,16 @@ public final class SchemaContainment {
             return ScalarContainment.compare(source, target, context);
         }
 
+        if ((sourceIsTrue || isObjectOnly(source)) && isObjectOnly(target)) {
+            return ObjectContainment.compare(source, target, context);
+        }
+
+        if ((sourceIsTrue || isArrayOnly(source)) && isArrayOnly(target)) {
+            return ArrayContainment.compare(source, target, context);
+        }
+
         return ContainmentResult.unknown(evidence(source, target, "no-proof-rule",
-                "No object/array/composition proof rule is implemented yet for this schema shape"));
+                "No composition proof rule is implemented yet for this schema shape"));
     }
 
     /**
@@ -150,6 +192,37 @@ public final class SchemaContainment {
             }
         }
         return true;
+    }
+
+    /** True if {@code schema} has no array or composition schema-child keyword (it may have object-child keywords). */
+    static boolean isObjectOnly(SchemaView schema) {
+        if (schema.isTrue()) {
+            return true;
+        }
+        if (!schema.isObject()) {
+            return false;
+        }
+        return !hasAnyKeyword(schema, ARRAY_CHILD_KEYWORDS) && !hasAnyKeyword(schema, COMPOSITION_CHILD_KEYWORDS);
+    }
+
+    /** True if {@code schema} has no object or composition schema-child keyword (it may have array-child keywords). */
+    static boolean isArrayOnly(SchemaView schema) {
+        if (schema.isTrue()) {
+            return true;
+        }
+        if (!schema.isObject()) {
+            return false;
+        }
+        return !hasAnyKeyword(schema, OBJECT_CHILD_KEYWORDS) && !hasAnyKeyword(schema, COMPOSITION_CHILD_KEYWORDS);
+    }
+
+    static boolean hasAnyKeyword(SchemaView schema, String[] keywords) {
+        for (int i = 0; i < keywords.length; i++) {
+            if (schema.hasKeyword(keywords[i])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static SchemaEvidence evidence(SchemaView source, SchemaView target, String rule, String message) {

@@ -1,0 +1,108 @@
+{
+  "objectCases": [
+    {
+      "id": "open-object-gains-optional-email-old-to-new",
+      "source": {"type": "object", "additionalProperties": true},
+      "target": {"type": "object", "properties": {"email": {"type": "string"}}, "additionalProperties": true},
+      "expected": "NO"
+    },
+    {
+      "id": "closed-response-gains-optional-email-new-to-old",
+      "source": {"type": "object", "properties": {"email": {"type": "string"}}, "additionalProperties": false},
+      "target": {"type": "object", "additionalProperties": false},
+      "expected": "NO"
+    },
+    {
+      "id": "target-requires-what-source-does-not-guarantee",
+      "source": {"type": "object", "properties": {"id": {"type": "string"}}},
+      "target": {"type": "object", "properties": {"id": {"type": "string"}}, "required": ["id"]},
+      "expected": "NO"
+    },
+    {
+      "id": "source-required-superset-is-fine",
+      "source": {"type": "object", "properties": {"id": {"type": "string"}}, "required": ["id"]},
+      "target": {"type": "object", "properties": {"id": {"type": "string"}}},
+      "expected": "YES"
+    },
+    {
+      "id": "removed-optional-definition-with-open-extras",
+      "source": {"type": "object", "properties": {"nickname": {"type": "string"}}, "additionalProperties": true},
+      "target": {"type": "object", "additionalProperties": true},
+      "expected": "YES"
+    },
+    {
+      "id": "additional-properties-schema-still-accepts-named-propertys-old-values",
+      "source": {"type": "object", "additionalProperties": {"type": "string"}},
+      "target": {"type": "object", "properties": {"email": {"type": "string"}}, "additionalProperties": {"type": "string"}},
+      "expected": "YES"
+    },
+    {
+      "id": "empty-source-object-vs-false",
+      "source": {"type": "object", "minProperties": 5, "maxProperties": 2},
+      "target": false,
+      "expected": "YES"
+    }
+  ],
+  "arrayCases": [
+    {
+      "id": "homogeneous-boolean-items-narrowed",
+      "source": {"type": "array", "items": true},
+      "target": {"type": "array", "items": false},
+      "expected": "NO"
+    },
+    {
+      "id": "tuple-position-widened-is-fine",
+      "source": {"type": "array", "prefixItems": [{"type": "integer"}]},
+      "target": {"type": "array", "prefixItems": [{"type": "number"}]},
+      "expected": "YES"
+    },
+    {
+      "id": "tuple-position-narrowed-is-rejected",
+      "source": {"type": "array", "prefixItems": [{"type": "number"}]},
+      "target": {"type": "array", "prefixItems": [{"type": "integer"}]},
+      "expected": "NO"
+    },
+    {
+      "id": "tuple-position-beyond-max-length-is-not-a-counterexample",
+      "source": {"type": "array", "maxItems": 1, "prefixItems": [{"type": "integer"}]},
+      "target": {"type": "array", "maxItems": 1, "prefixItems": [{"type": "integer"}, {"type": "integer"}]},
+      "expected": "YES"
+    },
+    {
+      "id": "min-items-narrower-is-rejected",
+      "source": {"type": "array", "items": {"type": "integer"}},
+      "target": {"type": "array", "items": {"type": "integer"}, "minItems": 2},
+      "expected": "NO"
+    },
+    {
+      "id": "max-items-wider-is-rejected",
+      "source": {"type": "array", "items": {"type": "integer"}, "maxItems": 5},
+      "target": {"type": "array", "items": {"type": "integer"}, "maxItems": 2},
+      "expected": "NO"
+    },
+    {
+      "id": "unique-items-not-guaranteed-is-rejected",
+      "source": {"type": "array", "items": {"type": "integer"}},
+      "target": {"type": "array", "items": {"type": "integer"}, "uniqueItems": true},
+      "expected": "NO"
+    },
+    {
+      "id": "prefix-items-and-items-tail-transition",
+      "source": {"type": "array", "prefixItems": [{"type": "string"}], "items": {"type": "integer"}},
+      "target": {"type": "array", "prefixItems": [{"type": "string"}], "items": {"type": "number"}},
+      "expected": "YES"
+    },
+    {
+      "id": "contains-count-bounds-satisfied-by-homogeneous-items",
+      "source": {"type": "array", "items": {"type": "integer"}, "minItems": 3},
+      "target": {"type": "array", "contains": {"type": "number"}, "minContains": 2},
+      "expected": "YES"
+    },
+    {
+      "id": "empty-source-array-vs-false",
+      "source": {"type": "array", "minItems": 5, "maxItems": 2},
+      "target": false,
+      "expected": "YES"
+    }
+  ]
+}
