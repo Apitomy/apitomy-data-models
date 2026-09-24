@@ -80,12 +80,6 @@ public class ExampleCatalogSeeder {
 
         var original = CompatCaseSupport.schemaString(testCase.get("original"));
         var updated = CompatCaseSupport.schemaString(testCase.get("updated"));
-
-        if (original == null || updated == null) {
-            // Un-runnable (boolean-root) case: fall back to the legacy compatibility verdict.
-            return fromLegacy(testCase.get("compatibility"));
-        }
-
         var checker = support.checkerFor(testCase.get("config"), testCase.get("externalRefs"));
         var expected = MAPPER.createObjectNode();
         expected.set("backward", direction(checker.checkBackward(original, updated)));
@@ -107,19 +101,6 @@ public class ExampleCatalogSeeder {
             names.forEach(arr::add);
         }
         return node;
-    }
-
-    private ObjectNode fromLegacy(JsonNode compatibility) {
-        var expected = MAPPER.createObjectNode();
-        var value = compatibility != null ? compatibility.asText() : "";
-        boolean backward = switch (value) {
-            case "backward", "both" -> true;
-            default -> false;
-        };
-        boolean forward = "both".equals(value);
-        expected.putObject("backward").put("compatible", backward);
-        expected.putObject("forward").put("compatible", forward);
-        return expected;
     }
 
     /**

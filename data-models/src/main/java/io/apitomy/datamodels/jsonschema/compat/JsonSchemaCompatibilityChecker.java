@@ -4,7 +4,6 @@ import io.apitomy.datamodels.Library;
 import io.apitomy.datamodels.jsonschema.convert.CompoundSchemaConverter;
 import io.apitomy.datamodels.jsonschema.ref.JsonSchemaRefDereferencer;
 import io.apitomy.datamodels.models.ModelType;
-import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.jsonschema.ref.DereferenceResult;
 import io.apitomy.datamodels.models.RootCapable;
@@ -110,13 +109,15 @@ public final class JsonSchemaCompatibilityChecker {
     // --- Internal ---
 
     private DiffContext doCheck(String originalSchemaJson, String updatedSchemaJson) {
-        JFullSchema originalParsed = parseSchema(originalSchemaJson);
-        JFullSchema updatedParsed = parseSchema(updatedSchemaJson);
+        JsonSchema originalParsed = parseSchema(originalSchemaJson);
+        JsonSchema updatedParsed = parseSchema(updatedSchemaJson);
 
-        ModelType originalModelType = originalParsed.root().modelType();
-        ModelType updatedModelType = updatedParsed.root().modelType();
+        ModelType originalModelType = originalParsed.modelType();
+        ModelType updatedModelType = updatedParsed.modelType();
 
-        if (!allowCrossVersionChecking && originalModelType != updatedModelType) {
+        // A boolean schema carries no $schema and means the same in every draft.
+        boolean draftsMatter = originalParsed.isFullSchema() && updatedParsed.isFullSchema();
+        if (!allowCrossVersionChecking && draftsMatter && originalModelType != updatedModelType) {
             throw new IllegalArgumentException(
                     "Cross-version checking is not enabled. Original: " + originalModelType
                     + ", Updated: " + updatedModelType
@@ -125,37 +126,32 @@ public final class JsonSchemaCompatibilityChecker {
 
         DiffContext ctx = DiffContext.createRootContext();
 
-        // Dereference if configured
+        // Dereference if configured; a boolean schema has nothing to resolve
         if (dereferencer != null) {
-            DereferenceResult origResult = dereferencer.dereference(originalParsed);
-            DereferenceResult updResult = dereferencer.dereference(updatedParsed);
-            origResult.unresolvedRefs().forEach(ctx::addUnsupported);
-            updResult.unresolvedRefs().forEach(ctx::addUnsupported);
+            dereference(originalParsed, ctx);
+            dereference(updatedParsed, ctx);
         }
 
-        // Convert both schemas to compound type
-        JFullSchema originalCompound = toCompoundFullSchema(originalParsed, originalModelType);
-        JFullSchema updatedCompound = toCompoundFullSchema(updatedParsed, updatedModelType);
+        JsonSchema originalCompound = CompoundSchemaConverter.toCompound(originalParsed, originalModelType);
+        JsonSchema updatedCompound = CompoundSchemaConverter.toCompound(updatedParsed, updatedModelType);
 
-        CompoundSchemaDiffVisitor.diffSchemas(ctx, originalCompound, updatedCompound);
+        CompoundSchemaDiffVisitor.diffRoots(ctx, originalCompound, updatedCompound);
         return ctx;
     }
 
-    private static JFullSchema toCompoundFullSchema(JFullSchema doc, ModelType modelType) {
-        JsonSchema compound = CompoundSchemaConverter.toCompound((JsonSchema) doc, modelType);
-        if (compound instanceof JFullSchema) {
-            return (JFullSchema) compound;
+    private void dereference(JsonSchema schema, DiffContext ctx) {
+        if (schema.isFullSchema()) {
+            DereferenceResult result = dereferencer.dereference(schema.asFullSchema());
+            result.unresolvedRefs().forEach(ctx::addUnsupported);
         }
-        throw new IllegalArgumentException("Failed to convert schema to compound type");
     }
 
-    private static JFullSchema parseSchema(String schemaJson) {
+    private static JsonSchema parseSchema(String schemaJson) {
         RootCapable doc = Library.readRootFromJSONString(schemaJson);
-        if (!(doc instanceof JFullSchema)) {
+        if (!(doc instanceof JsonSchema)) {
             throw new IllegalArgumentException(
-                    "Input is not a JSON Schema document. Detected type: " + doc.root().modelType());
+                    "Input is not a JSON Schema document. Detected type: " + doc.modelType());
         }
-        JFullSchema jsonSchemaDoc = (JFullSchema) doc;
-        return jsonSchemaDoc;
+        return (JsonSchema) doc;
     }
 }

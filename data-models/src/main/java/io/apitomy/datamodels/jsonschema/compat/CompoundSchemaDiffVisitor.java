@@ -6,6 +6,7 @@ import io.apitomy.datamodels.models.jsonschema.BooleanFullSchemaJsonSchemaListUn
 import io.apitomy.datamodels.models.jsonschema.JFullSchema;
 import io.apitomy.datamodels.models.jsonschema.JsonSchema;
 import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchema;
+import io.apitomy.datamodels.models.jsonschema.compound.JCFullSchemaImpl;
 import io.apitomy.datamodels.models.jsonschema.compound.visitors.JCDiffTraverser;
 import io.apitomy.datamodels.models.jsonschema.compound.visitors.JCDiffVisitor;
 import io.apitomy.datamodels.models.util.JsonUtil;
@@ -163,6 +164,8 @@ import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_MIN_L
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_PATTERN_ADDED;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_PATTERN_CHANGED;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.STRING_TYPE_PATTERN_REMOVED;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.SUBSCHEMA_CHANGED_FROM_FALSE;
+import static io.apitomy.datamodels.jsonschema.compat.DiffType.SUBSCHEMA_CHANGED_TO_FALSE;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.SUBSCHEMA_TYPE_CHANGED;
 import static io.apitomy.datamodels.jsonschema.compat.DiffType.SUBSCHEMA_TYPE_CHANGED_TO_EMPTY_OR_TRUE;
 import static io.apitomy.datamodels.jsonschema.compat.DiffUtil.diffAddedRemoved;
@@ -207,6 +210,29 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
     // -----------------------------------------------------------------------
     // Entry point + on-demand conversion
     // -----------------------------------------------------------------------
+
+    /**
+     * Entry point for two document roots, either of which may be a boolean schema. {@code true}
+     * accepts every value, exactly like {@code {}}, so it is compared as an empty schema.
+     * {@code false} accepts none: replacing it can only widen the schema, and replacing a schema
+     * with it can only narrow it.
+     */
+    static void diffRoots(DiffContext ctx, JsonSchema original, JsonSchema updated) {
+        boolean originalFalse = original.isBoolean() && !original.asBoolean();
+        boolean updatedFalse = updated.isBoolean() && !updated.asBoolean();
+        if (originalFalse && !updatedFalse) {
+            ctx.addDifference(SUBSCHEMA_CHANGED_FROM_FALSE, original, updated);
+        } else if (updatedFalse && !originalFalse) {
+            ctx.addDifference(SUBSCHEMA_CHANGED_TO_FALSE, original, updated);
+        } else if (!originalFalse) {
+            diffSchemas(ctx, asFullSchema(original), asFullSchema(updated));
+        }
+    }
+
+    /** A full schema for a root that is not {@code false}: {@code true} becomes the empty schema. */
+    private static JFullSchema asFullSchema(JsonSchema schema) {
+        return schema.isBoolean() ? new JCFullSchemaImpl() : schema.asFullSchema();
+    }
 
     /**
      * Entry point: compare original and updated schemas. Both must already be compound, that is
