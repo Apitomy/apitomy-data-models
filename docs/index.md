@@ -31,20 +31,20 @@ OpenRPC, and JSON Schema documents using a rich, typed object model.
     <dependency>
         <groupId>io.apitomy</groupId>
         <artifactId>apitomy-data-models</artifactId>
-        <version>3.1.1</version>
+        <version>4.0.0-beta.1</version>
     </dependency>
     ```
 
 === "Gradle"
 
     ```groovy
-    implementation 'io.apitomy:apitomy-data-models:3.1.1'
+    implementation 'io.apitomy:apitomy-data-models:4.0.0-beta.1'
     ```
 
 === "npm"
 
     ```bash
-    npm install @apitomy/data-models
+    npm install @apitomy/data-models@beta
     ```
 
 ## Community

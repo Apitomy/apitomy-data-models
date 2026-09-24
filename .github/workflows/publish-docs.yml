@@ -1,5 +1,9 @@
 name: Publish Documentation
 
+# Publishes this branch's documentation into its own directory of the website, so that the release
+# lines (main: 4.x, 3.1.x: 3.x) can be published side by side. The docs root, its redirect and the
+# versions.json the version selector reads are maintained in the website repository.
+
 on:
   push:
     branches: [main]
@@ -8,6 +12,14 @@ on:
       - 'mkdocs.yml'
       - 'docs-requirements.txt'
   workflow_dispatch:
+
+env:
+  # The website directory this branch publishes to; must match site_url in mkdocs.yml.
+  DOCS_VERSION: 4.x
+
+concurrency:
+  group: publish-docs-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   publish-docs:
@@ -40,19 +52,24 @@ jobs:
 
       - name: Copy generated docs to website
         run: |
-          rm -rf website/projects/data-models/docs
-          mkdir -p website/projects/data-models
-          cp -r site website/projects/data-models/docs
+          rm -rf website/projects/data-models/docs/${DOCS_VERSION}
+          mkdir -p website/projects/data-models/docs
+          cp -r site website/projects/data-models/docs/${DOCS_VERSION}
 
       - name: Commit and push to website
         run: |
           cd website
           git config user.name "apitomy-ci"
           git config user.email "apitomy.ci@gmail.com"
-          git add projects/data-models/docs
+          git add projects/data-models/docs/${DOCS_VERSION}
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Update Data Models documentation (automated)"
-            git push
+            git commit -m "Update Data Models ${DOCS_VERSION} documentation (automated)"
+            # Other projects publish to the same repository; rebase over their pushes and retry.
+            for attempt in 1 2 3; do
+              git pull --rebase && git push && exit 0
+              sleep $((attempt * 10))
+            done
+            exit 1
           fi
