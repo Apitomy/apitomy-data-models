@@ -23,7 +23,12 @@ public final class TypeNameUtil {
         } else if (type.isPrimitiveUnionVariantType()) {
             return StringUtils.capitalize(type.getName());
         } else if (type.isUnionType()) {
-            List<Type> nestedTypes = new ArrayList<>(((UnionType) type).getTypes());
+            // Must agree with JavaTypeFactory.getUnionComponentName.
+            UnionType unionType = (UnionType) type;
+            if (unionType.getAliasName() != null) {
+                return unionType.getAliasName();
+            }
+            List<Type> nestedTypes = new ArrayList<>(unionType.getTypes());
             return getUnionTypeName(nestedTypes);
         } else if (type.isListType()) {
             return getTypeName(((ListType) type).getValueType()) + "List";

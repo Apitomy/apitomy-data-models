@@ -155,6 +155,8 @@ entities:
         type: '{SchemaOrBoolean}'
       - name: composedSchemas
         type: '[SchemaOrBoolean]'
+      - name: tupleItems
+        type: 'boolean|Schema|[SchemaOrBoolean]'
       - name: minLength
         type: integer
       - name: maxLength

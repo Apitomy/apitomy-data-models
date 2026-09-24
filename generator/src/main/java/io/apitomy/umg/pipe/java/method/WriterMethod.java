@@ -163,6 +163,23 @@ public class WriterMethod implements Method {
                     body.append("    }");
                     body.append("    return array;");
                     body.append("}");
+                } else if (listType.getValueType() instanceof UnionType elementUnion) {
+                    // A list of a union type alias: write each element with the alias's own writer.
+                    var elementJt = ctx.getJavaTypeFactory().createJavaType(elementUnion, nsModel);
+                    elementJt.addImportsTo(writerClassSource);
+                    body.addContext("elementType", elementJt.toJavaTypeString());
+                    body.addContext("writeMethodName", new WriterMethod(elementJt.getSimpleName()).getName());
+
+                    body.append("if (union.${isMethod}()) {");
+                    body.append("    ArrayNode array = JsonUtil.arrayNode();");
+                    body.append("    for (Object item : union.${asMethod}()) {");
+                    body.append("        JsonNode itemNode = this.${writeMethodName}((${elementType}) item);");
+                    body.append("        if (itemNode != null) {");
+                    body.append("            array.add(itemNode);");
+                    body.append("        }");
+                    body.append("    }");
+                    body.append("    return array;");
+                    body.append("}");
                 } else if (listType.getValueType() instanceof PrimitiveType primType) {
                     Class<?> javaClass = PrimitiveTypeUtil.PRIMITIVE_TYPE_MAP.get(primType.name().toLowerCase());
                     if (javaClass == null) continue;

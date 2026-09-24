@@ -3,6 +3,7 @@ package io.test.synthetic.v2;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.test.synthetic.Any;
 import io.test.synthetic.BooleanSchemaSchemaListUnion;
+import io.test.synthetic.BooleanSchemaSchemaOrBooleanListUnion;
 import io.test.synthetic.BooleanSchemaUnion;
 import io.test.synthetic.ModelType;
 import io.test.synthetic.Node;
@@ -28,6 +29,7 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 	private Map<String, BooleanSchemaUnion> definitions;
 	private Map<String, SchemaOrBoolean> nestedSchemas;
 	private List<SchemaOrBoolean> composedSchemas;
+	private BooleanSchemaSchemaOrBooleanListUnion tupleItems;
 	private Integer minLength;
 	private Integer maxLength;
 	private List<JsonNode> _enum;
@@ -325,6 +327,17 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 	}
 
 	@Override
+	public BooleanSchemaSchemaOrBooleanListUnion getTupleItems() {
+		return tupleItems;
+	}
+
+	@Override
+	public void setTupleItems(BooleanSchemaSchemaOrBooleanListUnion value) {
+		this.tupleItems = value;
+		DataModelUtil.setParent(value, this, "tupleItems", ParentPropertyType.standard);
+	}
+
+	@Override
 	public Integer getMinLength() {
 		return minLength;
 	}
@@ -420,6 +433,16 @@ public class Syn2SchemaImpl extends RootCapableImpl implements Syn2Schema {
 	@Override
 	public Object unionValue() {
 		return this;
+	}
+
+	@Override
+	public boolean isSchemaOrBooleanList() {
+		return false;
+	}
+
+	@Override
+	public List<SchemaOrBoolean> asSchemaOrBooleanList() {
+		throw new ClassCastException();
 	}
 
 	@Override

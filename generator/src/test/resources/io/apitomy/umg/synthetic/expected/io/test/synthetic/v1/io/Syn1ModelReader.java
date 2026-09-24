@@ -3,11 +3,13 @@ package io.test.synthetic.v1.io;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.test.synthetic.BooleanSchemaSchemaListUnion;
+import io.test.synthetic.BooleanSchemaSchemaOrBooleanListUnion;
 import io.test.synthetic.BooleanSchemaUnion;
 import io.test.synthetic.ModelType;
 import io.test.synthetic.RootCapable;
 import io.test.synthetic.SchemaListUnionValueImpl;
 import io.test.synthetic.SchemaOrBoolean;
+import io.test.synthetic.SchemaOrBooleanListUnionValueImpl;
 import io.test.synthetic.io.ModelReader;
 import io.test.synthetic.union.BooleanUnionValueImpl;
 import io.test.synthetic.util.JsonUtil;
@@ -412,6 +414,13 @@ public class Syn1ModelReader implements ModelReader {
 			}
 		}
 		{
+			JsonNode _tupleItems = JsonUtil.getProperty(json, "tupleItems");
+			if (JsonUtil.isJsonNode(_tupleItems)) {
+				node.setTupleItems(this.readBooleanSchemaSchemaOrBooleanListUnion(_tupleItems));
+				JsonUtil.removeProperty(json, "tupleItems");
+			}
+		}
+		{
 			JsonNode _minLength = JsonUtil.getProperty(json, "minLength");
 			if (JsonUtil.isNumber(_minLength)) {
 				node.setMinLength(JsonUtil.toInteger(_minLength));
@@ -593,6 +602,28 @@ public class Syn1ModelReader implements ModelReader {
 			return node;
 		} else if (JsonUtil.isBoolean(json)) {
 			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json), modelType);
+		}
+		return null;
+	}
+
+	private BooleanSchemaSchemaOrBooleanListUnion readBooleanSchemaSchemaOrBooleanListUnion(JsonNode json) {
+		if (JsonUtil.isObject(json)) {
+			Syn1Schema node = new Syn1SchemaImpl();
+			this.readSchema((ObjectNode) json, node);
+			return node;
+		} else if (JsonUtil.isArray(json)) {
+			List<JsonNode> array = JsonUtil.toList(json);
+			List<SchemaOrBoolean> items = new ArrayList<>();
+			for (int _idx = 0; _idx < array.size(); _idx++) {
+				SchemaOrBoolean item = this.readSchemaOrBoolean(array.get(_idx), null);
+				if (item == null) {
+					return null;
+				}
+				items.add(item);
+			}
+			return new SchemaOrBooleanListUnionValueImpl(items);
+		} else if (JsonUtil.isBoolean(json)) {
+			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json), null);
 		}
 		return null;
 	}

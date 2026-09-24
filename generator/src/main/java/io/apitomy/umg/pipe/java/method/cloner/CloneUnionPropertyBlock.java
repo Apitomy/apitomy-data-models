@@ -170,6 +170,12 @@ public class CloneUnionPropertyBlock extends CodeBlock {
                         }
                     }
                 }
+            } else if (nestedType.isListType() && ((ListType) nestedType).getValueType().isUnionType()) {
+                String listCode = cloneUnionListVariant((UnionType) ((ListType) nestedType).getValueType(),
+                        TypeNameUtil.getTypeName(nestedType), effectiveUnionType, nsContext, loopCtx);
+                if (listCode != null) {
+                    return listCode;
+                }
             } else {
                 prop.getCtx().warn("UNION property '" + property.getName() + "' nested type not cloned (unsupported): " + nestedType);
             }
@@ -184,6 +190,84 @@ public class CloneUnionPropertyBlock extends CodeBlock {
 
         var unionJavaType = prop.getCtx().getJavaTypeFactory().createJavaType(effectiveUnionType, nsContext);
         unionJavaType.addImportsTo(clonerClassSource);
+    }
+
+    /**
+     * Clones a list variant whose elements are values of a union type alias, dispatching on each
+     * element's own variant. Returns {@code null} when the wrapper class is missing.
+     */
+    private String cloneUnionListVariant(UnionType elementUnion, String unionValueName, UnionType ownerUnion,
+                                         NamespaceModel nsContext, BodyBuilder.LoopContext loopCtx) {
+        JavaClassSource unionValueClass = prop.getCtx().getJavaIndex().lookupClass(
+                prop.getCtx().resolveUnionPackage(ownerUnion) + "." + unionValueName + "UnionValueImpl");
+        if (unionValueClass == null) {
+            return null;
+        }
+        var elementJt = prop.getCtx().getJavaTypeFactory().createJavaType(elementUnion, nsContext);
+        elementJt.addImportsTo(clonerClassSource);
+        clonerClassSource.addImport(unionValueClass);
+        clonerClassSource.addImport(List.class);
+        clonerClassSource.addImport(ArrayList.class);
+
+        StringBuilder dispatch = new StringBuilder();
+        List<Type> elementVariants = elementUnion.getTypes().stream()
+                .sorted(UnionVariantComparator.INSTANCE)
+                .collect(Collectors.toList());
+        for (Type elementVariant : elementVariants) {
+            String elementTypeName = TypeNameUtil.getTypeName(elementVariant);
+            String isMethod = new UnionIsMethod(elementTypeName).getName();
+            String asMethod = new UnionAsMethod(elementTypeName).getName();
+            if (elementVariant.isPrimitiveType() || elementVariant.isPrimitiveUnionVariantType()) {
+                JavaClassSource valueClass = prop.getCtx().getJavaIndex().lookupClass(
+                        prop.getCtx().getUnionTypeFQN(elementTypeName + "UnionValueImpl"));
+                if (valueClass == null) {
+                    continue;
+                }
+                clonerClassSource.addImport(valueClass);
+                dispatch.append("                if (srcItem.").append(isMethod).append("()) {\n")
+                        .append("                    clonedList.add(new ").append(valueClass.getName())
+                        .append("(srcItem.").append(asMethod).append("()));\n")
+                        .append("                }\n");
+            } else if (elementVariant.isEntityType()) {
+                NamespaceModel entityNS = prop.getOwningEntity().getNamespace();
+                EntityModel entity = prop.getCtx().getConceptIndex().lookupEntity(
+                        entityNS.fullName() + "." + elementVariant.getName());
+                if (entity == null) {
+                    continue;
+                }
+                JavaInterfaceSource entitySource = prop.getCtx().resolveJavaEntityType(entityNS, elementVariant);
+                JavaClassSource entityImpl = prop.getCtx().lookupJavaEntityImpl(prop.getCtx().getJavaEntityClassFQN(entity));
+                if (entitySource == null || entityImpl == null) {
+                    continue;
+                }
+                clonerClassSource.addImport(entitySource);
+                clonerClassSource.addImport(entityImpl);
+                dispatch.append("                if (srcItem.").append(isMethod).append("()) {\n")
+                        .append("                    ").append(entitySource.getName()).append(" tgtItem = new ")
+                        .append(entityImpl.getName()).append("();\n")
+                        .append("                    this.").append(CloneEntityPropertyBlock.cloneMethodName(entity))
+                        .append("((").append(entitySource.getName()).append(") srcItem.").append(asMethod)
+                        .append("(), tgtItem);\n")
+                        .append("                    clonedList.add(tgtItem);\n")
+                        .append("                }\n");
+            } else {
+                prop.getCtx().warn("UNION property '" + prop.getProperty().getName()
+                        + "' list element variant not cloned (unsupported): " + elementVariant);
+            }
+        }
+
+        loopCtx.set("elementType", elementJt.getSimpleName());
+        loopCtx.set("unionValueClassName", unionValueClass.getName());
+        loopCtx.set("elementDispatch", dispatch.toString());
+        return """
+        if (srcUnion.${isMethodName}()) {
+            List<${elementType}> clonedList = new ArrayList<>();
+            for (int _idx = 0; _idx < srcUnion.${asMethodName}().size(); _idx++) {
+                ${elementType} srcItem = srcUnion.${asMethodName}().get(_idx);
+${elementDispatch}            }
+            target.${setterMethodName}(new ${unionValueClassName}(clonedList));
+        }
+""";
     }
 
     private UnionType getEffectiveUnionType(PropertyModel property) {

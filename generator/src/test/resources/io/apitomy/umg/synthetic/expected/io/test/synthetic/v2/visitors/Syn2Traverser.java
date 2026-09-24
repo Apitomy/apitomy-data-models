@@ -59,6 +59,7 @@ public class Syn2Traverser extends AbstractTraverser implements Syn2Visitor {
 			this.traverseMap("definitions", model.getDefinitions());
 			this.traverseMap("nestedSchemas", model.getNestedSchemas());
 			this.traverseList("composedSchemas", model.getComposedSchemas());
+			this.traverseUnion("tupleItems", model.getTupleItems());
 		}
 		((Syn2Visitor) this.visitor).afterVisitSchema(node);
 	}

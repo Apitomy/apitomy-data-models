@@ -2,10 +2,12 @@ package io.test.synthetic.v1.io;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.test.synthetic.BooleanSchemaSchemaListUnion;
+import io.test.synthetic.BooleanSchemaSchemaOrBooleanListUnion;
 import io.test.synthetic.BooleanSchemaUnion;
 import io.test.synthetic.SchemaListUnionValue;
 import io.test.synthetic.SchemaListUnionValueImpl;
 import io.test.synthetic.SchemaOrBoolean;
+import io.test.synthetic.SchemaOrBooleanListUnionValueImpl;
 import io.test.synthetic.SynItem;
 import io.test.synthetic.union.BooleanUnionValue;
 import io.test.synthetic.union.BooleanUnionValueImpl;
@@ -308,6 +310,34 @@ public class Syn1ModelCloner {
 					if (srcUnion.isBoolean()) {
 						target.addComposedSchema(new BooleanUnionValueImpl(srcUnion.asBoolean()));
 					}
+				}
+			}
+		}
+		{
+			BooleanSchemaSchemaOrBooleanListUnion srcUnion = source.getTupleItems();
+			if (srcUnion != null) {
+				if (srcUnion.isSchema()) {
+					Syn1Schema tgtEntity = new Syn1SchemaImpl();
+					this.cloneSchema((Syn1Schema) srcUnion.asSchema(), tgtEntity);
+					target.setTupleItems(tgtEntity);
+				}
+				if (srcUnion.isSchemaOrBooleanList()) {
+					List<SchemaOrBoolean> clonedList = new ArrayList<>();
+					for (int _idx = 0; _idx < srcUnion.asSchemaOrBooleanList().size(); _idx++) {
+						SchemaOrBoolean srcItem = srcUnion.asSchemaOrBooleanList().get(_idx);
+						if (srcItem.isSchema()) {
+							Syn1Schema tgtItem = new Syn1SchemaImpl();
+							this.cloneSchema((Syn1Schema) srcItem.asSchema(), tgtItem);
+							clonedList.add(tgtItem);
+						}
+						if (srcItem.isBoolean()) {
+							clonedList.add(new BooleanUnionValueImpl(srcItem.asBoolean()));
+						}
+					}
+					target.setTupleItems(new SchemaOrBooleanListUnionValueImpl(clonedList));
+				}
+				if (srcUnion.isBoolean()) {
+					target.setTupleItems(new BooleanUnionValueImpl(srcUnion.asBoolean()));
 				}
 			}
 		}

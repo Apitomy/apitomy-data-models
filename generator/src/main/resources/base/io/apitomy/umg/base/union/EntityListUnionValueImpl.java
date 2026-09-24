@@ -2,9 +2,9 @@ package io.apitomy.umg.base.union;
 
 import java.util.List;
 
-import io.apitomy.umg.base.Node;
+import io.apitomy.umg.base.Any;
 
-public class EntityListUnionValueImpl<T extends Node> extends ListUnionValueImpl<T> implements EntityListUnionValue<T> {
+public class EntityListUnionValueImpl<T extends Any> extends ListUnionValueImpl<T> implements EntityListUnionValue<T> {
 
     public EntityListUnionValueImpl() {
         super();

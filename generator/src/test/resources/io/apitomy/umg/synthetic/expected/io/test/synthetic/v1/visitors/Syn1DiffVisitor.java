@@ -3,6 +3,7 @@ package io.test.synthetic.v1.visitors;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.test.synthetic.BooleanSchemaSchemaListUnion;
+import io.test.synthetic.BooleanSchemaSchemaOrBooleanListUnion;
 import io.test.synthetic.BooleanSchemaUnion;
 import io.test.synthetic.SchemaOrBoolean;
 import io.test.synthetic.SynContact;
@@ -214,6 +215,14 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	public void afterVisitSchemaComposedSchemasItem(SchemaOrBoolean original, SchemaOrBoolean updated) {
 	}
 
+	public void diffSchemaTupleItems(BooleanSchemaSchemaOrBooleanListUnion original,
+			BooleanSchemaSchemaOrBooleanListUnion updated) {
+	}
+
+	public void afterDiffSchemaTupleItems(BooleanSchemaSchemaOrBooleanListUnion original,
+			BooleanSchemaSchemaOrBooleanListUnion updated) {
+	}
+
 	public void diffSchemaMinLength(Integer original, Integer updated) {
 	}
 
@@ -285,6 +294,10 @@ public abstract class Syn1DiffVisitor<P extends PairingKey> {
 	}
 
 	public void diffSchemaOrBoolean(SchemaOrBoolean original, SchemaOrBoolean updated) {
+	}
+
+	public void diffBooleanSchemaSchemaOrBooleanListUnion(BooleanSchemaSchemaOrBooleanListUnion original,
+			BooleanSchemaSchemaOrBooleanListUnion updated) {
 	}
 
 	public void diffBooleanSchemaSchemaListUnion(BooleanSchemaSchemaListUnion original,
