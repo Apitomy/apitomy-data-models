@@ -14,6 +14,7 @@ import io.apitomy.datamodels.models.jsonschema.compound.JCRangeValue;
 import io.apitomy.datamodels.models.visitors.diff.CollectionDiff;
 import io.apitomy.datamodels.models.visitors.diff.DefaultPairingKey;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -184,6 +185,9 @@ import io.apitomy.datamodels.util.NumberUtil;
  */
 // TODO: Modern schema support — $dynamicRef, $recursiveRef
 public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> {
+
+    /** Guards the applicator walk in {@link #collectApplicatorEvaluatedNames}; real schemas nest far less. */
+    private static final int MAX_APPLICATOR_DEPTH = 32;
 
     private final DiffContext ctx;
 
@@ -665,8 +669,10 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         }
 
         if (updList.size() > origList.size()) {
-            JsonSchema origAI = currentOriginal instanceof JCFullSchema ? ((JCFullSchema) currentOriginal).getAdditionalItems() : null;
-            if (origAI != null && origAI.isBoolean() && !origAI.asBoolean()) {
+            JsonSchema origAI = restOfItems(currentOriginal);
+            if (!restOfItemsIsKnown(currentOriginal, origList.size())) {
+                ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
+            } else if (origAI != null && origAI.isBoolean() && !origAI.asBoolean()) {
                 ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_EXTENDED, origList.size(), updList.size());
             } else if (origAI != null && origAI.isFullSchema()) {
                 boolean allCompatible = true;
@@ -687,9 +693,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                 ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
             }
         } else if (updList.size() < origList.size()) {
-            JsonSchema updAI = currentUpdated instanceof JCFullSchema ? ((JCFullSchema) currentUpdated).getAdditionalItems() : null;
+            JsonSchema updAI = restOfItems(currentUpdated);
             boolean updPermitsAdditional = updAI == null || (updAI.isBoolean() ? updAI.asBoolean() : true);
-            if (!updPermitsAdditional) {
+            if (!updPermitsAdditional || !restOfItemsIsKnown(currentUpdated, updList.size())) {
                 ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, origList.size(), updList.size());
             } else if (updAI != null && updAI.isFullSchema()) {
                 boolean allCompatible = true;
@@ -774,7 +780,65 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             diffAddedRemoved(ctx, original, updated,
                     ARRAY_TYPE_ALL_ITEM_SCHEMA_ADDED, ARRAY_TYPE_ALL_ITEM_SCHEMA_REMOVED);
         }
+        diffEvaluatedItemCount(updated);
         traversalContext.skip(); return;
+    }
+
+    /**
+     * As {@link #diffEvaluatedPropertyNames}, for {@code unevaluatedItems}: a change inside an
+     * {@code allOf} branch that evaluates fewer leading positions narrows this schema.
+     */
+    private void diffEvaluatedItemCount(JsonSchema updatedUnevaluated) {
+        boolean restricts = updatedUnevaluated != null
+                && !(updatedUnevaluated.isBoolean() && updatedUnevaluated.asBoolean());
+        if (!restricts || !(currentOriginal instanceof JCFullSchema) || !(currentUpdated instanceof JCFullSchema)) {
+            return;
+        }
+        JCFullSchema upd = (JCFullSchema) currentUpdated;
+        if (upd.getItems() != null || upd.getAdditionalItems() != null) {
+            // Every position is evaluated by the schema itself, so unevaluatedItems never applies.
+            return;
+        }
+        int updPrefix = upd.getPrefixItems() != null ? upd.getPrefixItems().size() : 0;
+        int updCount = Math.max(updPrefix, applicatorEvaluatedItemCount(upd, 0));
+        int origCount = applicatorEvaluatedItemCount((JCFullSchema) currentOriginal, 0);
+        if (origCount > updCount) {
+            ctx.addDifference(ARRAY_TYPE_ITEM_SCHEMAS_NARROWED, itemCount(origCount), itemCount(updCount));
+        }
+    }
+
+    /**
+     * How many leading positions a schema's own keywords evaluate; {@link Integer#MAX_VALUE} for all,
+     * or when {@code contains} may evaluate positions that cannot be counted.
+     */
+    private static int ownEvaluatedItemCount(JCFullSchema schema) {
+        if (schema.getItems() != null || schema.getAdditionalItems() != null || schema.getUnevaluatedItems() != null
+                || schema.getContains() != null) {
+            return Integer.MAX_VALUE;
+        }
+        return schema.getPrefixItems() != null ? schema.getPrefixItems().size() : 0;
+    }
+
+    /** As {@link #ownEvaluatedItemCount}, over the in-place applicators of a schema, recursively. */
+    private static int applicatorEvaluatedItemCount(JCFullSchema schema, int depth) {
+        if (depth > MAX_APPLICATOR_DEPTH) {
+            return 0;
+        }
+        List<JsonSchema> branches = new ArrayList<JsonSchema>();
+        addApplicatorBranches(schema, branches);
+        int count = 0;
+        for (JsonSchema branch : branches) {
+            if (branch instanceof JCFullSchema) {
+                JCFullSchema full = (JCFullSchema) branch;
+                count = Math.max(count, Math.max(ownEvaluatedItemCount(full),
+                        applicatorEvaluatedItemCount(full, depth + 1)));
+            }
+        }
+        return count;
+    }
+
+    private static Object itemCount(int count) {
+        return count == Integer.MAX_VALUE ? "all" : Integer.valueOf(count);
     }
 
     @Override
@@ -789,7 +853,83 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
                     OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_ADDED,
                     OBJECT_TYPE_ADDITIONAL_PROPERTIES_SCHEMA_REMOVED);
         }
+        diffEvaluatedPropertyNames(updated);
         traversalContext.skip(); return;
+    }
+
+    /**
+     * {@code unevaluatedProperties} applies to the properties that no in-place applicator
+     * evaluated, so a change inside an {@code allOf} branch that evaluates fewer names narrows this
+     * schema, even when the branch itself was relaxed. Names the updated schema's own
+     * {@code properties} declares are compared by {@link #diffFullSchemaProperties} instead.
+     * Names a branch evaluates without listing them are not tracked individually.
+     */
+    private void diffEvaluatedPropertyNames(JsonSchema updatedUnevaluated) {
+        boolean restricts = updatedUnevaluated != null
+                && !(updatedUnevaluated.isBoolean() && updatedUnevaluated.asBoolean());
+        if (!restricts || !(currentOriginal instanceof JCFullSchema) || !(currentUpdated instanceof JCFullSchema)
+                || currentUpdated.getAdditionalProperties() != null) {
+            return;
+        }
+        HashSet<String> lost = new HashSet<String>();
+        boolean origComplete = collectApplicatorEvaluatedNames((JCFullSchema) currentOriginal, lost, 0);
+        HashSet<String> kept = new HashSet<String>();
+        boolean updComplete = collectApplicatorEvaluatedNames((JCFullSchema) currentUpdated, kept, 0);
+        lost.removeAll(kept);
+        if (currentUpdated.getProperties() != null) {
+            lost.removeAll(currentUpdated.getProperties().keySet());
+        }
+        // A branch that evaluated names it does not list was dropped: which names is unknown.
+        if (!lost.isEmpty() || (!origComplete && updComplete)) {
+            ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED, lost, null);
+        }
+    }
+
+    /**
+     * Adds the names declared in {@code properties} by the in-place applicators of a schema,
+     * recursively. Returns {@code false} when a branch may evaluate names it does not list, through
+     * {@code patternProperties}, {@code additionalProperties} or {@code unevaluatedProperties}.
+     */
+    private static boolean collectApplicatorEvaluatedNames(JCFullSchema schema, Set<String> names, int depth) {
+        if (depth > MAX_APPLICATOR_DEPTH) {
+            return false;
+        }
+        boolean complete = true;
+        List<JsonSchema> branches = new ArrayList<JsonSchema>();
+        addApplicatorBranches(schema, branches);
+        for (JsonSchema branch : branches) {
+            if (branch instanceof JCFullSchema) {
+                JCFullSchema full = (JCFullSchema) branch;
+                if (full.getProperties() != null) {
+                    names.addAll(full.getProperties().keySet());
+                }
+                if (full.getPatternProperties() != null || full.getAdditionalProperties() != null
+                        || full.getUnevaluatedProperties() != null) {
+                    complete = false;
+                }
+                complete &= collectApplicatorEvaluatedNames(full, names, depth + 1);
+            }
+        }
+        return complete;
+    }
+
+    /** The subschemas applied to the same instance as the schema itself. Entries may be {@code null}. */
+    private static void addApplicatorBranches(JCFullSchema schema, List<JsonSchema> branches) {
+        addAll(branches, schema.getAllOf());
+        addAll(branches, schema.getAnyOf());
+        addAll(branches, schema.getOneOf());
+        branches.add(schema.getIf());
+        branches.add(schema.getThen());
+        branches.add(schema.getElse());
+        if (schema.getDependentSchemas() != null) {
+            branches.addAll(schema.getDependentSchemas().values());
+        }
+    }
+
+    private static void addAll(List<JsonSchema> target, List<JsonSchema> source) {
+        if (source != null) {
+            target.addAll(source);
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -846,10 +986,8 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
             }
         }
 
-        JsonSchema origAdditional = currentOriginal != null
-                ? currentOriginal.getAdditionalProperties() : null;
-        JsonSchema updAdditional = currentUpdated != null
-                ? currentUpdated.getAdditionalProperties() : null;
+        JsonSchema origAdditional = restOfProperties(currentOriginal);
+        JsonSchema updAdditional = restOfProperties(currentUpdated);
         boolean origPermitsAdditional = permitsAdditional(origAdditional);
         boolean updPermitsAdditional = permitsAdditional(updAdditional);
 
@@ -857,7 +995,9 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         HashSet<String> addedKeys = new HashSet<>(updKeys);
         addedKeys.removeAll(origKeys);
         if (!addedKeys.isEmpty()) {
-            if (!origPermitsAdditional) {
+            if (!restOfPropertiesIsKnown(currentOriginal, addedKeys)) {
+                ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED, null, addedKeys);
+            } else if (!origPermitsAdditional) {
                 ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_EXTENDED, null, addedKeys);
             } else if (origAdditional != null && origAdditional.isFullSchema()
                     && updated != null) {
@@ -886,7 +1026,7 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         HashSet<String> removedKeys = new HashSet<>(origKeys);
         removedKeys.removeAll(updKeys);
         if (!removedKeys.isEmpty()) {
-            if (!updPermitsAdditional) {
+            if (!updPermitsAdditional || !restOfPropertiesIsKnown(currentUpdated, removedKeys)) {
                 ctx.addDifference(OBJECT_TYPE_PROPERTY_SCHEMAS_NARROWED, removedKeys, null);
             } else if (updAdditional != null && updAdditional.isFullSchema()
                     && original != null) {
@@ -1529,5 +1669,67 @@ public class CompoundSchemaDiffVisitor extends JCDiffVisitor<DefaultPairingKey> 
         if (additionalProperties == null) return true;
         if (additionalProperties.isBoolean()) return additionalProperties.asBoolean();
         return true;
+    }
+
+    /**
+     * The schema a property not named in {@code properties} must match: {@code additionalProperties},
+     * or {@code unevaluatedProperties} when that is absent. {@code null} when neither is present.
+     */
+    private static JsonSchema restOfProperties(JFullSchema schema) {
+        if (!(schema instanceof JCFullSchema)) {
+            return null;
+        }
+        JCFullSchema compound = (JCFullSchema) schema;
+        return compound.getAdditionalProperties() != null
+                ? compound.getAdditionalProperties() : compound.getUnevaluatedProperties();
+    }
+
+    /**
+     * The schema an element after the tuple must match: {@code additionalItems}, or
+     * {@code unevaluatedItems} when that is absent. {@code null} when neither is present.
+     */
+    private static JsonSchema restOfItems(JFullSchema schema) {
+        if (!(schema instanceof JCFullSchema)) {
+            return null;
+        }
+        JCFullSchema compound = (JCFullSchema) schema;
+        return compound.getAdditionalItems() != null ? compound.getAdditionalItems() : compound.getUnevaluatedItems();
+    }
+
+    /**
+     * Whether {@link #restOfProperties} alone decides the given names. It does unless the decision
+     * falls to {@code unevaluatedProperties} and an in-place applicator of the same schema may
+     * evaluate one of the names instead; then callers must be conservative.
+     */
+    private static boolean restOfPropertiesIsKnown(JFullSchema schema, Set<String> names) {
+        if (!(schema instanceof JCFullSchema) || schema.getAdditionalProperties() != null) {
+            return true;
+        }
+        JCFullSchema compound = (JCFullSchema) schema;
+        if (compound.getUnevaluatedProperties() == null) {
+            return true;
+        }
+        HashSet<String> evaluated = new HashSet<String>();
+        if (!collectApplicatorEvaluatedNames(compound, evaluated, 0)) {
+            return false;
+        }
+        for (String name : names) {
+            if (evaluated.contains(name)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** As {@link #restOfPropertiesIsKnown}, for {@code unevaluatedItems} and the positions from {@code index} on. */
+    private static boolean restOfItemsIsKnown(JFullSchema schema, int index) {
+        if (!(schema instanceof JCFullSchema)) {
+            return true;
+        }
+        JCFullSchema compound = (JCFullSchema) schema;
+        if (compound.getAdditionalItems() != null || compound.getUnevaluatedItems() == null) {
+            return true;
+        }
+        return compound.getContains() == null && applicatorEvaluatedItemCount(compound, 0) <= index;
     }
 }

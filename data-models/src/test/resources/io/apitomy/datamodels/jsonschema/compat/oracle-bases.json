@@ -137,6 +137,16 @@
       "schema": {"type": "object", "properties": {"a": {"type": "string"}}, "unevaluatedProperties": false}
     },
     {
+      "id": "unevaluatedProperties with allOf",
+      "drafts": ["2019-09", "2020-12"],
+      "schema": {
+        "type": "object",
+        "properties": {"a": {"type": "string"}},
+        "allOf": [{"properties": {"b": {"type": "integer"}}}],
+        "unevaluatedProperties": false
+      }
+    },
+    {
       "id": "array",
       "drafts": ["draft-07", "2019-09", "2020-12"],
       "schema": {"type": "array", "items": {"type": "string", "maxLength": 5}, "maxItems": 3}
@@ -170,6 +180,16 @@
       "id": "unevaluatedItems",
       "drafts": ["2020-12"],
       "schema": {"type": "array", "prefixItems": [{"type": "string"}], "unevaluatedItems": {"type": "integer"}}
+    },
+    {
+      "id": "unevaluatedItems with contains",
+      "drafts": ["2020-12"],
+      "schema": {"type": "array", "prefixItems": [{"type": "string"}], "contains": {"type": "integer"}, "unevaluatedItems": false}
+    },
+    {
+      "id": "unevaluatedItems with allOf",
+      "drafts": ["2020-12"],
+      "schema": {"type": "array", "allOf": [{"prefixItems": [{"type": "string"}, {"type": "integer"}]}], "unevaluatedItems": false}
     },
     {
       "id": "contains",
