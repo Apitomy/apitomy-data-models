@@ -80,7 +80,7 @@ public class DiffTypeHelpTest {
     @Test
     public void differenceDelegatesToDiffType() {
         DiffType type = DiffType.OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED;
-        Difference diff = new Difference(type, JsonPointer.parse("/foo"), JsonPointer.parse("/foo"), "{}", "{}");
+        Difference diff = new Difference(type, JsonPointer.parse("/foo"), JsonPointer.parse("/foo"));
         Assertions.assertEquals(type.getShortDescription(), diff.getShortDescription());
         Assertions.assertEquals(type.getHelp(), diff.getHelp());
         Assertions.assertTrue(diff.getHelp().isPresent());

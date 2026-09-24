@@ -24,37 +24,52 @@ public final class DiffUtil {
     public static boolean diffAddedRemoved(DiffContext ctx, Object original, Object updated,
                                            DiffType addedType, DiffType removedType) {
         if (original == null && updated != null) {
-            ctx.addDifference(addedType, original, updated);
+            ctx.addDifference(addedType);
         } else if (original != null && updated == null) {
-            ctx.addDifference(removedType, original, updated);
+            ctx.addDifference(removedType);
         } else {
             return original != null;
         }
         return false;
     }
 
-    public static <T> void diffSetChanged(DiffContext ctx, Set<T> original, Set<T> updated,
-                                           DiffType addedType, DiffType removedType, DiffType changedType,
-                                           DiffType addedMemberType, DiffType removedMemberType) {
-        if (diffAddedRemoved(ctx, original, updated, addedType, removedType)) {
-            boolean changed = false;
-            Set<T> copyUpdated = new HashSet<T>(updated);
-            for (T originalMember : original) {
-                if (updated.contains(originalMember)) {
-                    copyUpdated.remove(originalMember);
-                } else {
-                    ctx.addDifference(removedMemberType, originalMember, null);
-                    changed = true;
-                }
-            }
-            for (T updatedMemberRemaining : copyUpdated) {
-                ctx.addDifference(addedMemberType, null, updatedMemberRemaining);
+    /**
+     * Compares the members of a keyword's value, ignoring order: the names in {@code required}, or
+     * the keys of a map-valued keyword such as {@code patternProperties}. Each removed or added
+     * member is reported at its element in the schema that has it, by key when {@code byKey},
+     * otherwise by index, followed by one difference for the change as a whole.
+     */
+    static void diffMembers(DiffContext ctx, List<String> original, List<String> updated, boolean byKey,
+                            DiffType addedType, DiffType removedType, DiffType changedType,
+                            DiffType addedMemberType, DiffType removedMemberType) {
+        if (diffAddedRemoved(ctx, original, updated, addedType, removedType)
+                && diffMemberLists(ctx, null, original, updated, byKey, addedMemberType, removedMemberType)) {
+            ctx.addDifference(changedType);
+        }
+    }
+
+    /**
+     * Reports each member removed from {@code original} or added to {@code updated} at its element,
+     * below {@code key} when not {@code null}. Returns whether any member changed.
+     */
+    static boolean diffMemberLists(DiffContext ctx, String key, List<String> original, List<String> updated,
+                                   boolean byKey, DiffType addedMemberType, DiffType removedMemberType) {
+        boolean changed = false;
+        HashSet<String> updatedMembers = new HashSet<String>(updated);
+        HashSet<String> originalMembers = new HashSet<String>(original);
+        for (int i = 0; i < original.size(); i++) {
+            if (!updatedMembers.contains(original.get(i))) {
+                ctx.addMemberDifference(removedMemberType, key, byKey ? original.get(i) : String.valueOf(i), null);
                 changed = true;
             }
-            if (changed) {
-                ctx.addDifference(changedType, original, updated);
+        }
+        for (int i = 0; i < updated.size(); i++) {
+            if (!originalMembers.contains(updated.get(i))) {
+                ctx.addMemberDifference(addedMemberType, key, null, byKey ? updated.get(i) : String.valueOf(i));
+                changed = true;
             }
         }
+        return changed;
     }
 
     public static boolean diffInteger(DiffContext ctx, Integer original, Integer updated,
@@ -62,9 +77,9 @@ public final class DiffUtil {
                                        DiffType increasedType, DiffType decreasedType) {
         if (diffAddedRemoved(ctx, original, updated, addedType, removedType)) {
             if (original < updated) {
-                ctx.addDifference(increasedType, original, updated);
+                ctx.addDifference(increasedType);
             } else if (original > updated) {
-                ctx.addDifference(decreasedType, original, updated);
+                ctx.addDifference(decreasedType);
             } else {
                 return true;
             }
@@ -78,9 +93,9 @@ public final class DiffUtil {
         requireNonNull(original);
         requireNonNull(updated);
         if (isMultipleOf(original, updated)) {
-            ctx.addDifference(multipleOfType, original, updated);
+            ctx.addDifference(multipleOfType);
         } else {
-            ctx.addDifference(notMultipleOfType, original, updated);
+            ctx.addDifference(notMultipleOfType);
         }
     }
 
@@ -97,9 +112,9 @@ public final class DiffUtil {
         if (original == null) original = defaultValue;
         if (updated == null) updated = defaultValue;
         if (original && !updated) {
-            ctx.addDifference(changeTrueToFalse, original, updated);
+            ctx.addDifference(changeTrueToFalse);
         } else if (!original && updated) {
-            ctx.addDifference(changeFalseToTrue, original, updated);
+            ctx.addDifference(changeFalseToTrue);
         } else {
             return true;
         }
@@ -109,7 +124,7 @@ public final class DiffUtil {
     public static void diffObject(DiffContext ctx, Object original, Object updated,
                                    DiffType addedType, DiffType removedType, DiffType changedType) {
         if (diffAddedRemoved(ctx, original, updated, addedType, removedType) && !original.equals(updated)) {
-            ctx.addDifference(changedType, original, updated);
+            ctx.addDifference(changedType);
         }
     }
 

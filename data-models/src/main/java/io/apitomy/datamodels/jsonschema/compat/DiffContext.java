@@ -108,22 +108,48 @@ final class DiffContext {
      * Records a difference in the keyword that is currently being compared at this location, or at
      * the location itself when no keyword is being compared.
      */
-    void addDifference(DiffType type, Object original, Object updated) {
-        addDifference(type, traversal != null ? traversal.getMostRecentPropertyStep() : null, original, updated);
+    void addDifference(DiffType type) {
+        addDifference(type, currentKeyword());
     }
 
     /**
      * Records a difference in the given keyword (compound-schema terms) of this location, or at the
      * location itself when {@code keyword} is {@code null}.
      */
-    void addDifference(DiffType type, String keyword, Object original, Object updated) {
-        JsonPointer originalPath = keyword == null
-                ? pathOriginal : pathOriginal.append(sourceKeyword(originalSchema, keyword));
-        JsonPointer updatedPath = keyword == null
-                ? pathUpdated : pathUpdated.append(sourceKeyword(updatedSchema, keyword));
-        differences.add(new Difference(type, originalPath, updatedPath,
-                original == null ? "null" : original.toString(),
-                updated == null ? "null" : updated.toString()));
+    void addDifference(DiffType type, String keyword) {
+        record(type, keyword, null, null, null);
+    }
+
+    /**
+     * Records a difference in one member of the value of the keyword currently being compared, e.g.
+     * a name added to {@code required}. The member's segment, an index or a map key, is appended on
+     * the side where the member exists; the other side's path ends at the keyword. {@code key}, when
+     * not {@code null}, is a map key between the keyword and the member, as in
+     * {@code /dependentRequired/a/0}.
+     */
+    void addMemberDifference(DiffType type, String key, String originalMember, String updatedMember) {
+        record(type, currentKeyword(), key, originalMember, updatedMember);
+    }
+
+    private String currentKeyword() {
+        return traversal != null ? traversal.getMostRecentPropertyStep() : null;
+    }
+
+    private void record(DiffType type, String keyword, String key, String originalMember, String updatedMember) {
+        differences.add(new Difference(type,
+                path(pathOriginal, originalSchema, keyword, key, originalMember),
+                path(pathUpdated, updatedSchema, keyword, key, updatedMember)));
+    }
+
+    private static JsonPointer path(JsonPointer base, JFullSchema owner, String keyword, String key, String member) {
+        if (keyword == null) {
+            return base;
+        }
+        JsonPointer path = base.append(sourceKeyword(owner, keyword));
+        if (key != null) {
+            path = path.append(key);
+        }
+        return member != null ? path.append(member) : path;
     }
 
     private static String sourceKeyword(JFullSchema owner, String keyword) {

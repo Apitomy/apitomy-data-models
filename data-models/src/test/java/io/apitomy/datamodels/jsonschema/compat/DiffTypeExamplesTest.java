@@ -109,7 +109,7 @@ class DiffTypeExamplesTest {
     @Test
     void differenceDelegatesToDiffType() {
         DiffType diffType = DiffType.SUBSCHEMA_TYPE_CHANGED;
-        Difference difference = new Difference(diffType, JsonPointer.root(), JsonPointer.root(), "{}", "{}");
+        Difference difference = new Difference(diffType, JsonPointer.root(), JsonPointer.root());
         assertEquals(diffType.getExamples(), difference.getExamples());
         assertFalse(difference.getExamples().isEmpty(), "SUBSCHEMA_TYPE_CHANGED should have examples");
     }

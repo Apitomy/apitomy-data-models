@@ -55,9 +55,11 @@ public class DifferenceTreeTest {
 
         var root = result.getRoot();
         assertEquals(JsonPointer.root(), root.getPathUpdated());
-        assertTrue(root.getDifferences().stream().allMatch(d -> d.getPathUpdated().toString().equals("/required")));
-        assertTrue(root.getDifferences().stream().anyMatch(d -> d.getDiffType() == OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED),
-                "The object's own change is recorded on the root, next to its children");
+        assertTrue(root.getDifferences().stream().allMatch(d -> d.getPathUpdated().toString().startsWith("/required")));
+        var memberAdded = root.getDifferences().stream()
+                .filter(d -> d.getDiffType() == OBJECT_TYPE_REQUIRED_PROPERTIES_MEMBER_ADDED).findFirst().orElseThrow();
+        assertEquals("/required/1", memberAdded.getPathUpdated().toString(), "An added member points at its element");
+        assertEquals("/required", memberAdded.getPathOriginal().toString(), "which the original does not have");
         assertEquals(2, root.getChildren().size(), "'id' is unchanged, so it has no node");
 
         var name = root.getChildren().get(0);
