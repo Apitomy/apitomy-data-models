@@ -63,6 +63,9 @@ jobs:
       - name: Test Documentation Version Update
         run: ./.github/scripts/update-doc-versions.test.sh
 
+      - name: Test Latest Release Decision
+        run: ./.github/scripts/is-latest-release.test.sh
+
 
       - name: Build Project
         run: mvn clean install -Ptranspilation
