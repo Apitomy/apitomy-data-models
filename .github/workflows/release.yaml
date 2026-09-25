@@ -1,11 +1,10 @@
 name: Release Workflow
+# Releases the branch the workflow is run from ("Use workflow from"): main for the current line,
+# N.N.x for a maintenance line. A separate branch input used to choose what was checked out, and
+# defaulted to main, so running this from 3.1.x with the default released main instead.
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: 'Branch to release from'
-        required: false
-        default: 'main'
       next-snapshot-version:
         description: 'Next development version (e.g. 4.0.0-SNAPSHOT to end the beta line). Leave empty to compute it.'
         required: false
@@ -24,6 +23,22 @@ jobs:
       snapshot-version: ${{ steps.versions.outputs.snapshot-version }}
       prerelease: ${{ steps.versions.outputs.prerelease }}
     steps:
+
+      # Only the release lines are released: main and the N.N.x maintenance branches. Anything else
+      # in the "Use workflow from" list, such as a feature branch or a tag, is refused before
+      # anything is built, tagged or published.
+      - name: Check the Release Branch
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          RELEASE_BRANCH: ${{ github.ref_name }}
+        run: |
+          if [[ "$REF_TYPE" != "branch" ]] || [[ ! "$RELEASE_BRANCH" =~ ^(main|[0-9]+\.[0-9]+\.x)$ ]]; then
+            echo "::error::Releases are cut from main or an N.N.x maintenance branch, not the $REF_TYPE '$RELEASE_BRANCH'."
+            echo "::error::Choose the release line under 'Use workflow from'."
+            exit 1
+          fi
+          echo "Releasing branch $RELEASE_BRANCH"
+
 
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
@@ -59,8 +74,8 @@ jobs:
           git config --global user.email "apitomy.ci@gmail.com"
           git remote add origin "https://apitomy-ci:${{ secrets.ACCESS_TOKEN }}@github.com/$GITHUB_REPOSITORY.git"
           git fetch
-          git checkout ${{ inputs.branch }}
-          git branch --set-upstream-to=origin/${{ inputs.branch }}
+          git checkout ${{ github.ref_name }}
+          git branch --set-upstream-to=origin/${{ github.ref_name }}
           git pull
           echo "#### Listing files after clone ####"
           find .
@@ -109,7 +124,7 @@ jobs:
 
 
       - name: Create GitHub Release
-        run: ./.github/scripts/create-github-release.sh ${{ steps.versions.outputs.release-version }} ${{ inputs.branch }} ${{ steps.versions.outputs.prerelease }}
+        run: ./.github/scripts/create-github-release.sh ${{ steps.versions.outputs.release-version }} ${{ github.ref_name }} ${{ steps.versions.outputs.prerelease }}
         env:
           GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
@@ -119,7 +134,7 @@ jobs:
     uses: ./.github/workflows/maven-publish.yaml
     with:
       release-version: ${{ needs.release.outputs.release-version }}
-      branch: ${{ inputs.branch }}
+      branch: ${{ github.ref_name }}
     secrets: inherit
 
 
@@ -128,7 +143,7 @@ jobs:
     uses: ./.github/workflows/npm-publish.yaml
     with:
       release-version: ${{ needs.release.outputs.release-version }}
-      branch: ${{ inputs.branch }}
+      branch: ${{ github.ref_name }}
       prerelease: ${{ needs.release.outputs.prerelease == 'true' }}
     secrets: inherit
 
@@ -152,8 +167,8 @@ jobs:
           git config --global user.email "apitomy.ci@gmail.com"
           git remote add origin "https://apitomy-ci:${{ secrets.ACCESS_TOKEN }}@github.com/$GITHUB_REPOSITORY.git"
           git fetch
-          git checkout ${{ inputs.branch }}
-          git branch --set-upstream-to=origin/${{ inputs.branch }}
+          git checkout ${{ github.ref_name }}
+          git branch --set-upstream-to=origin/${{ github.ref_name }}
           git pull
 
 
