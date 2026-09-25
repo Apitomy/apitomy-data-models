@@ -49,12 +49,18 @@ jobs:
           cp latestRelease.json releases/${RELEASE_VERSION}.json
 
 
+      # A final release that is not the Latest one, such as a patch to an older major line, leaves
+      # latestRelease.json as it was; there is then nothing to commit.
       - name: Commit Project Website Changes
         run: |
           cd website
           git add .
-          git commit -m "Automated Update For Apitomy Data Models Release Version: ${{ env.RELEASE_VERSION }}"
-          git push
+          if git diff --staged --quiet; then
+            echo "The website already shows the Latest release, ${{ env.RELEASE_VERSION }}."
+          else
+            git commit -m "Automated Update For Apitomy Data Models Release Version: ${{ env.RELEASE_VERSION }}"
+            git push
+          fi
 
       - name: Slack Notification (Always)
         if: always()
