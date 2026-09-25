@@ -17,20 +17,20 @@ depending on your platform.
     <dependency>
         <groupId>io.apitomy</groupId>
         <artifactId>apitomy-data-models</artifactId>
-        <version>3.1.3</version>
+        <version>{{ release_version }}</version>
     </dependency>
     ```
 
 === "Gradle"
 
     ```groovy
-    implementation 'io.apitomy:apitomy-data-models:3.1.3'
+    implementation 'io.apitomy:apitomy-data-models:{{ release_version }}'
     ```
 
 === "npm"
 
     ```bash
-    npm install @apitomy/data-models
+    npm install {{ npm_package }}
     ```
 
 ---
