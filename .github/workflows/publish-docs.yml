@@ -10,6 +10,7 @@ on:
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
+      - 'mkdocs_hooks.py'
       - 'docs-requirements.txt'
   workflow_dispatch:
 
