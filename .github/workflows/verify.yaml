@@ -64,6 +64,9 @@ jobs:
       - name: Test Release Version Computation
         run: ./.github/scripts/compute-release-versions.test.sh
 
+      - name: Test Documentation Version Update
+        run: ./.github/scripts/update-doc-versions.test.sh
+
 
       - name: Build Project
         run: mvn clean install -Ptranspilation
