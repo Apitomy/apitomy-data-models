@@ -84,6 +84,13 @@ jobs:
         run: mvn versions:set -DnewVersion=${{ steps.versions.outputs.release-version }} -DgenerateBackupPoms=false -DprocessAllModules=true
 
 
+      # The install snippets in the documentation name the released version. They are part of the
+      # release commit, whose push publishes the documentation, so the published pages show the
+      # version that has just been released.
+      - name: Update Version References in the Documentation
+        run: ./.github/scripts/update-doc-versions.sh ${{ steps.versions.outputs.release-version }} ${{ steps.versions.outputs.prerelease }}
+
+
       - name: Verify Build
         run: mvn clean install -Ptranspilation
         env:
