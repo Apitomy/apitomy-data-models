@@ -84,11 +84,15 @@ jobs:
         run: mvn versions:set -DnewVersion=${{ steps.versions.outputs.release-version }} -DgenerateBackupPoms=false -DprocessAllModules=true
 
 
-      # The install snippets in the documentation name the released version. They are part of the
-      # release commit, whose push publishes the documentation, so the published pages show the
-      # version that has just been released.
-      - name: Update Version References in the Documentation
-        run: ./.github/scripts/update-doc-versions.sh ${{ steps.versions.outputs.release-version }} ${{ steps.versions.outputs.prerelease }}
+      # The documentation's install instructions name extra.release_version (see mkdocs_hooks.py).
+      # The change is part of the release commit, whose push publishes the documentation, so the
+      # published pages name the version that has just been released.
+      - name: Update the Release Version in the Documentation
+        env:
+          RELEASE_VERSION: ${{ steps.versions.outputs.release-version }}
+        run: |
+          sed -i -E "s/^(  release_version: ).*/\1${RELEASE_VERSION}/" mkdocs.yml
+          grep -qxF "  release_version: ${RELEASE_VERSION}" mkdocs.yml
 
 
       - name: Verify Build
