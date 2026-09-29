@@ -1,0 +1,29 @@
+{
+  "cases": [
+    {
+      "id": "compatible-no-changes",
+      "original": "{\"openapi\":\"3.0.4\",\"info\":{\"title\":\"T\",\"version\":\"1\"},\"paths\":{\"/widgets\":{\"get\":{\"responses\":{\"200\":{\"description\":\"ok\"}}}}}}",
+      "updated": "{\"openapi\":\"3.0.4\",\"info\":{\"title\":\"T\",\"version\":\"1\"},\"paths\":{\"/widgets\":{\"get\":{\"responses\":{\"200\":{\"description\":\"ok\"}}}}}}"
+    },
+    {
+      "id": "removed-required-parameter-is-breaking",
+      "original": "{\"openapi\":\"3.0.4\",\"info\":{\"title\":\"T\",\"version\":\"1\"},\"paths\":{\"/widgets\":{\"get\":{\"parameters\":[{\"name\":\"id\",\"in\":\"query\",\"required\":true,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"ok\"}}}}}}",
+      "updated": "{\"openapi\":\"3.0.4\",\"info\":{\"title\":\"T\",\"version\":\"1\"},\"paths\":{\"/widgets\":{\"get\":{\"responses\":{\"200\":{\"description\":\"ok\"}}}}}}"
+    },
+    {
+      "id": "narrowed-response-enum-is-safe",
+      "original": "{\"openapi\":\"3.0.4\",\"info\":{\"title\":\"T\",\"version\":\"1\"},\"paths\":{\"/widgets\":{\"get\":{\"responses\":{\"200\":{\"description\":\"ok\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"string\",\"enum\":[\"a\",\"b\",\"c\"]}}}}}}}}}",
+      "updated": "{\"openapi\":\"3.0.4\",\"info\":{\"title\":\"T\",\"version\":\"1\"},\"paths\":{\"/widgets\":{\"get\":{\"responses\":{\"200\":{\"description\":\"ok\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"string\",\"enum\":[\"a\",\"b\"]}}}}}}}}}"
+    },
+    {
+      "id": "ambiguous-pattern-change-is-unresolved",
+      "original": "{\"openapi\":\"3.0.4\",\"info\":{\"title\":\"T\",\"version\":\"1\"},\"paths\":{\"/widgets\":{\"get\":{\"parameters\":[{\"name\":\"code\",\"in\":\"query\",\"schema\":{\"type\":\"string\",\"pattern\":\"^a\"}}],\"responses\":{\"200\":{\"description\":\"ok\"}}}}}}",
+      "updated": "{\"openapi\":\"3.0.4\",\"info\":{\"title\":\"T\",\"version\":\"1\"},\"paths\":{\"/widgets\":{\"get\":{\"parameters\":[{\"name\":\"code\",\"in\":\"query\",\"schema\":{\"type\":\"string\",\"pattern\":\"^b\"}}],\"responses\":{\"200\":{\"description\":\"ok\"}}}}}}"
+    },
+    {
+      "id": "new-optional-parameter-compatible-backward-only",
+      "original": "{\"openapi\":\"3.0.4\",\"info\":{\"title\":\"T\",\"version\":\"1\"},\"paths\":{\"/widgets\":{\"get\":{\"responses\":{\"200\":{\"description\":\"ok\"}}}}}}",
+      "updated": "{\"openapi\":\"3.0.4\",\"info\":{\"title\":\"T\",\"version\":\"1\"},\"paths\":{\"/widgets\":{\"get\":{\"parameters\":[{\"name\":\"limit\",\"in\":\"query\",\"schema\":{\"type\":\"integer\"}}],\"responses\":{\"200\":{\"description\":\"ok\"}}}}}}"
+    }
+  ]
+}
