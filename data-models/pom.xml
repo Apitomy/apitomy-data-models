@@ -206,6 +206,8 @@
                                 <exclude>**/_*/**</exclude>
                                 <exclude>**/openapi/compat/resource/AsyncResourceLoader.java</exclude>
                                 <exclude>**/openapi/compat/resource/AsyncResourceAcquirer.java</exclude>
+                                <exclude>**/openapi/compat/OpenApiAsyncCompatibilityChecker.java</exclude>
+                                <exclude>**/openapi/compat/OpenApiAsyncCompatibilityCheckerBuilder.java</exclude>
                             </excludes>
                         </configuration>
                         <executions>
