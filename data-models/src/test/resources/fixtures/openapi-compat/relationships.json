@@ -1,0 +1,32 @@
+{
+  "cases": [
+    {
+      "id": "operation-id-rename-is-informational",
+      "original": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"operationId": "listPets", "responses": {"200": {"description": "ok"}}}}}},
+      "updated": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"operationId": "getPets", "responses": {"200": {"description": "ok"}}}}}}
+    },
+    {
+      "id": "deprecation-flag-change-is-informational",
+      "original": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}}},
+      "updated": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"deprecated": true, "responses": {"200": {"description": "ok"}}}}}}
+    },
+    {
+      "id": "tags-change-is-informational",
+      "original": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"tags": ["pets"], "responses": {"200": {"description": "ok"}}}}}},
+      "updated": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"tags": ["pets", "public"], "responses": {"200": {"description": "ok"}}}}}}
+    },
+    {
+      "id": "no-metadata-change-produces-no-findings",
+      "original": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"operationId": "listPets", "tags": ["pets"], "responses": {"200": {"description": "ok"}}}}}},
+      "updated": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"operationId": "listPets", "tags": ["pets"], "responses": {"200": {"description": "ok"}}}}}}
+    }
+  ]
+}

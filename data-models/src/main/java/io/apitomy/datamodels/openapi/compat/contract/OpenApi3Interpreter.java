@@ -136,7 +136,8 @@ final class OpenApi3Interpreter {
 
         return new EffectiveInteraction(interactionId, method.toUpperCase(), webhook ? null : pathTemplate,
                 webhook ? webhookName : null, webhook, effectiveParameters, requestBody, responses, security, servers,
-                deprecated, tags, ContractInterpreterSupport.declarationPointer(operation));
+                deprecated, tags, (String) NodeUtil.getNodeProperty(operation, "operationId"),
+                ContractInterpreterSupport.declarationPointer(operation));
     }
 
     private static Map<String, EffectiveResponse> interpretResponses(Node operation, SchemaDialect dialect, String resourceUri,

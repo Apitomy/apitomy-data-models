@@ -159,7 +159,8 @@ final class OpenApi20Interpreter {
 
         return new EffectiveInteraction(interactionId, method.toUpperCase(), pathTemplate, null, false,
                 effectiveParameters, requestBody, responses, security, rootServers,
-                Boolean.TRUE.equals(operation.isDeprecated()), tags, ContractInterpreterSupport.declarationPointer((Node) operation));
+                Boolean.TRUE.equals(operation.isDeprecated()), tags, operation.getOperationId(),
+                ContractInterpreterSupport.declarationPointer((Node) operation));
     }
 
     private static Map<String, EffectiveResponse> interpretResponses(OpenApiOperation operation, List<String> effectiveProduces,
