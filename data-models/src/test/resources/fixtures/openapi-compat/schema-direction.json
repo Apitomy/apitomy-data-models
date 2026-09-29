@@ -1,0 +1,69 @@
+{
+  "directionalCases": [
+    {
+      "id": "oas30-readonly-excused-from-request-required",
+      "schema": {"type": "object", "properties": {"id": {"type": "string", "readOnly": true}}, "required": ["id"]},
+      "dialect": "OAS30",
+      "httpRole": "REQUEST",
+      "expectedEffectiveRequired": []
+    },
+    {
+      "id": "oas30-readonly-still-required-for-response",
+      "schema": {"type": "object", "properties": {"id": {"type": "string", "readOnly": true}}, "required": ["id"]},
+      "dialect": "OAS30",
+      "httpRole": "RESPONSE",
+      "expectedEffectiveRequired": ["id"]
+    },
+    {
+      "id": "oas30-writeonly-excused-from-response-required",
+      "schema": {"type": "object", "properties": {"password": {"type": "string", "writeOnly": true}}, "required": ["password"]},
+      "dialect": "OAS30",
+      "httpRole": "RESPONSE",
+      "expectedEffectiveRequired": []
+    },
+    {
+      "id": "oas20-readonly-excused-from-request-required",
+      "schema": {"type": "object", "properties": {"id": {"type": "string", "readOnly": true}}, "required": ["id"]},
+      "dialect": "OAS20",
+      "httpRole": "REQUEST",
+      "expectedEffectiveRequired": []
+    },
+    {
+      "id": "readonly-required-through-allOf",
+      "schema": {
+        "type": "object",
+        "allOf": [
+          {"properties": {"id": {"type": "string", "readOnly": true}}}
+        ],
+        "required": ["id"]
+      },
+      "dialect": "OAS30",
+      "httpRole": "REQUEST",
+      "expectedEffectiveRequired": []
+    },
+    {
+      "id": "oas31-writeonly-response-enforcement-uncertain",
+      "schema": {"type": "object", "properties": {"password": {"type": "string", "writeOnly": true}}, "required": ["password"]},
+      "dialect": "OAS31",
+      "httpRole": "RESPONSE",
+      "expectedEnforcementCertain": false,
+      "expectedEffectiveRequired": ["password"]
+    },
+    {
+      "id": "no-annotation-required-list-unchanged",
+      "schema": {"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"]},
+      "dialect": "OAS30",
+      "httpRole": "REQUEST",
+      "expectedEffectiveRequired": ["name"]
+    }
+  ],
+  "formatCases": [
+    {"id": "int32-input-to-int64-input-compatible", "sourceFormat": "int32", "targetFormat": "int64", "expected": "COMPATIBLE"},
+    {"id": "int64-output-vs-int32-output-incompatible", "sourceFormat": "int64", "targetFormat": "int32", "expected": "INCOMPATIBLE"},
+    {"id": "int64-output-with-explicit-int32-bounds-compatible", "sourceFormat": "int64", "sourceMinimum": -2147483648, "sourceMaximum": 2147483647, "targetFormat": "int32", "expected": "COMPATIBLE"},
+    {"id": "unknown-format-a-vs-unknown-format-b-unresolved", "sourceFormat": "custom-a", "targetFormat": "custom-b", "expected": "UNKNOWN"},
+    {"id": "password-hint-added-informational", "sourceFormat": null, "targetFormat": "password", "expected": "INFORMATIONAL", "generalRelate": true},
+    {"id": "same-format-compatible", "sourceFormat": "date-time", "targetFormat": "date-time", "expected": "COMPATIBLE", "generalRelate": true},
+    {"id": "different-known-formats-unknown", "sourceFormat": "date", "targetFormat": "date-time", "expected": "UNKNOWN", "generalRelate": true}
+  ]
+}

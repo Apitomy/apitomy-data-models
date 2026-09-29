@@ -135,7 +135,8 @@ public final class ObjectContainment {
         return trueView(schema);
     }
 
-    static List<String> requiredNames(SchemaView schema) {
+    /** The names listed in this schema's own {@code required} keyword, or an empty list if absent. */
+    public static List<String> requiredNames(SchemaView schema) {
         List<String> result = new ArrayList<String>();
         JsonNode requiredNode = schema.getKeyword("required");
         if (requiredNode != null && JsonUtil.isArray(requiredNode)) {

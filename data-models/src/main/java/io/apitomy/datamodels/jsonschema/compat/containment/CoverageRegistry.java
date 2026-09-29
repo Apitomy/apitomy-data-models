@@ -99,10 +99,10 @@ public final class CoverageRegistry {
         BY_DIALECT.put(SchemaDialect.DRAFT6, copyWith(legacy, Category.ASSERTION, new String[] { "const" }));
         BY_DIALECT.put(SchemaDialect.DRAFT7, copyWith(legacy, Category.ANNOTATION, new String[] { "contentMediaType", "contentEncoding" }));
 
-        Map<String, Coverage> oas20 = copyWith(legacy, Category.ANNOTATION, new String[] { "xml", "externalDocs" });
+        Map<String, Coverage> oas20 = copyWith(legacy, Category.ANNOTATION, new String[] { "xml", "externalDocs", "readOnly" });
         BY_DIALECT.put(SchemaDialect.OAS20, oas20);
 
-        Map<String, Coverage> oas30 = copyWith(oas20, Category.ANNOTATION, new String[0]);
+        Map<String, Coverage> oas30 = copyWith(oas20, Category.ANNOTATION, new String[] { "writeOnly" });
         // OAS 3.0's `nullable` conditionally widens the effective `type` and so
         // affects containment; SchemaNormalizer folds it into `type` before proof
         // rules see it, but coverage still records it as an assertion, not

@@ -34,6 +34,11 @@ public final class SchemaNormalizer {
             this.exclusive = exclusive;
         }
 
+        /** Builds a bound directly, for callers (such as tests) constructing one outside of schema normalization. */
+        public static Bound of(ExactDecimal value, boolean exclusive) {
+            return new Bound(value, exclusive);
+        }
+
         public ExactDecimal getValue() {
             return value;
         }
