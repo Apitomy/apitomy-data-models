@@ -1,6 +1,7 @@
 package io.apitomy.datamodels.openapi.compat.resource;
 
 import java.util.List;
+import java.util.Map;
 
 import io.apitomy.datamodels.Library;
 import io.apitomy.datamodels.TraverserDirection;
@@ -11,6 +12,8 @@ import io.apitomy.datamodels.models.Referenceable;
 import io.apitomy.datamodels.models.RootCapable;
 import io.apitomy.datamodels.models.Schema;
 import io.apitomy.datamodels.models.openapi.OpenApiPathItem;
+import io.apitomy.datamodels.models.openapi.v3x.OpenApi3xDiscriminator;
+import io.apitomy.datamodels.models.openapi.v3x.OpenApi3xSchema;
 import io.apitomy.datamodels.models.visitors.AllNodeVisitor;
 import io.apitomy.datamodels.openapi.compat.FindingCode;
 import io.apitomy.datamodels.openapi.compat.ResourceSide;
@@ -250,16 +253,75 @@ public final class ResourceIndex {
 
         @Override
         protected void visitNode(Node node) {
-            if (!(node instanceof Referenceable)) {
+            if (node instanceof Referenceable) {
+                Referenceable referenceable = (Referenceable) node;
+                String rawReference = referenceable.get$ref();
+                if (rawReference != null && rawReference.length() > 0) {
+                    ReferenceKind kind = classify(node);
+                    graph.addEdge(new ReferenceEdge(resource.getSide(), resource.getUri(), node, rawReference, kind));
+                }
+            }
+            if (node instanceof OpenApi3xSchema) {
+                collectDiscriminatorMappingEdges((OpenApi3xSchema) node);
+            }
+        }
+
+        /**
+         * A discriminator's {@code mapping} is not itself a {@code $ref}: each entry
+         * is either an explicit reference value (a relative reference or fragment,
+         * used as-is) or a bare schema name, which the specification says is looked
+         * up implicitly under {@code #/components/schemas/<name>}. Registering both
+         * forms as {@link ReferenceKind#DISCRIMINATOR_MAPPING} edges lets later
+         * analysis (T11+) follow discriminator dispatch as a semantic edge, without
+         * this ever influencing {@code SchemaContainment}, which does not read
+         * {@code discriminator} at all.
+         */
+        private void collectDiscriminatorMappingEdges(OpenApi3xSchema schema) {
+            OpenApi3xDiscriminator discriminator = schema.getDiscriminator();
+            if (discriminator == null) {
                 return;
             }
-            Referenceable referenceable = (Referenceable) node;
-            String rawReference = referenceable.get$ref();
-            if (rawReference == null || rawReference.length() == 0) {
+            Map<String, String> mapping = discriminator.getMapping();
+            if (mapping == null) {
                 return;
             }
-            ReferenceKind kind = classify(node);
-            graph.addEdge(new ReferenceEdge(resource.getSide(), resource.getUri(), node, rawReference, kind));
+            for (Map.Entry<String, String> entry : mapping.entrySet()) {
+                String mappingValue = entry.getValue();
+                if (mappingValue == null || mappingValue.length() == 0) {
+                    continue;
+                }
+                String rawReference = mappingTargetToReference(mappingValue);
+                graph.addEdge(new ReferenceEdge(resource.getSide(), resource.getUri(), (Node) discriminator, rawReference,
+                        ReferenceKind.DISCRIMINATOR_MAPPING));
+            }
+        }
+
+        /**
+         * A mapping value containing a {@code /} or {@code #} is already an explicit
+         * reference (relative reference or fragment); anything else is a bare schema
+         * name, resolved per spec as an implicit {@code #/components/schemas/<name>}
+         * reference.
+         */
+        private static String mappingTargetToReference(String mappingValue) {
+            if (mappingValue.indexOf('/') >= 0 || mappingValue.indexOf('#') >= 0) {
+                return mappingValue;
+            }
+            return "#/components/schemas/" + escapePointerToken(mappingValue);
+        }
+
+        private static String escapePointerToken(String token) {
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < token.length(); i++) {
+                char c = token.charAt(i);
+                if (c == '~') {
+                    result.append("~0");
+                } else if (c == '/') {
+                    result.append("~1");
+                } else {
+                    result.append(c);
+                }
+            }
+            return result.toString();
         }
 
         private ReferenceKind classify(Node node) {

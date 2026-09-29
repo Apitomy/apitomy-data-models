@@ -157,6 +157,37 @@ test("resource discovery reports a missing external resource, then stops after i
     });
 });
 
+test("discriminator mapping registers edges for explicit and implicit entries", () => {
+    const testCase: any = fixtureCase("discriminator-mapping");
+    const resource: ResourceDocument = readResourceDocument(ResourceSide.ORIGINAL, ORIGINAL_URI, testCase.document);
+    const resourceSet: ResourceSet = new ResourceSet(ResourceSide.ORIGINAL);
+    resourceSet.add(resource);
+
+    const graph = ResourceIndex.index(resource, resourceSet);
+
+    let discriminatorEdgeCount: number = 0;
+    let sawImplicitCatMapping: boolean = false;
+    let sawExplicitDogMapping: boolean = false;
+    graph.getEdges().forEach(edge => {
+        if (edge.getKind() !== ReferenceKind.DISCRIMINATOR_MAPPING) {
+            return;
+        }
+        discriminatorEdgeCount++;
+        const target = graph.getTarget(edge);
+        expect(target).not.toBeNull();
+        const type: any = NodeUtil.getNodeProperty(target.getNode(), "type");
+        expect(type).toBe("object");
+        if (edge.getRawReference() === "#/components/schemas/Cat") {
+            sawImplicitCatMapping = true;
+        } else if (edge.getRawReference() === "#/components/schemas/Dog") {
+            sawExplicitDogMapping = true;
+        }
+    });
+    expect(discriminatorEdgeCount).toBe(2);
+    expect(sawImplicitCatMapping).toBe(true);
+    expect(sawExplicitDogMapping).toBe(true);
+});
+
 test("cancellation notifies listeners and is idempotent", () => {
     const cancellation: CheckCancellation = new CheckCancellation();
     let callCount: number = 0;

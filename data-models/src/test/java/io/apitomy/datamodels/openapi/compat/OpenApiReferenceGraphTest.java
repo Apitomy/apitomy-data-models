@@ -36,7 +36,8 @@ import io.apitomy.datamodels.util.NodeUtil;
 /**
  * Exercises {@code ResourceIndex}, {@code ReferenceGraph}, {@code ResourceDiscovery},
  * and {@code CheckSession} together: static-reference discovery and resolution
- * across cyclic, escaped, cross-side, and unresolved cases from {@code references.json}.
+ * across cyclic, escaped, cross-side, and unresolved cases from {@code references.json},
+ * plus discriminator mapping edges (T10).
  */
 class OpenApiReferenceGraphTest {
 
@@ -222,6 +223,40 @@ class OpenApiReferenceGraphTest {
             assertFalse(requestsAfter.get(i).getUri().equals(missingRequest.getUri()) && requestsAfter.get(i).getSide() == ResourceSide.ORIGINAL,
                     "The now-acquired resource must not be re-requested");
         }
+    }
+
+    @Test
+    void discriminatorMappingRegistersEdgesForExplicitAndImplicitEntries() throws Exception {
+        JsonNode testCase = fixture("discriminator-mapping");
+        ObjectNode json = (ObjectNode) testCase.get("document");
+        ResourceDocument resource = readResourceDocument(ResourceSide.ORIGINAL, ORIGINAL_URI, json);
+        ResourceSet resourceSet = new ResourceSet(ResourceSide.ORIGINAL);
+        resourceSet.add(resource);
+
+        ReferenceGraph graph = ResourceIndex.index(resource, resourceSet);
+
+        int discriminatorEdgeCount = 0;
+        boolean sawImplicitCatMapping = false;
+        boolean sawExplicitDogMapping = false;
+        for (int i = 0; i < graph.getEdges().size(); i++) {
+            ReferenceEdge edge = graph.getEdges().get(i);
+            if (edge.getKind() != ReferenceKind.DISCRIMINATOR_MAPPING) {
+                continue;
+            }
+            discriminatorEdgeCount++;
+            ReferenceTarget target = graph.getTarget(edge);
+            assertNotNull(target, "Expected " + edge.getRawReference() + " to resolve");
+            Object type = NodeUtil.getNodeProperty(target.getNode(), "type");
+            assertEquals("object", type);
+            if (edge.getRawReference().equals("#/components/schemas/Cat")) {
+                sawImplicitCatMapping = true;
+            } else if (edge.getRawReference().equals("#/components/schemas/Dog")) {
+                sawExplicitDogMapping = true;
+            }
+        }
+        assertEquals(2, discriminatorEdgeCount, "Expected one edge per mapping entry");
+        assertTrue(sawImplicitCatMapping, "A bare schema name must resolve implicitly under #/components/schemas/");
+        assertTrue(sawExplicitDogMapping, "An explicit reference value must be used as-is");
     }
 
     @Test

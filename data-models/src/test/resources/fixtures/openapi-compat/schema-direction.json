@@ -55,6 +55,22 @@
       "dialect": "OAS30",
       "httpRole": "REQUEST",
       "expectedEffectiveRequired": ["name"]
+    },
+    {
+      "id": "webhook-request-readonly-excused-same-as-ordinary-request",
+      "description": "HttpRole.REQUEST governs readOnly exclusion regardless of whether the message is an ordinary request or a webhook request (a webhook request is still a request for this purpose; ProviderRole, not HttpRole, is what reverses for a webhook).",
+      "schema": {"type": "object", "properties": {"id": {"type": "string", "readOnly": true}}, "required": ["id"]},
+      "dialect": "OAS30",
+      "httpRole": "REQUEST",
+      "expectedEffectiveRequired": []
+    },
+    {
+      "id": "webhook-response-writeonly-excused-same-as-ordinary-response",
+      "description": "HttpRole.RESPONSE governs writeOnly exclusion regardless of whether the message is an ordinary response or a webhook response.",
+      "schema": {"type": "object", "properties": {"password": {"type": "string", "writeOnly": true}}, "required": ["password"]},
+      "dialect": "OAS30",
+      "httpRole": "RESPONSE",
+      "expectedEffectiveRequired": []
     }
   ],
   "formatCases": [
@@ -64,6 +80,9 @@
     {"id": "unknown-format-a-vs-unknown-format-b-unresolved", "sourceFormat": "custom-a", "targetFormat": "custom-b", "expected": "UNKNOWN"},
     {"id": "password-hint-added-informational", "sourceFormat": null, "targetFormat": "password", "expected": "INFORMATIONAL", "generalRelate": true},
     {"id": "same-format-compatible", "sourceFormat": "date-time", "targetFormat": "date-time", "expected": "COMPATIBLE", "generalRelate": true},
-    {"id": "different-known-formats-unknown", "sourceFormat": "date", "targetFormat": "date-time", "expected": "UNKNOWN", "generalRelate": true}
+    {"id": "date-vs-date-time-disjoint-value-spaces", "sourceFormat": "date", "targetFormat": "date-time", "expected": "INCOMPATIBLE", "generalRelate": true},
+    {"id": "byte-vs-binary-different-representations", "sourceFormat": "byte", "targetFormat": "binary", "expected": "INCOMPATIBLE", "generalRelate": true},
+    {"id": "uuid-vs-different-format-unresolved", "sourceFormat": "uuid", "targetFormat": "custom-id", "expected": "UNKNOWN", "generalRelate": true},
+    {"id": "same-uuid-format-compatible", "sourceFormat": "uuid", "targetFormat": "uuid", "expected": "COMPATIBLE", "generalRelate": true}
   ]
 }

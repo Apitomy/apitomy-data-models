@@ -101,8 +101,20 @@ public final class FormatRegistry {
      * both absent) are compatible. {@code password} is purely a UI hint with
      * no validation effect in any dialect this checker supports, so adding,
      * removing, or changing it alongside an otherwise-identical format is
-     * informational, never incompatible or unknown. Anything else differing
-     * is Unknown, not assumed either way.
+     * informational, never incompatible or unknown. A handful of format pairs
+     * are known to denote genuinely disjoint value spaces even though both
+     * are strings -- a {@code date} value is never a valid {@code date-time}
+     * value (and vice versa: a {@code date-time} carries a time-of-day and
+     * offset a bare {@code date} cannot), and {@code byte} (base64-encoded
+     * content) and {@code binary} (a raw octet stream, not further encoded in
+     * JSON) are different representations of what may be the same underlying
+     * bytes, not interchangeable strings -- so those pairs are Incompatible
+     * rather than Unknown. Everything else differing (including any format
+     * this registry does not specifically recognize, such as two arbitrary
+     * unknown format names, or {@code uuid} against a different format) is
+     * Unknown, never assumed compatible: this registry does not treat every
+     * registered format name as a validation assertion, nor assume
+     * {@code float}/{@code double} share a representation.
      */
     public static FormatRelation relate(String sourceFormat, String targetFormat) {
         if (sourceFormat == null ? targetFormat == null : sourceFormat.equals(targetFormat)) {
@@ -111,6 +123,14 @@ public final class FormatRegistry {
         if ("password".equals(sourceFormat) || "password".equals(targetFormat)) {
             return FormatRelation.INFORMATIONAL;
         }
+        if (isDisjointPair(sourceFormat, targetFormat, "date", "date-time")
+                || isDisjointPair(sourceFormat, targetFormat, "byte", "binary")) {
+            return FormatRelation.INCOMPATIBLE;
+        }
         return FormatRelation.UNKNOWN;
+    }
+
+    private static boolean isDisjointPair(String a, String b, String x, String y) {
+        return (x.equals(a) && y.equals(b)) || (y.equals(a) && x.equals(b));
     }
 }
