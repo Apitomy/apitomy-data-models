@@ -1,0 +1,125 @@
+{
+  "cases": [
+    {
+      "id": "or-alternatives-retained",
+      "original": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"apiKey": []}, {"bearerAuth": []}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "apiKey": {"type": "apiKey", "in": "header", "name": "X-API-Key"},
+          "bearerAuth": {"type": "http", "scheme": "bearer"}
+        }}},
+      "updated": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"apiKey": []}, {"bearerAuth": []}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "apiKey": {"type": "apiKey", "in": "header", "name": "X-API-Key"},
+          "bearerAuth": {"type": "http", "scheme": "bearer"}
+        }}}
+    },
+    {
+      "id": "redundant-alternative-removed-is-safe",
+      "original": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"oauth2": []}, {"oauth2": ["admin"]}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "oauth2": {"type": "oauth2", "flows": {"clientCredentials": {"tokenUrl": "https://example.com/token", "scopes": {"admin": "a"}}}}
+        }}},
+      "updated": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"oauth2": []}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "oauth2": {"type": "oauth2", "flows": {"clientCredentials": {"tokenUrl": "https://example.com/token", "scopes": {"admin": "a"}}}}
+        }}}
+    },
+    {
+      "id": "required-scopes-widened-is-breaking",
+      "original": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"oauth2": ["read"]}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "oauth2": {"type": "oauth2", "flows": {"clientCredentials": {"tokenUrl": "https://example.com/token", "scopes": {"read": "r", "write": "w"}}}}
+        }}},
+      "updated": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"oauth2": ["read", "write"]}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "oauth2": {"type": "oauth2", "flows": {"clientCredentials": {"tokenUrl": "https://example.com/token", "scopes": {"read": "r", "write": "w"}}}}
+        }}}
+    },
+    {
+      "id": "anonymous-access-removed-is-breaking",
+      "original": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}}},
+      "updated": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"apiKey": []}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "apiKey": {"type": "apiKey", "in": "header", "name": "X-API-Key"}
+        }}}
+    },
+    {
+      "id": "scheme-renamed-with-updated-reference-is-compatible",
+      "original": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"apiKey": []}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "apiKey": {"type": "apiKey", "in": "header", "name": "X-API-Key"}
+        }}},
+      "updated": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"apiKeyRenamed": []}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "apiKeyRenamed": {"type": "apiKey", "in": "header", "name": "X-API-Key"}
+        }}}
+    },
+    {
+      "id": "http-scheme-name-compared-case-insensitively",
+      "original": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"bearerAuth": []}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "bearerAuth": {"type": "http", "scheme": "bearer"}
+        }}},
+      "updated": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"bearerAuth": []}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "bearerAuth": {"type": "http", "scheme": "Bearer"}
+        }}}
+    },
+    {
+      "id": "and-schemes-requiring-an-extra-scheme-is-breaking",
+      "original": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"apiKey": []}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "apiKey": {"type": "apiKey", "in": "header", "name": "X-API-Key"},
+          "bearerAuth": {"type": "http", "scheme": "bearer"}
+        }}},
+      "updated": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"apiKey": [], "bearerAuth": []}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "apiKey": {"type": "apiKey", "in": "header", "name": "X-API-Key"},
+          "bearerAuth": {"type": "http", "scheme": "bearer"}
+        }}}
+    },
+    {
+      "id": "credential-flow-removed-is-breaking",
+      "original": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"oauth2": []}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "oauth2": {"type": "oauth2", "flows": {"clientCredentials": {"tokenUrl": "https://example.com/token", "scopes": {}}}}
+        }}},
+      "updated": {"openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "security": [{"oauth2": []}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}},
+        "components": {"securitySchemes": {
+          "oauth2": {"type": "oauth2", "flows": {}}
+        }}}
+    }
+  ]
+}
