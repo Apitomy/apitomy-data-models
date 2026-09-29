@@ -1,0 +1,91 @@
+{
+  "cases": [
+    {
+      "id": "operation-removed-and-added",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {
+          "/pets": {
+            "get": {"responses": {"200": {"description": "ok"}}},
+            "post": {"responses": {"200": {"description": "ok"}}}
+          }
+        }
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {
+          "/pets": {
+            "get": {"responses": {"200": {"description": "ok"}}}
+          },
+          "/pets/import": {
+            "post": {"responses": {"200": {"description": "ok"}}}
+          }
+        }
+      }
+    },
+    {
+      "id": "removed-server-url",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "servers": [{"url": "https://a.example.com"}, {"url": "https://b.example.com"}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "servers": [{"url": "https://a.example.com"}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}}
+      }
+    },
+    {
+      "id": "finite-variable-enum-narrowed",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "servers": [{"url": "https://{env}.example.com", "variables": {"env": {"default": "dev", "enum": ["dev", "prod"]}}}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "servers": [{"url": "https://{env}.example.com", "variables": {"env": {"default": "dev", "enum": ["dev"]}}}],
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}}
+      }
+    },
+    {
+      "id": "placeholder-renaming-still-matches",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets/{id}": {"get": {"responses": {"200": {"description": "ok"}}}}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets/{petId}": {"get": {"responses": {"200": {"description": "ok"}}}}}
+      }
+    },
+    {
+      "id": "open-ended-server-variable-cannot-be-enumerated",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "servers": [{"url": "https://{region}.example.com", "variables": {"region": {"default": "us"}}}],
+        "paths": {"/status": {"get": {"responses": {"200": {"description": "ok"}}}}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "servers": [{"url": "https://api.example.com"}],
+        "paths": {"/status": {"get": {"responses": {"200": {"description": "ok"}}}}}
+      }
+    },
+    {
+      "id": "concrete-route-shadowing",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets/{id}": {"get": {"responses": {"200": {"description": "ok"}}}}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {
+          "/pets/{id}": {"get": {"responses": {"200": {"description": "ok"}}}},
+          "/pets/search": {"get": {"responses": {"200": {"description": "ok"}}}}
+        }
+      }
+    }
+  ]
+}

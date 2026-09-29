@@ -41,7 +41,7 @@ final class OpenApi20Interpreter {
 
     static ContractDocument interpret(OpenApi20Document document, com.fasterxml.jackson.databind.node.ObjectNode rawDocumentRoot, String resourceUri) {
         List<String> problems = new ArrayList<String>();
-        List<String> rootServers = effectiveLegacyServers(document);
+        List<EffectiveServer> rootServers = effectiveLegacyServers(document);
         List<String> rootConsumes = CollectionUtil.copyOfList(document.getConsumes());
         List<String> rootProduces = CollectionUtil.copyOfList(document.getProduces());
 
@@ -82,7 +82,7 @@ final class OpenApi20Interpreter {
 
     private static EffectiveInteraction interpretOperation(OpenApi20Document document, String method,
             String pathTemplate, OpenApiOperation operation, List<OpenApiParameter> pathParameters,
-            List<String> rootServers, List<String> rootConsumes, List<String> rootProduces, String resourceUri,
+            List<EffectiveServer> rootServers, List<String> rootConsumes, List<String> rootProduces, String resourceUri,
             com.fasterxml.jackson.databind.node.ObjectNode rawDocumentRoot, List<String> problems) {
         String interactionId = method.toUpperCase() + " " + pathTemplate;
         String contextLabel = interactionId;
@@ -246,23 +246,23 @@ final class OpenApi20Interpreter {
      * Falls back to the spec's implicit root {@code "/"} when nothing at all
      * is declared.
      */
-    private static List<String> effectiveLegacyServers(OpenApi20Document document) {
+    private static List<EffectiveServer> effectiveLegacyServers(OpenApi20Document document) {
         String host = document.getHost();
         String basePath = document.getBasePath();
         List<String> schemes = document.getSchemes();
         String path = basePath == null ? "" : basePath;
 
-        List<String> result = new ArrayList<String>();
+        List<EffectiveServer> result = new ArrayList<EffectiveServer>();
         if (host == null) {
-            result.add(path.length() == 0 ? "/" : path);
+            result.add(new EffectiveServer(path.length() == 0 ? "/" : path, null, null));
             return result;
         }
         if (schemes == null || schemes.isEmpty()) {
-            result.add("//" + host + path);
+            result.add(new EffectiveServer("//" + host + path, null, null));
             return result;
         }
         for (int i = 0; i < schemes.size(); i++) {
-            result.add(schemes.get(i) + "://" + host + path);
+            result.add(new EffectiveServer(schemes.get(i) + "://" + host + path, null, null));
         }
         return result;
     }

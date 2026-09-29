@@ -153,9 +153,9 @@ class OpenApiEffectiveContractTest {
             byPath.put(interaction.getPathTemplate(), interaction);
         }
 
-        assertEquals(java.util.Arrays.asList("https://root.example.com"), byPath.get("/root-only").getServers());
-        assertEquals(java.util.Arrays.asList("https://path.example.com"), byPath.get("/path-level").getServers());
-        assertEquals(java.util.Arrays.asList("https://operation.example.com"), byPath.get("/operation-level").getServers());
+        assertEquals("https://root.example.com", byPath.get("/root-only").getServers().get(0).getUrlTemplate());
+        assertEquals("https://path.example.com", byPath.get("/path-level").getServers().get(0).getUrlTemplate());
+        assertEquals("https://operation.example.com", byPath.get("/operation-level").getServers().get(0).getUrlTemplate());
     }
 
     @Test

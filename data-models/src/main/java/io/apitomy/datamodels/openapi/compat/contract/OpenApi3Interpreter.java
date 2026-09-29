@@ -130,7 +130,7 @@ final class OpenApi3Interpreter {
 
         Map<String, EffectiveResponse> responses = interpretResponses(operation, dialect, resourceUri, interactionId, problems);
         List<Map<String, List<String>>> security = ContractInterpreterSupport.effectiveSecurity(operation, (Node) document, rawDocumentRoot);
-        List<String> servers = effectiveServers(operation, (Node) pathItem, (Node) document);
+        List<EffectiveServer> servers = effectiveServers(operation, (Node) pathItem, (Node) document);
         List<String> tags = CollectionUtil.copyOfList((List<String>) NodeUtil.getNodeProperty(operation, "tags"));
         boolean deprecated = Boolean.TRUE.equals(NodeUtil.getNodeProperty(operation, "deprecated"));
 
@@ -255,12 +255,12 @@ final class OpenApi3Interpreter {
     }
 
     /**
-     * The effective server URLs: the operation's own declaration if present,
-     * else the Path Item's, else the root document's, else the specification's
-     * implicit default of a single {@code "/"} server.
+     * The effective servers: the operation's own declaration if present, else
+     * the Path Item's, else the root document's, else the specification's
+     * implicit default of a single {@code "/"} server (with no variables).
      */
     @SuppressWarnings("unchecked")
-    private static List<String> effectiveServers(Node operation, Node pathItem, Node document) {
+    private static List<EffectiveServer> effectiveServers(Node operation, Node pathItem, Node document) {
         List<Server> resolved = (List<Server>) NodeUtil.getNodeProperty(operation, "servers");
         if (resolved == null) {
             resolved = (List<Server>) NodeUtil.getNodeProperty(pathItem, "servers");
@@ -268,15 +268,39 @@ final class OpenApi3Interpreter {
         if (resolved == null) {
             resolved = (List<Server>) NodeUtil.getNodeProperty(document, "servers");
         }
-        List<String> urls = new ArrayList<String>();
+        List<EffectiveServer> servers = new ArrayList<EffectiveServer>();
         if (resolved != null) {
             for (int i = 0; i < resolved.size(); i++) {
-                urls.add((String) NodeUtil.getNodeProperty(resolved.get(i), "url"));
+                servers.add(toEffectiveServer(resolved.get(i)));
             }
         }
-        if (urls.isEmpty()) {
-            urls.add("/");
+        if (servers.isEmpty()) {
+            servers.add(new EffectiveServer("/", null, null));
         }
-        return urls;
+        return servers;
+    }
+
+    private static EffectiveServer toEffectiveServer(Server server) {
+        String url = (String) NodeUtil.getNodeProperty(server, "url");
+        Object variablesObj = NodeUtil.getNodeProperty(server, "variables");
+        Map<String, List<String>> variableEnums = new LinkedHashMap<String, List<String>>();
+        Map<String, String> variableDefaults = new LinkedHashMap<String, String>();
+        if (variablesObj != null) {
+            List<String> variableNames = new ArrayList<String>(NodeUtil.getMapKeys((Map<String, ?>) variablesObj));
+            for (int i = 0; i < variableNames.size(); i++) {
+                String variableName = variableNames.get(i);
+                Node variable = (Node) NodeUtil.getMapItem((Map) variablesObj, variableName);
+                @SuppressWarnings("unchecked")
+                List<String> enumValues = (List<String>) NodeUtil.getNodeProperty(variable, "enum");
+                String defaultValue = (String) NodeUtil.getNodeProperty(variable, "default");
+                if (enumValues != null) {
+                    variableEnums.put(variableName, CollectionUtil.copyOfList(enumValues));
+                }
+                if (defaultValue != null) {
+                    variableDefaults.put(variableName, defaultValue);
+                }
+            }
+        }
+        return new EffectiveServer(url, variableEnums, variableDefaults);
     }
 }

@@ -108,9 +108,9 @@ test("server precedence is operation then path then root", () => {
         byPath[interaction.getPathTemplate()] = interaction;
     });
 
-    expect(byPath["/root-only"].getServers()).toEqual(["https://root.example.com"]);
-    expect(byPath["/path-level"].getServers()).toEqual(["https://path.example.com"]);
-    expect(byPath["/operation-level"].getServers()).toEqual(["https://operation.example.com"]);
+    expect(byPath["/root-only"].getServers()[0].getUrlTemplate()).toBe("https://root.example.com");
+    expect(byPath["/path-level"].getServers()[0].getUrlTemplate()).toBe("https://path.example.com");
+    expect(byPath["/operation-level"].getServers()[0].getUrlTemplate()).toBe("https://operation.example.com");
 });
 
 test("legacy consumes/produces override at the operation level", () => {

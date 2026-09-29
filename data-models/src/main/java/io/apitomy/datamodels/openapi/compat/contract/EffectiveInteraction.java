@@ -32,7 +32,7 @@ public final class EffectiveInteraction {
     private final EffectiveRequestBody requestBody;
     private final Map<String, EffectiveResponse> responses;
     private final List<Map<String, List<String>>> security;
-    private final List<String> servers;
+    private final List<EffectiveServer> servers;
     private final boolean deprecated;
     private final List<String> tags;
     private final String declarationPointer;
@@ -40,7 +40,7 @@ public final class EffectiveInteraction {
     public EffectiveInteraction(String interactionId, String httpMethod, String pathTemplate, String webhookName,
             boolean webhook, List<EffectiveParameter> parameters, EffectiveRequestBody requestBody,
             Map<String, EffectiveResponse> responses, List<Map<String, List<String>>> security,
-            List<String> servers, boolean deprecated, List<String> tags, String declarationPointer) {
+            List<EffectiveServer> servers, boolean deprecated, List<String> tags, String declarationPointer) {
         if (interactionId == null || interactionId.length() == 0) {
             throw new IllegalArgumentException("interactionId must not be null or empty");
         }
@@ -107,8 +107,8 @@ public final class EffectiveInteraction {
         return CollectionUtil.copyOfList(security);
     }
 
-    /** This operation's effective server URLs (operation, else Path Item, else root/default), as raw (unexpanded) templates. */
-    public List<String> getServers() {
+    /** This operation's effective servers (operation, else Path Item, else root/default), as raw (unexpanded) templates with their variable metadata. */
+    public List<EffectiveServer> getServers() {
         return CollectionUtil.copyOfList(servers);
     }
 
