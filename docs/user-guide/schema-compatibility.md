@@ -7,6 +7,14 @@ remain compatible with existing data.
 !!! warning "Experimental"
     This API is experimental and subject to change in future versions.
 
+!!! info "Comparing whole OpenAPI documents?"
+    This checker compares two bare JSON Schema documents and returns a boolean. To compare two
+    versions of a whole OpenAPI document -- paths, parameters, security, servers, and so on, with a
+    tri-state (`COMPATIBLE`/`INCOMPATIBLE`/`INDETERMINATE`) verdict and detailed findings -- see
+    [OpenAPI Compatibility](openapi-compatibility.md) instead. The two checkers are independent: this
+    page's legacy boolean/approximate schema comparison does not carry the same soundness guarantees
+    as the newer tri-state containment engine the OpenAPI checker is built on.
+
 ## Compatibility Types
 
 | Type | Meaning |

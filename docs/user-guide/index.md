@@ -48,6 +48,14 @@ or from OpenAPI 3.0 to 3.1.
 Check backward, forward, and full compatibility between JSON Schema versions. Useful for
 detecting breaking changes when evolving API schemas.
 
+### [OpenAPI Compatibility](openapi-compatibility.md)
+
+Check backward, forward, and full compatibility between two versions of a whole OpenAPI document
+(2.0/3.0/3.1/3.2) -- paths, parameters, bodies, responses, security, servers, and webhooks -- with a
+tri-state verdict and detailed, per-usage findings. Supports synchronous (fully-supplied documents)
+and asynchronous (caller-loader-based external resource acquisition) checking in both Java and
+TypeScript.
+
 ---
 
 ## Supported Specifications

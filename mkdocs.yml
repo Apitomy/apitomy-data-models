@@ -52,6 +52,7 @@ nav:
     - Dereferencing: user-guide/dereferencing.md
     - Document Transformation: user-guide/document-transformation.md
     - Schema Compatibility: user-guide/schema-compatibility.md
+    - OpenAPI Compatibility: user-guide/openapi-compatibility.md
   - Examples: examples/index.md
 
 docs_dir: ./docs
