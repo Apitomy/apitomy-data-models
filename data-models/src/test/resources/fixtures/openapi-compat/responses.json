@@ -1,0 +1,114 @@
+{
+  "cases": [
+    {
+      "id": "new-202-with-only-old-200-is-breaking",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/jobs": {"post": {"responses": {"200": {"description": "ok"}}}}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/jobs": {"post": {"responses": {"200": {"description": "ok"}, "202": {"description": "accepted"}}}}}
+      }
+    },
+    {
+      "id": "new-404-covered-by-old-default-is-not-added",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets/{id}": {"get": {"responses": {
+          "200": {"description": "ok", "content": {"application/json": {"schema": {"type": "object"}}}},
+          "default": {"description": "error", "content": {"application/json": {"schema": {"type": "object"}}}}
+        }}}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets/{id}": {"get": {"responses": {
+          "200": {"description": "ok", "content": {"application/json": {"schema": {"type": "object"}}}},
+          "404": {"description": "not found", "content": {"application/json": {"schema": {"type": "object"}}}},
+          "default": {"description": "error", "content": {"application/json": {"schema": {"type": "object"}}}}
+        }}}}
+      }
+    },
+    {
+      "id": "incompatible-refinement-under-default-is-breaking",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets/{id}": {"get": {"responses": {
+          "200": {"description": "ok"},
+          "default": {"description": "error", "content": {"application/json": {"schema": {"type": "string"}}}}
+        }}}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets/{id}": {"get": {"responses": {
+          "200": {"description": "ok"},
+          "404": {"description": "not found", "content": {"application/json": {"schema": {"type": "integer"}}}},
+          "default": {"description": "error", "content": {"application/json": {"schema": {"type": "string"}}}}
+        }}}}
+      }
+    },
+    {
+      "id": "redundant-explicit-entry-removal-through-equivalent-default-is-safe",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets/{id}": {"get": {"responses": {
+          "200": {"description": "ok"},
+          "404": {"description": "not found", "content": {"application/json": {"schema": {"type": "string"}}}},
+          "default": {"description": "error", "content": {"application/json": {"schema": {"type": "string"}}}}
+        }}}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets/{id}": {"get": {"responses": {
+          "200": {"description": "ok"},
+          "default": {"description": "error", "content": {"application/json": {"schema": {"type": "string"}}}}
+        }}}}
+      }
+    },
+    {
+      "id": "removed-response-media-type-is-breaking",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok", "content": {
+          "application/json": {"schema": {"type": "object"}},
+          "application/xml": {"schema": {"type": "object"}}
+        }}}}}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok", "content": {
+          "application/json": {"schema": {"type": "object"}}
+        }}}}}}
+      }
+    },
+    {
+      "id": "added-response-media-type-is-informational",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok", "content": {
+          "application/json": {"schema": {"type": "object"}}
+        }}}}}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok", "content": {
+          "application/json": {"schema": {"type": "object"}},
+          "application/xml": {"schema": {"type": "object"}}
+        }}}}}}
+      }
+    },
+    {
+      "id": "removed-response-header-guarantee-is-breaking",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok",
+          "headers": {"X-Rate-Limit": {"schema": {"type": "integer"}}}
+        }}}}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {"responses": {"200": {"description": "ok"}}}}}
+      }
+    }
+  ]
+}
