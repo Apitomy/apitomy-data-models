@@ -1,0 +1,106 @@
+{
+  "cases": [
+    {
+      "id": "omitted-vs-explicit-default-style-explode-is-equivalent",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "ids", "in": "query", "schema": {"type": "array", "items": {"type": "integer"}}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "ids", "in": "query", "style": "form", "explode": true, "schema": {"type": "array", "items": {"type": "integer"}}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    },
+    {
+      "id": "csv-to-repeated-query-encoding-is-breaking",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "ids", "in": "query", "explode": false, "schema": {"type": "array", "items": {"type": "integer"}}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "ids", "in": "query", "explode": true, "schema": {"type": "array", "items": {"type": "integer"}}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    },
+    {
+      "id": "explode-change-on-scalar-is-irrelevant",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "id", "in": "query", "explode": false, "schema": {"type": "string"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "id", "in": "query", "explode": true, "schema": {"type": "string"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    },
+    {
+      "id": "content-to-schema-switch-is-unresolved",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "filter", "in": "query", "content": {"application/json": {"schema": {"type": "object"}}}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "filter", "in": "query", "schema": {"type": "object"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    },
+    {
+      "id": "byte-to-binary-format-change-is-breaking",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "avatar", "in": "query", "schema": {"type": "string", "format": "byte"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "avatar", "in": "query", "schema": {"type": "string", "format": "binary"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    },
+    {
+      "id": "unknown-format-pair-change-is-unresolved",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "code", "in": "query", "schema": {"type": "string", "format": "custom-a"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "code", "in": "query", "schema": {"type": "string", "format": "custom-b"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    }
+  ]
+}
