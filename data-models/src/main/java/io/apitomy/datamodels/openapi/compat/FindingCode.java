@@ -96,6 +96,9 @@ public enum FindingCode {
     /** A schema usage was checked and found compatible. */
     SCHEMA_COMPATIBLE,
 
+    /** A schema usage's containment could not be established as compatible or breaking. */
+    SCHEMA_CONTAINMENT_INDETERMINATE,
+
     /** A schema usage could not be resolved (for example, due to a missing reference). */
     SCHEMA_UNRESOLVED,
 

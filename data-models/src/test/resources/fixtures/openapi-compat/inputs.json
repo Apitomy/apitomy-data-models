@@ -1,0 +1,156 @@
+{
+  "cases": [
+    {
+      "id": "removed-optional-query-input",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "limit", "in": "query", "schema": {"type": "integer"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    },
+    {
+      "id": "newly-required-parameter",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "limit", "in": "query", "required": false, "schema": {"type": "integer"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "limit", "in": "query", "required": true, "schema": {"type": "integer"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    },
+    {
+      "id": "optional-parameter-addition-is-safe",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "limit", "in": "query", "required": false, "schema": {"type": "integer"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    },
+    {
+      "id": "same-name-different-location-are-distinct",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "id", "in": "query", "schema": {"type": "string"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [
+            {"name": "id", "in": "header", "schema": {"type": "string"}},
+            {"name": "id", "in": "query", "schema": {"type": "string"}}
+          ],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    },
+    {
+      "id": "case-only-header-rename-is-not-a-removal",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "X-Request-Id", "in": "header", "schema": {"type": "string"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "x-request-id", "in": "header", "schema": {"type": "string"}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    },
+    {
+      "id": "narrowing-enum-on-retained-parameter-is-breaking",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "status", "in": "query", "schema": {"type": "string", "enum": ["available", "pending", "sold"]}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"get": {
+          "parameters": [{"name": "status", "in": "query", "schema": {"type": "string", "enum": ["available", "pending"]}}],
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    },
+    {
+      "id": "missing-body-vs-required-body-added",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"post": {
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"post": {
+          "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object"}}}},
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    },
+    {
+      "id": "required-body-stays-required-even-if-schema-accepts-null-or-empty-object",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"post": {
+          "requestBody": {"required": false, "content": {"application/json": {"schema": {"type": "object"}}}},
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.1.0", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"post": {
+          "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": ["object", "null"]}}}},
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    },
+    {
+      "id": "required-body-removed",
+      "original": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"post": {
+          "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object"}}}},
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      },
+      "updated": {
+        "openapi": "3.0.4", "info": {"title": "T", "version": "1"},
+        "paths": {"/pets": {"post": {
+          "responses": {"200": {"description": "ok"}}
+        }}}
+      }
+    }
+  ]
+}
