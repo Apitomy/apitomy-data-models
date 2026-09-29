@@ -1,0 +1,271 @@
+{
+  "cases": [
+    {
+      "id": "parameter-moved-operation-to-path-same-effective-behavior",
+      "description": "A query parameter declared at the operation level vs. the same parameter declared at the Path Item level (and inherited unchanged) must produce identical effective parameters.",
+      "operationLevel": {
+        "openapi": "3.0.4",
+        "info": {"title": "T", "version": "1"},
+        "paths": {
+          "/widgets": {
+            "get": {
+              "parameters": [
+                {"name": "limit", "in": "query", "required": false, "schema": {"type": "integer"}}
+              ],
+              "responses": {"200": {"description": "ok"}}
+            }
+          }
+        }
+      },
+      "pathLevel": {
+        "openapi": "3.0.4",
+        "info": {"title": "T", "version": "1"},
+        "paths": {
+          "/widgets": {
+            "parameters": [
+              {"name": "limit", "in": "query", "required": false, "schema": {"type": "integer"}}
+            ],
+            "get": {
+              "responses": {"200": {"description": "ok"}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "parameter-list-reordering-same-effective-set",
+      "description": "Reordering a Path Item's parameter list must not change the effective parameter set.",
+      "operationLevel": {
+        "openapi": "3.0.4",
+        "info": {"title": "T", "version": "1"},
+        "paths": {
+          "/widgets": {
+            "parameters": [
+              {"name": "a", "in": "query", "schema": {"type": "string"}},
+              {"name": "b", "in": "query", "schema": {"type": "string"}}
+            ],
+            "get": {"responses": {"200": {"description": "ok"}}}
+          }
+        }
+      },
+      "pathLevel": {
+        "openapi": "3.0.4",
+        "info": {"title": "T", "version": "1"},
+        "paths": {
+          "/widgets": {
+            "parameters": [
+              {"name": "b", "in": "query", "schema": {"type": "string"}},
+              {"name": "a", "in": "query", "schema": {"type": "string"}}
+            ],
+            "get": {"responses": {"200": {"description": "ok"}}}
+          }
+        }
+      }
+    },
+    {
+      "id": "component-extraction-parameter-ref",
+      "description": "A $ref to a components.parameters entry resolves to the same effective parameter as declaring it inline.",
+      "document": {
+        "openapi": "3.0.4",
+        "info": {"title": "T", "version": "1"},
+        "paths": {
+          "/widgets": {
+            "get": {
+              "parameters": [
+                {"$ref": "#/components/parameters/Limit"}
+              ],
+              "responses": {"200": {"description": "ok"}}
+            }
+          }
+        },
+        "components": {
+          "parameters": {
+            "Limit": {"name": "limit", "in": "query", "required": true, "schema": {"type": "integer"}}
+          }
+        }
+      }
+    },
+    {
+      "id": "operation-level-override-of-path-parameter",
+      "description": "An operation-level parameter of the same identity as a Path Item parameter replaces it (its schema wins).",
+      "document": {
+        "openapi": "3.0.4",
+        "info": {"title": "T", "version": "1"},
+        "paths": {
+          "/widgets": {
+            "parameters": [
+              {"name": "limit", "in": "query", "schema": {"type": "string"}}
+            ],
+            "get": {
+              "parameters": [
+                {"name": "limit", "in": "query", "schema": {"type": "integer"}}
+              ],
+              "responses": {"200": {"description": "ok"}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "security-absent-inherits-root-empty-overrides-to-none",
+      "description": "An operation with no security field inherits the root's default; an operation with an explicit empty security array means no security at all.",
+      "document": {
+        "openapi": "3.0.4",
+        "info": {"title": "T", "version": "1"},
+        "security": [{"apiKey": []}],
+        "paths": {
+          "/inherits": {
+            "get": {"responses": {"200": {"description": "ok"}}}
+          },
+          "/overrides-to-none": {
+            "get": {"security": [], "responses": {"200": {"description": "ok"}}}
+          }
+        }
+      }
+    },
+    {
+      "id": "server-precedence-operation-then-path-then-root",
+      "description": "servers = operation declaration if present, else Path Item, else root.",
+      "document": {
+        "openapi": "3.0.4",
+        "info": {"title": "T", "version": "1"},
+        "servers": [{"url": "https://root.example.com"}],
+        "paths": {
+          "/root-only": {
+            "get": {"responses": {"200": {"description": "ok"}}}
+          },
+          "/path-level": {
+            "servers": [{"url": "https://path.example.com"}],
+            "get": {"responses": {"200": {"description": "ok"}}}
+          },
+          "/operation-level": {
+            "servers": [{"url": "https://path.example.com"}],
+            "get": {
+              "servers": [{"url": "https://operation.example.com"}],
+              "responses": {"200": {"description": "ok"}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "legacy-consumes-produces-schemes-operation-override",
+      "description": "2.0 operation-level consumes/produces/schemes override the root declaration; absent means inherit.",
+      "document": {
+        "swagger": "2.0",
+        "info": {"title": "T", "version": "1"},
+        "host": "api.example.com",
+        "basePath": "/v1",
+        "schemes": ["https"],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "paths": {
+          "/inherits": {
+            "post": {
+              "parameters": [{"name": "body", "in": "body", "schema": {"type": "object"}}],
+              "responses": {"200": {"description": "ok"}}
+            }
+          },
+          "/overrides": {
+            "post": {
+              "consumes": ["application/xml"],
+              "produces": ["application/xml"],
+              "parameters": [{"name": "body", "in": "body", "schema": {"type": "object"}}],
+              "responses": {"200": {"description": "ok"}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "component-only-document-empty-surface",
+      "description": "A document with only reusable components and no paths is an empty API surface with an explicit coverage note, not silently equivalent to a normal fully-covered empty API.",
+      "document": {
+        "openapi": "3.0.4",
+        "info": {"title": "Library", "version": "1"},
+        "paths": {},
+        "components": {
+          "schemas": {
+            "Widget": {"type": "object", "properties": {"id": {"type": "string"}}}
+          }
+        }
+      }
+    },
+    {
+      "id": "duplicate-parameter-declaration-recognized",
+      "description": "Two Path Item parameters with the same identity (name + in) is an invalid, conflicting declaration; interpretation records a problem and proceeds using the first.",
+      "document": {
+        "openapi": "3.0.4",
+        "info": {"title": "T", "version": "1"},
+        "paths": {
+          "/widgets": {
+            "parameters": [
+              {"name": "id", "in": "query", "schema": {"type": "string"}},
+              {"name": "id", "in": "query", "schema": {"type": "integer"}}
+            ],
+            "get": {"responses": {"200": {"description": "ok"}}}
+          }
+        }
+      }
+    },
+    {
+      "id": "unreferenced-root-definitions-not-globally-applied",
+      "description": "A 2.0 root #/parameters definition that is never referenced from any operation must not produce a phantom interaction or parameter.",
+      "document": {
+        "swagger": "2.0",
+        "info": {"title": "T", "version": "1"},
+        "paths": {
+          "/widgets": {
+            "get": {"responses": {"200": {"description": "ok"}}}
+          }
+        },
+        "parameters": {
+          "UnusedLimit": {"name": "limit", "in": "query", "type": "integer"}
+        }
+      }
+    },
+    {
+      "id": "webhook-request-and-response-roles-independent-of-ordinary",
+      "description": "An OAS 3.1 document with both an ordinary path operation and a webhook operation for the same shared schema must assign opposite ProviderRole per usage per the design contract's table.",
+      "document": {
+        "openapi": "3.1.0",
+        "info": {"title": "T", "version": "1"},
+        "paths": {
+          "/widgets": {
+            "post": {
+              "requestBody": {
+                "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Widget"}}}
+              },
+              "responses": {
+                "200": {
+                  "description": "ok",
+                  "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Widget"}}}
+                }
+              }
+            }
+          }
+        },
+        "webhooks": {
+          "widgetCreated": {
+            "post": {
+              "requestBody": {
+                "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Widget"}}}
+              },
+              "responses": {
+                "200": {
+                  "description": "ok",
+                  "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Widget"}}}
+                }
+              }
+            }
+          }
+        },
+        "components": {
+          "schemas": {
+            "Widget": {"type": "object", "properties": {"id": {"type": "string"}}}
+          }
+        }
+      }
+    }
+  ]
+}

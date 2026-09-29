@@ -70,14 +70,28 @@ public final class CollectionUtil {
     /**
      * A copy of the given map, preserving iteration order, or an empty map when
      * it is {@code null}.
+     * <p>
+     * Keyed by {@code String} specifically (not generic {@code <K, V>}): the
+     * transpiler represents a {@code Map<String, V>} as a plain JS object with
+     * its entries as direct string-keyed properties, and every operation here
+     * (including this method's own {@code keySet()}/{@code get()}/{@code put()})
+     * compiles against that representation consistently only when the key
+     * type is concretely {@code String} at the call site -- a fully generic
+     * {@code <K, V>} key type instead falls back to a distinct, incompatible
+     * internal representation, silently losing every entry of a plain-object
+     * source map passed through it.
      *
      * @param source the map to copy
      * @return a copy the caller may safely retain
      */
-    public static <K, V> Map<K, V> copyOfMap(Map<K, V> source) {
+    public static <V> Map<String, V> copyOfMap(Map<String, V> source) {
+        Map<String, V> copy = new LinkedHashMap<String, V>();
         if (source == null) {
-            return new LinkedHashMap<K, V>();
+            return copy;
         }
-        return new LinkedHashMap<K, V>(source);
+        for (String key : source.keySet()) {
+            copy.put(key, source.get(key));
+        }
+        return copy;
     }
 }
