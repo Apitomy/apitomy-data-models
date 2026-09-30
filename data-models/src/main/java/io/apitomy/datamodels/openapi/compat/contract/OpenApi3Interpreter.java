@@ -111,7 +111,7 @@ final class OpenApi3Interpreter {
         for (int i = 0; i < merged.size(); i++) {
             ContractInterpreterSupport.ResolvedParameter resolved = merged.get(i);
             effectiveParameters.add(toEffectiveParameter((OpenApi3xParameter) resolved.getParameter(), dialect, resourceUri,
-                    resolved.isDeclaredAtOperationLevel()));
+                    rawDocumentRoot, resolved.isDeclaredAtOperationLevel()));
         }
 
         EffectiveRequestBody requestBody = null;
@@ -122,13 +122,14 @@ final class OpenApi3Interpreter {
                 problems.add(interactionId + ": could not resolve requestBody reference");
             } else {
                 OpenApiRequestBody body = (OpenApiRequestBody) resolvedBodyNode;
-                Map<String, SchemaView> content = mediaTypeSchemas(body.getContent(), dialect, resourceUri);
+                Map<String, SchemaView> content = mediaTypeSchemas(body.getContent(), dialect, resourceUri, rawDocumentRoot);
                 requestBody = new EffectiveRequestBody(Boolean.TRUE.equals(body.isRequired()), content,
                         ContractInterpreterSupport.declarationPointer((Node) body));
             }
         }
 
-        Map<String, EffectiveResponse> responses = interpretResponses(operation, dialect, resourceUri, interactionId, problems);
+        Map<String, EffectiveResponse> responses = interpretResponses(operation, dialect, resourceUri, rawDocumentRoot, interactionId,
+                problems);
         List<Map<String, List<String>>> security = ContractInterpreterSupport.effectiveSecurity(operation, (Node) document, rawDocumentRoot);
         List<EffectiveServer> servers = effectiveServers(operation, (Node) pathItem, (Node) document);
         List<String> tags = CollectionUtil.copyOfList((List<String>) NodeUtil.getNodeProperty(operation, "tags"));
@@ -141,7 +142,7 @@ final class OpenApi3Interpreter {
     }
 
     private static Map<String, EffectiveResponse> interpretResponses(Node operation, SchemaDialect dialect, String resourceUri,
-            String interactionId, List<String> problems) {
+            com.fasterxml.jackson.databind.node.ObjectNode rawDocumentRoot, String interactionId, List<String> problems) {
         Map<String, EffectiveResponse> result = new LinkedHashMap<String, EffectiveResponse>();
         OpenApiResponses responses = (OpenApiResponses) NodeUtil.getNodeProperty(operation, "responses");
         if (responses == null) {
@@ -151,14 +152,15 @@ final class OpenApi3Interpreter {
         for (int i = 0; i < statusKeys.size(); i++) {
             String statusKey = statusKeys.get(i);
             EffectiveResponse response = toEffectiveResponse(statusKey, responses.getItem(statusKey), dialect, resourceUri,
-                    interactionId, problems);
+                    rawDocumentRoot, interactionId, problems);
             if (response != null) {
                 result.put(statusKey, response);
             }
         }
         OpenApiResponse defaultResponse = responses.getDefault();
         if (defaultResponse != null) {
-            EffectiveResponse response = toEffectiveResponse("default", defaultResponse, dialect, resourceUri, interactionId, problems);
+            EffectiveResponse response = toEffectiveResponse("default", defaultResponse, dialect, resourceUri, rawDocumentRoot,
+                    interactionId, problems);
             if (response != null) {
                 result.put("default", response);
             }
@@ -167,7 +169,8 @@ final class OpenApi3Interpreter {
     }
 
     private static EffectiveResponse toEffectiveResponse(String statusKey, OpenApiResponse rawResponse, SchemaDialect dialect,
-            String resourceUri, String interactionId, List<String> problems) {
+            String resourceUri, com.fasterxml.jackson.databind.node.ObjectNode rawDocumentRoot, String interactionId,
+            List<String> problems) {
         Node resolvedNode = ReferenceUtil.resolveNodeRef((Node) rawResponse);
         if (resolvedNode == null || NodeUtil.getProperty(resolvedNode, "$ref") != null) {
             problems.add(interactionId + ": could not resolve response '" + statusKey + "' reference");
@@ -175,7 +178,7 @@ final class OpenApi3Interpreter {
         }
         @SuppressWarnings("unchecked")
         Map<String, OpenApiMediaType> rawContent = (Map<String, OpenApiMediaType>) NodeUtil.getNodeProperty(resolvedNode, "content");
-        Map<String, SchemaView> content = mediaTypeSchemas(rawContent, dialect, resourceUri);
+        Map<String, SchemaView> content = mediaTypeSchemas(rawContent, dialect, resourceUri, rawDocumentRoot);
 
         List<EffectiveParameter> headers = new ArrayList<EffectiveParameter>();
         Object headerMap = NodeUtil.getNodeProperty(resolvedNode, "headers");
@@ -189,15 +192,16 @@ final class OpenApi3Interpreter {
                     problems.add(interactionId + ": could not resolve header '" + headerName + "' reference");
                     continue;
                 }
-                headers.add(toEffectiveHeader(headerName, (OpenApi3xHeader) resolvedHeader, dialect, resourceUri));
+                headers.add(toEffectiveHeader(headerName, (OpenApi3xHeader) resolvedHeader, dialect, resourceUri, rawDocumentRoot));
             }
         }
         return new EffectiveResponse(statusKey, content, headers, ContractInterpreterSupport.declarationPointer(resolvedNode));
     }
 
     private static EffectiveParameter toEffectiveHeader(String name, OpenApi3xHeader header, SchemaDialect dialect,
-            String resourceUri) {
-        SchemaView schema = ContractInterpreterSupport.schemaViewOf(header.getSchema(), dialect, resourceUri, (Node) header);
+            String resourceUri, com.fasterxml.jackson.databind.node.ObjectNode rawDocumentRoot) {
+        SchemaView schema = ContractInterpreterSupport.schemaViewOf(header.getSchema(), dialect, resourceUri, (Node) header,
+                rawDocumentRoot);
         String mediaType = firstKey(header.getContent());
         boolean explode = Boolean.TRUE.equals(header.isExplode());
         return new EffectiveParameter(name, "header", Boolean.TRUE.equals(header.isRequired()), "simple", explode, false,
@@ -205,7 +209,7 @@ final class OpenApi3Interpreter {
     }
 
     private static EffectiveParameter toEffectiveParameter(OpenApi3xParameter parameter, SchemaDialect dialect,
-            String resourceUri, boolean declaredAtOperationLevel) {
+            String resourceUri, com.fasterxml.jackson.databind.node.ObjectNode rawDocumentRoot, boolean declaredAtOperationLevel) {
         String in = parameter.getIn();
         boolean required = "path".equals(in) || Boolean.TRUE.equals(parameter.isRequired());
         String style = parameter.getStyle();
@@ -215,7 +219,8 @@ final class OpenApi3Interpreter {
         Boolean explodeValue = parameter.isExplode();
         boolean explode = explodeValue != null ? explodeValue.booleanValue() : "form".equals(style);
         boolean allowReserved = Boolean.TRUE.equals(parameter.isAllowReserved());
-        SchemaView schema = ContractInterpreterSupport.schemaViewOf(parameter.getSchema(), dialect, resourceUri, (Node) parameter);
+        SchemaView schema = ContractInterpreterSupport.schemaViewOf(parameter.getSchema(), dialect, resourceUri, (Node) parameter,
+                rawDocumentRoot);
         String mediaType = firstKey(parameter.getContent());
         return new EffectiveParameter(parameter.getName(), in, required, style, explode, allowReserved, null, schema,
                 mediaType, ContractInterpreterSupport.declarationPointer((Node) parameter), declaredAtOperationLevel);
@@ -241,7 +246,7 @@ final class OpenApi3Interpreter {
     }
 
     private static Map<String, SchemaView> mediaTypeSchemas(Map<String, OpenApiMediaType> rawContent, SchemaDialect dialect,
-            String resourceUri) {
+            String resourceUri, com.fasterxml.jackson.databind.node.ObjectNode rawDocumentRoot) {
         Map<String, SchemaView> content = new LinkedHashMap<String, SchemaView>();
         if (rawContent == null) {
             return content;
@@ -250,7 +255,8 @@ final class OpenApi3Interpreter {
         for (int i = 0; i < mediaTypes.size(); i++) {
             String mediaType = mediaTypes.get(i);
             OpenApiMediaType mt = (OpenApiMediaType) NodeUtil.getMapItem((Map) rawContent, mediaType);
-            content.put(mediaType, ContractInterpreterSupport.schemaViewOf(mt.getSchema(), dialect, resourceUri, (Node) mt));
+            content.put(mediaType, ContractInterpreterSupport.schemaViewOf(mt.getSchema(), dialect, resourceUri, (Node) mt,
+                    rawDocumentRoot));
         }
         return content;
     }

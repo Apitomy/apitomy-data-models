@@ -3,50 +3,461 @@
     {
       "id": "four-row-direction-table-narrowed-enum",
       "original": {
-        "openapi": "3.1.0", "info": {"title": "T", "version": "1"},
-        "paths": {"/widgets": {"post": {
-          "requestBody": {"content": {"application/json": {"schema": {"type": "object", "properties": {"status": {"type": "string", "enum": ["a", "b", "c"]}}}}}},
-          "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {"type": "object", "properties": {"status": {"type": "string", "enum": ["a", "b", "c"]}}}}}}}
-        }}},
-        "webhooks": {"widgetEvent": {"post": {
-          "requestBody": {"content": {"application/json": {"schema": {"type": "object", "properties": {"status": {"type": "string", "enum": ["a", "b", "c"]}}}}}},
-          "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {"type": "object", "properties": {"status": {"type": "string", "enum": ["a", "b", "c"]}}}}}}}
-        }}}
+        "openapi": "3.1.0",
+        "info": {
+          "title": "T",
+          "version": "1"
+        },
+        "paths": {
+          "/widgets": {
+            "post": {
+              "requestBody": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "a",
+                            "b",
+                            "c"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "ok",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "a",
+                              "b",
+                              "c"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "webhooks": {
+          "widgetEvent": {
+            "post": {
+              "requestBody": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "a",
+                            "b",
+                            "c"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "ok",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "a",
+                              "b",
+                              "c"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "updated": {
-        "openapi": "3.1.0", "info": {"title": "T", "version": "1"},
-        "paths": {"/widgets": {"post": {
-          "requestBody": {"content": {"application/json": {"schema": {"type": "object", "properties": {"status": {"type": "string", "enum": ["a", "b"]}}}}}},
-          "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {"type": "object", "properties": {"status": {"type": "string", "enum": ["a", "b"]}}}}}}}
-        }}},
-        "webhooks": {"widgetEvent": {"post": {
-          "requestBody": {"content": {"application/json": {"schema": {"type": "object", "properties": {"status": {"type": "string", "enum": ["a", "b"]}}}}}},
-          "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {"type": "object", "properties": {"status": {"type": "string", "enum": ["a", "b"]}}}}}}}
-        }}}
+        "openapi": "3.1.0",
+        "info": {
+          "title": "T",
+          "version": "1"
+        },
+        "paths": {
+          "/widgets": {
+            "post": {
+              "requestBody": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "a",
+                            "b"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "ok",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "a",
+                              "b"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "webhooks": {
+          "widgetEvent": {
+            "post": {
+              "requestBody": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "a",
+                            "b"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "ok",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "a",
+                              "b"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "four-row-direction-table-narrowed-enum-via-ref",
+      "description": "Same as the inline-schema case above, but the shared schema is referenced via $ref (both ordinary and webhook usages point at the same #/components/schemas/Widget) -- this is the exact scenario that originally surfaced the schema-$ref-not-dereferenced gap (see T17); it must now compare correctly instead of Unknown.",
+      "original": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "T",
+          "version": "1"
+        },
+        "paths": {
+          "/widgets": {
+            "post": {
+              "requestBody": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/Widget"
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "ok",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/Widget"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "webhooks": {
+          "widgetEvent": {
+            "post": {
+              "requestBody": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/Widget"
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "ok",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/Widget"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "components": {
+          "schemas": {
+            "Widget": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b",
+                    "c"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "updated": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "T",
+          "version": "1"
+        },
+        "paths": {
+          "/widgets": {
+            "post": {
+              "requestBody": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/Widget"
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "ok",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/Widget"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "webhooks": {
+          "widgetEvent": {
+            "post": {
+              "requestBody": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/Widget"
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "ok",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/Widget"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "components": {
+          "schemas": {
+            "Widget": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b"
+                  ]
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
       "id": "new-webhook-default-indeterminate",
       "original": {
-        "openapi": "3.1.0", "info": {"title": "T", "version": "1"},
-        "paths": {"/widgets": {"get": {"responses": {"200": {"description": "ok"}}}}}
+        "openapi": "3.1.0",
+        "info": {
+          "title": "T",
+          "version": "1"
+        },
+        "paths": {
+          "/widgets": {
+            "get": {
+              "responses": {
+                "200": {
+                  "description": "ok"
+                }
+              }
+            }
+          }
+        }
       },
       "updated": {
-        "openapi": "3.1.0", "info": {"title": "T", "version": "1"},
-        "paths": {"/widgets": {"get": {"responses": {"200": {"description": "ok"}}}}},
-        "webhooks": {"widgetCreated": {"post": {"responses": {"200": {"description": "ok"}}}}}
+        "openapi": "3.1.0",
+        "info": {
+          "title": "T",
+          "version": "1"
+        },
+        "paths": {
+          "/widgets": {
+            "get": {
+              "responses": {
+                "200": {
+                  "description": "ok"
+                }
+              }
+            }
+          }
+        },
+        "webhooks": {
+          "widgetCreated": {
+            "post": {
+              "responses": {
+                "200": {
+                  "description": "ok"
+                }
+              }
+            }
+          }
+        }
       }
     },
     {
       "id": "removed-webhook-is-breaking",
       "original": {
-        "openapi": "3.1.0", "info": {"title": "T", "version": "1"},
-        "paths": {"/widgets": {"get": {"responses": {"200": {"description": "ok"}}}}},
-        "webhooks": {"widgetCreated": {"post": {"responses": {"200": {"description": "ok"}}}}}
+        "openapi": "3.1.0",
+        "info": {
+          "title": "T",
+          "version": "1"
+        },
+        "paths": {
+          "/widgets": {
+            "get": {
+              "responses": {
+                "200": {
+                  "description": "ok"
+                }
+              }
+            }
+          }
+        },
+        "webhooks": {
+          "widgetCreated": {
+            "post": {
+              "responses": {
+                "200": {
+                  "description": "ok"
+                }
+              }
+            }
+          }
+        }
       },
       "updated": {
-        "openapi": "3.1.0", "info": {"title": "T", "version": "1"},
-        "paths": {"/widgets": {"get": {"responses": {"200": {"description": "ok"}}}}}
+        "openapi": "3.1.0",
+        "info": {
+          "title": "T",
+          "version": "1"
+        },
+        "paths": {
+          "/widgets": {
+            "get": {
+              "responses": {
+                "200": {
+                  "description": "ok"
+                }
+              }
+            }
+          }
+        }
       }
     }
   ]

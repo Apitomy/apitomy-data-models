@@ -37,6 +37,7 @@ public final class WitnessValidator {
      *         unrecognized keyword, or a composition keyword -- T9)
      */
     public static ContainmentVerdict validate(JsonNode candidate, SchemaView schema, ContainmentContext context) {
+        schema = schema.resolveRef();
         if (schema.isBoolean()) {
             return schema.booleanValue() ? ContainmentVerdict.YES : ContainmentVerdict.NO;
         }
@@ -176,7 +177,8 @@ public final class WitnessValidator {
     }
 
     private static SchemaView wrap(SchemaView parent, JsonNode node) {
-        return new SchemaView(node, parent.getDialect(), parent.getResourceUri(), parent.getPointer());
+        return new SchemaView(node, parent.getDialect(), parent.getResourceUri(), parent.getPointer(), parent.getDocumentRoot())
+                .resolveRef();
     }
 
     private static ContainmentVerdict validateNumeric(JsonNode candidate, SchemaView schema) {

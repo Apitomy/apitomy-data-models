@@ -237,13 +237,22 @@ final class ContractInterpreterSupport {
         return result;
     }
 
-    /** A {@link SchemaView} over a model {@code Schema} node's own serialized JSON, under {@code dialect}. */
-    static SchemaView schemaViewOf(Schema schema, SchemaDialect dialect, String resourceUri, Node source) {
+    /**
+     * A {@link SchemaView} over a model {@code Schema} node's own serialized
+     * JSON, under {@code dialect}. {@code documentRoot} (the pristine, full
+     * raw document JSON -- see {@link #isKeyExplicitlyDeclared} for why this
+     * interpreter already threads that JSON alongside the parsed model) lets
+     * the view resolve a same-document {@code $ref} anywhere in this schema's
+     * own subtree; pass {@code null} only when no such root is available
+     * (the view then simply never resolves a {@code $ref} it encounters).
+     */
+    static SchemaView schemaViewOf(Schema schema, SchemaDialect dialect, String resourceUri, Node source,
+            JsonNode documentRoot) {
         if (schema == null) {
             return null;
         }
         ObjectNode json = Library.writeNode((Node) schema);
-        return new SchemaView(json, dialect, resourceUri, declarationPointer(source));
+        return new SchemaView(json, dialect, resourceUri, declarationPointer(source), documentRoot).resolveRef();
     }
 
     /** Every name/value pair present in a {@link MappedNode}, as a plain map, for callers that need to iterate without holding a live view. */

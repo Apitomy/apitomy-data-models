@@ -42,7 +42,7 @@ public final class ObjectContainment {
         return false;
     }
 
-    public static ContainmentResult compare(SchemaView source, SchemaView target, ContainmentContext context) {
+    public static ContainmentResult compare(SchemaView source, SchemaView target, ContainmentContext context, Set<String> visited) {
         if (isProvenUnsatisfiable(source)) {
             return ContainmentResult.yes(evidence(source, target, "empty-source-object",
                     "The source schema's own size/requiredness constraints admit no object"));
@@ -71,7 +71,7 @@ public final class ObjectContainment {
         for (String name : names) {
             SchemaView sourceEffective = effectivePropertySchema(source, name);
             SchemaView targetEffective = effectivePropertySchema(target, name);
-            ContainmentResult propertyResult = SchemaContainment.compare(sourceEffective, targetEffective, context);
+            ContainmentResult propertyResult = SchemaContainment.compare(sourceEffective, targetEffective, context, visited);
             if (propertyResult.getVerdict() == ContainmentVerdict.NO) {
                 JsonNode witness = buildWitnessObject(source, null, name, propertyResult.getWitness(), context);
                 ContainmentResult failure = confirmOrUnknown(source, target, witness, context, "property-not-contained",
@@ -233,11 +233,17 @@ public final class ObjectContainment {
 
     private static SchemaView childOf(SchemaView parent, JsonNode node, String pointerSuffix) {
         String pointer = parent.getPointer() != null ? parent.getPointer() + "/" + pointerSuffix : null;
-        return new SchemaView(node, parent.getDialect(), parent.getResourceUri(), pointer);
+        return new SchemaView(node, parent.getDialect(), parent.getResourceUri(), pointer, parent.getDocumentRoot()).resolveRef();
     }
 
     private static SchemaView trueView(SchemaView parent) {
-        return new SchemaView(JsonUtil.toJsonNode(Boolean.TRUE), parent.getDialect(), parent.getResourceUri(), parent.getPointer());
+        // A synthetic "true" substitute must not reuse its parent's own pointer
+        // unchanged: that would give it the same (resourceUri, pointer) identity
+        // as the parent itself, which SchemaContainment's cycle guard would then
+        // mistake for the parent legitimately recurring (a false cycle).
+        String pointer = parent.getPointer() != null ? parent.getPointer() + "/-true" : null;
+        return new SchemaView(JsonUtil.toJsonNode(Boolean.TRUE), parent.getDialect(), parent.getResourceUri(), pointer,
+                parent.getDocumentRoot());
     }
 
     private static SchemaEvidence evidence(SchemaView source, SchemaView target, String rule, String message) {

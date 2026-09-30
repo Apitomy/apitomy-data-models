@@ -179,11 +179,12 @@ references never triggers it at all:
     wrapper to unwrap.
 
 !!! note "Known limitation: external schema content is not yet consulted"
-    Resources the async checker acquires are recorded and available for `RESOURCE_UNRESOLVED`/
-    `RESOURCE_INVALID` reporting, but are not yet consulted by schema containment for an external
-    `$ref` target's actual content. This is the same underlying gap noted below: schema `$ref` (both
-    internal and external) is not dereferenced by the containment engine yet. Acquiring a resource
-    therefore does not currently change a schema comparison's outcome.
+    Same-document (internal, `"#/..."`) `$ref` schemas are resolved and compared against their actual
+    content. An *external* `$ref` (to another resource) is different: the async checker records that
+    resource once acquired, but schema containment does not yet consult an externally-acquired
+    resource's content when resolving a `$ref` into it -- only a same-document `$ref` is followed today.
+    Acquiring an external resource therefore does not yet change a schema comparison's outcome; it is
+    still useful for `RESOURCE_UNRESOLVED`/`RESOURCE_INVALID` reporting.
 
 ## Policy and webhook opt-in
 
@@ -227,10 +228,13 @@ identified, but not semantically compared) or bounded (a sound proof rule for th
 explicit `INDETERMINATE` finding for anything beyond that) rather than silently treated as compatible.
 Notable current limitations:
 
-- **Schema `$ref` is not dereferenced.** A schema usage whose top-level or nested schema is a `$ref`
-  (internal or external) is reported as an unresolved schema comparison, not compared against its
-  target's actual content. This affects any document that reuses schemas via `components.schemas`
-  (a very common pattern) until a future release closes this gap.
+- **External (cross-resource) schema `$ref` is not dereferenced.** A same-document `$ref` (the
+  overwhelmingly common case -- `components.schemas` reused within one file) is resolved and compared
+  normally. A `$ref` into a separately-acquired external resource is not yet followed to its content.
+- **Recursive schemas are traversal-safe, not fixed-point-proven.** A self-referential or mutually
+  recursive `$ref` graph no longer causes unbounded recursion, but comparing a genuinely recursive
+  schema against itself (or an equally recursive counterpart) still reports `INDETERMINATE` rather
+  than a guessed `COMPATIBLE` -- this checker does not implement coinductive/fixed-point proof.
 - **Discriminator mapping dispatch, `Link` target resolution, and callback runtime-destination
   expressions** are not yet compared for equivalence.
 - **XML serialization, multipart part/header encoding, and 3.2 streaming `itemSchema`** are recognized

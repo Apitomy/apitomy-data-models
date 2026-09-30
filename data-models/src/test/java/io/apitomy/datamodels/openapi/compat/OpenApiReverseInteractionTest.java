@@ -81,7 +81,19 @@ class OpenApiReverseInteractionTest {
 
     @Test
     void fullFourRowDirectionTableOnASharedNarrowedSchema() throws Exception {
-        JsonNode testCase = fixtureCase("four-row-direction-table-narrowed-enum");
+        assertFourRowDirectionTable("four-row-direction-table-narrowed-enum");
+    }
+
+    @Test
+    void fullFourRowDirectionTableStillWorksWhenTheSharedSchemaIsARef() throws Exception {
+        // The exact scenario that originally surfaced the schema-$ref-not-dereferenced
+        // gap (T17): both the ordinary and webhook usages point at the same
+        // #/components/schemas/Widget via $ref rather than repeating it inline.
+        assertFourRowDirectionTable("four-row-direction-table-narrowed-enum-via-ref");
+    }
+
+    private void assertFourRowDirectionTable(String fixtureId) throws Exception {
+        JsonNode testCase = fixtureCase(fixtureId);
         ContractDocument original = ContractInterpreter.interpret((ObjectNode) testCase.get("original"), ORIGINAL_URI);
         ContractDocument updated = ContractInterpreter.interpret((ObjectNode) testCase.get("updated"), UPDATED_URI);
         RuleContext context = new RuleContext(original, updated, ORIGINAL_URI, UPDATED_URI, CheckDirection.BACKWARD,
@@ -106,6 +118,9 @@ class OpenApiReverseInteractionTest {
         // Webhook response (RESPONSE/INPUT, original consumer receives it back): narrowing accepted values is breaking.
         assertTrue(hasFindingWithRoles(findings, FindingCode.SCHEMA_INPUT_NARROWED, FindingImpact.BREAKING, HttpRole.RESPONSE,
                 ProviderRole.INPUT));
+        // None of these must be reported Unresolved -- the $ref must actually be
+        // followed to its content, not left as an unrecognized keyword.
+        assertFalse(hasFinding(findings, FindingCode.SCHEMA_CONTAINMENT_INDETERMINATE, FindingImpact.UNRESOLVED));
     }
 
     private static EffectiveInteraction findByWebhook(ContractDocument document, boolean webhook) {

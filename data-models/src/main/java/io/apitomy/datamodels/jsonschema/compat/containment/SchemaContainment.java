@@ -1,6 +1,8 @@
 package io.apitomy.datamodels.jsonschema.compat.containment;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -35,6 +37,26 @@ public final class SchemaContainment {
     }
 
     public static ContainmentResult compare(SchemaView source, SchemaView target, ContainmentContext context) {
+        return compare(source, target, context, new LinkedHashSet<String>());
+    }
+
+    /**
+     * Recursion entry point used internally for every nested schema-position
+     * comparison (a property, an item, a composition branch, ...), with
+     * {@code visited} tracking the (source pointer, target pointer) pairs
+     * already in progress higher up the same call chain.
+     * <p>
+     * A schema position is guarded, not merely re-entered, because
+     * {@link SchemaView#resolveRef()} means a genuinely recursive schema
+     * graph (a self-referential {@code $ref}, directly or through a cycle of
+     * several schemas) now actually gets followed during traversal -- unlike
+     * before {@code $ref} resolution existed, when a {@code $ref} keyword was
+     * always an immediate, harmless Unknown. Revisiting an in-progress pair
+     * returns {@link ContainmentVerdict#UNKNOWN} (never guessed as
+     * {@code YES}, which could turn an actually-different recursive shape
+     * into a false proof) rather than recursing forever.
+     */
+    static ContainmentResult compare(SchemaView source, SchemaView target, ContainmentContext context, Set<String> visited) {
         if (source == null) {
             throw new IllegalArgumentException("source must not be null");
         }
@@ -44,6 +66,35 @@ public final class SchemaContainment {
         if (context == null) {
             throw new IllegalArgumentException("context must not be null");
         }
+
+        source = source.resolveRef();
+        target = target.resolveRef();
+
+        String pairKey = pointerOrIdentity(source) + "->" + pointerOrIdentity(target);
+        if (!visited.add(pairKey)) {
+            return ContainmentResult.unknown(evidence(source, target, "recursive-schema-guard",
+                    "This schema position is already being compared higher up the same recursive graph; "
+                            + "guarded rather than followed indefinitely"));
+        }
+        try {
+            return compareResolved(source, target, context, visited);
+        } finally {
+            visited.remove(pairKey);
+        }
+    }
+
+    /** A stable per-comparison identity for cycle detection: the schema's own pointer when known, else its resource URI plus node identity is not available portably, so the node's own serialized shape stands in. */
+    private static String pointerOrIdentity(SchemaView schema) {
+        String resourceUri = schema.getResourceUri() == null ? "" : schema.getResourceUri();
+        String pointer = schema.getPointer();
+        if (pointer != null) {
+            return resourceUri + "#" + pointer;
+        }
+        return resourceUri + "#anon:" + JsonUtil.stringify(schema.getNode());
+    }
+
+    private static ContainmentResult compareResolved(SchemaView source, SchemaView target, ContainmentContext context,
+            Set<String> visited) {
 
         if (source.getDialect() == SchemaDialect.UNSUPPORTED || target.getDialect() == SchemaDialect.UNSUPPORTED) {
             return ContainmentResult.unknown(evidence(source, target, "unsupported-dialect",
@@ -117,7 +168,7 @@ public final class SchemaContainment {
         }
 
         if ((!sourceIsTrue && hasAnyKeyword(source, COMPOSITION_CHILD_KEYWORDS)) || hasAnyKeyword(target, COMPOSITION_CHILD_KEYWORDS)) {
-            return CompositionContainment.compare(source, target, context);
+            return CompositionContainment.compare(source, target, context, visited);
         }
 
         if ((sourceIsTrue || isScalarOnly(source)) && isScalarOnly(target)) {
@@ -125,11 +176,11 @@ public final class SchemaContainment {
         }
 
         if ((sourceIsTrue || isObjectOnly(source)) && isObjectOnly(target)) {
-            return ObjectContainment.compare(source, target, context);
+            return ObjectContainment.compare(source, target, context, visited);
         }
 
         if ((sourceIsTrue || isArrayOnly(source)) && isArrayOnly(target)) {
-            return ArrayContainment.compare(source, target, context);
+            return ArrayContainment.compare(source, target, context, visited);
         }
 
         return ContainmentResult.unknown(evidence(source, target, "no-proof-rule",

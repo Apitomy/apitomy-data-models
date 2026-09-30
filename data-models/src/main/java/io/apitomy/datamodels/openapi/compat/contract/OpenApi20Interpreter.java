@@ -121,7 +121,7 @@ final class OpenApi20Interpreter {
         EffectiveRequestBody requestBody = null;
         if (bodyParameter != null) {
             SchemaView schema = ContractInterpreterSupport.schemaViewOf(bodyParameter.getSchema(), SchemaDialect.OAS20,
-                    resourceUri, (Node) bodyParameter);
+                    resourceUri, (Node) bodyParameter, rawDocumentRoot);
             Map<String, SchemaView> content = new LinkedHashMap<String, SchemaView>();
             if (effectiveConsumes.isEmpty()) {
                 content.put("*/*", schema);
@@ -153,7 +153,7 @@ final class OpenApi20Interpreter {
                     ContractInterpreterSupport.declarationPointer((Node) formDataParameters.get(0)));
         }
 
-        Map<String, EffectiveResponse> responses = interpretResponses(operation, effectiveProduces, resourceUri);
+        Map<String, EffectiveResponse> responses = interpretResponses(operation, effectiveProduces, resourceUri, rawDocumentRoot);
         List<Map<String, List<String>>> security = ContractInterpreterSupport.effectiveSecurity((Node) operation, (Node) document, rawDocumentRoot);
         List<String> tags = CollectionUtil.copyOfList(operation.getTags());
 
@@ -164,7 +164,7 @@ final class OpenApi20Interpreter {
     }
 
     private static Map<String, EffectiveResponse> interpretResponses(OpenApiOperation operation, List<String> effectiveProduces,
-            String resourceUri) {
+            String resourceUri, com.fasterxml.jackson.databind.node.ObjectNode rawDocumentRoot) {
         Map<String, EffectiveResponse> result = new LinkedHashMap<String, EffectiveResponse>();
         OpenApiResponses responses = operation.getResponses();
         if (responses == null) {
@@ -174,23 +174,23 @@ final class OpenApi20Interpreter {
         for (int i = 0; i < statusKeys.size(); i++) {
             String statusKey = statusKeys.get(i);
             OpenApiResponse rawResponse = responses.getItem(statusKey);
-            result.put(statusKey, toEffectiveResponse(statusKey, rawResponse, effectiveProduces, resourceUri));
+            result.put(statusKey, toEffectiveResponse(statusKey, rawResponse, effectiveProduces, resourceUri, rawDocumentRoot));
         }
         OpenApiResponse defaultResponse = responses.getDefault();
         if (defaultResponse != null) {
-            result.put("default", toEffectiveResponse("default", defaultResponse, effectiveProduces, resourceUri));
+            result.put("default", toEffectiveResponse("default", defaultResponse, effectiveProduces, resourceUri, rawDocumentRoot));
         }
         return result;
     }
 
     private static EffectiveResponse toEffectiveResponse(String statusKey, OpenApiResponse rawResponse,
-            List<String> effectiveProduces, String resourceUri) {
+            List<String> effectiveProduces, String resourceUri, com.fasterxml.jackson.databind.node.ObjectNode rawDocumentRoot) {
         Node resolvedNode = ReferenceUtil.resolveNodeRef((Node) rawResponse);
         OpenApi2xResponse response = (OpenApi2xResponse) resolvedNode;
         Map<String, SchemaView> content = new LinkedHashMap<String, SchemaView>();
         if (response.getSchema() != null) {
             SchemaView schema = ContractInterpreterSupport.schemaViewOf(response.getSchema(), SchemaDialect.OAS20, resourceUri,
-                    (Node) response);
+                    (Node) response, rawDocumentRoot);
             List<String> mediaTypes = effectiveProduces;
             if (mediaTypes.isEmpty()) {
                 content.put("*/*", schema);

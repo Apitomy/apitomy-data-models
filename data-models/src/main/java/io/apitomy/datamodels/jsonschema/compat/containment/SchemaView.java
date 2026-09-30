@@ -22,6 +22,15 @@ import io.apitomy.datamodels.models.util.JsonUtil;
  * Like {@link PortableSchemaUtil}, every read here goes through {@link JsonUtil}'s
  * static helpers rather than a {@link JsonNode} instance method, since a
  * "JsonNode" may be a raw value with no such methods in the TypeScript build.
+ * <p>
+ * Optionally carries {@code documentRoot}: the full raw JSON of the resource
+ * this schema's own {@code resourceUri} identifies, needed to resolve a
+ * same-document {@code $ref} anywhere in this schema's own subtree (see
+ * {@link #resolveRef()}). A view constructed without one (the 4-argument
+ * constructor) simply never resolves a {@code $ref} it encounters -- exactly
+ * today's existing, safe behavior (an unrecognized-keyword Unknown) --
+ * rather than failing; every caller that wants {@code $ref} resolution
+ * supplies the document root explicitly.
  */
 public final class SchemaView {
 
@@ -29,8 +38,13 @@ public final class SchemaView {
     private final SchemaDialect dialect;
     private final String resourceUri;
     private final String pointer;
+    private final JsonNode documentRoot;
 
     public SchemaView(JsonNode node, SchemaDialect dialect, String resourceUri, String pointer) {
+        this(node, dialect, resourceUri, pointer, null);
+    }
+
+    public SchemaView(JsonNode node, SchemaDialect dialect, String resourceUri, String pointer, JsonNode documentRoot) {
         if (node == null) {
             throw new IllegalArgumentException("node must not be null");
         }
@@ -44,6 +58,7 @@ public final class SchemaView {
         this.dialect = dialect;
         this.resourceUri = resourceUri;
         this.pointer = pointer;
+        this.documentRoot = documentRoot;
     }
 
     /** True if this is a boolean schema ({@code true} or {@code false}). */
@@ -93,6 +108,11 @@ public final class SchemaView {
         return pointer;
     }
 
+    /** The full raw JSON of the resource this schema's {@link #getResourceUri()} identifies, or {@code null} if not supplied (see the class Javadoc). */
+    public JsonNode getDocumentRoot() {
+        return documentRoot;
+    }
+
     /** The raw underlying JSON value (a boolean or object node). */
     public JsonNode getNode() {
         return node;
@@ -126,7 +146,67 @@ public final class SchemaView {
         if (child == null || !(JsonUtil.isBoolean(child) || JsonUtil.isObject(child))) {
             return null;
         }
-        return new SchemaView(child, dialect, resourceUri, childPointer(name));
+        return new SchemaView(child, dialect, resourceUri, childPointer(name), documentRoot).resolveRef();
+    }
+
+    /**
+     * If this is an object schema with a same-document {@code $ref} keyword
+     * (a fragment-only reference, {@code "#/..."}) and a {@link #getDocumentRoot()}
+     * was supplied, returns a new view of the referenced schema (same dialect,
+     * resource, and document root; pointer set to the target's own location) --
+     * otherwise returns {@code this} unchanged.
+     * <p>
+     * A sibling-keyword-bearing {@code $ref} (permitted in modern JSON Schema
+     * dialects, where {@code $ref} no longer overrides its siblings) is not
+     * specially merged here: this checker follows legacy/OAS semantics
+     * (a present {@code $ref} replaces the schema entirely) uniformly, which
+     * is the safe, conservative reading for the dialects this checker
+     * actually supports.
+     * <p>
+     * An unresolvable {@code $ref} (no document root, an external reference,
+     * or a pointer that does not resolve) is left exactly as before this
+     * method existed: the schema still carries its own {@code $ref} keyword,
+     * still falls through to {@link SchemaContainment}'s existing
+     * unrecognized-keyword handling, and is still reported {@code UNKNOWN} --
+     * never silently treated as absent or as {@code true}.
+     */
+    public SchemaView resolveRef() {
+        SchemaView current = this;
+        // Bounded, not recursive: follows a chain of $ref-to-$ref up to a small
+        // fixed depth. A ref chain that is itself cyclic (A -> B -> A, with no
+        // other keyword ever reached) stops here rather than looping forever;
+        // SchemaContainment's own visited-pair guard is what protects against a
+        // cycle reached through ordinary schema structure (allOf/properties/...),
+        // which this single-schema loop cannot see.
+        for (int hop = 0; hop < 10; hop++) {
+            SchemaView next = current.resolveRefOnce();
+            if (next == current) {
+                return current;
+            }
+            current = next;
+        }
+        return current;
+    }
+
+    private SchemaView resolveRefOnce() {
+        if (!isObject() || documentRoot == null) {
+            return this;
+        }
+        JsonNode refNode = getKeyword("$ref");
+        if (refNode == null || !JsonUtil.isString(refNode)) {
+            return this;
+        }
+        String ref = JsonUtil.toString(refNode);
+        if (ref.length() == 0 || ref.charAt(0) != '#') {
+            // Not a same-document fragment (an external or unsupported reference form).
+            return this;
+        }
+        String fragment = ref.substring(1);
+        JsonNode target = SchemaRefResolver.resolve(documentRoot, fragment);
+        if (target == null || !(JsonUtil.isBoolean(target) || JsonUtil.isObject(target))) {
+            return this;
+        }
+        return new SchemaView(target, dialect, resourceUri, fragment, documentRoot);
     }
 
     private String childPointer(String name) {

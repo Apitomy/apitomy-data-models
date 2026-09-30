@@ -1,6 +1,7 @@
 package io.apitomy.datamodels.jsonschema.compat.containment;
 
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -33,7 +34,7 @@ public final class ArrayContainment {
         return minItems != null && maxItems != null && minItems.intValue() > maxItems.intValue();
     }
 
-    public static ContainmentResult compare(SchemaView source, SchemaView target, ContainmentContext context) {
+    public static ContainmentResult compare(SchemaView source, SchemaView target, ContainmentContext context, Set<String> visited) {
         if (isProvenUnsatisfiable(source)) {
             return ContainmentResult.yes(evidence(source, target, "empty-source-array",
                     "The source schema's own `minItems`/`maxItems` admit no array"));
@@ -84,7 +85,7 @@ public final class ArrayContainment {
                 unresolved = true;
                 continue;
             }
-            ContainmentResult itemResult = SchemaContainment.compare(sourceEffective, targetEffective, context);
+            ContainmentResult itemResult = SchemaContainment.compare(sourceEffective, targetEffective, context, visited);
             if (itemResult.getVerdict() == ContainmentVerdict.NO) {
                 JsonNode witness = buildWitnessArray(source, -1, index, itemResult.getWitness(), context);
                 ContainmentResult failure = confirmOrUnknown(source, target, witness, context, "item-not-contained",
@@ -101,7 +102,7 @@ public final class ArrayContainment {
             }
         }
 
-        ContainmentResult containsResult = checkContains(source, target, context);
+        ContainmentResult containsResult = checkContains(source, target, context, visited);
         if (containsResult != null) {
             if (containsResult.getVerdict() != ContainmentVerdict.YES) {
                 return containsResult;
@@ -159,7 +160,7 @@ public final class ArrayContainment {
      * at least the target's `minContains` items overall. Returns {@code null}
      * (unresolved) for anything more complex than this.
      */
-    private static ContainmentResult checkContains(SchemaView source, SchemaView target, ContainmentContext context) {
+    private static ContainmentResult checkContains(SchemaView source, SchemaView target, ContainmentContext context, Set<String> visited) {
         JsonNode targetContainsNode = target.getKeyword("contains");
         if (targetContainsNode == null) {
             return null;
@@ -172,7 +173,7 @@ public final class ArrayContainment {
         if (sourceHomogeneous == null || targetContains == null) {
             return null;
         }
-        ContainmentResult itemsVsContains = SchemaContainment.compare(sourceHomogeneous, targetContains, context);
+        ContainmentResult itemsVsContains = SchemaContainment.compare(sourceHomogeneous, targetContains, context, visited);
         if (itemsVsContains.getVerdict() != ContainmentVerdict.YES) {
             return null;
         }
@@ -291,11 +292,17 @@ public final class ArrayContainment {
 
     private static SchemaView childOf(SchemaView parent, JsonNode node, String pointerSuffix) {
         String pointer = parent.getPointer() != null ? parent.getPointer() + "/" + pointerSuffix : null;
-        return new SchemaView(node, parent.getDialect(), parent.getResourceUri(), pointer);
+        return new SchemaView(node, parent.getDialect(), parent.getResourceUri(), pointer, parent.getDocumentRoot()).resolveRef();
     }
 
     private static SchemaView trueView(SchemaView parent) {
-        return new SchemaView(JsonUtil.toJsonNode(Boolean.TRUE), parent.getDialect(), parent.getResourceUri(), parent.getPointer());
+        // A synthetic "true" substitute must not reuse its parent's own pointer
+        // unchanged: that would give it the same (resourceUri, pointer) identity
+        // as the parent itself, which SchemaContainment's cycle guard would then
+        // mistake for the parent legitimately recurring (a false cycle).
+        String pointer = parent.getPointer() != null ? parent.getPointer() + "/-true" : null;
+        return new SchemaView(JsonUtil.toJsonNode(Boolean.TRUE), parent.getDialect(), parent.getResourceUri(), pointer,
+                parent.getDocumentRoot());
     }
 
     private static SchemaEvidence evidence(SchemaView source, SchemaView target, String rule, String message) {

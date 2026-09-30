@@ -130,7 +130,7 @@ public final class DirectionalSchemaView {
             JsonUtil.addToArray(requiredArray, JsonUtil.toJsonNode(effectiveRequired.get(i)));
         }
         JsonUtil.setProperty(result, "required", requiredArray);
-        return new SchemaView(result, schema.getDialect(), schema.getResourceUri(), schema.getPointer());
+        return new SchemaView(result, schema.getDialect(), schema.getResourceUri(), schema.getPointer(), schema.getDocumentRoot());
     }
 
     /**
@@ -154,7 +154,8 @@ public final class DirectionalSchemaView {
                 if (!JsonUtil.isObject(branchNode)) {
                     continue;
                 }
-                SchemaView branch = new SchemaView(branchNode, schema.getDialect(), schema.getResourceUri(), schema.getPointer());
+                SchemaView branch = new SchemaView(branchNode, schema.getDialect(), schema.getResourceUri(), schema.getPointer(),
+                        schema.getDocumentRoot()).resolveRef();
                 if (isMarked(branch, name, annotationKeyword)) {
                     return true;
                 }

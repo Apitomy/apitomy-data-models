@@ -2,6 +2,7 @@ package io.apitomy.datamodels.jsonschema.compat.containment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -36,26 +37,26 @@ public final class CompositionContainment {
     private CompositionContainment() {
     }
 
-    public static ContainmentResult compare(SchemaView source, SchemaView target, ContainmentContext context) {
+    public static ContainmentResult compare(SchemaView source, SchemaView target, ContainmentContext context, Set<String> visited) {
         if (source.hasKeyword("if") || target.hasKeyword("if")) {
             return ContainmentResult.unknown(evidence(source, target, "conditional-unsupported",
                     "if/then/else conditional composition is not analyzed"));
         }
 
         if (target.hasKeyword("allOf")) {
-            return compareTargetAllOf(source, target, context);
+            return compareTargetAllOf(source, target, context, visited);
         }
 
         if (source.hasKeyword("not") && target.hasKeyword("not")
                 && !hasAnyOtherComposition(source) && !hasAnyOtherComposition(target)) {
-            ContainmentResult contrapositive = tryContrapositive(source, target, context);
+            ContainmentResult contrapositive = tryContrapositive(source, target, context, visited);
             if (contrapositive != null) {
                 return contrapositive;
             }
         }
 
         if (target.hasKeyword("anyOf")) {
-            ContainmentResult result = compareTargetOrGroup(source, target, "anyOf", context);
+            ContainmentResult result = compareTargetOrGroup(source, target, "anyOf", context, visited);
             if (result != null) {
                 return result;
             }
@@ -64,7 +65,7 @@ public final class CompositionContainment {
         if (target.hasKeyword("oneOf")) {
             List<SchemaView> branches = branchesOf(target, "oneOf");
             if (branches.size() <= 1) {
-                ContainmentResult result = compareTargetOrGroup(source, target, "oneOf", context);
+                ContainmentResult result = compareTargetOrGroup(source, target, "oneOf", context, visited);
                 if (result != null) {
                     return result;
                 }
@@ -72,21 +73,21 @@ public final class CompositionContainment {
         }
 
         if (source.hasKeyword("allOf")) {
-            ContainmentResult result = compareSourceAllOf(source, target, context);
+            ContainmentResult result = compareSourceAllOf(source, target, context, visited);
             if (result != null) {
                 return result;
             }
         }
 
         if (source.hasKeyword("anyOf")) {
-            ContainmentResult result = compareSourceOrGroup(source, target, "anyOf", context);
+            ContainmentResult result = compareSourceOrGroup(source, target, "anyOf", context, visited);
             if (result != null) {
                 return result;
             }
         }
 
         if (source.hasKeyword("oneOf")) {
-            ContainmentResult result = compareSourceOrGroup(source, target, "oneOf", context);
+            ContainmentResult result = compareSourceOrGroup(source, target, "oneOf", context, visited);
             if (result != null) {
                 return result;
             }
@@ -101,14 +102,14 @@ public final class CompositionContainment {
     }
 
     /** Rule: S subset (T1 AND T2) if S subset T1 and S subset T2 -- here T1..Tn are `rest` plus every allOf branch. */
-    private static ContainmentResult compareTargetAllOf(SchemaView source, SchemaView target, ContainmentContext context) {
+    private static ContainmentResult compareTargetAllOf(SchemaView source, SchemaView target, ContainmentContext context, Set<String> visited) {
         List<SchemaView> parts = new ArrayList<SchemaView>();
         parts.add(withoutKeyword(target, "allOf"));
         parts.addAll(branchesOf(target, "allOf"));
 
         boolean unresolved = false;
         for (int i = 0; i < parts.size(); i++) {
-            ContainmentResult partResult = SchemaContainment.compare(source, parts.get(i), context);
+            ContainmentResult partResult = SchemaContainment.compare(source, parts.get(i), context, visited);
             if (partResult.getVerdict() == ContainmentVerdict.NO) {
                 JsonNode witness = partResult.getWitness();
                 if (witness != null && WitnessValidator.validate(witness, source, context) == ContainmentVerdict.YES
@@ -139,9 +140,9 @@ public final class CompositionContainment {
      * source fails to be contained by `rest` with a confirmed witness, that witness also fails the whole target.
      */
     private static ContainmentResult compareTargetOrGroup(SchemaView source, SchemaView target, String keyword,
-            ContainmentContext context) {
+            ContainmentContext context, Set<String> visited) {
         SchemaView rest = withoutKeyword(target, keyword);
-        ContainmentResult restResult = SchemaContainment.compare(source, rest, context);
+        ContainmentResult restResult = SchemaContainment.compare(source, rest, context, visited);
         if (restResult.getVerdict() == ContainmentVerdict.NO) {
             JsonNode witness = restResult.getWitness();
             if (witness != null && WitnessValidator.validate(witness, source, context) == ContainmentVerdict.YES
@@ -157,7 +158,7 @@ public final class CompositionContainment {
         }
         List<SchemaView> branches = branchesOf(target, keyword);
         for (int i = 0; i < branches.size(); i++) {
-            ContainmentResult branchResult = SchemaContainment.compare(source, branches.get(i), context);
+            ContainmentResult branchResult = SchemaContainment.compare(source, branches.get(i), context, visited);
             if (branchResult.getVerdict() == ContainmentVerdict.YES) {
                 return ContainmentResult.yes(evidence(source, target, keyword + "-branch-contained",
                         "The source schema is contained by one branch of the target schema's `" + keyword + "`"));
@@ -170,15 +171,15 @@ public final class CompositionContainment {
     }
 
     /** Rule: (S1 AND S2) subset T if either source conjunct is a subset of T -- here S1..Sn are `rest` plus every allOf branch. */
-    private static ContainmentResult compareSourceAllOf(SchemaView source, SchemaView target, ContainmentContext context) {
+    private static ContainmentResult compareSourceAllOf(SchemaView source, SchemaView target, ContainmentContext context, Set<String> visited) {
         SchemaView rest = withoutKeyword(source, "allOf");
-        if (SchemaContainment.compare(rest, target, context).getVerdict() == ContainmentVerdict.YES) {
+        if (SchemaContainment.compare(rest, target, context, visited).getVerdict() == ContainmentVerdict.YES) {
             return ContainmentResult.yes(evidence(source, target, "allOf-rest-sufficient",
                     "The source schema's own constraints alongside its `allOf` already suffice to prove containment"));
         }
         List<SchemaView> branches = branchesOf(source, "allOf");
         for (int i = 0; i < branches.size(); i++) {
-            if (SchemaContainment.compare(branches.get(i), target, context).getVerdict() == ContainmentVerdict.YES) {
+            if (SchemaContainment.compare(branches.get(i), target, context, visited).getVerdict() == ContainmentVerdict.YES) {
                 return ContainmentResult.yes(evidence(source, target, "allOf-conjunct-sufficient",
                         "One conjunct of the source schema's `allOf` already suffices to prove containment"));
             }
@@ -188,9 +189,9 @@ public final class CompositionContainment {
 
     /** Rule: (S1 OR S2) subset T if S1 subset T and S2 subset T -- used for `anyOf` and `oneOf` as the source. */
     private static ContainmentResult compareSourceOrGroup(SchemaView source, SchemaView target, String keyword,
-            ContainmentContext context) {
+            ContainmentContext context, Set<String> visited) {
         SchemaView rest = withoutKeyword(source, keyword);
-        if (SchemaContainment.compare(rest, target, context).getVerdict() == ContainmentVerdict.YES) {
+        if (SchemaContainment.compare(rest, target, context, visited).getVerdict() == ContainmentVerdict.YES) {
             return ContainmentResult.yes(evidence(source, target, keyword + "-rest-sufficient",
                     "The source schema's own constraints alongside its `" + keyword + "` already suffice to "
                             + "prove containment"));
@@ -200,7 +201,7 @@ public final class CompositionContainment {
             return null;
         }
         for (int i = 0; i < branches.size(); i++) {
-            if (SchemaContainment.compare(branches.get(i), target, context).getVerdict() != ContainmentVerdict.YES) {
+            if (SchemaContainment.compare(branches.get(i), target, context, visited).getVerdict() != ContainmentVerdict.YES) {
                 return null;
             }
         }
@@ -209,7 +210,7 @@ public final class CompositionContainment {
     }
 
     /** Rule: NOT S subset NOT T if T subset S -- only attempted when neither side mixes `not` with another composition keyword. */
-    private static ContainmentResult tryContrapositive(SchemaView source, SchemaView target, ContainmentContext context) {
+    private static ContainmentResult tryContrapositive(SchemaView source, SchemaView target, ContainmentContext context, Set<String> visited) {
         SchemaView sourceInner = source.childView("not");
         SchemaView targetInner = target.childView("not");
         if (sourceInner == null || targetInner == null) {
@@ -220,7 +221,7 @@ public final class CompositionContainment {
         if (!isEmptySchema(sourceRest) || !isEmptySchema(targetRest)) {
             return null;
         }
-        ContainmentResult reversed = SchemaContainment.compare(targetInner, sourceInner, context);
+        ContainmentResult reversed = SchemaContainment.compare(targetInner, sourceInner, context, visited);
         if (reversed.getVerdict() == ContainmentVerdict.YES) {
             return ContainmentResult.yes(evidence(source, target, "not-contrapositive",
                     "The target's negated schema is contained by the source's negated schema, so the negations "
@@ -259,12 +260,12 @@ public final class CompositionContainment {
             }
         }
         String pointer = schema.getPointer() != null ? schema.getPointer() + "/-" + keyword : null;
-        return new SchemaView(result, schema.getDialect(), schema.getResourceUri(), pointer);
+        return new SchemaView(result, schema.getDialect(), schema.getResourceUri(), pointer, schema.getDocumentRoot());
     }
 
     private static SchemaView childOf(SchemaView parent, JsonNode node, String pointerSuffix) {
         String pointer = parent.getPointer() != null ? parent.getPointer() + "/" + pointerSuffix : null;
-        return new SchemaView(node, parent.getDialect(), parent.getResourceUri(), pointer);
+        return new SchemaView(node, parent.getDialect(), parent.getResourceUri(), pointer, parent.getDocumentRoot()).resolveRef();
     }
 
     private static SchemaEvidence evidence(SchemaView source, SchemaView target, String rule, String message) {
