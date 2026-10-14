@@ -62,16 +62,17 @@ jobs:
             git push
           fi
 
-      # Slack: success to the general channel, failure to the important one.
+      # Slack, failure only: the release's own message covers the success.
+      # Runs triggered by the release are apitomy-ci's, so nobody is mentioned
+      # then; a run started by hand mentions whoever started it.
       - name: Notify
-        if: ${{ !cancelled() }}
+        if: failure()
         uses: Apicurio/apicurio-github-actions/notify-slack@bd19cbe33797325a571cd7ffd58f639b62e128a2 # v2.4.0
         with:
-          level: ${{ job.status == 'success' && 'general' || 'important' }}
-          text: "${{ job.status == 'success' && format(':globe_with_meridians: {0}: website updated for {1}', github.repository, env.RELEASE_VERSION) || format(':x: {0}: {1} failed', github.repository, github.workflow) }}"
+          level: important
+          text: ":x: ${{ github.repository }}: ${{ github.workflow }} failed"
           link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          mention: ${{ job.status != 'success' && github.actor || '' }}
+          mention: ${{ github.actor }}
           machine-users: apitomy-ci
           user-map: ${{ secrets.SLACK_USER_MAP }}
           important-webhook: ${{ secrets.SLACK_IMPORTANT_NOTIFICATION_WEBHOOK }}
-          general-webhook: ${{ secrets.SLACK_GENERAL_NOTIFICATION_WEBHOOK }}
