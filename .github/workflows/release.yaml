@@ -135,6 +135,7 @@ jobs:
     with:
       release-version: ${{ needs.release.outputs.release-version }}
       branch: ${{ github.ref_name }}
+      quiet: true
     secrets: inherit
 
 
@@ -145,6 +146,7 @@ jobs:
       release-version: ${{ needs.release.outputs.release-version }}
       branch: ${{ github.ref_name }}
       prerelease: ${{ needs.release.outputs.prerelease == 'true' }}
+      quiet: true
     secrets: inherit
 
 
@@ -195,26 +197,24 @@ jobs:
           fi
 
 
-      - name: Slack Notification (Always)
-        if: always()
-        run: |
-          MAVEN_STATUS="${{ needs.maven-publish.result }}"
-          NPM_STATUS="${{ needs.npm-publish.result }}"
-          if [[ "$MAVEN_STATUS" != "success" ]] || [[ "$NPM_STATUS" != "success" ]]; then
-            MESSAGE="Release ${{ needs.release.outputs.release-version }} completed with warnings. Maven: $MAVEN_STATUS, NPM: $NPM_STATUS. Manual retry may be needed."
-          else
-            MESSAGE="Release ${{ needs.release.outputs.release-version }} completed successfully"
-          fi
-          REPO="${{ github.repository }}"
-          LINK="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
-          PAYLOAD="{\"workflow\": \"${{ github.workflow }}\", \"status\": \"${{ job.status }}\", \"message\": \"$MESSAGE\", \"link\": \"$LINK\", \"repository\": \"$REPO\"}"
-          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" ${{ secrets.SLACK_NOTIFICATION_WEBHOOK }}
-
-      - name: Slack Notification (Publishing Failures)
-        if: needs.maven-publish.result != 'success' || needs.npm-publish.result != 'success'
-        run: |
-          MESSAGE="Release ${{ needs.release.outputs.release-version }}: Publishing failures detected. Maven: ${{ needs.maven-publish.result }}, NPM: ${{ needs.npm-publish.result }}. Retry at https://github.com/${{ github.repository }}/actions"
-          REPO="${{ github.repository }}"
-          LINK="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
-          PAYLOAD="{\"workflow\": \"${{ github.workflow }}\", \"status\": \"warning\", \"message\": \"$MESSAGE\", \"link\": \"$LINK\", \"repository\": \"$REPO\"}"
-          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" ${{ secrets.SLACK_ERROR_WEBHOOK }}
+  # Slack: the outcome of the whole release, publishes included. Success to
+  # the general channel, a failure to the important one, mentioning whoever
+  # ran it. A failed publish can be re-run on its own from its workflow.
+  notify:
+    name: Notify
+    needs: [release, maven-publish, npm-publish, finalize]
+    if: ${{ !cancelled() && github.repository_owner == 'Apitomy' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Notify
+        uses: Apicurio/apicurio-github-actions/notify-slack@bd19cbe33797325a571cd7ffd58f639b62e128a2 # v2.4.0
+        with:
+          level: ${{ (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) && 'important' || 'general' }}
+          text: "${{ (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) && format(':x: {0}: release {1} failed (release {2}, maven-publish {3}, npm-publish {4}, finalize {5})', github.repository, needs.release.outputs.release-version, needs.release.result, needs.maven-publish.result, needs.npm-publish.result, needs.finalize.result) || format(':rocket: {0} {1} released', github.repository, needs.release.outputs.release-version) }}"
+          link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          mention: ${{ (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) && github.actor || '' }}
+          machine-users: apitomy-ci
+          user-map: ${{ secrets.SLACK_USER_MAP }}
+          important-webhook: ${{ secrets.SLACK_IMPORTANT_NOTIFICATION_WEBHOOK }}
+          general-webhook: ${{ secrets.SLACK_GENERAL_NOTIFICATION_WEBHOOK }}
