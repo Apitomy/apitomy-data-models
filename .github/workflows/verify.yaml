@@ -73,20 +73,19 @@ jobs:
         env:
           MAVEN_OPTS: "-Dfile.encoding=UTF-8 --add-opens=java.base/java.net=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
 
-      - name: Slack Notification (Always)
-        if: github.event_name == 'push' && always()
-        run: |
-          MESSAGE="'${{ github.workflow }}/${{ github.job }}' job completed with status: ${{ job.status }}"
-          REPO="${{ github.repository }}"
-          LINK="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
-          PAYLOAD="{\"workflow\": \"${{ github.workflow }}\", \"status\": \"${{ job.status }}\", \"message\": \"$MESSAGE\", \"link\": \"$LINK\", \"repository\": \"$REPO\"}"
-          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" ${{ secrets.SLACK_NOTIFICATION_WEBHOOK }}
-
-      - name: Slack Notification (Error)
-        if: github.event_name == 'push' && failure()
-        run: |
-          MESSAGE="'${{ github.workflow }}/${{ github.job }}' job FAILED!"
-          REPO="${{ github.repository }}"
-          LINK="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
-          PAYLOAD="{\"workflow\": \"${{ github.workflow }}\", \"status\": \"${{ job.status }}\", \"message\": \"$MESSAGE\", \"link\": \"$LINK\", \"repository\": \"$REPO\"}"
-          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" ${{ secrets.SLACK_ERROR_WEBHOOK }}
+  # Slack: a failed push goes to the general channel. Success and PR runs
+  # say nothing.
+  notify:
+    name: Notify
+    needs: [docs-verify, build-verify]
+    if: failure() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Notify
+        uses: Apicurio/apicurio-github-actions/notify-slack@bd19cbe33797325a571cd7ffd58f639b62e128a2 # v2.4.0
+        with:
+          level: general
+          text: ":x: ${{ github.repository }}: ${{ github.workflow }} failed on ${{ github.ref_name }} at ${{ github.sha }}"
+          link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          general-webhook: ${{ secrets.SLACK_GENERAL_NOTIFICATION_WEBHOOK }}

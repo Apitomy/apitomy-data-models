@@ -19,6 +19,10 @@ on:
         description: 'Branch/tag to publish from'
         required: true
         type: string
+      quiet:
+        description: 'Leave the Slack notification to the caller'
+        type: boolean
+        default: false
 
 permissions:
   id-token: write
@@ -83,21 +87,17 @@ jobs:
           retry_wait_seconds: 120
           command: mvn deploy -Prelease --batch-mode --settings /home/runner/.m2/settings.xml -DskipTests
 
-
-      - name: Slack Notification (Always)
-        if: always()
-        run: |
-          MESSAGE="Maven publish for version ${{ inputs.release-version }} completed with status: ${{ job.status }}"
-          REPO="${{ github.repository }}"
-          LINK="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
-          PAYLOAD="{\"workflow\": \"${{ github.workflow }}\", \"status\": \"${{ job.status }}\", \"message\": \"$MESSAGE\", \"link\": \"$LINK\", \"repository\": \"$REPO\"}"
-          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" ${{ secrets.SLACK_NOTIFICATION_WEBHOOK }}
-
-      - name: Slack Notification (Error)
-        if: failure()
-        run: |
-          MESSAGE="Maven publish for version ${{ inputs.release-version }} FAILED!"
-          REPO="${{ github.repository }}"
-          LINK="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
-          PAYLOAD="{\"workflow\": \"${{ github.workflow }}\", \"status\": \"${{ job.status }}\", \"message\": \"$MESSAGE\", \"link\": \"$LINK\", \"repository\": \"$REPO\"}"
-          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" ${{ secrets.SLACK_ERROR_WEBHOOK }}
+      # Slack, when run on its own: success to the general channel, failure to the
+      # important one. release.yaml reports the publishes it calls itself.
+      - name: Notify
+        if: ${{ !cancelled() && !inputs.quiet }}
+        uses: Apicurio/apicurio-github-actions/notify-slack@bd19cbe33797325a571cd7ffd58f639b62e128a2 # v2.4.0
+        with:
+          level: ${{ job.status == 'success' && 'general' || 'important' }}
+          text: "${{ job.status == 'success' && format(':package: {0}: {1} published {2}', github.repository, github.workflow, inputs.release-version) || format(':x: {0}: {1} failed for {2}', github.repository, github.workflow, inputs.release-version) }}"
+          link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          mention: ${{ job.status != 'success' && github.actor || '' }}
+          machine-users: apitomy-ci
+          user-map: ${{ secrets.SLACK_USER_MAP }}
+          important-webhook: ${{ secrets.SLACK_IMPORTANT_NOTIFICATION_WEBHOOK }}
+          general-webhook: ${{ secrets.SLACK_GENERAL_NOTIFICATION_WEBHOOK }}

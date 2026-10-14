@@ -62,20 +62,16 @@ jobs:
             git push
           fi
 
-      - name: Slack Notification (Always)
-        if: always()
-        run: |
-          MESSAGE="'${{ github.workflow }}/${{ github.job }}' job completed with status: ${{ job.status }}"
-          REPO="${{ github.repository }}"
-          LINK="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
-          PAYLOAD="{\"workflow\": \"${{ github.workflow }}\", \"status\": \"${{ job.status }}\", \"message\": \"$MESSAGE\", \"link\": \"$LINK\", \"repository\": \"$REPO\"}"
-          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" ${{ secrets.SLACK_NOTIFICATION_WEBHOOK }}
-
-      - name: Slack Notification (Error)
-        if: failure()
-        run: |
-          MESSAGE="'${{ github.workflow }}/${{ github.job }}' job FAILED!"
-          REPO="${{ github.repository }}"
-          LINK="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
-          PAYLOAD="{\"workflow\": \"${{ github.workflow }}\", \"status\": \"${{ job.status }}\", \"message\": \"$MESSAGE\", \"link\": \"$LINK\", \"repository\": \"$REPO\"}"
-          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" ${{ secrets.SLACK_ERROR_WEBHOOK }}
+      # Slack: success to the general channel, failure to the important one.
+      - name: Notify
+        if: ${{ !cancelled() }}
+        uses: Apicurio/apicurio-github-actions/notify-slack@bd19cbe33797325a571cd7ffd58f639b62e128a2 # v2.4.0
+        with:
+          level: ${{ job.status == 'success' && 'general' || 'important' }}
+          text: "${{ job.status == 'success' && format(':globe_with_meridians: {0}: website updated for {1}', github.repository, env.RELEASE_VERSION) || format(':x: {0}: {1} failed', github.repository, github.workflow) }}"
+          link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          mention: ${{ job.status != 'success' && github.actor || '' }}
+          machine-users: apitomy-ci
+          user-map: ${{ secrets.SLACK_USER_MAP }}
+          important-webhook: ${{ secrets.SLACK_IMPORTANT_NOTIFICATION_WEBHOOK }}
+          general-webhook: ${{ secrets.SLACK_GENERAL_NOTIFICATION_WEBHOOK }}
