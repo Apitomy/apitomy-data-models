@@ -3,6 +3,8 @@ version: 3.2
 versions:
   - version: 3.2.0
     url: https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.2.0.md
+  - version: 3.2.1
+    url: https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.2.1.md
 prefix: OpenApi32
 namespace: io.apitomy.datamodels.models.openapi.v3x.v32
 majorVersionPrefix: OpenApi3x
