@@ -20,9 +20,11 @@ traits:
       - name: summary
         type: string
 
+root:
+  type: Document
+
 entities:
   - name: Document
-    root: true
     traits:
       - Named
       - Described

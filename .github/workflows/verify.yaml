@@ -68,8 +68,10 @@ jobs:
         run: ./.github/scripts/is-latest-release.test.sh
 
 
+      # plugin-tests adds the generator-maven-plugin-tests module, which runs the maven-invoker
+      # integration tests. Without it those ITs never execute in CI and silently rot.
       - name: Build Project
-        run: mvn clean install -Ptranspilation
+        run: mvn clean install -Ptranspilation,plugin-tests
         env:
           MAVEN_OPTS: "-Dfile.encoding=UTF-8 --add-opens=java.base/java.net=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
 

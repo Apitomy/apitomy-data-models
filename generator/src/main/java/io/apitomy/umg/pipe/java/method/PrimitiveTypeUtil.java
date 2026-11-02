@@ -117,19 +117,34 @@ public final class PrimitiveTypeUtil {
      */
     public static String determineToConversionMethod(Type primitiveType, CodeGenContext ctx, JavaClassSource classSource) {
         Class<?> _class = primitiveTypeToClass(primitiveType);
-        if (ObjectNode.class.equals(_class)) {
+        if (ObjectNode.class.equals(_class) || JsonNode.class.equals(_class)) {
             classSource.addImport(_class);
+        }
+        return determineToConversionMethod(_class);
+    }
+
+    /**
+     * Determines the {@code JsonUtil.toXxx} method that converts a {@code JsonNode} into the given Java class.
+     * <p>
+     * Callers must not derive this name as {@code "to" + simpleName}: for {@link ObjectNode} that yields
+     * {@code toObjectNode}, which is the {@code Map}-to-{@code ObjectNode} builder rather than the
+     * {@code JsonNode} accessor. The correct accessor is {@code JsonUtil.toObject(JsonNode)}.
+     *
+     * @param javaClass the Java class the {@code JsonNode} is being converted to
+     * @return the unqualified name of the {@code JsonUtil} conversion method
+     */
+    public static String determineToConversionMethod(Class<?> javaClass) {
+        if (ObjectNode.class.equals(javaClass)) {
             return "toObject";
-        } else if (JsonNode.class.equals(_class)) {
-            classSource.addImport(_class);
+        } else if (JsonNode.class.equals(javaClass)) {
             return "toJsonNode";
-        } else if (String.class.equals(_class)) {
+        } else if (String.class.equals(javaClass)) {
             return "toString";
-        } else if (Boolean.class.equals(_class)) {
+        } else if (Boolean.class.equals(javaClass)) {
             return "toBoolean";
-        } else if (Integer.class.equals(_class)) {
+        } else if (Integer.class.equals(javaClass)) {
             return "toInteger";
-        } else if (Number.class.equals(_class)) {
+        } else if (Number.class.equals(javaClass)) {
             return "toNumber";
         }
         return "toJsonNode";

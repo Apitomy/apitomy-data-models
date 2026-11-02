@@ -19,9 +19,11 @@ traits:
         type: ExtensionEntity
         collection: extensions
 
+root:
+  type: Document
+
 entities:
   - name: Document
-    root: true
     traits:
       - Common
     properties:

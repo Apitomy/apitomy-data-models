@@ -36,10 +36,18 @@ public class CreateImplicitUnionRulesStage extends AbstractStage {
     protected void doProcess() {
         getState().getConceptIndex().findEntities("").forEach(entity -> {
             entity.getProperties().values().stream()
-            // Only care about properties with union types.
+            // Only care about properties whose type is directly a union. Unions nested inside a list or
+            // map ('[A|B]', '{A|B}') are deliberately not handled here: implicit rules cannot be derived
+            // for all of them (e.g. OpenAPI's Components.schemas), and widening this filter turns those
+            // into hard build failures. Such unions must declare explicit unionRules in the spec.
             .filter(property -> property.getResolvedType() instanceof UnionType)
             // Only if the property doesn't already have union rules defined.
             .filter(property -> property.getUnionRules() == null || property.getUnionRules().isEmpty())
+            // Only if the resolved union type doesn't already have rules (e.g. inherited from a type alias).
+            .filter(property -> {
+                UnionType unionType = (UnionType) property.getResolvedType();
+                return unionType.getUnionRules() == null || unionType.getUnionRules().isEmpty();
+            })
             // Only if the union type has ambiguity
             .filter(property -> isUnionAmbiguous(property))
             .forEach(property -> {
@@ -49,7 +57,7 @@ public class CreateImplicitUnionRulesStage extends AbstractStage {
     }
 
     private boolean isUnionAmbiguous(PropertyModel property) {
-        var unionType = (UnionType) property.getResolvedType();
+        UnionType unionType = (UnionType) property.getResolvedType();
         int entityCount = 0;
         int arrayCount = 0;
         int mapCount = 0;
@@ -76,25 +84,32 @@ public class CreateImplicitUnionRulesStage extends AbstractStage {
      *
      */
     private void createImplicitUnionRules(EntityModel entity, PropertyModel property) {
-        var unionType = (UnionType) property.getResolvedType();
+        UnionType unionType = (UnionType) property.getResolvedType();
         final int minimumRulesRequired = unionType.getTypes().size() - 1;
-        int rulesCreated = 0;
-        for (var nestedType : unionType.getTypes()) {
+        List<UnionRule> createdRules = new ArrayList<>();
+        for (Type nestedType : unionType.getTypes()) {
             UnionRule rule = createImplicitRuleForEntity(entity.getNamespace(), nestedType.getName());
             if (rule != null) {
-                List<UnionRule> unionRules = property.getUnionRules();
-                if (unionRules == null) {
-                    unionRules = new ArrayList<>();
-                    property.setUnionRules(unionRules);
-                }
-                unionRules.add(rule);
-                rulesCreated++;
+                createdRules.add(rule);
             }
         }
 
-        if (rulesCreated < minimumRulesRequired) {
+        if (createdRules.size() < minimumRulesRequired) {
             throw new RuntimeException("Failed to create appropriate implicit union rules for property '" + property.getName() + "' of entity: " + entity.fullyQualifiedName());
         }
+
+        List<UnionRule> unionRules = property.getUnionRules();
+        if (unionRules == null) {
+            unionRules = new ArrayList<>();
+            property.setUnionRules(unionRules);
+        }
+        unionRules.addAll(createdRules);
+
+        // Code generation resolves union rules via UnionType.getRuleFor(), not via the PropertyModel, and
+        // the property-to-union-type copy in CreatePropertyAndTypeModelsStage has already run by the time
+        // this stage executes. Without this the implicit rules are computed and then silently discarded,
+        // and every entity variant falls back to an identical "isObject(json)" guard in the reader.
+        unionType.setUnionRules(unionRules);
     }
 
     /**

@@ -36,7 +36,7 @@ public class MultiSpecTest {
     private void doFullTest(String testFile, String version) throws Exception {
         String originalContent = loadTestResource(testFile);
         ObjectNode originalJson = (ObjectNode) JsonUtil.parseJSON(originalContent);
-        JsonUtil.setStringProperty(originalJson, "version", version);
+        JsonUtil.setProperty(originalJson, "version", JsonUtil.textNode(version));
         originalContent = JsonUtil.stringify(originalJson);
 
         MltiDocument inputDocument = MultiSpecTestLibrary.readDocument(originalJson);

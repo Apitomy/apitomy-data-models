@@ -6,9 +6,11 @@ versions:
 prefix: Umtm10
 namespace: org.example.unionmap.v10
 
+root:
+  type: Document
+
 entities:
   - name: Document
-    root: true
     properties:
       - name: id
         type: string

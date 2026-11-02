@@ -110,7 +110,10 @@ public class CreatePropertyAndTypeModelsStage extends AbstractStage {
                                                boolean checkShading, EntityModel entityModel) {
         var rawType = RawType.parse(property.getType());
         var resolvedType = resolveType(rawType, namespace);
-        if (resolvedType instanceof UnionType ut
+        // Unwrap list/map wrappers: rules declared on a '[A|B]' or '{A|B}' property belong to the
+        // nested union, not to the collection type.
+        UnionType ut = UnionType.effectiveUnionType(resolvedType);
+        if (ut != null
                 && property.getUnionRules() != null && !property.getUnionRules().isEmpty()
                 && (ut.getUnionRules() == null || ut.getUnionRules().isEmpty())) {
             ut.setUnionRules(property.getUnionRules());
