@@ -16,7 +16,7 @@ import org.example.unionmap.UmtmGadget;
 import org.example.unionmap.UmtmMultiFormatSchema;
 import org.example.unionmap.UmtmStandardSchema;
 import org.example.unionmap.UmtmWidget;
-import org.example.unionmap.union.MultiFormatSchemaStandardSchemaUnion;
+import org.example.unionmap.MultiFormatSchemaStandardSchemaUnion;
 import org.example.unionmap.v10.Umtm10Document;
 import org.example.unionmap.v10.visitors.Umtm10Traverser;
 import org.example.unionmap.visitors.AllNodeVisitor;

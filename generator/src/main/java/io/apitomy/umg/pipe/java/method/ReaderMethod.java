@@ -1,5 +1,7 @@
 package io.apitomy.umg.pipe.java.method;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +22,7 @@ import io.apitomy.umg.models.concept.type.EntityType;
 import io.apitomy.umg.models.concept.type.ListType;
 import io.apitomy.umg.models.concept.type.PrimitiveType;
 import io.apitomy.umg.models.concept.type.PrimitiveUnionVariantType;
+import io.apitomy.umg.models.concept.type.Type;
 import io.apitomy.umg.models.concept.type.UnionType;
 import io.apitomy.umg.models.java.type.JavaType;
 import io.apitomy.umg.models.java.type.JavaTypeFactory;
@@ -107,9 +110,17 @@ public class ReaderMethod implements Method {
 
         BodyBuilder body = new BodyBuilder();
         body.addContext("modelTypeArg", isRootUnion ? "modelType" : "null");
-        // Generate dispatch for each variant
+        // Generate dispatch for each variant.
+        //
+        // An entity variant with no union rule compiles to an unconstrained "JsonUtil.isObject(json)"
+        // guard, which matches any object and therefore swallows every entity variant emitted after it.
+        // Sort those variants last (stably, so declaration order is otherwise preserved) to keep the
+        // discriminating branches reachable.
+        List<Type> orderedVariants = unionType.getTypes().stream()
+                .sorted(Comparator.comparingInt(variant -> isUnconstrainedEntityVariant(variant, unionType) ? 1 : 0))
+                .toList();
         boolean first = true;
-        for (var variantType : unionType.getTypes()) {
+        for (var variantType : orderedVariants) {
             if (variantType instanceof EntityType entityType) {
                 var entity = entityType.getEntity();
                 if (entity == null) entity = ctx.getConceptIndex().lookupEntity(namespace, entityType.getName());
@@ -160,7 +171,7 @@ public class ReaderMethod implements Method {
 
                 body.addContext(Map.of(
                         "isMethod", new UnionIsMethod(javaClass.getSimpleName()).getName(),
-                        "toMethod", "to" + javaClass.getSimpleName(),
+                        "toMethod", PrimitiveTypeUtil.determineToConversionMethod(javaClass),
                         "unionValueClass", unionValueClass.getName()
                 ));
 
@@ -266,7 +277,7 @@ public class ReaderMethod implements Method {
 
                 body.addContext(Map.of(
                         "primType", javaClass.getSimpleName(),
-                        "toMethod", "to" + javaClass.getSimpleName(),
+                        "toMethod", PrimitiveTypeUtil.determineToConversionMethod(javaClass),
                         "unionValueClass", unionValueClass.getName()
                 ));
 
@@ -285,5 +296,20 @@ public class ReaderMethod implements Method {
         }
         body.append("return null;");
         method.setBody(body.toString());
+    }
+
+    /**
+     * Determines whether a union variant is an entity variant with no discriminating union rule.
+     * <p>
+     * Such a variant generates an unconstrained {@code JsonUtil.isObject(json)} guard that matches any
+     * JSON object, so it must be dispatched after every variant that has a real discriminator.
+     *
+     * @param variantType the union variant to test
+     * @param unionType the union the variant belongs to
+     * @return true if the variant is an entity variant without a union rule
+     */
+    private static boolean isUnconstrainedEntityVariant(Type variantType, UnionType unionType) {
+        return variantType instanceof EntityType entityType
+                && unionType.getRuleFor(entityType.getName()) == null;
     }
 }

@@ -6,9 +6,11 @@ versions:
 prefix: Smoke10
 namespace: org.example.smoke.v10
 
+root:
+  type: Document
+
 entities:
   - name: Document
-    root: true
     properties:
       - name: id
         type: string

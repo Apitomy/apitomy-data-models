@@ -646,11 +646,7 @@ public class Syn2ModelReader implements ModelReader {
 	}
 
 	private BooleanSchemaSchemaOrBooleanListUnion readBooleanSchemaSchemaOrBooleanListUnion(JsonNode json) {
-		if (JsonUtil.isObject(json)) {
-			Syn2Schema node = new Syn2SchemaImpl();
-			this.readSchema((ObjectNode) json, node);
-			return node;
-		} else if (JsonUtil.isArray(json)) {
+		if (JsonUtil.isArray(json)) {
 			List<JsonNode> array = JsonUtil.toList(json);
 			List<SchemaOrBoolean> items = new ArrayList<>();
 			for (int _idx = 0; _idx < array.size(); _idx++) {
@@ -663,6 +659,10 @@ public class Syn2ModelReader implements ModelReader {
 			return new SchemaOrBooleanListUnionValueImpl(items);
 		} else if (JsonUtil.isBoolean(json)) {
 			return new BooleanUnionValueImpl(JsonUtil.toBoolean(json), null);
+		} else if (JsonUtil.isObject(json)) {
+			Syn2Schema node = new Syn2SchemaImpl();
+			this.readSchema((ObjectNode) json, node);
+			return node;
 		}
 		return null;
 	}
